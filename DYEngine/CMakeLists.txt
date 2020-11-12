@@ -1,0 +1,34 @@
+project(DYEngine)
+
+# SDL2
+set(SDL2_PATH "extern/SDL2")
+
+# Packages
+find_package(SDL2 REQUIRED)
+
+# Includes
+# SDL2_INCLUDE_DIR variable set by the FindSDL2 module (if it finds directory).
+include_directories(${SDL2_INCLUDE_DIR})
+
+# Sources / Headers
+set(SOURCE_FILES
+        src/Application.cpp
+        src/WindowBase.cpp src/SDLWindow.cpp)
+set(HEADER_FILES
+        include/Application.h
+        include/WindowBase.h include/SDLWindow.h)
+
+add_library(DYEngine STATIC
+        ${SOURCE_FILES}
+        ${HEADER_FILES})
+
+# Include Headers
+target_include_directories(DYEngine PUBLIC include)
+target_include_directories(DYEngine INTERFACE extern/SDL2/include)  # Should be hidden from the users
+
+# Link external libraries with DYEngine lib
+target_link_libraries(DYEngine
+        #${SDL2MAIN_LIBRARY}
+        ${SDL2_LIBRARY})    # SDL2MAIN_LIBRARY is also specified within SDL2_LIBRARY by the FindSDL2 module.
+                            # It's needed for Windows specific main function.
+                            # If I don't use FindSDL2 module, I have to link it as well.
