@@ -11,9 +11,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 include(${CMAKE_SOURCE_DIR}/cmake/Macros/RedirectOutputTo.cmake)
 
 if (CMAKE_BUILD_TYPE MATCHES Debug)
-    RedirectOutputTo("bin/Debug")
+    RedirectOutputTo("out/Debug")
 elseif(CMAKE_BUILD_TYPE MATCHES Release)
-    RedirectOutputTo("bin/Release")
+    RedirectOutputTo("out/Release")
 endif ()
 
 # Includes

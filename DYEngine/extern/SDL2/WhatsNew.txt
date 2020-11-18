@@ -369,7 +369,7 @@ General:
 
 Windows:
 * Added support for Windows Phone 8.1 and Windows 10/UWP (Universal Windows Platform)
-* Timer resolution is now 1 ms by default, adjustable with the SDL_HINT_TIMER_RESOLUTION hint
+* Time resolution is now 1 ms by default, adjustable with the SDL_HINT_TIMER_RESOLUTION hint
 * SDLmain no longer depends on the C runtime, so you can use the same .lib in both Debug and Release builds
 * Added SDL_SetWindowsMessageHook() to set a function to be called for every windows message before TranslateMessage()
 * Added a hint SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP to control whether SDL_PumpEvents() processes the Windows message loop
@@ -523,7 +523,7 @@ IMPORTANT: You MUST get the updated SDLActivity.java to match C code
 * Moved EGL initialization to native code 
 * Fixed the accelerometer axis rotation relative to the device rotation
 * Fixed race conditions when handling the EGL context on pause/resume
-* Touch devices are available for enumeration immediately after init
+* Touch devices are available for enumeration immediately after tickInit
 
 Raspberry Pi:
 * Added support for the Raspberry Pi, see README-raspberrypi.txt for details

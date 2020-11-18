@@ -1,25 +1,29 @@
 #include "SDLWindow.h"
 
+#include <SDL.h>
 
-DYE::SDLWindow::SDLWindow(const DYE::WindowProperty &windowProperty)
+namespace DYE
 {
-    // create SDL window
-    m_Window = SDL_CreateWindow(
-            windowProperty.Title.c_str(),
-            SDL_WINDOWPOS_UNDEFINED,
-            SDL_WINDOWPOS_UNDEFINED,
-            windowProperty.Width,
-            windowProperty.Height,
-            0
-    );
-}
+    SDLWindow::SDLWindow(const WindowProperty &windowProperty)
+    {
+        // create SDL window
+        m_Window = SDL_CreateWindow(
+                windowProperty.Title.c_str(),
+                SDL_WINDOWPOS_UNDEFINED,
+                SDL_WINDOWPOS_UNDEFINED,
+                windowProperty.Width,
+                windowProperty.Height,
+                0
+        );
+    }
 
-DYE::SDLWindow::~SDLWindow()
-{
-    SDL_DestroyWindow(m_Window);
-}
+    SDLWindow::~SDLWindow()
+    {
+        SDL_DestroyWindow(m_Window);
+    }
 
-void DYE::SDLWindow::OnUpdate()
-{
-    // TODO: Update stuff in SDLWindow, refresh frame buffer and shit
+    void SDLWindow::OnUpdate()
+    {
+        // TODO: Update stuff in SDLWindow, refresh frame buffer and shit
+    }
 }

@@ -4,7 +4,7 @@
 // when using SDL, the main function should be like `int main(int argc, char **argv)`
 int main(int argc, char *argv[])
 {
-    auto app = DYE::Application("Main App");
+    DYE::Application app { "Main App", 60 };
     app.Run();
 
     return 0;

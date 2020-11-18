@@ -2,7 +2,7 @@
 
 #include "WindowBase.h"
 
-#include "SDL.h"
+class SDL_Window;
 
 namespace DYE
 {
@@ -14,6 +14,7 @@ namespace DYE
 
             void OnUpdate() override;
             void* GetNativeWindow() const override { return m_Window; }
+
         private:
             SDL_Window* m_Window;
     };

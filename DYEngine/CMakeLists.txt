@@ -13,10 +13,14 @@ include_directories(${SDL2_INCLUDE_DIR})
 # Sources / Headers
 set(SOURCE_FILES
         src/Application.cpp
-        src/WindowBase.cpp src/SDLWindow.cpp)
+        src/WindowBase.cpp
+        src/SDLWindow.cpp
+        src/Time.cpp)
 set(HEADER_FILES
         include/Application.h
-        include/WindowBase.h include/SDLWindow.h)
+        include/WindowBase.h
+        include/SDLWindow.h
+        include/Time.h)
 
 add_library(DYEngine STATIC
         ${SOURCE_FILES}

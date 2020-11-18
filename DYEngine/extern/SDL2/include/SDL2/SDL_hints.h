@@ -792,7 +792,7 @@ extern "C" {
  *  be a valid URL.  For example, "http://www.example.com".
  *
  *  The default value is "", which will prevent SDL from adding a privacy policy
- *  link to the Settings charm.  This hint should only be set during app init.
+ *  link to the Settings charm.  This hint should only be set during app tickInit.
  *
  *  The label text of an app's "Privacy Policy" link may be customized via another
  *  hint, SDL_HINT_WINRT_PRIVACY_POLICY_LABEL.

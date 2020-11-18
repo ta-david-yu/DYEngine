@@ -4,9 +4,12 @@
 
 #include "SDLWindow.h"
 
-std::unique_ptr<DYE::WindowBase> DYE::WindowBase::Create(const DYE::WindowProperty &windowProperty)
+namespace  DYE
 {
-    // TODO: add other window types. For instance, GLFWWindow
-    auto windowPtr = std::make_unique<DYE::SDLWindow>(windowProperty);
-    return windowPtr;
+    std::unique_ptr<WindowBase> WindowBase::Create(const WindowProperty &windowProperty)
+    {
+        // TODO: add other window types. For instance, GLFWWindow
+        auto windowPtr = std::make_unique<SDLWindow>(windowProperty);
+        return windowPtr;
+    }
 }
