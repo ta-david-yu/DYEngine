@@ -19,7 +19,7 @@ endif ()
 # Includes
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-# Sources
+# DYEngine
 add_subdirectory(DYEngine)
 
 add_executable(TestApp main.cpp)
