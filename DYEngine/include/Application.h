@@ -9,24 +9,26 @@ namespace DYE
 {
     class Application
     {
-        public:
-            Application() = delete;
-            Application(const Application&) = delete;
+    public:
+        Application() = delete;
 
-            /// Application Constructor
-            /// \param windowName: The name shown at the top of the app window
-            explicit Application(const std::string& windowName = "DYE App", int framePerSecond = 60);
+        Application(const Application &) = delete;
 
-            /// App Entrypoint
-            void Run();
-        private:
+        /// Application Constructor
+        /// \param windowName: The name shown at the top of the app window
+        explicit Application(const std::string &windowName = "DYE App", int framePerSecond = 60);
 
-            /// The main rendering window
-            std::unique_ptr<WindowBase> m_Window;
+        /// App Entrypoint
+        void Run();
 
-            /// Time for counting delta time per frame
-            Time m_Time;
+    private:
 
-            bool m_IsRunning = false;
+        /// The main rendering window
+        std::unique_ptr<WindowBase> m_Window;
+
+        /// Time for counting delta time per frame
+        Time m_Time;
+
+        bool m_IsRunning = false;
     };
 }
