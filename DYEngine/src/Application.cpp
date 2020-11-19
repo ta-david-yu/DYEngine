@@ -17,7 +17,7 @@ namespace DYE
     {
         /// TEMP
         SDL_Renderer *_temp_renderer = SDL_CreateRenderer(
-                static_cast<SDL_Window *>(m_Window->GetNativeWindow()), -1, SDL_RENDERER_SOFTWARE);
+                static_cast<SDL_Window *>(m_Window->GetNativeWindow()), -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
         uint8_t _temp_red = 0;
         double _temp_fpsAccumulator = 0;
         int _temp_framesCounter = 0;
