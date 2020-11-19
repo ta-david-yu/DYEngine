@@ -1,4 +1,5 @@
 #include "Application.h"
+
 #include "SDL.h"
 
 namespace DYE
