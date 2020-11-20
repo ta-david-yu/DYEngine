@@ -48,10 +48,9 @@ namespace DYE
     /// Event data structure
     class Event
     {
+        friend class EventDispatcher;
     public:
         virtual ~Event() = default;
-
-        bool IsUsed = false;
 
         virtual EventType GetEventType() const = 0;
 
@@ -69,6 +68,11 @@ namespace DYE
             using T = std::underlying_type_t <EventCategory>;
             return GetCategoryFlags() & static_cast<T>(category);
         }
+
+        bool IsUsed() const { return m_IsUsed; }
+
+    protected:
+        bool m_IsUsed = false;
     };
 
     /// The helper class that dispatches the event
@@ -85,6 +89,11 @@ namespace DYE
         template<typename T, typename F>
         bool Dispatch(const F& func)
         {
+            if (m_Event.GetEventType() == T::GetStaticType())
+            {
+                m_Event.m_IsUsed |= func(static_cast<T&>(m_Event));
+                return true;
+            }
             return false;
         }
 
