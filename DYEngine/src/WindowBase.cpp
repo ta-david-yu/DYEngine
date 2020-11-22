@@ -1,7 +1,5 @@
 #include "WindowBase.h"
 
-#include <memory>
-
 #include "SDLWindow.h"
 
 namespace  DYE
