@@ -21,7 +21,9 @@ set(HEADER_FILES
         include/Application.h
         include/WindowBase.h
         include/SDLWindow.h
-        include/Time.h)
+        include/Time.h
+        include/Event.h
+        include/ApplicationEvent.h)
 
 # External Library
 # Imgui

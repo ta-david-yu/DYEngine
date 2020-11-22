@@ -1,5 +1,6 @@
 #include <iostream>
 #include "Application.h"
+#include "ApplicationEvent.h"
 
 // when using SDL, the main function should be like `int main(int argc, char **argv)`
 int main(int argc, char *argv[])

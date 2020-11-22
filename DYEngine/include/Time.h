@@ -6,39 +6,43 @@
 namespace DYE
 {
     class Application;
+
     class Time
     {
-            friend class Application;
-        public:
-            Time() = delete;
-            Time(const Time&) = delete;
+        friend class Application;
 
-            explicit Time(uint32_t fps) : m_FPS(fps), m_LastTicks(0), m_TicksSinceStart(0), m_DeltaTicks(0) { }
+    public:
+        Time() = delete;
 
-            /// The time in second that has passed since the last frame
-            /// \return m_DeltaTicks / 1000.0
-            double DeltaTime() const { return m_DeltaTicks / 1000.0; }
+        Time(const Time &) = delete;
 
-            /// A fixed delta time in second for Physics Simulation, const value
-            /// \return 1 / m_Fps
-            double FixedDeltaTime() const { return 1.0 / m_FPS; }
-        private:
-            /// The number of frames per second, used to determine FixedDeltaTime()
-            uint32_t m_FPS;
+        explicit Time(uint32_t fps) : m_FPS(fps), m_LastTicks(0), m_TicksSinceStart(0), m_DeltaTicks(0) {}
 
-            /// The ticks when the last tickUpdate() or tickInit() is called
-            uint32_t m_LastTicks;
+        /// The time in second that has passed since the last frame
+        /// \return m_DeltaTicks / 1000.0
+        double DeltaTime() const { return m_DeltaTicks / 1000.0; }
 
-            /// The number of ticks since tickInit is called
-            uint32_t m_TicksSinceStart;
+        /// A fixed delta time in second for Physics Simulation, const value
+        /// \return 1 / m_Fps
+        double FixedDeltaTime() const { return 1.0 / m_FPS; }
 
-            /// Get updated everytime tickUpdate() is called
-            uint32_t m_DeltaTicks;
+    private:
+        /// The number of frames per second, used to determine FixedDeltaTime()
+        uint32_t m_FPS;
 
-            /// Initialize tick variable, called at the start of the game loop
-            void tickInit();
+        /// The ticks when the last tickUpdate() or tickInit() is called
+        uint32_t m_LastTicks;
 
-            /// Update deltaTime, called at the end of each frame
-            void tickUpdate();
+        /// The number of ticks since tickInit is called
+        uint32_t m_TicksSinceStart;
+
+        /// Get updated everytime tickUpdate() is called
+        uint32_t m_DeltaTicks;
+
+        /// Initialize tick variable, called at the start of the game loop
+        void tickInit();
+
+        /// Update deltaTime, called at the end of each frame
+        void tickUpdate();
     };
 }

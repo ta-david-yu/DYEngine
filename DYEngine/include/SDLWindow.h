@@ -8,14 +8,16 @@ namespace DYE
 {
     class SDLWindow final : public WindowBase
     {
-        public:
-            explicit SDLWindow(const  WindowProperty& windowProperty);
-            ~SDLWindow() override;
+    public:
+        explicit SDLWindow(const WindowProperty &windowProperty);
 
-            void OnUpdate() override;
-            void* GetNativeWindow() const override { return m_Window; }
+        ~SDLWindow() override;
 
-        private:
-            SDL_Window* m_Window;
+        void OnUpdate() override;
+
+        void *GetNativeWindow() const override { return m_Window; }
+
+    private:
+        SDL_Window *m_Window;
     };
 }
