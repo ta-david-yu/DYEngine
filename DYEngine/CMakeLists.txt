@@ -33,6 +33,9 @@ add_library(DYEngine STATIC
         ${SOURCE_FILES}
         ${HEADER_FILES})
 
+# Precompiled Header
+target_precompile_headers(DYEngine PRIVATE Precompiled.h)
+
 # Include Headers
 target_include_directories(DYEngine PUBLIC include)
 target_include_directories(DYEngine INTERFACE extern/SDL2/include)  # Should be hidden from the users
