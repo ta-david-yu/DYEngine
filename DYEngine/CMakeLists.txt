@@ -23,7 +23,7 @@ set(HEADER_FILES
         include/SDLWindow.h
         include/Time.h
         include/Event.h
-        include/ApplicationEvent.h)
+        include/ApplicationEvent.h include/KeyCode.h include/KeyEvent.h)
 
 # External Library
 # Imgui
