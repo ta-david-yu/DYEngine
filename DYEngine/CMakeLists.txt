@@ -16,14 +16,14 @@ set(SOURCE_FILES
         src/Application.cpp
         src/WindowBase.cpp
         src/SDLWindow.cpp
-        src/Time.cpp)
+        src/Time.cpp src/EventSystemBase.cpp src/SDLEventSystem.cpp)
 set(HEADER_FILES
         include/Application.h
         include/WindowBase.h
         include/SDLWindow.h
         include/Time.h
-        include/Event.h
-        include/ApplicationEvent.h include/KeyCode.h include/KeyEvent.h)
+        include/Events/Event.h
+        include/Events/ApplicationEvent.h include/Input/KeyCode.h include/Events/KeyEvent.h include/Events/EventSystemBase.h include/Events/SDLEventSystem.h include/Base.h)
 
 # External Library
 # Imgui

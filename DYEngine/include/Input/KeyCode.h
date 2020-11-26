@@ -2,11 +2,11 @@
 
 #include <cstdint>
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 namespace DYE
 {
-    /// KeyCode enumeration, currently mapped to SDL_KeyCode
+    /// KeyCode enumeration, currently mapped to SDL_KeyCode (event.key.keysym.sym)
     /// To be added with more keys
     enum class KeyCode : std::uint32_t
     {

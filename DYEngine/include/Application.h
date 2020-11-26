@@ -1,6 +1,8 @@
 #pragma once
 
 #include "WindowBase.h"
+#include "Events/EventSystemBase.h"
+#include "Events/ApplicationEvent.h"
 #include "Time.h"
 
 #include <memory>
@@ -26,9 +28,15 @@ namespace DYE
         /// The main rendering window
         std::unique_ptr<WindowBase> m_Window;
 
+        /// The main event system that poll events from the framework (SDL/GLFW for instance)
+        std::unique_ptr<EventSystemBase> m_EventSystem;
+
         /// Time for counting delta time per frame
         Time m_Time;
 
+        /// A Flag to show if the game is still running, when WindowCloseEvent is fired, it's set to false
         bool m_IsRunning = false;
+
+        bool onWindowClose(const std::shared_ptr<Event>& pEvent);
     };
 }

@@ -2,6 +2,8 @@
 
 #include <SDL.h>
 
+#include "Base.h"
+
 namespace DYE
 {
     Application::Application(const std::string &windowName, int framePerSecond) : m_Time(framePerSecond)
@@ -10,7 +12,13 @@ namespace DYE
         SDL_Init(SDL_INIT_VIDEO);
         SDL_Log("Hello World");
 
+        // Initialize Systems
         m_Window = WindowBase::Create(WindowProperty(windowName));
+        m_EventSystem = EventSystemBase::Create();
+
+        // Register ApplicationEvents
+        // TODO: AddTypedEventListener
+        m_EventSystem->AddEventListener(DYE_BIND_EVENT_FUNCTION(Application::onWindowClose));
     }
 
     void Application::Run()
@@ -42,25 +50,7 @@ namespace DYE
                 _temp_fpsAccumulator = 0;
             }
 
-            // Poll SDL events
-            SDL_Event event;
-            while (SDL_PollEvent(&event))
-            {
-                switch (event.type)
-                {
-                    case SDL_QUIT:
-                        m_IsRunning = false;
-                        break;
-                    default:
-                        // TODO: add more event handling
-                        break;
-                }
-
-                if (!m_IsRunning)
-                {
-                    break;
-                }
-            }
+            m_EventSystem->PollEvent();
 
             // Main game loop
             deltaTimeAccumulator += m_Time.DeltaTime();
@@ -87,5 +77,19 @@ namespace DYE
 
         SDL_DestroyRenderer(_temp_renderer);
         SDL_Quit();
+    }
+
+    bool Application::onWindowClose(const std::shared_ptr<Event>& pEvent)
+    {
+        /// TODO: Type checking should be done in EventSystem
+        if (pEvent->GetEventType() == EventType::WindowClose)
+        {
+            m_IsRunning = false;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }
