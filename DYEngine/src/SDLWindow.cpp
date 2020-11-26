@@ -1,5 +1,7 @@
 #include "SDLWindow.h"
 
+#include <SDL.h>
+
 namespace DYE
 {
     SDLWindow::SDLWindow(const WindowProperty &windowProperty)
