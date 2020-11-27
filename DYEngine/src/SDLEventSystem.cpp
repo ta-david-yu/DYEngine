@@ -28,7 +28,7 @@ namespace DYE
                     break;
                 default:
                     // Error
-                    SDL_Log("Unhandled SDL Event Type %d", event.type);
+                    //SDL_Log("Unhandled SDL Event Type %d", event.type);
                     handled = false;
                     break;
             }
@@ -36,11 +36,19 @@ namespace DYE
             // Dispatch event
             if (handled)
             {
+                // Check if EventHandler is referring to a callable target
+                if (m_EventHandler)
+                {
+                    m_EventHandler.operator()(eventPtr);
+                }
+
+                /*
                 // TODO: Typed Event Dispatcher
                 for (auto &listener : m_EventListeners)
                 {
                     listener.operator()(eventPtr);
                 }
+                 */
             }
         }
     }

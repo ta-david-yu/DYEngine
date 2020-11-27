@@ -3,6 +3,8 @@
 #include <SDL.h>
 
 #include "Base.h"
+#include "Events/KeyEvent.h"
+#include "Events/ApplicationEvent.h"
 
 namespace DYE
 {
@@ -16,9 +18,8 @@ namespace DYE
         m_Window = WindowBase::Create(WindowProperty(windowName));
         m_EventSystem = EventSystemBase::Create();
 
-        // Register ApplicationEvents
-        // TODO: AddTypedEventListener
-        m_EventSystem->AddEventListener(DYE_BIND_EVENT_FUNCTION(Application::onWindowClose));
+        // Register handleOnEvent member function to the EventSystem
+        m_EventSystem->SetEventHandler(DYE_BIND_EVENT_FUNCTION(Application::handleOnEvent));
     }
 
     void Application::Run()
@@ -45,7 +46,7 @@ namespace DYE
             {
                 double fps = _temp_framesCounter / _temp_fpsAccumulator;
 
-                SDL_Log("Sample: [%f] seconds, FPS: [%f]", _temp_fpsAccumulator, fps);
+                //SDL_Log("Sample: [%f] seconds, FPS: [%f]", _temp_fpsAccumulator, fps);
                 _temp_framesCounter = 0;
                 _temp_fpsAccumulator = 0;
             }
@@ -79,17 +80,24 @@ namespace DYE
         SDL_Quit();
     }
 
-    bool Application::onWindowClose(const std::shared_ptr<Event>& pEvent)
+    bool Application::handleOnEvent(const std::shared_ptr<Event>& pEvent)
     {
-        /// TODO: Type checking should be done in EventSystem
-        if (pEvent->GetEventType() == EventType::WindowClose)
+        auto eventType = pEvent->GetEventType();
+
+        switch (eventType)
         {
-            m_IsRunning = false;
-            return true;
+            case EventType::WindowClose:
+                m_IsRunning = false;
+                return true;
+            case EventType::KeyDown:
+                SDL_Log("KeyDown - %d", std::static_pointer_cast<KeyDownEvent>(pEvent)->GetKeyCode());
+                return true;
+            case EventType::KeyUp:
+                SDL_Log("KeyUp - %d", std::static_pointer_cast<KeyUpEvent>(pEvent)->GetKeyCode());
+                return true;
+            default:
+                break;
         }
-        else
-        {
-            return false;
-        }
+        return false;
     }
 }

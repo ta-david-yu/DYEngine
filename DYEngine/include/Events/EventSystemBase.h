@@ -8,9 +8,9 @@
 
 namespace DYE
 {
-    /// EventListener is a function call that takes an Event as the argument
+    /// EventHandler is a function call that takes an Event as the argument
     /// \return true if the event is used, false if not
-    using EventListener = std::function<bool(std::shared_ptr<Event>)>;
+    using EventHandler = std::function<bool(std::shared_ptr<Event>)>;
 
     class EventSystemBase
     {
@@ -20,14 +20,18 @@ namespace DYE
 
         virtual void PollEvent() = 0;
 
-        void AddEventListener(EventListener eventListener);
+        void SetEventHandler(EventHandler handler);
+        /*
+        void AddEventListener(EventHandler handler);
 
-        void RemoveEventListener(EventListener eventListener);
-
+        void RemoveEventListener(EventHandler handler);
+        */
         static std::unique_ptr<EventSystemBase> Create();
 
     protected:
         // TODO: use a unordered-map list for adding interested event only
-        std::vector<EventListener> m_EventListeners;
+        //std::vector<EventHandler> m_EventHandlers;
+
+        EventHandler m_EventHandler;
     };
 }

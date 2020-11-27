@@ -3,8 +3,20 @@
 
 namespace DYE
 {
+    std::unique_ptr<EventSystemBase> EventSystemBase::Create()
+    {
+        // TODO: add other event system types. For instance, GLFWEventSystem
+        return std::make_unique<SDLEventSystem>();
+    }
+
+    void EventSystemBase::SetEventHandler(EventHandler handler)
+    {
+        m_EventHandler = std::move(handler);
+    }
+/*
+
     template<typename T, typename... U>
-    static bool EventListenersEqual(std::function<T(U...)> a, std::function<T(U...)> b)
+    static bool EventHandlersEqual(std::function<T(U...)> a, std::function<T(U...)> b)
     {
         // TODO: Fixed typeinfo error
         typedef T(*fptr)(U...);
@@ -16,31 +28,20 @@ namespace DYE
         return false;
     }
 
-    std::unique_ptr<EventSystemBase> EventSystemBase::Create()
+    void EventSystemBase::AddEventListener(EventHandler handler)
     {
-        // TODO: add other event system types. For instance, GLFWEventSystem
-        return std::make_unique<SDLEventSystem>();
+        m_EventListeners.push_back(std::move(handler));
     }
 
-    void EventSystemBase::AddEventListener(EventListener eventListener)
+    void EventSystemBase::RemoveEventListener(EventHandler handler)
     {
-        m_EventListeners.push_back(std::move(eventListener));
-    }
-
-    void EventSystemBase::RemoveEventListener(EventListener eventListener)
-    {
-        /*
-        for (auto& listener : m_EventListeners)
+        for (auto it = m_EventHandlers.begin(); it != m_EventHandlers.end(); it++)
         {
-
-        }*/
-        for (auto it = m_EventListeners.begin(); it != m_EventListeners.end(); it++)
-        {
-            if (EventListenersEqual(*it, eventListener))
+            if (EventHandlersEqual(*it, handler))
             {
-                m_EventListeners.erase(it);
+                m_EventHandlers.erase(it);
                 break;
             }
         }
-    }
+    }*/
 }

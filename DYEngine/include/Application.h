@@ -2,7 +2,6 @@
 
 #include "WindowBase.h"
 #include "Events/EventSystemBase.h"
-#include "Events/ApplicationEvent.h"
 #include "Time.h"
 
 #include <memory>
@@ -37,6 +36,6 @@ namespace DYE
         /// A Flag to show if the game is still running, when WindowCloseEvent is fired, it's set to false
         bool m_IsRunning = false;
 
-        bool onWindowClose(const std::shared_ptr<Event>& pEvent);
+        bool handleOnEvent(const std::shared_ptr<Event>& pEvent);
     };
 }
