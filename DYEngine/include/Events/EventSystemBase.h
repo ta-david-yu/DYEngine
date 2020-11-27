@@ -12,6 +12,7 @@ namespace DYE
     /// \return true if the event is used, false if not
     using EventHandler = std::function<bool(std::shared_ptr<Event>)>;
 
+    /// EventSystemBase is the interface for polling events from the underlying frameworks (such as SDL or GLFW), it is designed to be run by an Application object and handled by Application EventHandler
     class EventSystemBase
     {
     public:

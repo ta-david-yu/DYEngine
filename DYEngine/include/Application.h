@@ -36,6 +36,9 @@ namespace DYE
         /// A Flag to show if the game is still running, when WindowCloseEvent is fired, it's set to false
         bool m_IsRunning = false;
 
+        /// The EventHandler that handles Events polled by m_EventSystem
+        /// \param pEvent the received event pointer
+        /// \return true if the event can be handled
         bool handleOnEvent(const std::shared_ptr<Event>& pEvent);
     };
 }
