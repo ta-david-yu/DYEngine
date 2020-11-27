@@ -2,6 +2,10 @@
 
 #include <SDL.h>
 
+#include "Base.h"
+#include "Events/KeyEvent.h"
+#include "Events/ApplicationEvent.h"
+
 namespace DYE
 {
     Application::Application(const std::string &windowName, int framePerSecond) : m_Time(framePerSecond)
@@ -10,7 +14,12 @@ namespace DYE
         SDL_Init(SDL_INIT_VIDEO);
         SDL_Log("Hello World");
 
+        // Initialize Systems
         m_Window = WindowBase::Create(WindowProperty(windowName));
+        m_EventSystem = EventSystemBase::Create();
+
+        // Register handleOnEvent member function to the EventSystem
+        m_EventSystem->SetEventHandler(DYE_BIND_EVENT_FUNCTION(Application::handleOnEvent));
     }
 
     void Application::Run()
@@ -37,30 +46,12 @@ namespace DYE
             {
                 double fps = _temp_framesCounter / _temp_fpsAccumulator;
 
-                SDL_Log("Sample: [%f] seconds, FPS: [%f]", _temp_fpsAccumulator, fps);
+                //SDL_Log("Sample: [%f] seconds, FPS: [%f]", _temp_fpsAccumulator, fps);
                 _temp_framesCounter = 0;
                 _temp_fpsAccumulator = 0;
             }
 
-            // Poll SDL events
-            SDL_Event event;
-            while (SDL_PollEvent(&event))
-            {
-                switch (event.type)
-                {
-                    case SDL_QUIT:
-                        m_IsRunning = false;
-                        break;
-                    default:
-                        // TODO: add more event handling
-                        break;
-                }
-
-                if (!m_IsRunning)
-                {
-                    break;
-                }
-            }
+            m_EventSystem->PollEvent();
 
             // Main game loop
             deltaTimeAccumulator += m_Time.DeltaTime();
@@ -87,5 +78,26 @@ namespace DYE
 
         SDL_DestroyRenderer(_temp_renderer);
         SDL_Quit();
+    }
+
+    bool Application::handleOnEvent(const std::shared_ptr<Event>& pEvent)
+    {
+        auto eventType = pEvent->GetEventType();
+
+        switch (eventType)
+        {
+            case EventType::WindowClose:
+                m_IsRunning = false;
+                return true;
+            case EventType::KeyDown:
+                SDL_Log("KeyDown - %d", std::static_pointer_cast<KeyDownEvent>(pEvent)->GetKeyCode());
+                return true;
+            case EventType::KeyUp:
+                SDL_Log("KeyUp - %d", std::static_pointer_cast<KeyUpEvent>(pEvent)->GetKeyCode());
+                return true;
+            default:
+                break;
+        }
+        return false;
     }
 }
