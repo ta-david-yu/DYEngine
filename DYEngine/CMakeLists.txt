@@ -1,33 +1,36 @@
 project(DYEngine)
 
-# SDL2
-set(SDL2_PATH "extern/SDL2")
-
 # Packages
+
+# Define SDL2_PATH here that will be used by FindSDL2 module
+set(SDL2_PATH "extern/SDL2")
 find_package(SDL2 REQUIRED)
-
-# Includes
-
-# SDL2_INCLUDE_DIR variable set by the FindSDL2 module (if it finds directory).
-include_directories(${SDL2_INCLUDE_DIR})
 
 # DYEngine Sources / Headers
 set(SOURCE_FILES
         src/Application.cpp
         src/WindowBase.cpp
         src/SDLWindow.cpp
-        src/Time.cpp src/EventSystemBase.cpp src/SDLEventSystem.cpp)
+        src/Time.cpp
+        src/EventSystemBase.cpp
+        src/SDLEventSystem.cpp)
 set(HEADER_FILES
         include/Application.h
         include/WindowBase.h
         include/SDLWindow.h
         include/Time.h
         include/Events/Event.h
-        include/Events/ApplicationEvent.h include/Input/KeyCode.h include/Events/KeyEvent.h include/Events/EventSystemBase.h include/Events/SDLEventSystem.h include/Base.h)
+        include/Events/ApplicationEvent.h
+        include/Input/KeyCode.h
+        include/Events/KeyEvent.h
+        include/Events/EventSystemBase.h
+        include/Events/SDLEventSystem.h
+        include/Base.h)
 
 # External Library
 add_subdirectory(extern/glad)
 add_subdirectory(extern/imgui)
+set(SDL2_gpu "extern/SDL2_gpu/SDL2_gpu/release/mingw32/libSDL2_gpu.a") # To be specified by platform later
 
 add_library(DYEngine STATIC
         ${SOURCE_FILES}
@@ -38,12 +41,13 @@ target_precompile_headers(DYEngine PRIVATE Precompiled.h)
 
 # Include Headers
 target_include_directories(DYEngine PUBLIC include)
-target_include_directories(DYEngine INTERFACE extern/SDL2/include)  # Should be hidden from the users
 
-target_include_directories(DYEngine PUBLIC extern/glad/include)
-
+# SDL2_INCLUDE_DIR variable set by the FindSDL2 module (if it finds directory).
+target_include_directories(DYEngine PRIVATE ${SDL2_INCLUDE_DIR})
+target_include_directories(DYEngine PRIVATE extern/SDL2_gpu/include)
+target_include_directories(DYEngine PRIVATE extern/glad/include)
 target_include_directories(DYEngine PUBLIC extern/imgui)
-target_include_directories(DYEngine PUBLIC extern/imgui/examples)
+target_include_directories(DYEngine PRIVATE extern/imgui/examples)
 
 # Link External Libraries with DYEngine lib
 target_link_libraries(DYEngine
