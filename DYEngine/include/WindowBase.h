@@ -28,9 +28,20 @@ namespace DYE
 
         virtual void OnUpdate() = 0;
 
+        virtual uint32_t GetWidth() const = 0;
+        virtual uint32_t GetHeight() const = 0;
+
         /// Get the pointer to the native window based on the platform library being used. ex. SDLWindow for Windows platform
         /// \return a pointer to the library native window object
         virtual void *GetNativeWindow() const = 0;
+
+        ///  Templated: Get the pointer to the native window based on the platform library being used. ex. SDLWindow for Windows platform
+        /// \return a typed pointer to the library native window object
+        template<typename T>
+        T* GetNativeWindow() const
+        {
+            return static_cast<T*>(GetNativeWindow());
+        }
 
         /// Create a window based on the property setup
         /// \param windowProperty the settings property for the created window (name, width, height)
