@@ -15,6 +15,10 @@ namespace DYE
 
         void OnUpdate() override;
 
+        uint32_t GetWidth() const override;
+
+        uint32_t GetHeight() const override;
+
         void *GetNativeWindow() const override { return m_Window; }
 
     private:

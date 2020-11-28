@@ -26,7 +26,7 @@ set(HEADER_FILES
         include/Events/ApplicationEvent.h include/Input/KeyCode.h include/Events/KeyEvent.h include/Events/EventSystemBase.h include/Events/SDLEventSystem.h include/Base.h)
 
 # External Library
-# Imgui
+add_subdirectory(extern/glad)
 add_subdirectory(extern/imgui)
 
 add_library(DYEngine STATIC
@@ -40,6 +40,8 @@ target_precompile_headers(DYEngine PRIVATE Precompiled.h)
 target_include_directories(DYEngine PUBLIC include)
 target_include_directories(DYEngine INTERFACE extern/SDL2/include)  # Should be hidden from the users
 
+target_include_directories(DYEngine PUBLIC extern/glad/include)
+
 target_include_directories(DYEngine PUBLIC extern/imgui)
 target_include_directories(DYEngine PUBLIC extern/imgui/examples)
 
@@ -47,4 +49,5 @@ target_include_directories(DYEngine PUBLIC extern/imgui/examples)
 target_link_libraries(DYEngine
         #${SDL2MAIN_LIBRARY}
         ${SDL2_LIBRARY} # SDL2MAIN_LIBRARY is also specified within SDL2_LIBRARY by the FindSDL2 module. It's needed for Windows specific main function. If I don't use FindSDL2 module, I have to link it as well.
+        glad
         imgui_sdl2)
