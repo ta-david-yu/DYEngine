@@ -1,6 +1,7 @@
 #include "Application.h"
 
 #include <SDL.h>
+#include <imgui.h>
 
 #include "Base.h"
 #include "Events/KeyEvent.h"

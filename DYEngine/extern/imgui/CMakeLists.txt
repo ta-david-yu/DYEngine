@@ -12,6 +12,10 @@ set(IMGUI_SDL2_IMPL_SOURCE_FILES
         "examples/imgui_impl_sdl.cpp"
         "examples/imgui_impl_opengl3.cpp")
 
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
+include_directories("../glad/include")
+include_directories("examples")
+
 add_library(${LIBRARY_NAME}
         ${IMGUI_SOURCE_FILES}
         ${IMGUI_SDL2_IMPL_SOURCE_FILES})
