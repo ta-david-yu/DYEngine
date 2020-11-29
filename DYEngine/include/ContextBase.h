@@ -4,6 +4,7 @@ namespace DYE
 {
     class WindowBase;
 
+    /// A Context stores the state associated with the renderer API, such as OpenGL. It always belongs to a WindowBase (life-time shorter than WindowBase)
     class ContextBase
     {
     public:

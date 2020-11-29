@@ -33,14 +33,14 @@ namespace DYE
 
         /// Get the pointer to the native window based on the platform library being used. ex. SDLWindow for Windows platform
         /// \return a pointer to the library native window object
-        virtual void *GetNativeWindow() const = 0;
+        virtual void *GetNativeWindowPtr() const = 0;
 
         ///  Templated: Get the pointer to the native window based on the platform library being used. ex. SDLWindow for Windows platform
         /// \return a typed pointer to the library native window object
         template<typename T>
-        T* GetNativeWindow() const
+        T* GetTypedNativeWindowPtr() const
         {
-            return static_cast<T*>(GetNativeWindow());
+            return static_cast<T*>(GetNativeWindowPtr());
         }
 
         /// A factory function that creates a window based on the platform with the given property setup
