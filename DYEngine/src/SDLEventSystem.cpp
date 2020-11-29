@@ -41,14 +41,6 @@ namespace DYE
                 {
                     m_EventHandler.operator()(eventPtr);
                 }
-
-                /*
-                // TODO: Typed Event Dispatcher
-                for (auto &listener : m_EventListeners)
-                {
-                    listener.operator()(eventPtr);
-                }
-                 */
             }
         }
     }

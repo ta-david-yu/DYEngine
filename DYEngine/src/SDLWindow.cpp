@@ -33,7 +33,6 @@ namespace DYE
 
     void SDLWindow::OnUpdate()
     {
-        // TODO: Update stuff in SDLWindow, refresh frame buffer and shit
         m_Context->SwapBuffers();
     }
 
