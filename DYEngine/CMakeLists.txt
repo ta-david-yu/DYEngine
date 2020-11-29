@@ -30,7 +30,6 @@ set(HEADER_FILES
 # External Library
 add_subdirectory(extern/glad)
 add_subdirectory(extern/imgui)
-set(SDL2_gpu "extern/SDL2_gpu/SDL2_gpu/release/mingw32/libSDL2_gpu.a") # To be specified by platform later
 
 add_library(DYEngine STATIC
         ${SOURCE_FILES}
@@ -44,7 +43,6 @@ target_include_directories(DYEngine PUBLIC include)
 
 # SDL2_INCLUDE_DIR variable set by the FindSDL2 module (if it finds directory).
 target_include_directories(DYEngine PRIVATE ${SDL2_INCLUDE_DIR})
-target_include_directories(DYEngine PRIVATE extern/SDL2_gpu/include)
 target_include_directories(DYEngine PRIVATE extern/glad/include)
 target_include_directories(DYEngine PUBLIC extern/imgui)
 target_include_directories(DYEngine PRIVATE extern/imgui/examples)
