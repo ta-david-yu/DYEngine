@@ -43,7 +43,7 @@ namespace DYE
             return static_cast<T*>(GetNativeWindow());
         }
 
-        /// Create a window based on the property setup
+        /// A factory function that creates a window based on the platform with the given property setup
         /// \param windowProperty the settings property for the created window (name, width, height)
         /// \return a unique pointer to the created window
         static std::unique_ptr<WindowBase> Create(const WindowProperty &windowProperty);
