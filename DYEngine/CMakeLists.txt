@@ -34,12 +34,6 @@ message(STATUS "Trace for CMAKE_SOURCE_DIR variable: ${CMAKE_SOURCE_DIR}")
 add_subdirectory(extern/glad)
 add_subdirectory(extern/imgui)
 
-# Explicitly specify paths for SDL_gpu. It's hardcoded and ugly but easy.
-#set(SDL2_GPU_LIBRARY_PATH "${CMAKE_CURRENT_SOURCE_DIR}/extern/SDL2_gpu/SDL2_gpu/release/mingw32/libSDL2_gpu.dll.a")
-#set(SDL2_GPU_INCLUDE_PATH "extern/SDL2_gpu/include")
-
-#include_directories(${SDL2_GPU_INCLUDE_PATH})
-
 # Build DYEngine library
 add_library(DYEngine STATIC
         ${SOURCE_FILES}
@@ -61,8 +55,6 @@ target_include_directories(DYEngine PRIVATE extern/imgui/examples)
 target_link_libraries(DYEngine
         #${SDL2MAIN_LIBRARY}
         ${SDL2_LIBRARY} # SDL2MAIN_LIBRARY is also specified within SDL2_LIBRARY by the FindSDL2 module. It's needed for Windows specific main function. If I don't use FindSDL2 module, I have to link it as well.
-#        ${SDL2_GPU_LIBRARY_PATH}
-#        SDL2_gpu
         glad
         imgui_sdl2)
 
