@@ -1,11 +1,13 @@
 #include "SDLContext.h"
 
-#include <SDL.h>
 #include "SDLWindow.h"
+
+#include <SDL.h>
+#include <glad/glad.h>
 
 namespace DYE
 {
-    SDLContext::SDLContext(SDLWindow *pSdlWindow) : m_pWindow(pSdlWindow)
+    SDLContext::SDLContext(SDLWindow *pSdlWindow) : m_pWindow(pSdlWindow), m_pNativeContext(nullptr)
     {
         // TODO: add code to check if pSdlWindow is valid
     }
@@ -25,6 +27,15 @@ namespace DYE
         {
             // MakeCurrent failed
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_GL_MakeCurrent failed: %s\n", SDL_GetError());
+        }
+
+        if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
+        {
+            SDL_Log("[ERROR] Couldn't initialize glad");
+        }
+        else
+        {
+            SDL_Log("[INFO] glad initialized");
         }
     }
 

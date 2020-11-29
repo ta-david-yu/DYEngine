@@ -45,16 +45,6 @@ namespace DYE
         auto window = m_Window->GetTypedNativeWindowPtr<SDL_Window>();
 
         /// TEMP
-        auto glsl_version = "#version 130";
-        if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
-        {
-            SDL_Log("[ERROR] Couldn't initialize glad");
-        }
-        else
-        {
-            SDL_Log("[INFO] glad initialized");
-        }
-
         glViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
 
         IMGUI_CHECKVERSION();
@@ -63,7 +53,8 @@ namespace DYE
 
         ImGui::StyleColorsDark();
 
-        ImGui_ImplSDL2_InitForOpenGL(m_Window->GetTypedNativeWindowPtr<SDL_Window>(), SDL_GL_GetCurrentContext());
+        auto glsl_version = "#version 130";
+        ImGui_ImplSDL2_InitForOpenGL(window, SDL_GL_GetCurrentContext());
         ImGui_ImplOpenGL3_Init(glsl_version);
 
         ImVec4 background = ImVec4(35/255.0f, 35/255.0f, 35/255.0f, 1.0f);
