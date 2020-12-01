@@ -127,9 +127,9 @@ namespace DYE
                         ImVec2(static_cast<float>(controls_width), static_cast<float>(sdl_height - 20)),
                         ImGuiCond_Always
                 );
+
                 // create a window and append into it
                 ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoResize);
-
                 ImGui::Dummy(ImVec2(0.0f, 1.0f));
                 ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "Platform");
                 ImGui::Text("%s", SDL_GetPlatform());
@@ -150,7 +150,6 @@ namespace DYE
                 ImGui::Text("DeltaTime: [%f]", m_Time.DeltaTime());
                 ImGui::Text("FixedDeltaTime: [%f]", m_Time.FixedDeltaTime());
                 ImGui::Text("FixedUpdateCounter: [%d]", _temp_fixedUpdateCounter);
-
                 ImGui::End();
             }
 
