@@ -11,7 +11,7 @@
 
 namespace DYE
 {
-    Application::Application(const std::string &windowName, int framePerSecond) : m_Time(framePerSecond)
+    Application::Application(const std::string &windowName, int fixedFramePerSecond) : m_Time(fixedFramePerSecond)
     {
         // TODO: wrap it so SDL is abstracted
         SDL_Init(SDL_INIT_VIDEO);
@@ -146,8 +146,9 @@ namespace DYE
                 ImGui::SameLine();
                 ImGui::Text("counter = %d", counter);
 
-                ImGui::Text("FPS: [%f]", fps);
+                ImGui::Text("FPS: [%f], expected FPS: [%d]", fps, m_Time.m_FixedFramePerSecond);
                 ImGui::Text("DeltaTime: [%f]", m_Time.DeltaTime());
+                ImGui::Text("FixedDeltaTime: [%f]", m_Time.FixedDeltaTime());
                 ImGui::Text("FixedUpdateCounter: [%d]", _temp_fixedUpdateCounter);
 
                 ImGui::End();
