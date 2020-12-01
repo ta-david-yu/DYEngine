@@ -1,6 +1,7 @@
 #pragma once
 
 #include "WindowBase.h"
+#include "ContextBase.h"
 
 class SDL_Window;
 
@@ -19,9 +20,13 @@ namespace DYE
 
         uint32_t GetHeight() const override;
 
-        void *GetNativeWindow() const override { return m_Window; }
+        void *GetNativeWindowPtr() const override { return m_pNativeWindow; }
 
     private:
-        SDL_Window *m_Window;
+        /// The pointer to the native window object
+        SDL_Window *m_pNativeWindow;
+
+        /// The underlying GraphicsContext
+        std::unique_ptr<ContextBase> m_Context;
     };
 }

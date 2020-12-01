@@ -11,7 +11,7 @@
 
 namespace DYE
 {
-    Application::Application(const std::string &windowName, int framePerSecond) : m_Time(framePerSecond)
+    Application::Application(const std::string &windowName, int fixedFramePerSecond) : m_Time(fixedFramePerSecond)
     {
         // TODO: wrap it so SDL is abstracted
         SDL_Init(SDL_INIT_VIDEO);
@@ -42,24 +42,9 @@ namespace DYE
 
     void Application::Run()
     {
-        auto window = m_Window->GetNativeWindow<SDL_Window>();
+        auto window = m_Window->GetTypedNativeWindowPtr<SDL_Window>();
 
         /// TEMP
-        auto glsl_version = "#version 130";
-        SDL_GLContext  glContext = SDL_GL_CreateContext(window);
-        SDL_GL_MakeCurrent(window, glContext);
-
-        SDL_GL_SetSwapInterval(1);
-
-        if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
-        {
-            SDL_Log("[ERROR] Couldn't initialize glad");
-        }
-        else
-        {
-            SDL_Log("[INFO] glad initialized");
-        }
-
         glViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
 
         IMGUI_CHECKVERSION();
@@ -68,7 +53,8 @@ namespace DYE
 
         ImGui::StyleColorsDark();
 
-        ImGui_ImplSDL2_InitForOpenGL(m_Window->GetNativeWindow<SDL_Window>(), glContext);
+        auto glsl_version = "#version 130";
+        ImGui_ImplSDL2_InitForOpenGL(window, SDL_GL_GetCurrentContext());
         ImGui_ImplOpenGL3_Init(glsl_version);
 
         ImVec4 background = ImVec4(35/255.0f, 35/255.0f, 35/255.0f, 1.0f);
@@ -141,9 +127,9 @@ namespace DYE
                         ImVec2(static_cast<float>(controls_width), static_cast<float>(sdl_height - 20)),
                         ImGuiCond_Always
                 );
+
                 // create a window and append into it
                 ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoResize);
-
                 ImGui::Dummy(ImVec2(0.0f, 1.0f));
                 ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "Platform");
                 ImGui::Text("%s", SDL_GetPlatform());
@@ -160,10 +146,10 @@ namespace DYE
                 ImGui::SameLine();
                 ImGui::Text("counter = %d", counter);
 
-                ImGui::Text("FPS: [%f]", fps);
+                ImGui::Text("FPS: [%f], expected FPS: [%d]", fps, m_Time.m_FixedFramePerSecond);
                 ImGui::Text("DeltaTime: [%f]", m_Time.DeltaTime());
+                ImGui::Text("FixedDeltaTime: [%f]", m_Time.FixedDeltaTime());
                 ImGui::Text("FixedUpdateCounter: [%d]", _temp_fixedUpdateCounter);
-
                 ImGui::End();
             }
 
@@ -187,7 +173,6 @@ namespace DYE
         ImGui_ImplSDL2_Shutdown();
         ImGui::DestroyContext();
 
-        SDL_GL_DeleteContext(glContext);
         //SDL_DestroyRenderer(_temp_renderer);
         SDL_Quit();
     }

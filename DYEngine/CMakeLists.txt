@@ -13,7 +13,7 @@ set(SOURCE_FILES
         src/SDLWindow.cpp
         src/Time.cpp
         src/EventSystemBase.cpp
-        src/SDLEventSystem.cpp)
+        src/SDLEventSystem.cpp src/ContextBase.cpp src/SDLContext.cpp)
 set(HEADER_FILES
         include/Application.h
         include/WindowBase.h
@@ -25,22 +25,26 @@ set(HEADER_FILES
         include/Events/KeyEvent.h
         include/Events/EventSystemBase.h
         include/Events/SDLEventSystem.h
-        include/Base.h)
+        include/Base.h include/ContextBase.h include/SDLContext.h)
+
+message(STATUS "Trace for CMAKE_CURRENT_SOURCE_DIR variable: ${CMAKE_CURRENT_SOURCE_DIR}")
+message(STATUS "Trace for CMAKE_SOURCE_DIR variable: ${CMAKE_SOURCE_DIR}")
 
 # External Library
 add_subdirectory(extern/glad)
 add_subdirectory(extern/imgui)
 
+# Build DYEngine library
 add_library(DYEngine STATIC
         ${SOURCE_FILES}
         ${HEADER_FILES})
+
 
 # Precompiled Header
 target_precompile_headers(DYEngine PRIVATE Precompiled.h)
 
 # Include Headers
 target_include_directories(DYEngine PUBLIC include)
-
 # SDL2_INCLUDE_DIR variable set by the FindSDL2 module (if it finds directory).
 target_include_directories(DYEngine PRIVATE ${SDL2_INCLUDE_DIR})
 target_include_directories(DYEngine PRIVATE extern/glad/include)
@@ -53,3 +57,4 @@ target_link_libraries(DYEngine
         ${SDL2_LIBRARY} # SDL2MAIN_LIBRARY is also specified within SDL2_LIBRARY by the FindSDL2 module. It's needed for Windows specific main function. If I don't use FindSDL2 module, I have to link it as well.
         glad
         imgui_sdl2)
+

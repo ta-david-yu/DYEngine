@@ -16,7 +16,9 @@ namespace DYE
 
         Time(const Time &) = delete;
 
-        explicit Time(uint32_t fps) : m_FPS(fps), m_LastTicks(0), m_TicksSinceStart(0), m_DeltaTicks(0) {}
+        ///
+        /// \param fixedFps The number of frames per second in FixedUpdate event, used to determine FixedDeltaTime()
+        explicit Time(uint32_t fixedFps) : m_FixedFramePerSecond(fixedFps), m_LastTicks(0), m_TicksSinceStart(0), m_DeltaTicks(0) {}
 
         /// The time in second that has passed since the last frame
         /// \return m_DeltaTicks / 1000.0
@@ -24,11 +26,11 @@ namespace DYE
 
         /// A fixed delta time in second for Physics Simulation, const value
         /// \return 1 / m_Fps
-        double FixedDeltaTime() const { return 1.0 / m_FPS; }
+        double FixedDeltaTime() const { return 1.0 / m_FixedFramePerSecond; }
 
     private:
         /// The number of frames per second, used to determine FixedDeltaTime()
-        uint32_t m_FPS;
+        uint32_t m_FixedFramePerSecond;
 
         /// The ticks when the last tickUpdate() or tickInit() is called
         uint32_t m_LastTicks;
