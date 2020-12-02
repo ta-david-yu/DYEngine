@@ -24,3 +24,6 @@ target_include_directories(${LIBRARY_NAME} INTERFACE "examples")
 
 target_link_libraries(${LIBRARY_NAME} ${SDL2_LIBRARY})
 target_link_libraries(${LIBRARY_NAME} glad)
+
+# Use glad as OpenGL Loader
+target_compile_definitions(${LIBRARY_NAME} PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLAD)

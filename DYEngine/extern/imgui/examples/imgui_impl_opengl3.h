@@ -81,8 +81,7 @@ IMGUI_IMPL_API void     ImGui_ImplOpenGL3_DestroyDeviceObjects();
     #error "Cannot detect OpenGL loader!"
 #endif
 #else
-    //#define IMGUI_IMPL_OPENGL_LOADER_GL3W   // Default to GL3W embedded in our repository
-    #define IMGUI_IMPL_OPENGL_LOADER_GLAD
+    #define IMGUI_IMPL_OPENGL_LOADER_GL3W   // Default to GL3W embedded in our repository
 #endif
 
 #endif
