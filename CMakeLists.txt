@@ -1,4 +1,4 @@
-project(TestApp)
+project(DYEngineRoot)
 
 cmake_minimum_required(VERSION 3.17)
 
@@ -17,10 +17,12 @@ elseif(CMAKE_BUILD_TYPE MATCHES Release)
 endif ()
 
 # Includes
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+#include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 # DYEngine
 add_subdirectory(DYEngine)
 
-add_executable(TestApp TestApp.cpp)
-target_link_libraries(TestApp DYEngine)
+# Sandbox executable
+add_subdirectory(Sandbox)
+
+# TODO: Build DYEditor

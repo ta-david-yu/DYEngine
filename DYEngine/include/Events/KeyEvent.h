@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Event.h"
-#include "DYEngine/include/Input/KeyCode.h"
+#include "Input/KeyCode.h"
 
 namespace DYE
 {
