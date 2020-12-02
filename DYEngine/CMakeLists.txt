@@ -25,7 +25,7 @@ set(HEADER_FILES
         include/Events/KeyEvent.h
         include/Events/EventSystemBase.h
         include/Events/SDLEventSystem.h
-        include/Base.h include/ContextBase.h include/SDLContext.h)
+        include/Base.h include/ContextBase.h include/SDLContext.h include/AppEntryPoint.h)
 
 message(STATUS "Trace for CMAKE_CURRENT_SOURCE_DIR variable: ${CMAKE_CURRENT_SOURCE_DIR}")
 message(STATUS "Trace for CMAKE_SOURCE_DIR variable: ${CMAKE_SOURCE_DIR}")

@@ -22,5 +22,5 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 # DYEngine
 add_subdirectory(DYEngine)
 
-add_executable(TestApp main.cpp)
+add_executable(TestApp TestApp.cpp)
 target_link_libraries(TestApp DYEngine)
