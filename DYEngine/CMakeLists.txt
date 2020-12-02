@@ -1,11 +1,5 @@
 project(DYEngine)
 
-# Packages
-
-# Define SDL2_PATH here that will be used by FindSDL2 module
-set(SDL2_PATH "extern/SDL2")
-find_package(SDL2 REQUIRED)
-
 # DYEngine Sources / Headers
 set(SOURCE_FILES
         src/Application.cpp
@@ -25,12 +19,19 @@ set(HEADER_FILES
         include/Events/KeyEvent.h
         include/Events/EventSystemBase.h
         include/Events/SDLEventSystem.h
-        include/Base.h include/ContextBase.h include/SDLContext.h)
+        include/Base.h include/ContextBase.h
+        include/SDLContext.h
+        include/AppEntryPoint.h)
 
-message(STATUS "Trace for CMAKE_CURRENT_SOURCE_DIR variable: ${CMAKE_CURRENT_SOURCE_DIR}")
-message(STATUS "Trace for CMAKE_SOURCE_DIR variable: ${CMAKE_SOURCE_DIR}")
+message(STATUS "DYEngine Source Files: ${SOURCE_FILES}")
+message(STATUS "DYEngine Header Files: ${HEADER_FILES}")
 
-# External Library
+# Packages
+# Define SDL2_PATH here that will be used by FindSDL2 module
+set(SDL2_PATH "extern/SDL2")
+find_package(SDL2 REQUIRED)
+
+# Build External Static Library
 add_subdirectory(extern/glad)
 add_subdirectory(extern/imgui)
 
@@ -39,11 +40,10 @@ add_library(DYEngine STATIC
         ${SOURCE_FILES}
         ${HEADER_FILES})
 
-
 # Precompiled Header
 target_precompile_headers(DYEngine PRIVATE Precompiled.h)
 
-# Include Headers
+# Include Headers to DYEngine
 target_include_directories(DYEngine PUBLIC include)
 # SDL2_INCLUDE_DIR variable set by the FindSDL2 module (if it finds directory).
 target_include_directories(DYEngine PRIVATE ${SDL2_INCLUDE_DIR})
@@ -56,5 +56,5 @@ target_link_libraries(DYEngine
         #${SDL2MAIN_LIBRARY}
         ${SDL2_LIBRARY} # SDL2MAIN_LIBRARY is also specified within SDL2_LIBRARY by the FindSDL2 module. It's needed for Windows specific main function. If I don't use FindSDL2 module, I have to link it as well.
         glad
-        imgui_sdl2)
+        imgui)
 

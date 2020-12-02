@@ -41,4 +41,7 @@ namespace DYE
         /// \return true if the event can be handled
         bool handleOnEvent(const std::shared_ptr<Event>& pEvent);
     };
+
+    // To be defined in CLIENT code
+    Application* CreateApplication();
 }
