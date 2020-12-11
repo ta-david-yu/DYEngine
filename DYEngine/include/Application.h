@@ -27,6 +27,10 @@ namespace DYE
         /// App Entrypoint
         void Run();
 
+    protected:
+        void pushLayer(std::shared_ptr<LayerBase> layer);
+        void pushOverlay(std::shared_ptr<LayerBase> overlay);
+
     private:
         /// The EventHandler that handles Events polled by m_EventSystem
         /// \param pEvent the received event pointer

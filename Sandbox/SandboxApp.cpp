@@ -1,6 +1,8 @@
 #include "AppEntryPoint.h"
 #include "Application.h"
 
+#include "SandboxLayer.h"
+
 namespace DYE
 {
     class SandboxApp final : public Application
@@ -12,7 +14,7 @@ namespace DYE
         explicit SandboxApp(const std::string &windowName, int fixedFramePerSecond = 60)
             : Application(windowName, fixedFramePerSecond)
         {
-
+            pushLayer(std::make_shared<SandboxLayer>());
         }
 
         ~SandboxApp() final

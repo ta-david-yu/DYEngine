@@ -7,7 +7,12 @@ set(SOURCE_FILES
         src/SDLWindow.cpp
         src/Time.cpp
         src/EventSystemBase.cpp
-        src/SDLEventSystem.cpp src/ContextBase.cpp src/SDLContext.cpp src/LayerBase.cpp src/LayerStack.cpp)
+        src/SDLEventSystem.cpp
+        src/ContextBase.cpp
+        src/SDLContext.cpp
+        src/LayerBase.cpp
+        src/LayerStack.cpp
+        )
 set(HEADER_FILES
         include/Application.h
         include/WindowBase.h
@@ -21,7 +26,10 @@ set(HEADER_FILES
         include/Events/SDLEventSystem.h
         include/Base.h include/ContextBase.h
         include/SDLContext.h
-        include/AppEntryPoint.h include/LayerBase.h include/LayerStack.h)
+        include/AppEntryPoint.h
+        include/LayerBase.h
+        include/LayerStack.h
+        )
 
 message(STATUS "DYEngine Source Files: ${SOURCE_FILES}")
 message(STATUS "DYEngine Header Files: ${HEADER_FILES}")
@@ -46,7 +54,7 @@ target_precompile_headers(DYEngine PRIVATE Precompiled.h)
 # Include Headers to DYEngine
 target_include_directories(DYEngine PUBLIC include)
 # SDL2_INCLUDE_DIR variable set by the FindSDL2 module (if it finds directory).
-target_include_directories(DYEngine PRIVATE ${SDL2_INCLUDE_DIR})
+target_include_directories(DYEngine PUBLIC ${SDL2_INCLUDE_DIR})     # This should be a private inclusion though, because of KeyCode.h implementation, this needs to be PUBLIC
 target_include_directories(DYEngine PRIVATE extern/glad/include)
 target_include_directories(DYEngine PUBLIC extern/imgui)
 target_include_directories(DYEngine PRIVATE extern/imgui/examples)

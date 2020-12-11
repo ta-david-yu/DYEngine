@@ -1,13 +1,10 @@
 #include "Application.h"
+#include "Base.h"
 
 #include <glad/glad.h>
 #include <SDL.h>
 #include <imgui_impl_sdl.h>
 #include <imgui_impl_opengl3.h>
-
-#include "Base.h"
-#include "Events/KeyEvent.h"
-#include "Events/ApplicationEvent.h"
 
 namespace DYE
 {
@@ -84,7 +81,7 @@ namespace DYE
             if (_temp_fpsAccumulator >= 0.25)
             {
                 fps = _temp_framesCounter / _temp_fpsAccumulator;
-                SDL_Log("%f", fps);
+                //SDL_Log("%f", fps);
 
                 _temp_framesCounter = 0;
                 _temp_fpsAccumulator = 0;
@@ -182,6 +179,17 @@ namespace DYE
         SDL_Quit();
     }
 
+
+    void Application::pushLayer(std::shared_ptr<LayerBase> layer)
+    {
+        m_LayerStack.PushLayer(layer);
+    }
+
+    void Application::pushOverlay(std::shared_ptr<LayerBase> overlay)
+    {
+        m_LayerStack.PushOverlay(overlay);
+    }
+
     bool Application::handleOnEvent(const std::shared_ptr<Event>& pEvent)
     {
         auto eventType = pEvent->GetEventType();
@@ -198,22 +206,6 @@ namespace DYE
             (*it)->OnEvent(pEvent);
         }
 
-        /*
-        switch (eventType)
-        {
-            case EventType::WindowClose:
-                m_IsRunning = false;
-                return true;
-            case EventType::KeyDown:
-                SDL_Log("KeyDown - %d", std::static_pointer_cast<KeyDownEvent>(pEvent)->GetKeyCode());
-                return true;
-            case EventType::KeyUp:
-                SDL_Log("KeyUp - %d", std::static_pointer_cast<KeyUpEvent>(pEvent)->GetKeyCode());
-                return true;
-            default:
-                break;
-        }
-         */
         return true;
     }
 

@@ -12,7 +12,7 @@ namespace DYE
         while (SDL_PollEvent(&event))
         {
             std::shared_ptr<Event> eventPtr;
-            bool handled = true;
+            bool catched = true;
             switch (event.type)
             {
                 case SDL_QUIT:
@@ -29,12 +29,12 @@ namespace DYE
                 default:
                     // Error
                     //SDL_Log("Unhandled SDL Event Type %d", event.type);
-                    handled = false;
+                    catched = false;
                     break;
             }
 
             // Dispatch event
-            if (handled)
+            if (catched)
             {
                 // Check if EventHandler is referring to a callable target
                 if (m_EventHandler)
