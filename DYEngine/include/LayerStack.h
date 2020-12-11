@@ -12,14 +12,20 @@ namespace DYE
         LayerStack() = default;
         ~LayerStack();
 
-        /// call OnAttach, push a layer on the top of layer but below the overlay
+        /// call layer->OnAttach, push layer on the top of layer but below the overlay
         /// \param layer
         void PushLayer(std::shared_ptr<LayerBase> layer);
+
+        /// call layer->OnDetach, pop layer
+        /// \param layer
         void PopLayer(std::shared_ptr<LayerBase>& layer);
 
-        /// call OnAttach, push a layer on the top of the stack (overlay)
-        /// \param layer
+        /// call overlay->OnAttach, push layer on the top of the stack (overlay)
+        /// \param overlay
         void PushOverlay(std::shared_ptr<LayerBase> overlay);
+
+        /// call overlay->OnDetach, pop layer
+        /// \param overlay
         void PopOverlay(std::shared_ptr<LayerBase>& overlay);
 
         std::vector<std::shared_ptr<LayerBase>>::iterator begin() { return m_Layers.begin(); }
