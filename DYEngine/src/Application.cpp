@@ -40,6 +40,11 @@ namespace DYE
 
     }
 
+    Application::~Application()
+    {
+
+    }
+
     void Application::Run()
     {
         auto window = m_Window->GetTypedNativeWindowPtr<SDL_Window>();
@@ -181,6 +186,19 @@ namespace DYE
     {
         auto eventType = pEvent->GetEventType();
 
+        EventDispatcher dispatcher(*pEvent);
+        dispatcher.Dispatch<WindowCloseEvent>(DYE_BIND_EVENT_FUNCTION(handleOnWindowClose));
+
+        // Event is passed from top to bottom layer
+        for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); it++)
+        {
+            // Has been handled, break the loop
+            if (pEvent->IsUsed())
+                break;
+            (*it)->OnEvent(pEvent);
+        }
+
+        /*
         switch (eventType)
         {
             case EventType::WindowClose:
@@ -195,6 +213,13 @@ namespace DYE
             default:
                 break;
         }
-        return false;
+         */
+        return true;
+    }
+
+    bool Application::handleOnWindowClose(const WindowCloseEvent &event)
+    {
+        m_IsRunning = false;
+        return true;
     }
 }

@@ -1,8 +1,10 @@
 #include "LayerBase.h"
 
+#include <utility>
+
 namespace DYE
 {
-    LayerBase::LayerBase(const std::string &name) : m_Name(name) {
+    LayerBase::LayerBase(std::string name) : m_Name(std::move(name)) {
 
     }
 }

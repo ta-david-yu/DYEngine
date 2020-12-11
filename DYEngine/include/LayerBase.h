@@ -2,15 +2,16 @@
 
 #include "Events/Event.h"
 
+#include <memory>
+
 namespace DYE
 {
-
     class LayerBase
     {
     public:
         /// Ctor
         /// \param name debug purpose name
-        LayerBase(const std::string& name = "Layer");
+        explicit LayerBase(std::string  name = "Layer");
         virtual ~LayerBase() = default;
 
         /// Called by LayerStack
