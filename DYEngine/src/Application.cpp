@@ -52,6 +52,7 @@ namespace DYE
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGuiIO& io = ImGui::GetIO(); (void)io;
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
         ImGui::StyleColorsDark();
 
@@ -144,6 +145,8 @@ namespace DYE
                 ImGui::Text("FixedDeltaTime: [%f]", m_Time.FixedDeltaTime());
                 ImGui::Text("FixedUpdateCounter: [%d]", _temp_fixedUpdateCounter);
                 ImGui::End();
+
+                ImGui::ShowDemoWindow();
             }
 
             // rendering
