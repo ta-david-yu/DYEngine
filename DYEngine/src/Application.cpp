@@ -62,31 +62,15 @@ namespace DYE
         ImVec4 background = ImVec4(35/255.0f, 35/255.0f, 35/255.0f, 1.0f);
         glClearColor(background.x, background.y, background.z, background.w);
 
-        double _temp_fpsAccumulator = 0;
-        int _temp_framesCounter = 0;
-        double fps = 0;
         int _temp_fixedUpdateCounter = 0;
         /// TEMP
 
         m_IsRunning = true;
-        double deltaTimeAccumulator = 0;
-
         m_Time.tickInit();
 
+        double deltaTimeAccumulator = 0;
         while (m_IsRunning)
         {
-            // FPS
-            _temp_framesCounter++;
-            _temp_fpsAccumulator += m_Time.DeltaTime();
-            if (_temp_fpsAccumulator >= 0.25)
-            {
-                fps = _temp_framesCounter / _temp_fpsAccumulator;
-                //SDL_Log("%f", fps);
-
-                _temp_framesCounter = 0;
-                _temp_fpsAccumulator = 0;
-            }
-
             m_EventSystem->PollEvent();
 
             // Main game loop
@@ -155,7 +139,7 @@ namespace DYE
                 ImGui::SameLine();
                 ImGui::Text("counter = %d", counter);
 
-                ImGui::Text("FPS: [%f], expected FPS: [%d]", fps, m_Time.m_FixedFramePerSecond);
+                ImGui::Text("expected FPS: [%d]", m_Time.m_FixedFramePerSecond);
                 ImGui::Text("DeltaTime: [%f]", m_Time.DeltaTime());
                 ImGui::Text("FixedDeltaTime: [%f]", m_Time.FixedDeltaTime());
                 ImGui::Text("FixedUpdateCounter: [%d]", _temp_fixedUpdateCounter);

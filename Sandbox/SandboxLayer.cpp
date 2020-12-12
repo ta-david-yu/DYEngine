@@ -14,12 +14,22 @@ namespace DYE
 
     void SandboxLayer::OnUpdate()
     {
-        SDL_Log("DeltaTime - %f", TIME.DeltaTime());
+        // FPS
+        m_FramesCounter++;
+        m_FpsAccumulator += TIME.DeltaTime();
+        if (m_FpsAccumulator >= 0.25)
+        {
+            double fps = m_FramesCounter / m_FpsAccumulator;
+            SDL_Log("Delta FPS: %f", fps);
+
+            m_FramesCounter = 0;
+            m_FpsAccumulator = 0;
+        }
     }
 
     void SandboxLayer::OnFixedUpdate()
     {
-        SDL_Log("FixedDeltaTime - %f", TIME.FixedDeltaTime());
+        //SDL_Log("FixedDeltaTime - %f", TIME.FixedDeltaTime());
     }
 
     bool SandboxLayer::handleOnKeyDown(const KeyDownEvent &event)

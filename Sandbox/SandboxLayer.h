@@ -14,5 +14,8 @@ namespace DYE
     private:
         bool handleOnKeyDown(const KeyDownEvent& event);
         bool handleOnKeyUp(const KeyUpEvent& event);
+
+        double m_FpsAccumulator = 0;
+        int m_FramesCounter = 0;
     };
 }
