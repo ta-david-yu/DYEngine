@@ -20,7 +20,9 @@ namespace DYE
         /// Called by LayerStack
         virtual void OnDetach() {}
 
-        virtual void OnOnUpdate() {}
+        virtual void OnFixedUpdate() {}
+
+        virtual void OnUpdate() {}
 
         virtual void OnImGui() {}
 

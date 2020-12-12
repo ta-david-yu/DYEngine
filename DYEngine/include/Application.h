@@ -42,7 +42,7 @@ namespace DYE
         /// \return true if the event can be handled
         bool handleOnWindowClose(const WindowCloseEvent& event);
 
-    private:
+    protected:
         /// The main rendering window
         std::unique_ptr<WindowBase> m_Window;
 
@@ -52,6 +52,7 @@ namespace DYE
         /// Time for counting delta time per frame
         Time m_Time;
 
+    private:
         LayerStack m_LayerStack;
 
         /// A Flag to show if the game is still running, when WindowCloseEvent is fired, it's set to false

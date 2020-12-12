@@ -94,12 +94,19 @@ namespace DYE
             while (deltaTimeAccumulator >= m_Time.FixedDeltaTime())
             {
                 _temp_fixedUpdateCounter += 1;
-                // TODO: FixedUpdate
+                for (auto& layer : m_LayerStack)
+                {
+                    layer->OnFixedUpdate();
+                }
 
                 deltaTimeAccumulator -= m_Time.FixedDeltaTime();
             }
 
             // TODO: Update
+            for (auto& layer : m_LayerStack)
+            {
+                layer->OnUpdate();
+            }
 
             // TODO: Render
 
@@ -159,7 +166,8 @@ namespace DYE
             ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-            SDL_GL_SwapWindow(window);
+            // swap buffers
+            m_Window->OnUpdate();
 
             /*
             SDL_SetRenderDrawColor(_temp_renderer, _temp_red, 0, 0, SDL_ALPHA_OPAQUE);

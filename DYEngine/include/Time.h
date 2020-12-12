@@ -2,6 +2,7 @@
 
 #include <cstdint>
 
+#define TIME Time::GetInstance()
 
 namespace DYE
 {
@@ -10,15 +11,12 @@ namespace DYE
     class Time
     {
         friend class Application;
-
     public:
+        static Time& GetInstance() { return *s_pInstance; }
+
         Time() = delete;
 
         Time(const Time &) = delete;
-
-        ///
-        /// \param fixedFps The number of frames per second in FixedUpdate event, used to determine FixedDeltaTime()
-        explicit Time(uint32_t fixedFps) : m_FixedFramePerSecond(fixedFps), m_LastTicks(0), m_TicksSinceStart(0), m_DeltaTicks(0) {}
 
         /// The time in second that has passed since the last frame
         /// \return m_DeltaTicks / 1000.0
@@ -29,6 +27,15 @@ namespace DYE
         double FixedDeltaTime() const { return 1.0 / m_FixedFramePerSecond; }
 
     private:
+        static Time* s_pInstance;
+
+        /// The created Time instance is assigned as the singleton instance
+        /// \param fixedFps The number of frames per second in FixedUpdate event, used to determine FixedDeltaTime()
+        explicit Time(uint32_t fixedFps) : m_FixedFramePerSecond(fixedFps), m_LastTicks(0), m_TicksSinceStart(0), m_DeltaTicks(0)
+        {
+            s_pInstance = this;
+        }
+
         /// The number of frames per second, used to determine FixedDeltaTime()
         uint32_t m_FixedFramePerSecond;
 

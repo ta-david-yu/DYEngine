@@ -1,5 +1,6 @@
 #include "Base.h"
 #include "SandboxLayer.h"
+#include "Time.h"
 
 namespace DYE
 {
@@ -26,5 +27,15 @@ namespace DYE
     {
         SDL_Log("Sandbox, KeyUp - %d", event.GetKeyCode());
         return true;
+    }
+
+    void SandboxLayer::OnUpdate()
+    {
+        SDL_Log("DeltaTime - %f", TIME.DeltaTime());
+    }
+
+    void SandboxLayer::OnFixedUpdate()
+    {
+        SDL_Log("FixedDeltaTime - %f", TIME.FixedDeltaTime());
     }
 }
