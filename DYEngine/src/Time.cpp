@@ -4,6 +4,8 @@
 
 namespace DYE
 {
+    Time* Time::s_pInstance = nullptr;
+
     void Time::tickInit()
     {
         m_TicksSinceStart = 0;
