@@ -20,7 +20,7 @@ namespace DYE
         if (m_FpsAccumulator >= 0.25)
         {
             double fps = m_FramesCounter / m_FpsAccumulator;
-            SDL_Log("Delta FPS: %f", fps);
+            //SDL_Log("Delta FPS: %f", fps);
 
             m_FramesCounter = 0;
             m_FpsAccumulator = 0;
