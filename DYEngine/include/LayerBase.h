@@ -11,7 +11,7 @@ namespace DYE
     public:
         /// Ctor
         /// \param name debug purpose name
-        explicit LayerBase(std::string  name = "Layer");
+        explicit LayerBase(std::string name = "Layer");
         virtual ~LayerBase() = default;
 
         /// Called by LayerStack

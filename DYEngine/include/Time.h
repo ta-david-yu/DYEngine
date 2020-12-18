@@ -26,6 +26,8 @@ namespace DYE
         /// \return 1 / m_Fps
         double FixedDeltaTime() const { return 1.0 / m_FixedFramePerSecond; }
 
+        uint32_t FixedFramePerSecond() const { return m_FixedFramePerSecond; }
+
     private:
         static Time* s_pInstance;
 

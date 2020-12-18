@@ -18,8 +18,6 @@ namespace DYE
             {
                 ImGui_ImplSDL2_ProcessEvent(&event);
             }
-            auto& io = ImGui::GetIO();
-
             std::shared_ptr<Event> eventPtr;
             bool caught = false;
 
@@ -35,12 +33,9 @@ namespace DYE
                     caught = true;
                     break;
                 case SDL_KEYUP:
-                    if (!(m_PreProcessImGuiEvent && io.WantCaptureKeyboard))
-                    {
-                        // static case SDL_KeyCode into DYE::KeyCode
-                        eventPtr.reset(new KeyUpEvent(static_cast<KeyCode>(event.key.keysym.sym)));
-                        caught = true;
-                    }
+                    // static case SDL_KeyCode into DYE::KeyCode
+                    eventPtr.reset(new KeyUpEvent(static_cast<KeyCode>(event.key.keysym.sym)));
+                    caught = true;
                     break;
                 case SDL_MOUSEBUTTONDOWN:
                     // TODO: Imgui Process, look at imgui_impl_sdl

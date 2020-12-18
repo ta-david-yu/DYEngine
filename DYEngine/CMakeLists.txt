@@ -12,7 +12,7 @@ set(SOURCE_FILES
         src/SDLContext.cpp
         src/LayerBase.cpp
         src/LayerStack.cpp
-        )
+        src/ImGuiLayer.cpp)
 set(HEADER_FILES
         include/Application.h
         include/WindowBase.h
@@ -29,7 +29,7 @@ set(HEADER_FILES
         include/AppEntryPoint.h
         include/LayerBase.h
         include/LayerStack.h
-        )
+        include/ImGuiLayer.h)
 
 message(STATUS "DYEngine Source Files: ${SOURCE_FILES}")
 message(STATUS "DYEngine Header Files: ${HEADER_FILES}")

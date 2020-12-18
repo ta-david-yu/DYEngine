@@ -68,10 +68,7 @@ namespace DYE
             return GetCategoryFlags() & static_cast<T>(category);
         }
 
-        bool IsUsed() const { return m_IsUsed; }
-
-    protected:
-        bool m_IsUsed = false;
+        bool IsUsed = false;
     };
 
     /// The helper class that dispatches the event
@@ -90,7 +87,7 @@ namespace DYE
         {
             if (m_Event.GetEventType() == T::GetStaticType())
             {
-                m_Event.m_IsUsed |= func(static_cast<T&>(m_Event));
+                m_Event.IsUsed |= func(static_cast<T&>(m_Event));
                 return true;
             }
             return false;

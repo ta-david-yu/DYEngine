@@ -14,7 +14,7 @@ namespace DYE
         explicit SandboxApp(const std::string &windowName, int fixedFramePerSecond = 60)
             : Application(windowName, fixedFramePerSecond)
         {
-            pushLayer(std::make_shared<SandboxLayer>());
+            pushLayer(std::make_shared<SandboxLayer>(m_Window.get()));
         }
 
         ~SandboxApp() final
