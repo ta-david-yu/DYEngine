@@ -86,8 +86,15 @@ namespace DYE
 
         if (ImGui::Button("Reset FixedUpdate Counter"))
         {
-            SDL_Log("Reset FixedUpdate Counter");
+            //SDL_Log("Reset FixedUpdate Counter");
+            DYE_ASSERT(m_FixedUpdateCounter % 2 == 0);
+            DYE_LOG("Reset Fixed Update Counter %d", m_FixedUpdateCounter);
             m_FixedUpdateCounter = 0;
+        }
+
+        if (ImGui::Button("Test Message Box Button"))
+        {
+            DYE_MSG_BOX(SDL_MESSAGEBOX_WARNING, "HAHA", "Test");
         }
 
         ImGui::End();
@@ -98,11 +105,7 @@ namespace DYE
 
     bool SandboxLayer::handleOnKeyDown(const KeyDownEvent &event)
     {
-        if (event.GetKeyCode() == KeyCode::Space)
-        {
-            //Logger::Log("You've pressed space!");
-            SDL_Log("You've pressed space!");
-        }
+        DYE_ASSERT(event.GetKeyCode() != KeyCode::Space);
 
         //Logger::Log("Sandbox, KeyDown - %d", event.GetKeyCode());
         SDL_Log("Sandbox, KeyDown - %d", event.GetKeyCode());

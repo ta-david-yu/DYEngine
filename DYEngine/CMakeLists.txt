@@ -12,7 +12,7 @@ set(SOURCE_FILES
         src/SDLContext.cpp
         src/LayerBase.cpp
         src/LayerStack.cpp
-        src/ImGuiLayer.cpp src/Loger.cpp)
+        src/ImGuiLayer.cpp src/Logger.cpp)
 set(HEADER_FILES
         include/Application.h
         include/WindowBase.h
