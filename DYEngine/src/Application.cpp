@@ -1,5 +1,6 @@
 #include "Application.h"
 #include "Base.h"
+#include "Logger.h"
 
 #include <glad/glad.h>
 #include <SDL.h>
@@ -13,6 +14,7 @@ namespace DYE
         // TODO: wrap it so SDL is abstracted
         SDL_Init(SDL_INIT_VIDEO);
         SDL_Log("Hello World");
+
 
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
