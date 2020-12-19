@@ -2,6 +2,7 @@
 #include "SandboxLayer.h"
 #include "Time.h"
 #include "WindowBase.h"
+#include "Logger.h"
 
 #include <imgui.h>
 
@@ -99,15 +100,18 @@ namespace DYE
     {
         if (event.GetKeyCode() == KeyCode::Space)
         {
+            //Logger::Log("You've pressed space!");
             SDL_Log("You've pressed space!");
         }
 
+        //Logger::Log("Sandbox, KeyDown - %d", event.GetKeyCode());
         SDL_Log("Sandbox, KeyDown - %d", event.GetKeyCode());
         return true;
     }
 
     bool SandboxLayer::handleOnKeyUp(const KeyUpEvent &event)
     {
+        //Logger::Log("Sandbox, KeyUp - %d", event.GetKeyCode());
         SDL_Log("Sandbox, KeyUp - %d", event.GetKeyCode());
         return true;
     }
