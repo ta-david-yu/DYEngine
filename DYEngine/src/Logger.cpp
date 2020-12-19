@@ -1,6 +1,4 @@
 #include "Logger.h"
-
-#include <SDL.h>
 #include <cstdarg>
 
 namespace DYE
