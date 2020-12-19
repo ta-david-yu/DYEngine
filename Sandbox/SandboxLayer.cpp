@@ -106,6 +106,7 @@ namespace DYE
     bool SandboxLayer::handleOnKeyDown(const KeyDownEvent &event)
     {
         DYE_ASSERT(event.GetKeyCode() != KeyCode::Space);
+        DYE_ASSERT_RELEASE(event.GetKeyCode() != KeyCode::Right);
 
         //Logger::Log("Sandbox, KeyDown - %d", event.GetKeyCode());
         SDL_Log("Sandbox, KeyDown - %d", event.GetKeyCode());

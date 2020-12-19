@@ -20,3 +20,5 @@
 #else
     #define DYE_ASSERT(condition)
 #endif
+
+#define DYE_ASSERT_RELEASE(condition) SDL_assert_release((condition))
