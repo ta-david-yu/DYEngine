@@ -1,13 +1,20 @@
 #pragma once
 
+#include <typeindex>
+#include <map>
 #include <string>
 
 namespace DYE
 {
+    class SceneLayer;
+    class ComponentBase;
+    class ComponentUpdaterBase;
+
     /// An entity holds an ID that corresponds to a collection of components with logic
     class Entity
     {
-        friend class SceneLayer;
+        friend SceneLayer;
+        friend ComponentUpdaterBase;
     public:
         /// Called by a factory when creating new ent
         /// \param id An unique runtime id, used to map components, constant across life time
@@ -17,10 +24,13 @@ namespace DYE
         const std::string& GetName() const { return m_Name; }
         void SetName(const std::string& name) { m_Name = name; }
 
-        int GetID() const { return m_ID; }
+        uint32_t GetID() const { return m_ID; }
 
     private:
         uint32_t m_ID;
         std::string m_Name;
+        std::multimap<std::type_index, std::weak_ptr<ComponentBase>> m_Components;
+
+        void addComponent(std::type_index compTypeID, std::weak_ptr<ComponentBase> component);
     };
 }

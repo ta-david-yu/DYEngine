@@ -3,6 +3,7 @@
 #include "Scene/SceneLayer.h"
 
 #include "SandboxLayer.h"
+#include "FrameCounterComponent.h"
 
 namespace DYE
 {
@@ -15,7 +16,29 @@ namespace DYE
         explicit SandboxApp(const std::string &windowName, int fixedFramePerSecond = 60)
             : Application(windowName, fixedFramePerSecond)
         {
-            pushLayer(std::make_shared<SceneLayer>(m_Window.get()));
+            auto sceneLayer = std::make_shared<SceneLayer>(m_Window.get());
+            pushLayer(sceneLayer);
+
+            /// Setup component updaters
+            auto frameCounterUpdater = sceneLayer->CreateAndRegisterGenericComponentUpdater(
+                    std::type_index(typeid(FrameCounterComponent)));
+
+            auto fixedFrameCounterUpdater = sceneLayer->CreateAndRegisterGenericComponentUpdater(
+                    std::type_index(typeid(FixedFrameCounterComponent)));
+
+            /// Create 3 entities and components
+            for (int i = 0; i < 3; i++)
+            {
+                auto frameCounterObj = sceneLayer->CreateEntity("Frame Counter Obj");
+
+                frameCounterUpdater.lock()->AttachEntityWithComponent(
+                        frameCounterObj,
+                        new FrameCounterComponent());
+
+                fixedFrameCounterUpdater.lock()->AttachEntityWithComponent(
+                        frameCounterObj,
+                        new FixedFrameCounterComponent());
+            }
         }
 
         ~SandboxApp() final

@@ -1,8 +1,95 @@
 #include "Scene/ComponentBase.h"
+#include "Scene/Entity.h"
+
+#include <algorithm>
+#include <utility>
+#include <SDL_log.h>
 
 namespace DYE
 {
-    ComponentUpdaterBase::ComponentUpdaterBase(uint32_t order) : m_UpdateOrder(order)
+    Entity * ComponentBase::GetEntityPtr() const
     {
+        if (m_Entity.expired())
+            return nullptr;
+        else
+            return m_Entity.lock().get();
+    }
+
+    ComponentUpdaterBase::ComponentUpdaterBase(ComponentTypeID typeID) : m_TypeID(typeID)
+    {
+    }
+
+    std::weak_ptr<ComponentBase> ComponentUpdaterBase::AttachEntityWithComponent(std::weak_ptr<Entity> entity,
+                                                         ComponentBase* component)
+    {
+        auto addedCompTypeID = std::type_index(typeid(*component));
+
+        if (addedCompTypeID != GetTypeID())
+        {
+            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "The attached component's type id {%s} doesn't match up with the updater's type id {%s}", addedCompTypeID.name(), GetTypeID().name());
+        }
+
+        std::shared_ptr<ComponentBase> sharedCompPtr(component);
+        std::weak_ptr<ComponentBase> weakCompPtr = sharedCompPtr;
+
+        /// attach component to the entity, assign entity reference to component
+        entity.lock()->addComponent(addedCompTypeID, sharedCompPtr);
+        component->m_Entity = entity;
+
+        /// call subclass implementation, for instance add the component to a list
+        attachEntityWithComponent(std::move(entity), std::move(sharedCompPtr));
+
+        return weakCompPtr;
+    }
+
+    GenericComponentUpdater::GenericComponentUpdater(ComponentTypeID typeID) : ComponentUpdaterBase(typeID)
+    {
+    }
+
+    void GenericComponentUpdater::UpdateComponents()
+    {
+        for (auto & pair : m_Components)
+        {
+            if (pair.second->GetIsEnabled())
+                pair.second->OnUpdate();
+        }
+    }
+
+    void GenericComponentUpdater::FixedUpdateComponents()
+    {
+        for (auto & pair : m_Components)
+        {
+            if (pair.second->GetIsEnabled())
+                pair.second->OnFixedUpdate();
+        }
+    }
+
+    void GenericComponentUpdater::attachEntityWithComponent(std::weak_ptr<Entity> entity,
+                                                            std::shared_ptr<ComponentBase> component)
+    {
+        // Add the entity/component to the list
+        auto entID = entity.lock()->GetID();
+        m_Components.emplace_back(entID, component);
+    }
+
+    bool GenericComponentUpdater::HasComponent(uint32_t entityID)
+    {
+        return std::any_of(m_Components.cbegin(), m_Components.cend(),
+                           [entityID](const ComponentPair& pair)
+                           {
+                               return pair.first == entityID;
+                           });
+    }
+
+    ComponentBase *GenericComponentUpdater::GetComponentWithEntityID(uint32_t entityID)
+    {
+        for (auto & pair : m_Components)
+        {
+            if (pair.first == entityID)
+            {
+                return pair.second.get();
+            }
+        }
+        return nullptr;
     }
 }
