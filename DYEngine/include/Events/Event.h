@@ -62,7 +62,7 @@ namespace DYE
         /// Return the debug message for the Event
         virtual std::string ToString() const { return GetName(); }
 
-        bool IsInCategory(EventCategory category)
+        bool IsInCategory(EventCategory category) const
         {
             using T = std::underlying_type_t <EventCategory>;
             return GetCategoryFlags() & static_cast<T>(category);
@@ -75,7 +75,7 @@ namespace DYE
     class EventDispatcher
     {
     public:
-        EventDispatcher(Event& event) : m_Event(event) {}
+        explicit EventDispatcher(Event& event) : m_Event(event) {}
 
         ///
         /// \tparam T The type of the Event
