@@ -56,6 +56,21 @@ namespace DYE
         /// \return a raw pointer to the updater. If the updater of the given type is not registered, return nullptr
         ComponentUpdaterBase* GetComponentUpdaterOfType(ComponentTypeID typeID);
 
+        /// Create a component and attach it to the entity. If an updater with the given typeID exists, register the component to it. Otherwise, a new generic updater will be instantiated and registered
+        /// \tparam T the type of the component
+        /// \param entity the to-be-attached-to entity
+        /// \param typeID the typeID that is used to find/initialize the updater
+        /// \return a weak pointer to the newly created component
+        template<typename T>
+        std::weak_ptr<ComponentBase> LazyAddComponentToEntity(std::weak_ptr<Entity> entity, ComponentTypeID typeID);
+
+        /// Create a component and attach it to the entity. If an updater with the given typeid(componentType) exists, register the component to it. Otherwise, a new generic updater will be instantiated and registered
+        /// \tparam T the type of the component
+        /// \param entity the to-be-attached-to entity
+        /// \return a weak pointer to the newly created component
+        template<typename T>
+        std::weak_ptr<ComponentBase> LazyAddComponentToEntity(std::weak_ptr<Entity> entity);
+
     private:
         WindowBase* m_pWindow;
 
@@ -85,4 +100,36 @@ namespace DYE
             }
         }
     };
+
+
+    template<typename T>
+    std::weak_ptr<ComponentBase> SceneLayer::LazyAddComponentToEntity(std::weak_ptr<Entity> entity, ComponentTypeID typeID)
+    {
+        auto updater = GetComponentUpdaterOfType(typeID);
+
+        // if it doesn't exist already, create a new one
+        if (updater == nullptr)
+        {
+            updater = CreateAndRegisterGenericComponentUpdater(typeID).lock().get();
+        }
+
+        return updater->AttachEntityWithComponent(entity, new T());
+    }
+
+    template<typename T>
+    std::weak_ptr<ComponentBase> SceneLayer::LazyAddComponentToEntity(std::weak_ptr<Entity> entity)
+    {
+        auto pComp = new T();
+        ComponentTypeID typeID = ComponentTypeID(typeid(*pComp));
+
+        auto updater = GetComponentUpdaterOfType(typeID);
+
+        // if it doesn't exist already, create a new one
+        if (updater == nullptr)
+        {
+            updater = CreateAndRegisterGenericComponentUpdater(typeID).lock().get();
+        }
+
+        return updater->AttachEntityWithComponent(entity, pComp);
+    }
 }

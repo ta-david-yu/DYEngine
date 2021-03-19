@@ -19,25 +19,30 @@ namespace DYE
             auto sceneLayer = std::make_shared<SceneLayer>(m_Window.get());
             pushLayer(sceneLayer);
 
-            /// Setup component updaters
+            /// Manully setup component updaters (manual order)
+            /*
             auto frameCounterUpdater = sceneLayer->CreateAndRegisterGenericComponentUpdater(
                     std::type_index(typeid(FrameCounterComponent)));
 
             auto fixedFrameCounterUpdater = sceneLayer->CreateAndRegisterGenericComponentUpdater(
                     std::type_index(typeid(FixedFrameCounterComponent)));
-
+            */
             /// Create 3 entities and components
             for (int i = 0; i < 3; i++)
             {
-                auto frameCounterObj = sceneLayer->CreateEntity("Frame Counter Obj");
+                auto frameCounterEnt = sceneLayer->CreateEntity("Frame Counter Ent");
 
+                sceneLayer->LazyAddComponentToEntity<FrameCounterComponent>(frameCounterEnt);
+                sceneLayer->LazyAddComponentToEntity<FixedFrameCounterComponent>(frameCounterEnt);
+
+                /*
                 frameCounterUpdater.lock()->AttachEntityWithComponent(
-                        frameCounterObj,
+                        frameCounterEnt,
                         new FrameCounterComponent());
-
                 fixedFrameCounterUpdater.lock()->AttachEntityWithComponent(
-                        frameCounterObj,
+                        frameCounterEnt,
                         new FixedFrameCounterComponent());
+                */
             }
         }
 

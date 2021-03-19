@@ -31,6 +31,9 @@ namespace DYE
         std::string m_Name;
         std::multimap<std::type_index, std::weak_ptr<ComponentBase>> m_Components;
 
+        /// Add a component to the map
+        /// \param compTypeID
+        /// \param component
         void addComponent(std::type_index compTypeID, std::weak_ptr<ComponentBase> component);
     };
 }

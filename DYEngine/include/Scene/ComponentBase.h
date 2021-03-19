@@ -19,6 +19,9 @@ namespace DYE
         friend SceneLayer;
         friend ComponentUpdaterBase;
     public:
+        ComponentBase() = default;
+        virtual ~ComponentBase() = default;
+
         virtual void OnUpdate() = 0;
         virtual void OnFixedUpdate() {}
 
