@@ -16,6 +16,12 @@ namespace DYE
         int FrameCounter = 0;
     };
 
+    class Subclass_FrameCounterComponent : public FrameCounterComponent
+    {
+    public:
+        Subclass_FrameCounterComponent() = default;
+    };
+
     class FixedFrameCounterComponent : public ComponentBase
     {
     public:

@@ -35,11 +35,38 @@ namespace DYE
         entity.lock()->addComponent(addedCompTypeID, sharedCompPtr);
         component->m_Entity = entity;
 
+        /// Add the entity/component to the list
+        auto entID = entity.lock()->GetID();
+        m_Components.emplace_back(entID, sharedCompPtr);
+
         /// call subclass implementation, for instance add the component to a list
         attachEntityWithComponent(std::move(entity), std::move(sharedCompPtr));
 
         return weakCompPtr;
     }
+
+    bool ComponentUpdaterBase::EntityHasComponent(uint32_t entityID)
+    {
+        return std::any_of(m_Components.cbegin(), m_Components.cend(),
+                           [entityID](const ComponentPair& pair)
+                           {
+                               return pair.first == entityID;
+                           });
+    }
+
+    ComponentBase *ComponentUpdaterBase::GetComponentOfEntity(uint32_t entityID)
+    {
+        for (auto & pair : m_Components)
+        {
+            if (pair.first == entityID)
+            {
+                return pair.second.get();
+            }
+        }
+        return nullptr;
+    }
+
+    //
 
     GenericComponentUpdater::GenericComponentUpdater(ComponentTypeID typeID) : ComponentUpdaterBase(typeID)
     {
@@ -63,35 +90,6 @@ namespace DYE
         }
     }
 
-    void GenericComponentUpdater::attachEntityWithComponent(std::weak_ptr<Entity> entity,
-                                                            std::shared_ptr<ComponentBase> component)
-    {
-        // Add the entity/component to the list
-        auto entID = entity.lock()->GetID();
-        m_Components.emplace_back(entID, component);
-    }
-
-    bool GenericComponentUpdater::EntityHasComponent(uint32_t entityID)
-    {
-        return std::any_of(m_Components.cbegin(), m_Components.cend(),
-                           [entityID](const ComponentPair& pair)
-                           {
-                               return pair.first == entityID;
-                           });
-    }
-
-    ComponentBase *GenericComponentUpdater::GetComponentOfEntity(uint32_t entityID)
-    {
-        for (auto & pair : m_Components)
-        {
-            if (pair.first == entityID)
-            {
-                return pair.second.get();
-            }
-        }
-        return nullptr;
-    }
-
     void GenericComponentUpdater::RemoveComponentsOfEntity(uint32_t entityID)
     {
         m_Components.erase(
@@ -102,6 +100,7 @@ namespace DYE
                         {
                             return compPair.first == entityID;
                         }), m_Components.end());
+        /// TODO: better erase below
         /*
         for (auto it = m_Components.begin(); it != m_Components.end(); it++) {
             // remove components that has the given entityID

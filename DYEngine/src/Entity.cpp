@@ -9,8 +9,20 @@ namespace DYE
     {
     }
 
-    void Entity::addComponent(std::type_index compTypeID, std::weak_ptr<ComponentBase> component)
+    std::tuple<bool, std::weak_ptr<ComponentBase>> Entity::GetComponent(std::type_index compTypeID)
     {
-        m_Components.emplace(compTypeID, component);
+        for (auto & pair : m_Components)
+        {
+            if (pair.first == compTypeID)
+            {
+                return {true, pair.second};
+            }
+        }
+        return {false, std::weak_ptr<ComponentBase>{}};
+    }
+
+    void Entity::addComponent(std::type_index compTypeID, const std::weak_ptr<ComponentBase>& component)
+    {
+        m_Components.emplace_back(compTypeID, component);
     }
 }

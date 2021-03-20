@@ -1,9 +1,11 @@
-#include "Base.h"
 #include "Scene/SceneLayer.h"
+
+#include "Base.h"
 #include "Time.h"
 #include "WindowBase.h"
 #include "Logger.h"
 #include "Scene/Entity.h"
+#include "Scene/Transform.h"
 #include "Util/Type.h"
 
 #include <algorithm>
@@ -13,11 +15,18 @@ namespace DYE
 {
     SceneLayer::SceneLayer(WindowBase *pWindow) : m_pWindow(pWindow)
     {
-
+        SetupDefaultUpdaters();
     }
 
     SceneLayer::~SceneLayer()
     {
+    }
+
+    void SceneLayer::SetupDefaultUpdaters()
+    {
+        auto transformUpdater = std::make_shared<TransformUpdater>(ComponentTypeID(typeid(Transform)));
+        m_TransformUpdater = transformUpdater;
+        RegisterComponentUpdater(std::move(transformUpdater));
     }
 
     void SceneLayer::OnEvent(const std::shared_ptr<Event> &pEvent)
@@ -183,8 +192,7 @@ namespace DYE
                             const auto &updater = m_ComponentUpdaters[i];
 
                             char updaterLabel[128];
-                            sprintf(updaterLabel, "%s [%s]##%d", demangleCTypeName(updater->GetTypeID().name()).c_str(),
-                                    getTypeName(*updater).c_str(), i);
+                            sprintf(updaterLabel, "%d: %s [%s]##%d", i, demangleCTypeName(updater->GetTypeID().name()).c_str(), getTypeName(*updater).c_str(), i);
                             if (ImGui::Selectable(updaterLabel, selectedUpdaterIndex == i))
                             {
                                 selectedUpdaterIndex = i;
@@ -208,14 +216,11 @@ namespace DYE
 
                         // Updater Comps: Left
                         {
-
                             ImGui::BeginChild("updater components list view", ImVec2(compListViewWidth, 0), true);
 
                             for (int i = 0; i < updater->m_Components.size(); i++)
                             {
                                 const auto& compPair = updater->m_Components[i];
-
-                                //ImGui::Text("%s", compPair.second->GetEntityPtr()->GetName().c_str());
 
                                 char updaterCompLabel[128];
                                 sprintf(updaterCompLabel, "%s##%d", compPair.second->GetEntityPtr()->GetName().c_str(), selectedUpdaterIndex);
@@ -276,14 +281,14 @@ namespace DYE
             }
         }
         ImGui::End();
-
-
-        ImGui::ShowDemoWindow();
     }
 
     std::weak_ptr<Entity> SceneLayer::CreateEntity(const std::string& name)
     {
-        auto [entityItr, success] = m_Entities.insert({m_EntityIDCounter, std::make_shared<Entity>(m_EntityIDCounter, name)});
+        auto entity = std::make_shared<Entity>(m_EntityIDCounter, name);
+        LazyAddComponentToEntity<Transform>(entity);
+
+        auto [entityItr, success] = m_Entities.insert({m_EntityIDCounter, std::move(entity)});
         m_EntityIDCounter++;
         return entityItr->second;
     }
@@ -298,6 +303,7 @@ namespace DYE
         for (const auto& updater : m_ComponentUpdaters)
         {
             updater->RemoveComponentsOfEntity(entityID);
+            /// faster remove below
             /*
             /// If the entity has a component updated by this updater, remove it from the updater list
             if (entity->m_Components.find(updater->GetTypeID()) != entity->m_Components.cend())

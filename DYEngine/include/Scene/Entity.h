@@ -2,7 +2,10 @@
 
 #include <typeindex>
 #include <map>
+#include <vector>
 #include <string>
+#include <memory>
+#include <tuple>
 
 namespace DYE
 {
@@ -26,14 +29,40 @@ namespace DYE
 
         uint32_t GetID() const { return m_ID; }
 
+        /// Get Component of the given typeID
+        /// \param compTypeID
+        /// \return true if the entity has the given component, otherwise false.
+        /// In the case when the first return value is true, the second return value is the first component of the given type
+        std::tuple<bool, std::weak_ptr<ComponentBase>> GetComponent(std::type_index compTypeID);
+
+        /// Get Component or its subclass
+        /// \tparam T The type of component
+        /// \return true if the entity has the given component (or subclass), otherwise false.
+        /// In the case when the first return value is true, the second return value is the first component of the given type (or subclass)
+        template<typename T>
+        std::tuple<bool, std::weak_ptr<T>> GetComponent()
+        {
+            for (const auto & pair : m_Components)
+            {
+                auto comp = pair.second.lock();
+                auto castedComp = std::dynamic_pointer_cast<T>(comp);
+                if (castedComp)
+                {
+                    return {true, castedComp};
+                }
+            }
+            return {false, std::weak_ptr<T>{}};
+        }
+
     private:
         uint32_t m_ID;
         std::string m_Name;
-        std::multimap<std::type_index, std::weak_ptr<ComponentBase>> m_Components;
+        //std::multimap<std::type_index, std::weak_ptr<ComponentBase>> m_Components;
+        std::vector<std::pair<std::type_index, std::weak_ptr<ComponentBase>>> m_Components;
 
         /// Add a component to the map
         /// \param compTypeID
         /// \param component
-        void addComponent(std::type_index compTypeID, std::weak_ptr<ComponentBase> component);
+        void addComponent(std::type_index compTypeID, const std::weak_ptr<ComponentBase>& component);
     };
 }

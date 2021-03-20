@@ -58,17 +58,17 @@ namespace DYE
         /// \param entity the entity to be attached to
         /// \param component the component to be attached and registered
         /// \return a weak pointer to the component
-        virtual std::weak_ptr<ComponentBase> AttachEntityWithComponent(std::weak_ptr<Entity> entity, ComponentBase* component);
+        std::weak_ptr<ComponentBase> AttachEntityWithComponent(std::weak_ptr<Entity> entity, ComponentBase* component);
 
         /// Check if an entity has the component that belongs to this updater
         /// \param entityId
         /// \return return true if the given entity id has the component, otherwise false
-        virtual bool EntityHasComponent(uint32_t entityID) = 0;
+        bool EntityHasComponent(uint32_t entityID);
 
         /// Get the first raw pointer to the component attached to the given entity id in the list
         /// \param entityID
         /// \return the raw pointer to the component if the entity has the component, otherwise null ptr
-        virtual ComponentBase* GetComponentOfEntity(uint32_t entityID) = 0;
+        ComponentBase* GetComponentOfEntity(uint32_t entityID);
 
         /// Remove all the components that are attached to the entity with the given entityID
         /// \param entityID 
@@ -85,7 +85,7 @@ namespace DYE
 
         std::vector<ComponentPair> m_Components;
 
-        virtual void attachEntityWithComponent(std::weak_ptr<Entity> entity, std::shared_ptr<ComponentBase> component) = 0;
+        virtual void attachEntityWithComponent(const std::weak_ptr<Entity>& entity, const std::shared_ptr<ComponentBase>& component) { };
     };
 
     /// The single generic component updater, responsible for one generic custom component
@@ -97,11 +97,6 @@ namespace DYE
         void UpdateComponents() override;
         void FixedUpdateComponents() override;
 
-        bool EntityHasComponent(uint32_t entityID) override;
-        ComponentBase * GetComponentOfEntity(uint32_t entityID) override;
         void RemoveComponentsOfEntity(uint32_t entityID) override;
-
-    private:
-        void attachEntityWithComponent(std::weak_ptr<Entity> entity, std::shared_ptr<ComponentBase> component) override;
     };
 }

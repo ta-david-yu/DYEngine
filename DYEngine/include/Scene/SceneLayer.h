@@ -12,6 +12,7 @@ namespace DYE
 {
     class Entity;
     class ComponentUpdaterBase;
+    class TransformUpdater;
     class WindowBase;
 
     /// A Layer that holds a scene + entity-component system
@@ -21,6 +22,9 @@ namespace DYE
         explicit SceneLayer(WindowBase* pWindow);
         SceneLayer() = delete;
         ~SceneLayer();
+
+        /// Setup some of the default and built-in updaters, such as TransformUpdater, RendererUpdater
+        void SetupDefaultUpdaters();
 
         void OnEvent(const std::shared_ptr<Event> &pEvent) override;
         void OnUpdate() override;
@@ -82,6 +86,9 @@ namespace DYE
         /// \param sharedPtr2Entity a shared_ptr to Entity
         std::map<uint32_t, std::shared_ptr<Entity>> m_Entities;
         //std::vector<std::shared_ptr<Entity>> m_Entities;
+
+        // Important Updaters
+        std::weak_ptr<TransformUpdater> m_TransformUpdater;
 
         /// A list of pointers to registered component updaters, it's raw because the life time of them is the same as the scene layer
         std::vector<std::shared_ptr<ComponentUpdaterBase>> m_ComponentUpdaters;
