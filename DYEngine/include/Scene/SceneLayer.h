@@ -34,12 +34,12 @@ namespace DYE
 
         /// Delayed destroy an entity with the given id at the end of this frame
         /// \param entityID
-        void DestroyEntity(uint32_t entityID);
+        void ImmediateDestroyEntity(uint32_t entityID);
 
         /// Get the entity with the given id
         /// \param id
         /// \return a raw pointer to the entity. Return nullptr if the entity with the given id doesn't exist
-        Entity* GetEntity(int id);
+        Entity* GetEntity(uint32_t id);
 
         /// Create a generic updater that is responsible for updating the components of the given component type id
         /// \param typeID type_index of the component type
@@ -76,7 +76,12 @@ namespace DYE
 
         /// The latest created entity's id
         uint32_t m_EntityIDCounter = 0;
-        std::vector<std::shared_ptr<Entity>> m_Entities;
+
+        ///
+        /// \param uint32_t unique entityID
+        /// \param sharedPtr2Entity a shared_ptr to Entity
+        std::map<uint32_t, std::shared_ptr<Entity>> m_Entities;
+        //std::vector<std::shared_ptr<Entity>> m_Entities;
 
         /// A list of pointers to registered component updaters, it's raw because the life time of them is the same as the scene layer
         std::vector<std::shared_ptr<ComponentUpdaterBase>> m_ComponentUpdaters;

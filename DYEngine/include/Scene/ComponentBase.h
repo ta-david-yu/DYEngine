@@ -40,7 +40,12 @@ namespace DYE
     /// The abstract base interface for any component updater that is responsible for updating a list of components. It shouldn't be inherited directly.
     class ComponentUpdaterBase
     {
+        friend SceneLayer;
     public:
+        /// \param uint32_t entityID
+        /// \param shared_ptr  to the component
+        using ComponentPair = std::pair<uint32_t, std::shared_ptr<ComponentBase>>;
+
         ///
         /// \param order the update order of this updater in a scene layer
         explicit ComponentUpdaterBase(ComponentTypeID typeID);
@@ -58,22 +63,27 @@ namespace DYE
         /// Check if an entity has the component that belongs to this updater
         /// \param entityId
         /// \return return true if the given entity id has the component, otherwise false
-        virtual bool HasComponent(uint32_t entityID) = 0;
+        virtual bool EntityHasComponent(uint32_t entityID) = 0;
 
         /// Get the first raw pointer to the component attached to the given entity id in the list
         /// \param entityID
         /// \return the raw pointer to the component if the entity has the component, otherwise null ptr
-        virtual ComponentBase* GetComponentWithEntityID(uint32_t entityID) = 0;
+        virtual ComponentBase* GetComponentOfEntity(uint32_t entityID) = 0;
 
-
+        /// Remove all the components that are attached to the entity with the given entityID
+        /// \param entityID 
+        virtual void RemoveComponentsOfEntity(uint32_t entityID) = 0;
+        
+        
         /// Get the unique type identifier of the component managed by this updater
         /// \return
         ComponentTypeID GetTypeID() const { return m_TypeID; }
+
     protected:
         /// An unique type identifier of the component managed by this updater
         ComponentTypeID m_TypeID;
-        /// Update Order in the SceneLayer, the smaller the value, the earlier the component updater get updated in a loop. It's always unique
-        uint32_t m_UpdateOrder = 0;
+
+        std::vector<ComponentPair> m_Components;
 
         virtual void attachEntityWithComponent(std::weak_ptr<Entity> entity, std::shared_ptr<ComponentBase> component) = 0;
     };
@@ -81,20 +91,17 @@ namespace DYE
     /// The single generic component updater, responsible for one generic custom component
     class GenericComponentUpdater final : public ComponentUpdaterBase
     {
-        /// \param uint32_t entityID
-        /// \param shared_ptr  to the component
-        using ComponentPair = std::pair<uint32_t, std::shared_ptr<ComponentBase>>;
     public:
         explicit GenericComponentUpdater(ComponentTypeID typeID);
 
         void UpdateComponents() override;
         void FixedUpdateComponents() override;
 
-        bool HasComponent(uint32_t entityID) override;
-        ComponentBase * GetComponentWithEntityID(uint32_t entityID) override;
+        bool EntityHasComponent(uint32_t entityID) override;
+        ComponentBase * GetComponentOfEntity(uint32_t entityID) override;
+        void RemoveComponentsOfEntity(uint32_t entityID) override;
 
     private:
-        std::vector<ComponentPair> m_Components;
         void attachEntityWithComponent(std::weak_ptr<Entity> entity, std::shared_ptr<ComponentBase> component) override;
     };
 }

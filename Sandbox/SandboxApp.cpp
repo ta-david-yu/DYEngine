@@ -27,13 +27,21 @@ namespace DYE
             auto fixedFrameCounterUpdater = sceneLayer->CreateAndRegisterGenericComponentUpdater(
                     std::type_index(typeid(FixedFrameCounterComponent)));
             */
-            /// Create 3 entities and components
-            for (int i = 0; i < 3; i++)
+            /// Create entities and components
+            sceneLayer->CreateEntity("Empty Ent");
+            for (int i = 0; i < 5; i++)
             {
-                auto frameCounterEnt = sceneLayer->CreateEntity("Frame Counter Ent");
+                auto frameCounterEnt = sceneLayer->CreateEntity("Frame Counter Ent " + std::to_string(i));
 
-                sceneLayer->LazyAddComponentToEntity<FrameCounterComponent>(frameCounterEnt);
-                sceneLayer->LazyAddComponentToEntity<FixedFrameCounterComponent>(frameCounterEnt);
+                if (i % 2 == 0)
+                {
+                    sceneLayer->LazyAddComponentToEntity<FrameCounterComponent>(frameCounterEnt);
+                    sceneLayer->LazyAddComponentToEntity<FixedFrameCounterComponent>(frameCounterEnt);
+                }
+                else
+                {
+                    sceneLayer->LazyAddComponentToEntity<FixedFrameCounterComponent>(frameCounterEnt);
+                }
 
                 /*
                 frameCounterUpdater.lock()->AttachEntityWithComponent(

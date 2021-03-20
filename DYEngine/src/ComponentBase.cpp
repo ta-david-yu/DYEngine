@@ -2,7 +2,6 @@
 #include "Scene/Entity.h"
 
 #include <algorithm>
-#include <utility>
 #include <SDL_log.h>
 
 namespace DYE
@@ -72,7 +71,7 @@ namespace DYE
         m_Components.emplace_back(entID, component);
     }
 
-    bool GenericComponentUpdater::HasComponent(uint32_t entityID)
+    bool GenericComponentUpdater::EntityHasComponent(uint32_t entityID)
     {
         return std::any_of(m_Components.cbegin(), m_Components.cend(),
                            [entityID](const ComponentPair& pair)
@@ -81,7 +80,7 @@ namespace DYE
                            });
     }
 
-    ComponentBase *GenericComponentUpdater::GetComponentWithEntityID(uint32_t entityID)
+    ComponentBase *GenericComponentUpdater::GetComponentOfEntity(uint32_t entityID)
     {
         for (auto & pair : m_Components)
         {
@@ -91,5 +90,27 @@ namespace DYE
             }
         }
         return nullptr;
+    }
+
+    void GenericComponentUpdater::RemoveComponentsOfEntity(uint32_t entityID)
+    {
+        m_Components.erase(
+                std::remove_if(
+                        m_Components.begin(),
+                        m_Components.end(),
+                        [entityID](const auto &compPair)
+                        {
+                            return compPair.first == entityID;
+                        }), m_Components.end());
+        /*
+        for (auto it = m_Components.begin(); it != m_Components.end(); it++) {
+            // remove components that has the given entityID
+            if (it->first == entityID)
+            {
+                // to erase() but before erase() is executed
+                m_Components.erase(it--);
+            }
+        }
+         */
     }
 }
