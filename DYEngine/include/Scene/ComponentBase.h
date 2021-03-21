@@ -42,7 +42,7 @@ namespace DYE
 
     protected:
 #if DYE_DEBUG
-        virtual void onComponentDebugWindowGUI(float width, float height);
+        virtual void onComponentDebugWindowGUI(float width, float height) { }
 #endif
     };
 
