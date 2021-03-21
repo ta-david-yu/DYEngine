@@ -32,9 +32,18 @@ namespace DYE
         /// \return a raw pointer to the entity if the entity exists, otherwise nullptr
         Entity* GetEntityPtr() const;
 
+        /// Get the demangled name of the component, for debug purpose only
+        /// \return
+        std::string GetComponentName() const;
+
     private:
         bool m_IsEnabled = true;
         std::weak_ptr<Entity> m_Entity;
+
+    protected:
+#if DYE_DEBUG
+        virtual void onComponentDebugWindowGUI(float width, float height);
+#endif
     };
 
     /// The abstract base interface for any component updater that is responsible for updating a list of components. It shouldn't be inherited directly.

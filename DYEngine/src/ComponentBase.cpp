@@ -1,5 +1,6 @@
 #include "Scene/ComponentBase.h"
 #include "Scene/Entity.h"
+#include "Util/Type.h"
 
 #include <algorithm>
 #include <SDL_log.h>
@@ -13,6 +14,17 @@ namespace DYE
         else
             return m_Entity.lock().get();
     }
+
+    std::string ComponentBase::GetComponentName() const
+    {
+        return std::move(getTypeName(*this));
+    }
+
+#if DYE_DEBUG
+    void ComponentBase::onComponentDebugWindowGUI(float width, float height)
+    {
+    }
+#endif
 
     ComponentUpdaterBase::ComponentUpdaterBase(ComponentTypeID typeID) : m_TypeID(typeID)
     {

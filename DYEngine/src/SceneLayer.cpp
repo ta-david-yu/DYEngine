@@ -31,12 +31,18 @@ namespace DYE
 
     void SceneLayer::OnEvent(const std::shared_ptr<Event> &pEvent)
     {
-        /*
-        EventDispatcher dispatcher(*pEvent);
-
-        dispatcher.Dispatch<KeyDownEvent>(DYE_BIND_EVENT_FUNCTION(handleOnKeyDown));
-        dispatcher.Dispatch<KeyUpEvent>(DYE_BIND_EVENT_FUNCTION(handleOnKeyUp));
-        */
+#if DYE_DEBUG
+        /// Don't dispatch debug input, show window if F1
+        if (!m_SceneDebugWindowIsOpen && pEvent->GetEventType() == EventType::KeyDown)
+        {
+            auto keyCode = static_cast<KeyDownEvent&>(*pEvent).GetKeyCode();
+            /// Toggle scene debug window
+            if (keyCode == KeyCode::F1)
+            {
+                m_SceneDebugWindowIsOpen = true;
+            }
+        }
+#endif
     }
 
     void SceneLayer::OnUpdate()
@@ -57,230 +63,274 @@ namespace DYE
 
     void SceneLayer::OnImGui()
     {
-        // get the window size as a base for calculating widgets geometry
-        int sdl_width = 0, sdl_height = 0, controls_width = 0;
-        SDL_GetWindowSize(m_pWindow->GetTypedNativeWindowPtr<SDL_Window>(), &sdl_width, &sdl_height);
-        controls_width = sdl_width;
-        // make controls widget width to be 1/4 of the main window width
-        if ((controls_width /= 4) < 300) { controls_width = 300; }
-
-        // position the controls widget in the top-right corner with some margin
-        //ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Always);
-        // here we set the calculated width and also make the height to be
-        // be the height of the main window also with some margin
-        //ImGui::SetNextWindowSize(ImVec2(static_cast<float>(controls_width), static_cast<float>(sdl_height - 20)));
-        ImGui::SetNextWindowSizeConstraints(ImVec2(static_cast<float>(controls_width), 500), ImVec2(FLT_MAX, static_cast<float>(sdl_height - 20)));
-
-        // create a debugger window for the scene layer
-        if (ImGui::Begin("Scene", nullptr, 0))
+#if DYE_DEBUG
+        static uint32_t selectedEntityID = 0;
+        if (m_SceneDebugWindowIsOpen)
         {
-            if (ImGui::CollapsingHeader("Platform"))
+            int debugWindowWidth = m_pWindow->GetWidth();
+            int debugWindowMaxHeight = m_pWindow->GetHeight();
+            // make controls widget width to be 1/4 of the main window width
+            if ((debugWindowWidth /= 4) < 300) { debugWindowWidth = 300; }
+            ImGui::SetNextWindowSizeConstraints(ImVec2(static_cast<float>(debugWindowWidth), 500), ImVec2(FLT_MAX, static_cast<float>(debugWindowMaxHeight - 20)));
+
+            // create a debugger window for the scene layer
+            if (ImGui::Begin("Scene", &m_SceneDebugWindowIsOpen))
             {
-                ImGui::Dummy(ImVec2(0.0f, 1.0f));
-                ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "Platform");
-                ImGui::Text("Delta Time: %f", TIME.DeltaTime());
-                ImGui::Text("Fixed Delta Time: %f", TIME.FixedDeltaTime());
-                if (ImGui::Button("Test Message Box Button"))
+                if (ImGui::CollapsingHeader("Platform"))
                 {
-                    DYE_MSG_BOX(SDL_MESSAGEBOX_WARNING, "HAHA", "Test");
-                }
-            }
-
-            static uint32_t selectedEntityID = 0;
-            if (ImGui::CollapsingHeader("Entity"))
-            {
-                float entityViewHeight = 350;
-                float entityHierarchyWidth = 200;
-                if (m_Entities.find(selectedEntityID) == m_Entities.end())
-                {
-                    selectedEntityID = m_Entities.begin()->first;
-                }
-
-                // Entity Hierarchy: Left
-                {
-                    ImGui::BeginChild("entity hierarchy", ImVec2(entityHierarchyWidth, entityViewHeight), true);
-                    for (const auto & entPair : m_Entities)
+                    ImGui::Dummy(ImVec2(0.0f, 1.0f));
+                    ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "Platform");
+                    ImGui::Text("Delta Time: %f", TIME.DeltaTime());
+                    ImGui::Text("Fixed Delta Time: %f", TIME.FixedDeltaTime());
+                    if (ImGui::Button("Test Message Box Button"))
                     {
-                        auto entity = entPair.second;
-                        char entityLabel[128];
-                        sprintf(entityLabel, "%s##%d", entity->GetName().c_str(), entity->GetID());
-                        if (ImGui::Selectable(entityLabel, selectedEntityID == entity->GetID()))
-                        {
-                            selectedEntityID = entity->GetID();
-                        }
+                        DYE_MSG_BOX(SDL_MESSAGEBOX_WARNING, "HAHA", "Test");
                     }
-                    ImGui::EndChild();
                 }
-                ImGui::SameLine();
 
-                // Entity Info: Right
+                if (ImGui::CollapsingHeader("Entity"))
                 {
-                    ImGui::BeginGroup();
-                    ImGui::BeginChild("entity info", ImVec2(0, entityViewHeight)); // Leave room for 1 line below us
-
-                    if (!m_Entities.empty())
+                    float entityViewHeight = 350;
+                    float entityHierarchyWidth = 200;
+                    if (m_Entities.find(selectedEntityID) == m_Entities.end())
                     {
-                        auto &entity = m_Entities.find(selectedEntityID)->second;
-
-                        ImGui::Text("[ID: %d] %s", entity->GetID(), entity->GetName().c_str());
-                        ImGui::Separator();
-
-                        if (ImGui::BeginTabBar("##Tabs", ImGuiTabBarFlags_None))
-                        {
-                            if (ImGui::BeginTabItem("Components"))
-                            {
-                                for (auto &compPair : entity->m_Components)
-                                {
-                                    const auto &compName = demangleCTypeName(compPair.first.name());
-
-                                    char componentViewLabel[128];
-                                    sprintf(componentViewLabel, "%s##", compName.c_str());
-
-                                    if (ImGui::TreeNode(componentViewLabel))
-                                    {
-                                        auto comp = compPair.second.lock();
-                                        ImGui::Checkbox("IsEnabled", &comp->m_IsEnabled);
-
-                                        ImGui::TreePop();
-                                        ImGui::Separator();
-                                    }
-                                }
-                                ImGui::EndTabItem();
-                            }
-                            if (ImGui::BeginTabItem("Util"))
-                            {
-                                if (ImGui::Button("Destroy Entity"))
-                                {
-                                    ImmediateDestroyEntity(selectedEntityID);
-                                }
-                                ImGui::EndTabItem();
-                            }
-
-                            ImGui::EndTabBar();
-                        }
-                    }
-                    else
-                    {
-                        ImGui::Text("No entity");
-                        ImGui::Separator();
+                        selectedEntityID = m_Entities.begin()->first;
                     }
 
-                    ImGui::EndChild();
-                    ImGui::EndGroup();
-                }
-            }
-
-            if (ImGui::CollapsingHeader("Updater"))
-            {
-                float updaterViewHeight = 350;
-                float updaterListViewHeight = 150;
-                float compListViewWidth = 200;
-
-                static int selectedUpdaterIndex = 0;
-                if (selectedUpdaterIndex >= m_ComponentUpdaters.size())
-                {
-                    selectedUpdaterIndex = 0;
-                }
-
-                ImGui::BeginChild("updater view", ImVec2(0, updaterViewHeight), false);
-                {
-                    // Updater List: Upper
+                    /// Entity Hierarchy: Left
                     {
-                        ImGui::BeginChild("updater list view", ImVec2(0, updaterListViewHeight), true);
-                        for (int i = 0; i < m_ComponentUpdaters.size(); i++)
+                        ImGui::BeginChild("entity hierarchy", ImVec2(entityHierarchyWidth, entityViewHeight), true);
+                        for (const auto &entPair : m_Entities)
                         {
-                            const auto &updater = m_ComponentUpdaters[i];
-
-                            char updaterLabel[128];
-                            sprintf(updaterLabel, "%d: %s [%s]##%d", i, demangleCTypeName(updater->GetTypeID().name()).c_str(), getTypeName(*updater).c_str(), i);
-                            if (ImGui::Selectable(updaterLabel, selectedUpdaterIndex == i))
+                            auto entity = entPair.second;
+                            char entityLabel[128];
+                            sprintf(entityLabel, "%s##%d", entity->GetName().c_str(), entity->GetID());
+                            if (ImGui::Selectable(entityLabel, selectedEntityID == entity->GetID()))
                             {
-                                selectedUpdaterIndex = i;
+                                selectedEntityID = entity->GetID();
                             }
                         }
                         ImGui::EndChild();
                     }
+                    ImGui::SameLine();
 
-                    // Updater Info: Lower
-                    if (!m_ComponentUpdaters.empty())
+                    /// Entity Info: Right
                     {
-                        const auto &updater = m_ComponentUpdaters[selectedUpdaterIndex];
+                        ImGui::BeginGroup();
+                        ImGui::BeginChild("entity info", ImVec2(0, entityViewHeight)); // Leave room for 1 line below us
 
-                        ImGui::BeginChild("updater info view", ImVec2(0, 0), false);
-
-                        static int selectedUpdaterComponentIndex = 0;
-                        if (selectedUpdaterComponentIndex >= updater->m_Components.size())
+                        if (!m_Entities.empty())
                         {
-                            selectedUpdaterComponentIndex = 0;
+                            auto &entity = m_Entities.find(selectedEntityID)->second;
+
+                            ImGui::Text("[ID: %d] %s", entity->GetID(), entity->GetName().c_str());
+                            ImGui::Separator();
+
+                            if (ImGui::BeginTabBar("##Tabs", ImGuiTabBarFlags_None))
+                            {
+                                if (ImGui::BeginTabItem("Components"))
+                                {
+                                    /// draw each component view
+                                    for (auto &compPair : entity->m_Components)
+                                    {
+                                        const auto &compName = demangleCTypeName(compPair.first.name());
+                                        auto comp = compPair.second.lock();
+
+                                        char componentViewLabel[128];
+                                        sprintf(componentViewLabel, "%s##", compName.c_str());
+
+                                        if (ImGui::TreeNode(componentViewLabel))
+                                        {
+                                            if (ImGui::Button("goto"))
+                                            {
+                                                m_ComponentDebugWindowIsOpen = true;
+                                                m_DebugTargetComponent = comp;
+                                            }
+                                            ImGui::SameLine();
+                                            ImGui::Checkbox("IsEnabled", &comp->m_IsEnabled);
+
+                                            ImGui::TreePop();
+                                            ImGui::Separator();
+                                        }
+                                    }
+                                    ImGui::EndTabItem();
+                                }
+                                if (ImGui::BeginTabItem("Util"))
+                                {
+                                    if (ImGui::Button("Destroy Entity"))
+                                    {
+                                        ImmediateDestroyEntity(selectedEntityID);
+                                    }
+                                    ImGui::EndTabItem();
+                                }
+
+                                ImGui::EndTabBar();
+                            }
+                        }
+                        else
+                        {
+                            ImGui::Text("No entity");
+                            ImGui::Separator();
                         }
 
-                        // Updater Comps: Left
+                        ImGui::EndChild();
+                        ImGui::EndGroup();
+                    }
+                }
+
+                if (ImGui::CollapsingHeader("Updater"))
+                {
+                    float updaterViewHeight = 350;
+                    float updaterListViewHeight = 150;
+                    float compListViewWidth = 200;
+
+                    static int selectedUpdaterIndex = 0;
+                    if (selectedUpdaterIndex >= m_ComponentUpdaters.size())
+                    {
+                        selectedUpdaterIndex = 0;
+                    }
+
+                    ImGui::BeginChild("updater view", ImVec2(0, updaterViewHeight), false);
+                    {
+                        // Updater List: Upper
                         {
-                            ImGui::BeginChild("updater components list view", ImVec2(compListViewWidth, 0), true);
-
-                            for (int i = 0; i < updater->m_Components.size(); i++)
+                            ImGui::BeginChild("updater list view", ImVec2(0, updaterListViewHeight), true);
+                            for (int i = 0; i < m_ComponentUpdaters.size(); i++)
                             {
-                                const auto& compPair = updater->m_Components[i];
+                                const auto &updater = m_ComponentUpdaters[i];
 
-                                char updaterCompLabel[128];
-                                sprintf(updaterCompLabel, "%s##%d", compPair.second->GetEntityPtr()->GetName().c_str(), selectedUpdaterIndex);
-                                if (ImGui::Selectable(updaterCompLabel, selectedUpdaterComponentIndex == i))
+                                char updaterLabel[128];
+                                sprintf(updaterLabel, "%d: %s [%s]##%d", i,
+                                        demangleCTypeName(updater->GetTypeID().name()).c_str(),
+                                        getTypeName(*updater).c_str(), i);
+                                if (ImGui::Selectable(updaterLabel, selectedUpdaterIndex == i))
                                 {
-                                    selectedUpdaterComponentIndex = i;
+                                    selectedUpdaterIndex = i;
                                 }
                             }
                             ImGui::EndChild();
                         }
-                        ImGui::SameLine();
 
-                        // Comp Info: Right
+                        // Updater Info: Lower
+                        if (!m_ComponentUpdaters.empty())
                         {
-                            ImGui::BeginGroup();
+                            const auto &updater = m_ComponentUpdaters[selectedUpdaterIndex];
 
-                            if (!updater->m_Components.empty())
+                            ImGui::BeginChild("updater info view", ImVec2(0, 0), false);
+
+                            static int selectedUpdaterComponentIndex = 0;
+                            if (selectedUpdaterComponentIndex >= updater->m_Components.size())
                             {
-                                const auto &compPair = updater->m_Components[selectedUpdaterComponentIndex];
-                                auto compPtr = compPair.second.get();
-                                auto compTypeID = ComponentTypeID(typeid(*compPtr));
-                                auto compName = demangleCTypeName(compTypeID.name());
-                                auto updaterTypeName = demangleCTypeName(updater->GetTypeID().name());
-                                auto entPtr = compPair.second->GetEntityPtr();
-
-                                char entityLabel[128];
-                                sprintf(entityLabel, "[EntID: %d] %s", entPtr->GetID(), entPtr->GetName().c_str());
-
-                                ImGui::Text("%s", entityLabel);
-                                if (ImGui::Button("Select this entity in hierarchy"))
-                                {
-                                    selectedEntityID = entPtr->GetID();
-                                }
-                                ImGui::Separator();
-
-                                ImGui::Text("%s", compName.c_str());
-                                ImGui::Checkbox("IsEnabled", &(compPair.second->m_IsEnabled));
-
-                                if (compTypeID != updater->GetTypeID())
-                                {
-                                    ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "TypeID Mismatch");
-                                    ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "[Compont: %s]", compName.c_str());
-                                    ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "[Updater: %s]", updaterTypeName.c_str());
-                                }
-                            }
-                            else
-                            {
-                                ImGui::Text("No components in the updater");
-                                ImGui::Separator();
+                                selectedUpdaterComponentIndex = 0;
                             }
 
-                            ImGui::EndGroup();
+                            // Updater Comps: Left
+                            {
+                                ImGui::BeginChild("updater components list view", ImVec2(compListViewWidth, 0), true);
+
+                                for (int i = 0; i < updater->m_Components.size(); i++)
+                                {
+                                    const auto &compPair = updater->m_Components[i];
+
+                                    char updaterCompLabel[128];
+                                    sprintf(updaterCompLabel, "%s##%d",
+                                            compPair.second->GetEntityPtr()->GetName().c_str(), selectedUpdaterIndex);
+                                    if (ImGui::Selectable(updaterCompLabel, selectedUpdaterComponentIndex == i))
+                                    {
+                                        selectedUpdaterComponentIndex = i;
+                                    }
+                                }
+                                ImGui::EndChild();
+                            }
+                            ImGui::SameLine();
+
+                            // Comp Info: Right
+                            {
+                                ImGui::BeginGroup();
+
+                                if (!updater->m_Components.empty())
+                                {
+                                    const auto &compPair = updater->m_Components[selectedUpdaterComponentIndex];
+                                    auto compPtr = compPair.second.get();
+                                    auto compTypeID = ComponentTypeID(typeid(*compPtr));
+                                    auto compName = demangleCTypeName(compTypeID.name());
+                                    auto updaterTypeName = demangleCTypeName(updater->GetTypeID().name());
+                                    auto entPtr = compPair.second->GetEntityPtr();
+
+                                    char entityLabel[128];
+                                    sprintf(entityLabel, "[EntID: %d] %s", entPtr->GetID(), entPtr->GetName().c_str());
+
+                                    ImGui::Text("%s", entityLabel);
+                                    if (ImGui::Button("Select this entity in hierarchy"))
+                                    {
+                                        selectedEntityID = entPtr->GetID();
+                                    }
+                                    ImGui::Separator();
+
+                                    ImGui::Text("%s", compName.c_str());
+                                    ImGui::Checkbox("IsEnabled", &(compPair.second->m_IsEnabled));
+
+                                    if (compTypeID != updater->GetTypeID())
+                                    {
+                                        ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "TypeID Mismatch");
+                                        ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "[Compont: %s]",
+                                                           compName.c_str());
+                                        ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "[Updater: %s]",
+                                                           updaterTypeName.c_str());
+                                    }
+                                }
+                                else
+                                {
+                                    ImGui::Text("No components in the updater");
+                                    ImGui::Separator();
+                                }
+
+                                ImGui::EndGroup();
+                            }
+                            ImGui::EndChild();
                         }
-                        ImGui::EndChild();
                     }
+                    ImGui::EndChild();
                 }
-                ImGui::EndChild();
             }
+            ImGui::End();
         }
-        ImGui::End();
+
+        if (m_ComponentDebugWindowIsOpen)
+        {
+            int debugWindowWidth = m_pWindow->GetWidth();
+            int debugWindowMaxHeight = m_pWindow->GetHeight();
+            // make controls widget width to be 1/4 of the main window width
+            if ((debugWindowWidth /= 5) < 200) { debugWindowWidth = 200; }
+            ImGui::SetNextWindowSizeConstraints(ImVec2(static_cast<float>(debugWindowWidth), 200), ImVec2(FLT_MAX, static_cast<float>(debugWindowMaxHeight - 20)));
+
+            // create a debugger window for the component
+            if (ImGui::Begin("Component", &m_ComponentDebugWindowIsOpen))
+            {
+                if (!m_DebugTargetComponent.expired())
+                {
+                    auto component = m_DebugTargetComponent.lock();
+                    ImGui::Text("Type: %s", component->GetComponentName().c_str());
+                    ImGui::Text("Entity: %s", component->GetEntityPtr()->GetName().c_str());
+                    ImGui::SameLine();
+                    if (ImGui::Button("goto"))
+                    {
+                        selectedEntityID = component->GetEntityPtr()->GetID();
+                    }
+
+                    ImGui::Separator();
+
+                    auto windowSize = ImGui::GetWindowSize();
+                    component->onComponentDebugWindowGUI(windowSize.x, windowSize.y);
+                }
+                else
+                {
+                    ImGui::TextColored(ImVec4(1, 0, 0, 1), "No component is selected");
+                }
+            }
+            ImGui::End();
+        }
+#endif
     }
 
     std::weak_ptr<Entity> SceneLayer::CreateEntity(const std::string& name)

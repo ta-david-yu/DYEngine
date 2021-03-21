@@ -2,6 +2,7 @@
 
 #include "LayerBase.h"
 #include "Scene/ComponentBase.h"
+#include "Events/KeyEvent.h"
 
 #include <vector>
 #include <typeinfo>
@@ -111,6 +112,13 @@ namespace DYE
                 return {true, pair->second};
             }
         }
+
+#if DYE_DEBUG
+        bool m_SceneDebugWindowIsOpen = true;
+
+        bool m_ComponentDebugWindowIsOpen = false;
+        std::weak_ptr<ComponentBase> m_DebugTargetComponent;
+#endif
     };
 
 
