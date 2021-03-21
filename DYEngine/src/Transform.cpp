@@ -2,11 +2,23 @@
 
 #include <algorithm>
 
+#if DYE_DEBUG
+#include <imgui.h>
+#endif
+
 namespace DYE
 {
     void Transform::OnUpdate()
     {
     }
+
+#if DYE_DEBUG
+    void Transform::onComponentDebugWindowGUI(float width, float height)
+    {
+        ComponentBase::onComponentDebugWindowGUI(width, height);
+        ImGui::Text("Position"); ImGui::SameLine(); ImGui::DragFloat3("", (float*)&m_Position, 1, 0, 0);
+    }
+#endif
 
     TransformUpdater::TransformUpdater(ComponentTypeID typeID) : ComponentUpdaterBase(typeID)
     {

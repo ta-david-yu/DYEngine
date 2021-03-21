@@ -261,13 +261,18 @@ namespace DYE
                                     sprintf(entityLabel, "[EntID: %d] %s", entPtr->GetID(), entPtr->GetName().c_str());
 
                                     ImGui::Text("%s", entityLabel);
-                                    if (ImGui::Button("Select this entity in hierarchy"))
+                                    if (ImGui::Button("goto entity"))
                                     {
                                         selectedEntityID = entPtr->GetID();
                                     }
                                     ImGui::Separator();
 
                                     ImGui::Text("%s", compName.c_str());
+                                    if (ImGui::Button("goto component"))
+                                    {
+                                        m_ComponentDebugWindowIsOpen = true;
+                                        m_DebugTargetComponent = compPair.second;
+                                    }
                                     ImGui::Checkbox("IsEnabled", &(compPair.second->m_IsEnabled));
 
                                     if (compTypeID != updater->GetTypeID())
