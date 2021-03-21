@@ -67,7 +67,7 @@ namespace DYE
         /// \param entity the entity to be attached to
         /// \param component the component to be attached and registered
         /// \return a weak pointer to the component
-        std::weak_ptr<ComponentBase> AttachEntityWithComponent(std::weak_ptr<Entity> entity, ComponentBase* component);
+        std::weak_ptr<ComponentBase> AttachEntityWithComponent(const std::weak_ptr<Entity>& entity, ComponentBase* component);
 
         /// Check if an entity has the component that belongs to this updater
         /// \param entityId

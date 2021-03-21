@@ -24,7 +24,7 @@ namespace DYE
     {
     }
 
-    std::weak_ptr<ComponentBase> ComponentUpdaterBase::AttachEntityWithComponent(std::weak_ptr<Entity> entity,
+    std::weak_ptr<ComponentBase> ComponentUpdaterBase::AttachEntityWithComponent(const std::weak_ptr<Entity>& entity,
                                                          ComponentBase* component)
     {
         auto addedCompTypeID = std::type_index(typeid(*component));
