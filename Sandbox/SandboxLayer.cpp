@@ -82,7 +82,7 @@ namespace DYE
         ImGui::Text("expected FPS: [%d]", TIME.FixedFramePerSecond());
         ImGui::Text("DeltaTime: [%f]", TIME.DeltaTime());
         ImGui::Text("FixedDeltaTime: [%f]", TIME.FixedDeltaTime());
-        ImGui::Text("FixedUpdateCounter: [%d]", m_FixedUpdateCounter);
+        ImGui::Text("FixedUpdateFrameCounter: [%d]", m_FixedUpdateCounter);
 
         if (ImGui::Button("Reset FixedUpdate Counter"))
         {

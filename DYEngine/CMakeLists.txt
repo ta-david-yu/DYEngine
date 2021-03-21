@@ -12,7 +12,13 @@ set(SOURCE_FILES
         src/SDLContext.cpp
         src/LayerBase.cpp
         src/LayerStack.cpp
-        src/ImGuiLayer.cpp src/Logger.cpp)
+        src/ImGuiLayer.cpp
+        src/Logger.cpp
+        src/SceneLayer.cpp
+        src/Entity.cpp
+        src/ComponentBase.cpp
+        src/Type.cpp
+        src/Transform.cpp)
 set(HEADER_FILES
         include/Application.h
         include/WindowBase.h
@@ -29,7 +35,13 @@ set(HEADER_FILES
         include/AppEntryPoint.h
         include/LayerBase.h
         include/LayerStack.h
-        include/ImGuiLayer.h include/Logger.h)
+        include/ImGuiLayer.h
+        include/Logger.h
+        include/Scene/SceneLayer.h
+        include/Scene/Entity.h
+        include/Scene/ComponentBase.h
+        include/Util/Type.h
+        include/Scene/Transform.h)
 
 message(STATUS "DYEngine Source Files: ${SOURCE_FILES}")
 message(STATUS "DYEngine Header Files: ${HEADER_FILES}")

@@ -44,6 +44,7 @@ namespace DYE
             auto& io = ImGui::GetIO();
             pEvent->IsUsed |= pEvent->IsInCategory(EventCategory::Mouse) && io.WantCaptureMouse;
             pEvent->IsUsed |= pEvent->IsInCategory(EventCategory::Keyboard) && io.WantCaptureKeyboard;
+            // TODO: use EventCategory::TextInput
         }
     }
 
