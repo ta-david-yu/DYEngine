@@ -67,14 +67,14 @@ namespace DYE
         /// \param typeID the typeID that is used to find/initialize the updater
         /// \return a weak pointer to the newly created component
         template<typename T>
-        std::weak_ptr<ComponentBase> LazyAddComponentToEntity(std::weak_ptr<Entity> entity, ComponentTypeID typeID);
+        std::weak_ptr<T> LazyAddComponentToEntity(std::weak_ptr<Entity> entity, ComponentTypeID typeID);
 
         /// Create a component and attach it to the entity. If an updater with the given typeid(componentType) exists, register the component to it. Otherwise, a new generic updater will be instantiated and registered
         /// \tparam T the type of the component
         /// \param entity the to-be-attached-to entity
         /// \return a weak pointer to the newly created component
         template<typename T>
-        std::weak_ptr<ComponentBase> LazyAddComponentToEntity(std::weak_ptr<Entity> entity);
+        std::weak_ptr<T> LazyAddComponentToEntity(std::weak_ptr<Entity> entity);
 
     private:
         WindowBase* m_pWindow;
@@ -123,7 +123,7 @@ namespace DYE
 
 
     template<typename T>
-    std::weak_ptr<ComponentBase> SceneLayer::LazyAddComponentToEntity(std::weak_ptr<Entity> entity, ComponentTypeID typeID)
+    std::weak_ptr<T> SceneLayer::LazyAddComponentToEntity(std::weak_ptr<Entity> entity, ComponentTypeID typeID)
     {
         auto updater = GetComponentUpdaterOfType(typeID);
 
@@ -133,11 +133,12 @@ namespace DYE
             updater = CreateAndRegisterGenericComponentUpdater(typeID).lock().get();
         }
 
-        return updater->AttachEntityWithComponent(entity, new T());
+        auto newComp = updater->AttachEntityWithComponent(entity, new T());
+        return std::static_pointer_cast<T>(newComp.lock());
     }
 
     template<typename T>
-    std::weak_ptr<ComponentBase> SceneLayer::LazyAddComponentToEntity(std::weak_ptr<Entity> entity)
+    std::weak_ptr<T> SceneLayer::LazyAddComponentToEntity(std::weak_ptr<Entity> entity)
     {
         auto pComp = new T();
         ComponentTypeID typeID = ComponentTypeID(typeid(*pComp));
@@ -150,6 +151,7 @@ namespace DYE
             updater = CreateAndRegisterGenericComponentUpdater(typeID).lock().get();
         }
 
-        return updater->AttachEntityWithComponent(entity, pComp);
+        auto newComp = updater->AttachEntityWithComponent(entity, pComp);
+        return std::static_pointer_cast<T>(newComp.lock());
     }
 }

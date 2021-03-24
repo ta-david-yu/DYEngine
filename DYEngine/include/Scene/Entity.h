@@ -12,6 +12,7 @@ namespace DYE
     class SceneLayer;
     class ComponentBase;
     class ComponentUpdaterBase;
+    class Transform;
 
     /// An entity holds an ID that corresponds to a collection of components with logic
     class Entity
@@ -54,11 +55,16 @@ namespace DYE
             return {false, std::weak_ptr<T>{}};
         }
 
+        std::weak_ptr<Transform> GetTransform() const { return m_Transform; }
+
     private:
         uint32_t m_ID;
         std::string m_Name;
         //std::multimap<std::type_index, std::weak_ptr<ComponentBase>> m_Components;
         std::vector<std::pair<std::type_index, std::weak_ptr<ComponentBase>>> m_Components;
+
+        /// A cache to the transform component
+        std::weak_ptr<Transform> m_Transform;
 
         /// Add a component to the map
         /// \param compTypeID

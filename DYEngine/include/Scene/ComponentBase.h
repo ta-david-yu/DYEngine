@@ -38,6 +38,7 @@ namespace DYE
 
     private:
         bool m_IsEnabled = true;
+
         std::weak_ptr<Entity> m_Entity;
 
     protected:

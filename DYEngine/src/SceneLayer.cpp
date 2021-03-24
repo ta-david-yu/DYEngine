@@ -9,7 +9,11 @@
 #include "Util/Type.h"
 
 #include <algorithm>
+#include <queue>
+#include <stack>
+#include <set>
 #include <imgui.h>
+
 
 namespace DYE
 {
@@ -65,6 +69,28 @@ namespace DYE
     {
 #if DYE_DEBUG
         static uint32_t selectedEntityID = 0;
+
+        /// Force expand tree node of selected entity's parents
+        static std::set<uint32_t> forceExpandTreeNodeEntityIDs {};
+
+        auto forceExpandParentsTreeNode = [this](uint32_t entityID)
+        {
+            if (!m_Entities.empty())
+            {
+                /// Get the current selected entity and trace its parents
+                auto entItr = m_Entities.find(entityID);
+                if (entItr != m_Entities.end())
+                {
+                    auto transform = entItr->second->GetTransform().lock();
+                    while (!transform->GetParent().expired())
+                    {
+                        forceExpandTreeNodeEntityIDs.insert(transform->GetParent().lock()->GetEntityPtr()->GetID());
+                        transform = transform->GetParent().lock();
+                    }
+                }
+            }
+        };
+
         if (m_SceneDebugWindowIsOpen)
         {
             int debugWindowWidth = m_pWindow->GetWidth();
@@ -92,9 +118,19 @@ namespace DYE
                 {
                     float entityViewHeight = 350;
                     float entityHierarchyWidth = 200;
-                    if (m_Entities.find(selectedEntityID) == m_Entities.end())
+
+                    if (!m_Entities.empty())
                     {
-                        selectedEntityID = m_Entities.begin()->first;
+                        /// If the entity with the id doesn't exist, select the first entity in the list
+                        if (m_Entities.find(selectedEntityID) == m_Entities.end())
+                        {
+                            selectedEntityID = m_Entities.begin()->first;
+                        }
+                    }
+                    else
+                    {
+                        /// No entity, set to 0
+                        selectedEntityID = 0;
                     }
 
                     /// Entity Hierarchy: Left
@@ -103,13 +139,100 @@ namespace DYE
                         for (const auto &entPair : m_Entities)
                         {
                             auto entity = entPair.second;
-                            char entityLabel[128];
-                            sprintf(entityLabel, "%s##%d", entity->GetName().c_str(), entity->GetID());
-                            if (ImGui::Selectable(entityLabel, selectedEntityID == entity->GetID()))
+                            auto transform = entity->GetTransform();
+                            std::stack<Transform*> transformStack;
+                            std::stack<int> depthStack;
+                            int prevDepth = 0;
+
+                            /// Keep tracks of the depth of the current hierarchy
+                            /// Call TreePop() [hierarchyDepth] times afterwards
+                            int hierarchyDepth = 0;
+
+                            /// Push the transform into the queue if the parent is null (root transform)
+                            if (transform.lock()->GetParent().expired())
                             {
-                                selectedEntityID = entity->GetID();
+                                transformStack.push(transform.lock().get());
+                                depthStack.push(0);
+                            }
+
+                            while (!transformStack.empty())
+                            {
+                                auto currTransform = transformStack.top();
+                                auto currDepth = depthStack.top();
+                                transformStack.pop();
+                                depthStack.pop();
+
+                                if (currDepth < prevDepth)
+                                {
+                                    hierarchyDepth--;
+                                    ImGui::TreePop();
+                                }
+
+                                /// We assume transform always has an entity, otherwise it will be super buggy :))
+                                auto currEntity = currTransform->GetEntityPtr();
+
+                                ImGui::PushID(currEntity->GetID());
+                                {
+                                    char entityNodeLabel[128];
+                                    sprintf(entityNodeLabel, "##%s", currEntity->GetName().c_str());
+
+                                    bool hasChildren = !currTransform->m_Children.empty();
+                                    if (hasChildren)
+                                    {
+                                        /// Whether or not the tree node (entity) is forced open
+                                        if (forceExpandTreeNodeEntityIDs.find(currEntity->GetID()) != forceExpandTreeNodeEntityIDs.end())
+                                        {
+                                            ImGui::SetNextTreeNodeOpen(true);
+                                        }
+                                        bool openNode = ImGui::TreeNodeEx(entityNodeLabel);
+
+                                        ImGui::SameLine();
+
+                                        char entityLabel[128];
+                                        sprintf(entityLabel, "%s", currEntity->GetName().c_str());
+                                        if (ImGui::Selectable(entityLabel, selectedEntityID == currEntity->GetID()))
+                                        {
+                                            selectedEntityID = currEntity->GetID();
+                                        }
+
+                                        if (openNode)
+                                        {
+                                            for (auto it = currTransform->m_Children.rbegin(); it != currTransform->m_Children.rend(); ++it)
+                                            {
+                                                transformStack.push(*it);
+                                                depthStack.push(currDepth + 1);
+                                            }
+                                            /// Increase the depth of the hierarchy
+                                            hierarchyDepth++;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+                                        ImGui::TreeNodeEx("##bulletNode", flags);
+                                        ImGui::SameLine();
+
+                                        char entityLabel[128];
+                                        sprintf(entityLabel, "%s", currEntity->GetName().c_str());
+                                        if (ImGui::Selectable(entityLabel, selectedEntityID == currEntity->GetID()))
+                                        {
+                                            selectedEntityID = currEntity->GetID();
+                                        }
+                                    }
+                                }
+                                ImGui::PopID();
+
+                                prevDepth = currDepth;
+                            }
+
+                            while (hierarchyDepth > 0)
+                            {
+                                hierarchyDepth--;
+                                ImGui::TreePop();
                             }
                         }
+                        /// Clean up force expand entity IDs list
+                        forceExpandTreeNodeEntityIDs.clear();
                         ImGui::EndChild();
                     }
                     ImGui::SameLine();
@@ -124,6 +247,7 @@ namespace DYE
                             auto &entity = m_Entities.find(selectedEntityID)->second;
 
                             ImGui::Text("[ID: %d] %s", entity->GetID(), entity->GetName().c_str());
+                            ImGui::Text("Has Transform: %s", entity->GetTransform().expired()? "no" : "yes");
                             ImGui::Separator();
 
                             if (ImGui::BeginTabBar("##Tabs", ImGuiTabBarFlags_None))
@@ -148,6 +272,8 @@ namespace DYE
                                             }
                                             ImGui::SameLine();
                                             ImGui::Checkbox("IsEnabled", &comp->m_IsEnabled);
+
+                                            comp->onComponentDebugWindowGUI(ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
 
                                             ImGui::TreePop();
                                             ImGui::Separator();
@@ -182,7 +308,7 @@ namespace DYE
                 {
                     float updaterViewHeight = 350;
                     float updaterListViewHeight = 150;
-                    float compListViewWidth = 200;
+                    float compListViewWidth = 300;
 
                     static int selectedUpdaterIndex = 0;
                     if (selectedUpdaterIndex >= m_ComponentUpdaters.size())
@@ -231,10 +357,10 @@ namespace DYE
                                 for (int i = 0; i < updater->m_Components.size(); i++)
                                 {
                                     const auto &compPair = updater->m_Components[i];
+                                    auto compEntity = compPair.second->GetEntityPtr();
 
                                     char updaterCompLabel[128];
-                                    sprintf(updaterCompLabel, "%s##%d",
-                                            compPair.second->GetEntityPtr()->GetName().c_str(), selectedUpdaterIndex);
+                                    sprintf(updaterCompLabel, "[ID: %d] %s##%d", compEntity->GetID(), compEntity->GetName().c_str(), selectedUpdaterIndex);
                                     if (ImGui::Selectable(updaterCompLabel, selectedUpdaterComponentIndex == i))
                                     {
                                         selectedUpdaterComponentIndex = i;
@@ -264,6 +390,7 @@ namespace DYE
                                     if (ImGui::Button("goto entity"))
                                     {
                                         selectedEntityID = entPtr->GetID();
+                                        forceExpandParentsTreeNode(selectedEntityID);
                                     }
                                     ImGui::Separator();
 
@@ -321,6 +448,7 @@ namespace DYE
                     if (ImGui::Button("goto"))
                     {
                         selectedEntityID = component->GetEntityPtr()->GetID();
+                        forceExpandParentsTreeNode(selectedEntityID);
                     }
 
                     ImGui::Separator();
@@ -335,13 +463,16 @@ namespace DYE
             }
             ImGui::End();
         }
+        ImGui::ShowDemoWindow();
 #endif
     }
 
     std::weak_ptr<Entity> SceneLayer::CreateEntity(const std::string& name)
     {
         auto entity = std::make_shared<Entity>(m_EntityIDCounter, name);
-        LazyAddComponentToEntity<Transform>(entity);
+
+        /// Cache transform component
+        entity->m_Transform = LazyAddComponentToEntity<Transform>(entity);
 
         auto [entityItr, success] = m_Entities.insert({m_EntityIDCounter, std::move(entity)});
         m_EntityIDCounter++;

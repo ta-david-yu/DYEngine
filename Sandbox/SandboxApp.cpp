@@ -34,12 +34,7 @@ namespace DYE
             auto emptyEnt = sceneLayer->CreateEntity("Empty Ent");
             auto [hasTransform, _] = emptyEnt.lock()->GetComponent<Transform>();
 
-            if (hasTransform)
-            {
-                SDL_Log("%s has Transform", emptyEnt.lock()->GetName().c_str());
-            }
-
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 4; i++)
             {
                 auto frameCounterEnt = sceneLayer->CreateEntity("Frame Counter Ent " + std::to_string(i));
                 if (i % 2 == 0)
@@ -53,13 +48,26 @@ namespace DYE
                     sceneLayer->LazyAddComponentToEntity<FixedFrameCounterComponent>(frameCounterEnt);
                 }
 
+                for (int childId = 0; childId < i*2; childId++)
+                {
+                    auto childEnt = sceneLayer->CreateEntity("Child " + std::to_string(childId));
+                    childEnt.lock()->GetTransform().lock()->SetParent(frameCounterEnt.lock()->GetTransform());
+
+                    for (int grandChildId = 0; grandChildId < childId; grandChildId++)
+                    {
+                        auto grandChildEnt = sceneLayer->CreateEntity("Grand Child " + std::to_string(grandChildId));
+                        grandChildEnt.lock()->GetTransform().lock()->SetParent(childEnt.lock()->GetTransform());
+                    }
+                }
+
+
+                /*
                 auto [hasComp, comp] = frameCounterEnt.lock()->GetComponent<Subclass_FrameCounterComponent>();
                 if (hasComp)
                 {
                     SDL_Log("%s: %s", frameCounterEnt.lock()->GetName().c_str(), demangleCTypeName(typeid(*comp.lock()).name()).c_str());
                 }
 
-                /*
                 frameCounterUpdater.lock()->AttachEntityWithComponent(
                         frameCounterEnt,
                         new FrameCounterComponent());
