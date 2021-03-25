@@ -463,7 +463,6 @@ namespace DYE
             }
             ImGui::End();
         }
-        ImGui::ShowDemoWindow();
 #endif
     }
 

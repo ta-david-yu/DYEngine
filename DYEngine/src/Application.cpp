@@ -51,10 +51,15 @@ namespace DYE
     {
         auto window = m_Window->GetTypedNativeWindowPtr<SDL_Window>();
 
+        /// SDL_Renderer TEMP
+        SDL_Renderer* RedDebugRenderer = SDL_CreateRenderer(window, -1,
+                                                    SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+
+        /// SDL_Renderer TEMP
         /// TEMP
         glViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
 
-        ImVec4 background = ImVec4(35/255.0f, 35/255.0f, 35/255.0f, 1.0f);
+        ImVec4 background = ImVec4(255/255.0f, 35/255.0f, 35/255.0f, 1.0f);
         glClearColor(background.x, background.y, background.z, background.w);
 
         /// TEMP
@@ -86,6 +91,10 @@ namespace DYE
                 layer->OnUpdate();
             }
 
+            SDL_SetRenderDrawColor(RedDebugRenderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+            SDL_RenderClear(RedDebugRenderer);
+            SDL_RenderPresent(RedDebugRenderer);
+
             // Render
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
@@ -100,11 +109,6 @@ namespace DYE
             // Swap Buffers
             m_Window->OnUpdate();
 
-            /*
-            SDL_SetRenderDrawColor(_temp_renderer, _temp_red, 0, 0, SDL_ALPHA_OPAQUE);
-            SDL_RenderClear(_temp_renderer);
-            SDL_RenderPresent(_temp_renderer);
-            */
             m_Time.tickUpdate();
         }
 
@@ -112,7 +116,11 @@ namespace DYE
         ImGui_ImplSDL2_Shutdown();
         ImGui::DestroyContext();
 
-        //SDL_DestroyRenderer(_temp_renderer);
+        /// TEMP
+        SDL_DestroyRenderer(RedDebugRenderer);
+
+        ///
+
         SDL_Quit();
     }
 
