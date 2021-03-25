@@ -46,7 +46,7 @@ namespace DYE
         m_Components.emplace_back(entID, sharedCompPtr);
 
         /// call subclass implementation, for instance add the component to a list
-        attachEntityWithComponent(std::move(entity), std::move(sharedCompPtr));
+        attachEntityWithComponent(entity, sharedCompPtr);
 
         return weakCompPtr;
     }

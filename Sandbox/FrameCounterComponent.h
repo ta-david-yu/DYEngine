@@ -14,6 +14,13 @@ namespace DYE
 
         double FpsAccumulator = 0;
         int FrameCounter = 0;
+
+        double FPS = 0;
+
+    protected:
+#if DYE_DEBUG
+        void onComponentDebugWindowGUI(float width, float height) override;
+#endif
     };
 
     class Subclass_FrameCounterComponent : public FrameCounterComponent

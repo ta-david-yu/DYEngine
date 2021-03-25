@@ -54,6 +54,7 @@ find_package(SDL2 REQUIRED)
 # Build External Static Library
 add_subdirectory(extern/glad)
 add_subdirectory(extern/imgui)
+add_subdirectory(extern/glm)
 
 # Build DYEngine library
 add_library(DYEngine STATIC
@@ -70,11 +71,13 @@ target_include_directories(DYEngine PUBLIC ${SDL2_INCLUDE_DIR})     # This shoul
 target_include_directories(DYEngine PRIVATE extern/glad/include)
 target_include_directories(DYEngine PUBLIC extern/imgui)
 target_include_directories(DYEngine PRIVATE extern/imgui/examples)
+target_include_directories(DYEngine PUBLIC extern/glm)
 
 # Link External Libraries with DYEngine lib
 target_link_libraries(DYEngine
         #${SDL2MAIN_LIBRARY}
         ${SDL2_LIBRARY} # SDL2MAIN_LIBRARY is also specified within SDL2_LIBRARY by the FindSDL2 module. It's needed for Windows specific main function. If I don't use FindSDL2 module, I have to link it as well.
         glad
-        imgui)
+        imgui
+        glm)
 
