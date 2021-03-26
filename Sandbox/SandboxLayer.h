@@ -10,7 +10,7 @@ namespace DYE
     class SandboxLayer : public LayerBase
     {
     public:
-        SandboxLayer(WindowBase* pWindow);
+        explicit SandboxLayer(WindowBase* pWindow);
         SandboxLayer() = delete;
 
         void OnEvent(const std::shared_ptr<Event> &pEvent) override;

@@ -12,14 +12,151 @@
 #include <queue>
 #include <stack>
 #include <set>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
 #include <imgui.h>
+#include <glad/glad.h>
+#include <SDL.h>
+#include <glm/glm.hpp>
 
 
 namespace DYE
 {
+    struct ShaderProgramSource
+    {
+        std::string VertexSource;
+        std::string FragmentSource;
+    };
+
+    static ShaderProgramSource ParseShaderProgram(const std::string& filePath)
+    {
+        enum class ShaderType
+        {
+            None = -1,
+            Vertex = 0,
+            Fragment,
+
+            NumOfShaderType
+        };
+
+        std::ifstream stream(filePath);
+
+        std::string line;
+        std::stringstream shaderSS[(int)ShaderType::NumOfShaderType];
+
+        ShaderType type = ShaderType::None;
+
+        while (std::getline(stream, line))
+        {
+            if (line.find("#shader") != std::string::npos)
+            {
+                if (line.find("vertex") != std::string::npos)
+                {
+                    /// TO Vertex
+                    type = ShaderType::Vertex;
+                }
+                else if (line.find("fragment") != std::string::npos)
+                {
+                    /// To Fragment
+                    type = ShaderType::Fragment;
+                }
+            }
+            else
+            {
+                shaderSS[(int)type] << line << '\n';
+            }
+        }
+
+        return { shaderSS[0].str(), shaderSS[1].str() };
+    }
+
+    /// Compile shader id
+    /// \param type the type of the shader (vertex, fragment, geometry...etc)
+    /// \param src the source code
+    /// \return the compiled shader id
+    static unsigned int CompileShader(unsigned int type, const std::string& source)
+    {
+        const char* src = source.c_str();
+
+        unsigned int shaderID = glCreateShader(type);
+        glShaderSource(shaderID, 1, &src, nullptr);
+        glCompileShader(shaderID);
+
+        int compileResult;
+        glGetShaderiv(shaderID, GL_COMPILE_STATUS, &compileResult);
+        if (compileResult == GL_FALSE)
+        {
+            int length;
+            glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &length);
+            char *msg = (char *) alloca(length * sizeof(char));
+            SDL_Log("Failed to compile shader");
+            glGetShaderInfoLog(shaderID, length, &length, msg);
+            SDL_Log("%s", msg);
+        }
+
+        return shaderID;
+    }
+
     SceneLayer::SceneLayer(WindowBase *pWindow) : m_pWindow(pWindow)
     {
         SetupDefaultUpdaters();
+
+        /////
+        const std::string vertShaderSrc =
+                "#version 330 core\n"
+                "\n"
+                "layout(location = 0) in vec4 position;\n"
+                "\n"
+                "void main()\n"
+                "{\n"
+                "   gl_Position = position;\n"
+                "}\n";
+        const std::string fragShaderSrc =
+                "#version 330 core\n"
+                "\n"
+                "layout(location = 0) out vec4 color;\n"
+                "\n"
+                "void main()\n"
+                "{\n"
+                "   color = vec4(0, 0, 0.5, 1);\n"
+                "}\n";
+
+        unsigned int programID = glCreateProgram();
+
+        SDL_Log("Load Shader Program");
+
+        ShaderProgramSource programSource = ParseShaderProgram("assets/shaders/Basic.shader");
+
+        unsigned int vsID = CompileShader(GL_VERTEX_SHADER, vertShaderSrc);
+        unsigned int fsID = CompileShader(GL_FRAGMENT_SHADER, fragShaderSrc);
+
+        glAttachShader(programID, vsID);
+        glAttachShader(programID, fsID);
+        glLinkProgram(programID);
+        glValidateProgram(programID);
+
+        glDeleteShader(vsID);
+        glDeleteShader(fsID);
+
+        glUseProgram(programID);
+
+        // Vertex Buffer
+        glm::vec2 positions[3] = {
+                glm::vec2{-0.5f, -0.5f},
+                glm::vec2{0.0f, 0.5f},
+                glm::vec2{0.5f, -0.5f}
+        };
+
+        unsigned int bufferId;
+        glGenBuffers(1, &bufferId);
+        glBindBuffer(GL_ARRAY_BUFFER, bufferId);
+        glBufferData(GL_ARRAY_BUFFER, 3 * sizeof(glm::vec2), positions, GL_STATIC_DRAW);
+
+        // location (index), count (pos2d now), type (float), stride (the size of the struct), the local location pointer to the attribute (null in our case)
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), 0);
     }
 
     SceneLayer::~SceneLayer()
@@ -63,6 +200,11 @@ namespace DYE
         {
             updater->FixedUpdateComponents();
         }
+    }
+
+    void SceneLayer::OnRender()
+    {
+        glDrawArrays(GL_TRIANGLES, 0, 3);
     }
 
     void SceneLayer::OnImGui()

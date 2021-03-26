@@ -22,7 +22,7 @@ namespace DYE
     public:
         explicit SceneLayer(WindowBase* pWindow);
         SceneLayer() = delete;
-        ~SceneLayer();
+        ~SceneLayer() override;
 
         /// Setup some of the default and built-in updaters, such as TransformUpdater, RendererUpdater
         void SetupDefaultUpdaters();
@@ -30,6 +30,7 @@ namespace DYE
         void OnEvent(const std::shared_ptr<Event> &pEvent) override;
         void OnUpdate() override;
         void OnFixedUpdate() override;
+        void OnRender() override;
         void OnImGui() override;
 
         /// Create an entity and push into the list

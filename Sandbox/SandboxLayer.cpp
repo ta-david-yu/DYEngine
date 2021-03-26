@@ -10,7 +10,6 @@ namespace DYE
 {
     SandboxLayer::SandboxLayer(WindowBase *pWindow) : m_pWindow(pWindow)
     {
-
     }
 
     void SandboxLayer::OnEvent(const std::shared_ptr<Event> &pEvent)
