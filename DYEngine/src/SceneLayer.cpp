@@ -104,33 +104,14 @@ namespace DYE
         SetupDefaultUpdaters();
 
         /////
-        const std::string vertShaderSrc =
-                "#version 330 core\n"
-                "\n"
-                "layout(location = 0) in vec4 position;\n"
-                "\n"
-                "void main()\n"
-                "{\n"
-                "   gl_Position = position;\n"
-                "}\n";
-        const std::string fragShaderSrc =
-                "#version 330 core\n"
-                "\n"
-                "layout(location = 0) out vec4 color;\n"
-                "\n"
-                "void main()\n"
-                "{\n"
-                "   color = vec4(0, 0, 0.5, 1);\n"
-                "}\n";
-
         unsigned int programID = glCreateProgram();
 
         SDL_Log("Load Shader Program");
 
         ShaderProgramSource programSource = ParseShaderProgram("assets/shaders/Basic.shader");
 
-        unsigned int vsID = CompileShader(GL_VERTEX_SHADER, vertShaderSrc);
-        unsigned int fsID = CompileShader(GL_FRAGMENT_SHADER, fragShaderSrc);
+        unsigned int vsID = CompileShader(GL_VERTEX_SHADER, programSource.VertexSource);
+        unsigned int fsID = CompileShader(GL_FRAGMENT_SHADER, programSource.FragmentSource);
 
         glAttachShader(programID, vsID);
         glAttachShader(programID, fsID);
