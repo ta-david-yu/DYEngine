@@ -91,9 +91,9 @@ namespace DYE
             int length;
             glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &length);
             char *msg = (char *) alloca(length * sizeof(char));
-            SDL_Log("Failed to compile shader");
+            DYE_LOG("Failed to compile shader");
             glGetShaderInfoLog(shaderID, length, &length, msg);
-            SDL_Log("%s", msg);
+            DYE_LOG("%s", msg);
         }
 
         return shaderID;
@@ -106,12 +106,15 @@ namespace DYE
         /////
         unsigned int programID = glCreateProgram();
 
-        SDL_Log("Load Shader Program");
+        DYE_LOG("Load Shader Program");
 
         ShaderProgramSource programSource = ParseShaderProgram("assets/shaders/Basic.shader");
 
         unsigned int vsID = CompileShader(GL_VERTEX_SHADER, programSource.VertexSource);
         unsigned int fsID = CompileShader(GL_FRAGMENT_SHADER, programSource.FragmentSource);
+
+        DYE_LOG("Compile Shader: %d", vsID);
+        DYE_LOG("Compile Shader: %d", fsID);
 
         glAttachShader(programID, vsID);
         glAttachShader(programID, fsID);
@@ -138,6 +141,7 @@ namespace DYE
         // location (index), count (pos2d now), type (float), stride (the size of the struct), the local location pointer to the attribute (null in our case)
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), 0);
+        DYE_LOG_WARN(SDL_LOG_CATEGORY_APPLICATION, "A component updater with the given typeID has already been registered, at pos %d", 0);
     }
 
     SceneLayer::~SceneLayer()
@@ -605,7 +609,7 @@ namespace DYE
     {
         auto entity = GetEntity(entityID);
 
-        SDL_Log("Start Excluding Comps");
+        DYE_LOG("Start Excluding Comps");
 
         /// Remove components from the updater
         for (const auto& updater : m_ComponentUpdaters)
@@ -620,7 +624,7 @@ namespace DYE
             }*/
         }
 
-        SDL_Log("Start Removing Entity");
+        DYE_LOG("Start Removing Entity");
 
         /// Remove entity
         auto entPairItr = m_Entities.find(entityID);
@@ -645,7 +649,7 @@ namespace DYE
 
         if (isRegistered)
         {
-            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "A component updater with the given typeID has already been registered, at pos %d", registeredIndex);
+            DYE_LOG_WARN(SDL_LOG_CATEGORY_APPLICATION, "A component updater with the given typeID has already been registered, at pos %d", registeredIndex);
         }
 
         // Create a generic updater and cast it to updater base

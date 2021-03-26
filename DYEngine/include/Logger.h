@@ -11,7 +11,8 @@ namespace DYE
     };
 }
 
-#define DYE_LOG(...) SDL_Log(__VA_ARGS__)
+#define DYE_LOG(fmt, ...) SDL_Log("%s (%d): " fmt, __FILE__, __LINE__, ##__VA_ARGS__)
+#define DYE_LOG_WARN(category, fmt, ...) SDL_LogWarn(category, "%s (%d): " fmt, __FILE__, __LINE__, ##__VA_ARGS__)
 
 /// \param msgFlag should be one of the following: SDL_MESSAGEBOX_ERROR, SDL_MESSAGEBOX_WARNING, SDL_MESSAGEBOX_INFORMATION
 /// \param title Title of the message window
