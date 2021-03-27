@@ -7,6 +7,7 @@
 #include "Scene/Entity.h"
 #include "Scene/Transform.h"
 #include "Util/Type.h"
+#include "Graphics/Shader.h"
 
 #include <algorithm>
 #include <queue>
@@ -24,6 +25,7 @@
 
 namespace DYE
 {
+    /*
     struct ShaderProgramSource
     {
         std::string VertexSource;
@@ -91,30 +93,34 @@ namespace DYE
             int length;
             glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &length);
             char *msg = (char *) alloca(length * sizeof(char));
-            DYE_LOG("Failed to compile shader");
+            DYE_LOG_INFO("Failed to compile shader");
             glGetShaderInfoLog(shaderID, length, &length, msg);
-            DYE_LOG("%s", msg);
+            DYE_LOG_INFO("%s", msg);
         }
 
         return shaderID;
     }
-
+*/
     SceneLayer::SceneLayer(WindowBase *pWindow) : m_pWindow(pWindow)
     {
         SetupDefaultUpdaters();
 
+        m_DebugShaderProgram = ShaderProgram::CreateFromFile("Basic", "assets/shaders/Basic.shader");
+
+        m_DebugShaderProgram->Bind();
+        /*
         /////
         unsigned int programID = glCreateProgram();
 
-        DYE_LOG("Load Shader Program");
+        DYE_LOG_INFO("Load Shader Program");
 
         ShaderProgramSource programSource = ParseShaderProgram("assets/shaders/Basic.shader");
 
         unsigned int vsID = CompileShader(GL_VERTEX_SHADER, programSource.VertexSource);
         unsigned int fsID = CompileShader(GL_FRAGMENT_SHADER, programSource.FragmentSource);
 
-        DYE_LOG("Compile Shader: %d", vsID);
-        DYE_LOG("Compile Shader: %d", fsID);
+        DYE_LOG_INFO("Compile Shader: %d", vsID);
+        DYE_LOG_INFO("Compile Shader: %d", fsID);
 
         glAttachShader(programID, vsID);
         glAttachShader(programID, fsID);
@@ -125,7 +131,7 @@ namespace DYE
         glDeleteShader(fsID);
 
         glUseProgram(programID);
-
+*/
         // Vertex Buffer
         glm::vec2 positions[3] = {
                 glm::vec2{-0.5f, -0.5f},
@@ -141,7 +147,6 @@ namespace DYE
         // location (index), count (pos2d now), type (float), stride (the size of the struct), the local location pointer to the attribute (null in our case)
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), 0);
-        DYE_LOG_WARN(SDL_LOG_CATEGORY_APPLICATION, "A component updater with the given typeID has already been registered, at pos %d", 0);
     }
 
     SceneLayer::~SceneLayer()
@@ -609,7 +614,7 @@ namespace DYE
     {
         auto entity = GetEntity(entityID);
 
-        DYE_LOG("Start Excluding Comps");
+        DYE_LOG_INFO("Start Excluding Comps");
 
         /// Remove components from the updater
         for (const auto& updater : m_ComponentUpdaters)
@@ -624,7 +629,7 @@ namespace DYE
             }*/
         }
 
-        DYE_LOG("Start Removing Entity");
+        DYE_LOG_INFO("Start Removing Entity");
 
         /// Remove entity
         auto entPairItr = m_Entities.find(entityID);
@@ -649,7 +654,7 @@ namespace DYE
 
         if (isRegistered)
         {
-            DYE_LOG_WARN(SDL_LOG_CATEGORY_APPLICATION, "A component updater with the given typeID has already been registered, at pos %d", registeredIndex);
+            DYE_LOG_WARN("A component updater with the given typeID has already been registered - [ID %d]", registeredIndex);
         }
 
         // Create a generic updater and cast it to updater base
@@ -667,7 +672,7 @@ namespace DYE
 
         if (isRegistered)
         {
-            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "A component updater with the given typeID has already been registered, at pos %d", registeredIndex);
+            DYE_LOG_WARN("A component updater with the given typeID has already been registered - [ID %d]", registeredIndex);
         }
 
         m_ComponentUpdaters.push_back(updater);

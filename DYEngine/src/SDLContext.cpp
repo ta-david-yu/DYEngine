@@ -1,6 +1,7 @@
 #include "SDLContext.h"
 
 #include "SDLWindow.h"
+#include "Logger.h"
 
 #include <SDL.h>
 #include <glad/glad.h>
@@ -26,16 +27,16 @@ namespace DYE
         if (status < 0)
         {
             // MakeCurrent failed
-            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_GL_MakeCurrent failed: %s\n", SDL_GetError());
+            DYE_LOG_ERROR("SDL_GL_MakeCurrent failed: %s\n", SDL_GetError());
         }
 
         if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
         {
-            SDL_Log("[ERROR] Couldn't initialize glad");
+            DYE_LOG_ERROR("Couldn't initialize glad");
         }
         else
         {
-            SDL_Log("[INFO] glad initialized");
+            DYE_LOG("glad initialized");
         }
     }
 

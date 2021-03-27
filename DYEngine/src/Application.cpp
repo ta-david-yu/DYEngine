@@ -13,17 +13,20 @@ namespace DYE
     {
         // TODO: wrap it so SDL is abstracted
         SDL_Init(SDL_INIT_VIDEO);
-        SDL_Log("Hello World");
+        DYE_LOG("--------------- Hello World ---------------");
+
+        DYE_LOG("OS: %s", SDL_GetPlatform());
+        DYE_LOG("CPU cores: %d", SDL_GetCPUCount());
+        DYE_LOG("RAM: %.2f GB", (float) SDL_GetSystemRAM() / 1024.0f);
 
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-/*
+
         SDL_GL_SetAttribute(
                 SDL_GL_CONTEXT_PROFILE_MASK,
                 SDL_GL_CONTEXT_PROFILE_CORE
         );
-*/
 
         // GL 3.0 + GLSL 130
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
@@ -32,7 +35,7 @@ namespace DYE
         int major, minor;
         SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
         SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
-        SDL_Log("GL VERSION: %d.%d", major, minor);
+        DYE_LOG("GL Version: %d.%d", major, minor);
 
         // Initialize system instances
         m_Window = WindowBase::Create(WindowProperty(windowName));
