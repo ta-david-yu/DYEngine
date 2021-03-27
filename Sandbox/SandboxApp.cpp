@@ -119,13 +119,15 @@ namespace DYE
         void onPostRenderLayers() override
         {
             static float blueComponent = 0;
-            blueComponent += TIME.DeltaTime();
+            blueComponent += TIME.DeltaTime() * 0.5f;
             if (blueComponent > 1)
                 blueComponent -= 1;
 
             ///
-            unsigned int colorUniformLocation = glGetUniformLocation(m_DebugShaderProgram->GetID(), "_Color");
             m_DebugShaderProgram->Bind();
+            unsigned int colorUniformLocation = glGetUniformLocation(m_DebugShaderProgram->GetID(), "_Color");
+            glCheckAfterCall(glGetUniformLocation(m_DebugShaderProgram->GetID(), "_Color"));
+
             glCall(glUniform4f(colorUniformLocation, 0.2, 0.2, blueComponent, 0));
 
             ///

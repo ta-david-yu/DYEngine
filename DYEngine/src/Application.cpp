@@ -55,7 +55,6 @@ namespace DYE
 
     Application::~Application()
     {
-
     }
 
     void Application::Run()
@@ -117,10 +116,6 @@ namespace DYE
 
             m_Time.tickUpdate();
         }
-
-        ImGui_ImplOpenGL3_Shutdown();
-        ImGui_ImplSDL2_Shutdown();
-        ImGui::DestroyContext();
 
         SDL_Quit();
     }
