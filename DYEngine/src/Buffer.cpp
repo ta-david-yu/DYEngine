@@ -43,7 +43,7 @@ namespace DYE
         return std::make_shared<VertexBuffer>(vertices, size);
     }
 
-    ///////////////
+    /* -- Index Buffer -- */
 
     IndexBuffer::IndexBuffer(std::uint32_t *indices, std::uint32_t count) : m_IndicesCount(count)
     {

@@ -1,5 +1,6 @@
 #include "Graphics/Shader.h"
 #include "Graphics/OpenGL.h"
+#include "Base.h"
 
 #include <utility>
 #include <iostream>
@@ -39,11 +40,13 @@ namespace DYE
     /// \param type
     /// \param source
     /// \return Shader ID, return 0 if the compilation failed
-    static unsigned int compileShader(unsigned int type, const std::string& source)
+    static unsigned int compileShader(ShaderType type, const std::string& source)
     {
         const char* src = source.c_str();
 
-        unsigned int shaderID = glCreateShader(type);
+        unsigned int glShaderType = shaderTypeEnumToGLShaderType(type);
+
+        unsigned int shaderID = glCreateShader(glShaderType);
         glShaderSource(shaderID, 1, &src, nullptr);
         glCompileShader(shaderID);
 
@@ -57,7 +60,7 @@ namespace DYE
             char *msg = (char *) alloca(length * sizeof(char));
             glGetShaderInfoLog(shaderID, length, &length, msg);
 
-            DYE_LOG("Shader Compilation Error - %s", msg);
+            DYE_LOG("Shader[%d] Compilation Error - %s", (int)type, msg);
 
             /// reset ID to zero, which represents error
             shaderID = 0;
@@ -88,6 +91,7 @@ namespace DYE
         else
         {
             DYE_LOG("-- Failed to create shader \"%s\" from %s --", name.c_str(), filepath.c_str());
+            DYE_ASSERT(false);
             return std::shared_ptr<ShaderProgram>();
         }
     }
@@ -201,8 +205,7 @@ namespace DYE
             bool hasShaderType = hasShadersOfType[typeIndex];
             if (hasShaderType)
             {
-                unsigned int glShaderType = shaderTypeEnumToGLShaderType((ShaderType) typeIndex);
-                ShaderID shaderID = compileShader(glShaderType, shaderSS[typeIndex].str());
+                ShaderID shaderID = compileShader((ShaderType) typeIndex, shaderSS[typeIndex].str());
 
                 if (shaderID != 0)
                 {

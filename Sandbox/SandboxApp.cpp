@@ -66,16 +66,15 @@ namespace DYE
                 }
             }
 
-            /// Create vertices
             // Vertex Buffer
-            glm::vec2 positions[] = {
-                    glm::vec2{-0.5f, -0.5f},
-                    glm::vec2{0.5f, -0.5f},
-                    //glm::vec2{0.5f, 0.5f},
 
-                    glm::vec2{0.5f, 0.5f},
-                    glm::vec2{-0.5f, 0.5f},
-                    //glm::vec2{-0.5f, -0.5f}
+            /// Create vertices [position, color]
+            float positions[4 * 6] = {
+                    -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 1.0f,
+                    0.5f, -0.5f,  0.0f, 1.0f, 0.0f, 1.0f,
+
+                    0.5f, 0.5f,   0.0f, 0.0f, 1.0f, 1.0f,
+                    -0.5f, 0.5f,  0.0f, 0.0f, 0.0f, 1.0f
             };
 
             // Index Buffer
@@ -87,21 +86,27 @@ namespace DYE
             glGenVertexArrays(1, &m_VAO);
             glBindVertexArray(m_VAO);
 
-            m_DebugVB = VertexBuffer::Create(positions, 4 * sizeof(glm::vec2));
+            m_DebugVB = VertexBuffer::Create(positions, sizeof(positions));
+            BufferLayout layout {
+                BufferElement(ShaderDataType::Float2, "position", false),
+                BufferElement(ShaderDataType::Float4, "color", false),
+            };
 
-//            glGenBuffers(1, &m_VBO);
-//            glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-//            glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(glm::vec2), positions, GL_STATIC_DRAW);
+            uint32_t index = 0;
+            for (const auto& element : layout.GetElements())
+            {
+                // location (index), count (pos2d now), type (float), stride (the size of the struct), the local location pointer to the attribute (null in our case)
+                glEnableVertexAttribArray(index);
+                glVertexAttribPointer(index,
+                                      element.GetComponentCount(),
+                                      ShaderDataTypeToOpenGLBaseType(element.Type),
+                                      element.Normalized? GL_TRUE: GL_FALSE,
+                                      layout.GetStride(),
+                                      (const void*) element.Offset);
+                index++;
+            }
 
-            // location (index), count (pos2d now), type (float), stride (the size of the struct), the local location pointer to the attribute (null in our case)
-            glEnableVertexAttribArray(0);
-            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), 0);
-
-            m_DebugIB = IndexBuffer::Create(indices, 6);
-
-//            glGenBuffers(1, &m_IBO);
-//            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
-//            glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+            m_DebugIB = IndexBuffer::Create(indices, sizeof(indices) / sizeof(std::uint32_t));
 
             /// Create debug shader program
             m_DebugShaderProgram = ShaderProgram::CreateFromFile("Basic", "assets/shaders/Basic.shader");
@@ -110,8 +115,6 @@ namespace DYE
             m_DebugShaderProgram->Unbind();
             m_DebugVB->Unbind();
             m_DebugIB->Unbind();
-            //glBindBuffer(GL_ARRAY_BUFFER, 0);
-            //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         }
 
         ~SandboxApp() final = default;
@@ -138,7 +141,7 @@ namespace DYE
             //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
 
             // Primitive Type, NumOfIndices, Index Type, pointer to the indices (nullptr because we've already bound the IBO)
-            glCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+            glCall(glDrawElements(GL_TRIANGLES, m_DebugIB->GetCount(), GL_UNSIGNED_INT, nullptr));
         }
     };
 }
