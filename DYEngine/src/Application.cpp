@@ -93,10 +93,14 @@ namespace DYE
             /// Render
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
+            onPreRenderLayers();
+
             for (auto& layer : m_LayerStack)
             {
                 layer->OnRender();
             }
+
+            onPostRenderLayers();
 
             /// ImGui
             m_ImGuiLayer->BeginImGui();

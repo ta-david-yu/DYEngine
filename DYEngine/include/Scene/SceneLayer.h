@@ -16,9 +16,6 @@ namespace DYE
     class TransformUpdater;
     class WindowBase;
 
-    // Debug
-    class ShaderProgram;
-
     /// A Layer that holds a scene + entity-component system
     class SceneLayer : public LayerBase
     {
@@ -116,9 +113,6 @@ namespace DYE
                 return {true, pair->second};
             }
         }
-
-        ///
-        std::shared_ptr<ShaderProgram> m_DebugShaderProgram;
 
 #if DYE_DEBUG
         bool m_SceneDebugWindowIsOpen = true;

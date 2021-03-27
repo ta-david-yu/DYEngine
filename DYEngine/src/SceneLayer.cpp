@@ -7,20 +7,14 @@
 #include "Scene/Entity.h"
 #include "Scene/Transform.h"
 #include "Util/Type.h"
-#include "Graphics/Shader.h"
 
 #include <algorithm>
-#include <queue>
 #include <stack>
 #include <set>
-#include <iostream>
-#include <fstream>
-#include <sstream>
 
 #include <imgui.h>
 #include <glad/glad.h>
 #include <SDL.h>
-#include <glm/glm.hpp>
 
 
 namespace DYE
@@ -28,26 +22,6 @@ namespace DYE
     SceneLayer::SceneLayer(WindowBase *pWindow) : m_pWindow(pWindow)
     {
         SetupDefaultUpdaters();
-
-        m_DebugShaderProgram = ShaderProgram::CreateFromFile("Basic", "assets/shaders/Basic.shader");
-
-        m_DebugShaderProgram->Bind();
-
-        // Vertex Buffer
-        glm::vec2 positions[3] = {
-                glm::vec2{-0.5f, -0.5f},
-                glm::vec2{0.0f, 0.5f},
-                glm::vec2{0.5f, -0.5f}
-        };
-
-        unsigned int bufferId;
-        glGenBuffers(1, &bufferId);
-        glBindBuffer(GL_ARRAY_BUFFER, bufferId);
-        glBufferData(GL_ARRAY_BUFFER, 3 * sizeof(glm::vec2), positions, GL_STATIC_DRAW);
-
-        // location (index), count (pos2d now), type (float), stride (the size of the struct), the local location pointer to the attribute (null in our case)
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), 0);
     }
 
     SceneLayer::~SceneLayer()
@@ -95,7 +69,6 @@ namespace DYE
 
     void SceneLayer::OnRender()
     {
-        glDrawArrays(GL_TRIANGLES, 0, 3);
     }
 
     void SceneLayer::OnImGui()
