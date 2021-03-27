@@ -33,11 +33,13 @@ namespace DYE
         // GL 3.0 + GLSL 130
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-        int major, minor;
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+        int major, minor, profile;
         SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
         SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
-        DYE_LOG("GL Version: %d.%d", major, minor);
+        SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profile);
+        DYE_LOG("GL Version: %d.%d, profile - %d", major, minor, profile);
 
         // Initialize system instances
         m_Window = WindowBase::Create(WindowProperty(windowName));
