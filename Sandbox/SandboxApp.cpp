@@ -5,8 +5,9 @@
 #include "Scene/Transform.h"
 #include "Util/Type.h"
 
-#include "Graphics/Shader.h"
 #include "Graphics/OpenGL.h"
+#include "Graphics/Shader.h"
+#include "Graphics/Buffer.h"
 
 #include "SandboxLayer.h"
 #include "FrameCounterComponent.h"
@@ -24,9 +25,9 @@ namespace DYE
 
         ///
         std::shared_ptr<ShaderProgram> m_DebugShaderProgram;
+        std::shared_ptr<VertexBuffer> m_DebugVB;
+        std::shared_ptr<IndexBuffer> m_DebugIB;
         unsigned int m_VAO;
-        unsigned int m_VBO;
-        unsigned int m_IBO;
 
         explicit SandboxApp(const std::string &windowName, int fixedFramePerSecond = 60)
             : Application(windowName, fixedFramePerSecond)
@@ -78,7 +79,7 @@ namespace DYE
             };
 
             // Index Buffer
-            unsigned int indices[] = {
+            std::uint32_t indices[] = {
                     0, 1, 2,
                     2, 3, 0
             };
@@ -86,25 +87,31 @@ namespace DYE
             glGenVertexArrays(1, &m_VAO);
             glBindVertexArray(m_VAO);
 
-            glGenBuffers(1, &m_VBO);
-            glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-            glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(glm::vec2), positions, GL_STATIC_DRAW);
+            m_DebugVB = VertexBuffer::Create(positions, 4 * sizeof(glm::vec2));
+
+//            glGenBuffers(1, &m_VBO);
+//            glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+//            glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(glm::vec2), positions, GL_STATIC_DRAW);
 
             // location (index), count (pos2d now), type (float), stride (the size of the struct), the local location pointer to the attribute (null in our case)
             glEnableVertexAttribArray(0);
             glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), 0);
 
-            glGenBuffers(1, &m_IBO);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+            m_DebugIB = IndexBuffer::Create(indices, 6);
+
+//            glGenBuffers(1, &m_IBO);
+//            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
+//            glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW);
 
             /// Create debug shader program
             m_DebugShaderProgram = ShaderProgram::CreateFromFile("Basic", "assets/shaders/Basic.shader");
 
             glBindVertexArray(0);
-            glUseProgram(0);
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+            m_DebugShaderProgram->Unbind();
+            m_DebugVB->Unbind();
+            m_DebugIB->Unbind();
+            //glBindBuffer(GL_ARRAY_BUFFER, 0);
+            //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         }
 
         ~SandboxApp() final = default;
@@ -125,7 +132,8 @@ namespace DYE
             glBindVertexArray(m_VAO);
 
             ///
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
+            m_DebugIB->Bind();
+            //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
 
             // Primitive Type, NumOfIndices, Index Type, pointer to the indices (nullptr because we've already bound the IBO)
             glCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));

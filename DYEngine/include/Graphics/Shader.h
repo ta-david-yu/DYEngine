@@ -5,8 +5,8 @@
 
 namespace DYE
 {
-    using ShaderProgramID = unsigned int;
-    using ShaderID = unsigned int;
+    using ShaderProgramID = uint32_t;
+    using ShaderID = uint32_t;
 
     enum class ShaderType
     {
@@ -19,7 +19,8 @@ namespace DYE
         Invalid
     };
 
-    /// A Shader Program wraps the GL ShaderProgramID and functions
+    /// A Shader Program wraps the GL ShaderProgramID and functions.
+    /// Current implementation is in OpenGL
     class ShaderProgram
     {
     public:
@@ -32,6 +33,7 @@ namespace DYE
 
         /// Bind and use the shader program to the rendering pipeline
         void Bind();
+        void Unbind();
 
         /// A factory function that creates a shader program with the given shader source file
         /// \param filepath

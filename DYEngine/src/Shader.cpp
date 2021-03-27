@@ -99,12 +99,7 @@ namespace DYE
 
     DYE::ShaderProgram::~ShaderProgram()
     {
-        // ensure this program is not being used before deletion
-        if (s_pCurrentShaderProgramInUse == this)
-        {
-            s_pCurrentShaderProgramInUse = nullptr;
-            glCall(glUseProgram(0));
-        }
+        Unbind();
 
         glCall(glDeleteProgram(m_ID));
     }
@@ -114,6 +109,15 @@ namespace DYE
         glCall(glUseProgram(m_ID));
 
         s_pCurrentShaderProgramInUse = this;
+    }
+
+    void ShaderProgram::Unbind()
+    {
+        if (s_pCurrentShaderProgramInUse == this)
+        {
+            glCall(glUseProgram(0));
+            s_pCurrentShaderProgramInUse = nullptr;
+        }
     }
 
     bool ShaderProgram::createProgramFromSourceFile(const std::string &filepath)
