@@ -108,30 +108,7 @@ namespace DYE
         m_DebugShaderProgram = ShaderProgram::CreateFromFile("Basic", "assets/shaders/Basic.shader");
 
         m_DebugShaderProgram->Bind();
-        /*
-        /////
-        unsigned int programID = glCreateProgram();
 
-        DYE_LOG_INFO("Load Shader Program");
-
-        ShaderProgramSource programSource = ParseShaderProgram("assets/shaders/Basic.shader");
-
-        unsigned int vsID = CompileShader(GL_VERTEX_SHADER, programSource.VertexSource);
-        unsigned int fsID = CompileShader(GL_FRAGMENT_SHADER, programSource.FragmentSource);
-
-        DYE_LOG_INFO("Compile Shader: %d", vsID);
-        DYE_LOG_INFO("Compile Shader: %d", fsID);
-
-        glAttachShader(programID, vsID);
-        glAttachShader(programID, fsID);
-        glLinkProgram(programID);
-        glValidateProgram(programID);
-
-        glDeleteShader(vsID);
-        glDeleteShader(fsID);
-
-        glUseProgram(programID);
-*/
         // Vertex Buffer
         glm::vec2 positions[3] = {
                 glm::vec2{-0.5f, -0.5f},

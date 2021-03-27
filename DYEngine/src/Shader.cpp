@@ -57,7 +57,7 @@ namespace DYE
             char *msg = (char *) alloca(length * sizeof(char));
             glGetShaderInfoLog(shaderID, length, &length, msg);
 
-            DYE_LOG_ERROR("Shader Compilation Error - %s", msg);
+            DYE_LOG("Shader Compilation Error - %s", msg);
 
             /// reset ID to zero, which represents error
             shaderID = 0;
@@ -70,16 +70,24 @@ namespace DYE
 
     std::shared_ptr<ShaderProgram> ShaderProgram::CreateFromFile(const std::string& name, const std::string &filepath)
     {
+        DYE_LOG("-- Start creating shader \"%s\" from %s --", name.c_str(), filepath.c_str());
+
         auto program = std::make_shared<ShaderProgram>(name);
         bool success = program->createProgramFromSourceFile(filepath);
 
+        if (program->HasCompileError())
+        {
+            DYE_LOG("There are compile errors in the shader!");
+        }
+
         if (success)
         {
+            DYE_LOG("-- Successfully create shader \"%s\" from %s --", name.c_str(), filepath.c_str());
             return program;
         }
         else
         {
-            DYE_LOG_ERROR("Failed to compile shader %s name at %s", name.c_str(), filepath.c_str());
+            DYE_LOG("-- Failed to create shader \"%s\" from %s --", name.c_str(), filepath.c_str());
             return std::shared_ptr<ShaderProgram>();
         }
     }
@@ -121,10 +129,10 @@ namespace DYE
     {
         /// Parse source
         /// if the program has certain types of shader
-        bool hasShadersOfType[(int)ShaderType::NumOfType];
+        bool hasShadersOfType[(int) ShaderType::NumOfType];
 
         /// source string stream for each currScopeType of shader
-        std::stringstream shaderSS[(int)ShaderType::NumOfType];
+        std::stringstream shaderSS[(int) ShaderType::NumOfType];
 
         /// open the file and read the source from it
         std::stringstream stream(source);
@@ -154,15 +162,15 @@ namespace DYE
                 }
                 else
                 {
-                    DYE_LOG_WARN("Unknown shader type - %s", line.c_str());
-                    return false;
+                    DYE_LOG("Unknown shader type - %s", line.c_str());
+                    m_HasCompileError = true;
                 }
 
                 /// The shader of the type has already existed!
                 if (hasShadersOfType[(int) currScopeType])
                 {
-                    DYE_LOG_WARN("Duplicate shader type - %s", line.c_str());
-                    return false;
+                    DYE_LOG("Duplicate shader type - %s", line.c_str());
+                    m_HasCompileError = true;
                 }
                 else
                 {
@@ -196,8 +204,6 @@ namespace DYE
                 {
                     glCall(glAttachShader(programID, shaderID));
                     createdShaderIDs.push_back(shaderID);
-
-                    m_ID = programID;
                 }
                 /// Compile error!
                 else
@@ -207,12 +213,11 @@ namespace DYE
             }
         }
 
-        if (m_ID != 0)
-        {
-            /// Link the shaders specified by m_ID with the corresponding GPU processors
-            glCall(glLinkProgram(m_ID));
-            glCall(glValidateProgram(m_ID));
-        }
+        m_ID = programID;
+
+        /// Link the shaders specified by m_ID with the corresponding GPU processors
+        glCall(glLinkProgram(m_ID));
+        glCall(glValidateProgram(m_ID));
 
         /// Clean up shaders
         for (auto shaderID : createdShaderIDs)

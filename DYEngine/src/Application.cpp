@@ -56,8 +56,6 @@ namespace DYE
 
     void Application::Run()
     {
-        auto window = m_Window->GetTypedNativeWindowPtr<SDL_Window>();
-
         /// TEMP
         glViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
 
