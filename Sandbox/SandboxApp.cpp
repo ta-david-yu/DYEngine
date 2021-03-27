@@ -8,6 +8,7 @@
 #include "Graphics/OpenGL.h"
 #include "Graphics/Shader.h"
 #include "Graphics/Buffer.h"
+#include "Graphics/VertexArray.h"
 
 #include "SandboxLayer.h"
 #include "FrameCounterComponent.h"
