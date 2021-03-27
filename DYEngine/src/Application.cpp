@@ -7,6 +7,8 @@
 #include <imgui_impl_sdl.h>
 #include <imgui_impl_opengl3.h>
 
+#include <utility>
+
 namespace DYE
 {
     Application::Application(const std::string &windowName, int fixedFramePerSecond) : m_Time(fixedFramePerSecond)
@@ -58,9 +60,7 @@ namespace DYE
     {
         /// TEMP
         glViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
-
-        ImVec4 background = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);
-        glClearColor(background.x, background.y, background.z, background.w);
+        glClearColor(0, 0, 0, 0);
         /// TEMP
 
         m_IsRunning = true;
@@ -126,12 +126,12 @@ namespace DYE
 
     void Application::pushLayer(std::shared_ptr<LayerBase> layer)
     {
-        m_LayerStack.PushLayer(layer);
+        m_LayerStack.PushLayer(std::move(layer));
     }
 
     void Application::pushOverlay(std::shared_ptr<LayerBase> overlay)
     {
-        m_LayerStack.PushOverlay(overlay);
+        m_LayerStack.PushOverlay(std::move(overlay));
     }
 
     bool Application::handleOnEvent(const std::shared_ptr<Event>& pEvent)

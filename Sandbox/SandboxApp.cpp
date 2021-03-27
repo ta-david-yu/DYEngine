@@ -107,7 +107,7 @@ namespace DYE
             unsigned int vertexBufferId;
             glGenBuffers(1, &vertexBufferId);
             glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
-            glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(glm::vec2), positions, GL_STATIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(glm::vec2), positions, GL_STATIC_DRAW);
 
             // location (index), count (pos2d now), type (float), stride (the size of the struct), the local location pointer to the attribute (null in our case)
             glEnableVertexAttribArray(0);
@@ -135,7 +135,6 @@ namespace DYE
             unsigned int colorUniformLocation = glGetUniformLocation(m_DebugShaderProgram->GetID(), "_Color");
             glCall(glUniform4f(colorUniformLocation, 0.2, 0.2, blueComponent, 0));
 
-            //glDrawArrays(GL_TRIANGLES, 0, 6);
             // Primitive Type, NumOfIndices, Index Type, pointer to the indices (nullptr because we've already bound the IBO)
             glCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
         }
