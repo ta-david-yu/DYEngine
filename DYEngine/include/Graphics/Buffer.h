@@ -159,9 +159,17 @@ namespace DYE
         virtual void Bind() const;
         virtual void Unbind() const;
 
+        /// Set the vertex data
+        /// \param data a pointer to the vertices data
+        /// \param size the size of the data
         virtual void SetData(const void* data, std::uint32_t size);
 
+        /// Get the vertex attribute/element layout
+        /// \return
         virtual const BufferLayout& GetLayout() const { return m_Layout; }
+
+        /// Set the vertex attribute/element layout
+        /// \param layout
         virtual void SetLayout(const BufferLayout& layout) { m_Layout = layout; }
 
         ///
