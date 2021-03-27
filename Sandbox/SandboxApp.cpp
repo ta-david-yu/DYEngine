@@ -26,9 +26,7 @@ namespace DYE
 
         ///
         std::shared_ptr<ShaderProgram> m_DebugShaderProgram;
-        std::shared_ptr<VertexBuffer> m_DebugVB;
-        std::shared_ptr<IndexBuffer> m_DebugIB;
-        unsigned int m_VAO;
+        std::shared_ptr<VertexArray> m_DebugVA;
 
         explicit SandboxApp(const std::string &windowName, int fixedFramePerSecond = 60)
             : Application(windowName, fixedFramePerSecond)
@@ -84,66 +82,51 @@ namespace DYE
                     2, 3, 0
             };
 
-            glGenVertexArrays(1, &m_VAO);
-            glBindVertexArray(m_VAO);
+            m_DebugVA = VertexArray::Create();
 
-            m_DebugVB = VertexBuffer::Create(positions, sizeof(positions));
+            auto vB = VertexBuffer::Create(positions, sizeof(positions));
             BufferLayout layout {
                 BufferElement(ShaderDataType::Float2, "position", false),
                 BufferElement(ShaderDataType::Float4, "color", false),
             };
-            m_DebugVB->SetLayout(layout);
+            vB->SetLayout(layout);
+            m_DebugVA->AddVertexBuffer(vB);
 
-            uint32_t index = 0;
-            for (const auto& element : m_DebugVB->GetLayout())
-            {
-                // location (index), count (pos2d now), type (float), stride (the size of the struct), the local location pointer to the attribute (null in our case)
-                glEnableVertexAttribArray(index);
-                glVertexAttribPointer(index,
-                                      element.GetComponentCount(),
-                                      ShaderDataTypeToOpenGLBaseType(element.Type),
-                                      element.Normalized? GL_TRUE: GL_FALSE,
-                                      layout.GetStride(),
-                                      (const void*) element.Offset);
-                index++;
-            }
-
-            m_DebugIB = IndexBuffer::Create(indices, sizeof(indices) / sizeof(std::uint32_t));
+            auto iB = IndexBuffer::Create(indices, sizeof(indices) / sizeof(std::uint32_t));
+            m_DebugVA->SetIndexBuffer(iB);
 
             /// Create debug shader program
             m_DebugShaderProgram = ShaderProgram::CreateFromFile("Basic", "assets/shaders/Basic.shader");
 
-            glBindVertexArray(0);
             m_DebugShaderProgram->Unbind();
-            m_DebugVB->Unbind();
-            m_DebugIB->Unbind();
+            m_DebugVA->Unbind();
+            vB->Unbind();
+            iB->Unbind();
         }
 
         ~SandboxApp() final = default;
 
         void onPostRenderLayers() override
         {
-            static float blueComponent = 0;
-            blueComponent += TIME.DeltaTime() * 0.5f;
-            if (blueComponent > 1)
-                blueComponent -= 1;
+            static float colorComponent = 0;
+            colorComponent += TIME.DeltaTime() * 0.5f;
+            if (colorComponent > 1)
+                colorComponent -= 1;
 
             ///
             m_DebugShaderProgram->Bind();
-            unsigned int colorUniformLocation = glGetUniformLocation(m_DebugShaderProgram->GetID(), "_Color");
-            glCheckAfterCall(glGetUniformLocation(m_DebugShaderProgram->GetID(), "_Color"));
-
-            glCall(glUniform4f(colorUniformLocation, 0.2, 0.2, blueComponent, 0));
+            {
+                unsigned int colorUniformLocation = glGetUniformLocation(m_DebugShaderProgram->GetID(), "_Color");
+                glCheckAfterCall(glGetUniformLocation(m_DebugShaderProgram->GetID(), "_Color"));
+                glCall(glUniform4f(colorUniformLocation, colorComponent, colorComponent, colorComponent,
+                                   colorComponent));
+            }
 
             ///
-            glBindVertexArray(m_VAO);
-
-            ///
-            m_DebugIB->Bind();
-            //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
+            m_DebugVA->Bind();
 
             // Primitive Type, NumOfIndices, Index Type, pointer to the indices (nullptr because we've already bound the IBO)
-            glCall(glDrawElements(GL_TRIANGLES, m_DebugIB->GetCount(), GL_UNSIGNED_INT, nullptr));
+            glCall(glDrawElements(GL_TRIANGLES, m_DebugVA->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr));
         }
     };
 }

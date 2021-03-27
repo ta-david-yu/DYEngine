@@ -31,11 +31,12 @@ namespace DYE
 
     void VertexArray::AddVertexBuffer(const std::shared_ptr<VertexBuffer> &vertexBuffer)
     {
-        if (vertexBuffer->GetLayout().GetElements().size() == 0)
+        if (vertexBuffer->GetLayout().GetElements().empty())
         {
             DYE_LOG("Vertex Buffer has no layout!");
-            DYE_ASSERT(true);
+            DYE_ASSERT(false);
         }
+
         glBindVertexArray(m_ID);
         vertexBuffer->Bind();
 
@@ -107,6 +108,9 @@ namespace DYE
 
     void VertexArray::SetIndexBuffer(const std::shared_ptr<IndexBuffer> &indexBuffer)
     {
+        glBindVertexArray(m_ID);
+        indexBuffer->Bind();
 
+        m_IndexBuffer = indexBuffer;
     }
 }
