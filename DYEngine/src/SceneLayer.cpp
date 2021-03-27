@@ -9,10 +9,12 @@
 #include "Util/Type.h"
 
 #include <algorithm>
-#include <queue>
 #include <stack>
 #include <set>
+
 #include <imgui.h>
+#include <glad/glad.h>
+#include <SDL.h>
 
 
 namespace DYE
@@ -63,6 +65,10 @@ namespace DYE
         {
             updater->FixedUpdateComponents();
         }
+    }
+
+    void SceneLayer::OnRender()
+    {
     }
 
     void SceneLayer::OnImGui()
@@ -482,7 +488,7 @@ namespace DYE
     {
         auto entity = GetEntity(entityID);
 
-        SDL_Log("Start Excluding Comps");
+        DYE_LOG_INFO("Start Excluding Comps");
 
         /// Remove components from the updater
         for (const auto& updater : m_ComponentUpdaters)
@@ -497,7 +503,7 @@ namespace DYE
             }*/
         }
 
-        SDL_Log("Start Removing Entity");
+        DYE_LOG_INFO("Start Removing Entity");
 
         /// Remove entity
         auto entPairItr = m_Entities.find(entityID);
@@ -522,7 +528,7 @@ namespace DYE
 
         if (isRegistered)
         {
-            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "A component updater with the given typeID has already been registered, at pos %d", registeredIndex);
+            DYE_LOG_WARN("A component updater with the given typeID has already been registered - [ID %d]", registeredIndex);
         }
 
         // Create a generic updater and cast it to updater base
@@ -540,7 +546,7 @@ namespace DYE
 
         if (isRegistered)
         {
-            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "A component updater with the given typeID has already been registered, at pos %d", registeredIndex);
+            DYE_LOG_WARN("A component updater with the given typeID has already been registered - [ID %d]", registeredIndex);
         }
 
         m_ComponentUpdaters.push_back(updater);

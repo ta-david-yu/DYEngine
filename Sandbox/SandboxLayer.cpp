@@ -10,7 +10,6 @@ namespace DYE
 {
     SandboxLayer::SandboxLayer(WindowBase *pWindow) : m_pWindow(pWindow)
     {
-
     }
 
     void SandboxLayer::OnEvent(const std::shared_ptr<Event> &pEvent)
@@ -88,7 +87,7 @@ namespace DYE
         {
             //SDL_Log("Reset FixedUpdate Counter");
             DYE_ASSERT(m_FixedUpdateCounter % 2 == 0);
-            DYE_LOG("Reset Fixed Update Counter %d", m_FixedUpdateCounter);
+            DYE_LOG_INFO("Reset Fixed Update Counter %d", m_FixedUpdateCounter);
             m_FixedUpdateCounter = 0;
         }
 

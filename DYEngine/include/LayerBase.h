@@ -24,6 +24,8 @@ namespace DYE
 
         virtual void OnUpdate() {}
 
+        virtual void OnRender() {}
+
         virtual void OnImGui() {}
 
         virtual void OnEvent(const std::shared_ptr<Event>& pEvent) {}

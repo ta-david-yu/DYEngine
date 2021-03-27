@@ -7,14 +7,19 @@
 #include <imgui_impl_sdl.h>
 #include <imgui_impl_opengl3.h>
 
+#include <utility>
+
 namespace DYE
 {
     Application::Application(const std::string &windowName, int fixedFramePerSecond) : m_Time(fixedFramePerSecond)
     {
         // TODO: wrap it so SDL is abstracted
         SDL_Init(SDL_INIT_VIDEO);
-        SDL_Log("Hello World");
+        DYE_LOG("--------------- Hello World ---------------");
 
+        DYE_LOG("OS: %s", SDL_GetPlatform());
+        DYE_LOG("CPU cores: %d", SDL_GetCPUCount());
+        DYE_LOG("RAM: %.2f GB", (float) SDL_GetSystemRAM() / 1024.0f);
 
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
@@ -28,7 +33,13 @@ namespace DYE
         // GL 3.0 + GLSL 130
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+        int major, minor, profile;
+        SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
+        SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
+        SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profile);
+        DYE_LOG("GL Version: %d.%d, profile - %d", major, minor, profile);
 
         // Initialize system instances
         m_Window = WindowBase::Create(WindowProperty(windowName));
@@ -44,24 +55,14 @@ namespace DYE
 
     Application::~Application()
     {
-
+        SDL_Quit();
     }
 
     void Application::Run()
     {
-        auto window = m_Window->GetTypedNativeWindowPtr<SDL_Window>();
-
-        /// SDL_Renderer TEMP
-        SDL_Renderer* RedDebugRenderer = SDL_CreateRenderer(window, -1,
-                                                    SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
-
-        /// SDL_Renderer TEMP
         /// TEMP
         glViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
-
-        ImVec4 background = ImVec4(255/255.0f, 35/255.0f, 35/255.0f, 1.0f);
-        glClearColor(background.x, background.y, background.z, background.w);
-
+        glClearColor(0, 0, 0, 0);
         /// TEMP
 
         m_IsRunning = true;
@@ -70,10 +71,10 @@ namespace DYE
         double deltaTimeAccumulator = 0;
         while (m_IsRunning)
         {
-            // Poll Events
+            /// Poll Events
             m_EventSystem->PollEvent();
 
-            // Fixed Update
+            /// Fixed Update
             deltaTimeAccumulator += m_Time.DeltaTime();
             while (deltaTimeAccumulator >= m_Time.FixedDeltaTime())
             {
@@ -85,20 +86,25 @@ namespace DYE
                 deltaTimeAccumulator -= m_Time.FixedDeltaTime();
             }
 
-            // Update
+            /// Update
             for (auto& layer : m_LayerStack)
             {
                 layer->OnUpdate();
             }
 
-            SDL_SetRenderDrawColor(RedDebugRenderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
-            SDL_RenderClear(RedDebugRenderer);
-            SDL_RenderPresent(RedDebugRenderer);
-
-            // Render
+            /// Render
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-            // ImGui
+            onPreRenderLayers();
+
+            for (auto& layer : m_LayerStack)
+            {
+                layer->OnRender();
+            }
+
+            onPostRenderLayers();
+
+            /// ImGui
             m_ImGuiLayer->BeginImGui();
             for (auto& layer : m_LayerStack)
             {
@@ -106,33 +112,22 @@ namespace DYE
             }
             m_ImGuiLayer->EndImGui();
 
-            // Swap Buffers
+            /// Swap Buffers
             m_Window->OnUpdate();
 
             m_Time.tickUpdate();
         }
-
-        ImGui_ImplOpenGL3_Shutdown();
-        ImGui_ImplSDL2_Shutdown();
-        ImGui::DestroyContext();
-
-        /// TEMP
-        SDL_DestroyRenderer(RedDebugRenderer);
-
-        ///
-
-        SDL_Quit();
     }
 
 
     void Application::pushLayer(std::shared_ptr<LayerBase> layer)
     {
-        m_LayerStack.PushLayer(layer);
+        m_LayerStack.PushLayer(std::move(layer));
     }
 
     void Application::pushOverlay(std::shared_ptr<LayerBase> overlay)
     {
-        m_LayerStack.PushOverlay(overlay);
+        m_LayerStack.PushOverlay(std::move(overlay));
     }
 
     bool Application::handleOnEvent(const std::shared_ptr<Event>& pEvent)
