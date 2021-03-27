@@ -91,9 +91,10 @@ namespace DYE
                 BufferElement(ShaderDataType::Float2, "position", false),
                 BufferElement(ShaderDataType::Float4, "color", false),
             };
+            m_DebugVB->SetLayout(layout);
 
             uint32_t index = 0;
-            for (const auto& element : layout.GetElements())
+            for (const auto& element : m_DebugVB->GetLayout())
             {
                 // location (index), count (pos2d now), type (float), stride (the size of the struct), the local location pointer to the attribute (null in our case)
                 glEnableVertexAttribArray(index);
