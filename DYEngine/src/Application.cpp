@@ -55,6 +55,7 @@ namespace DYE
 
     Application::~Application()
     {
+        SDL_Quit();
     }
 
     void Application::Run()
@@ -116,8 +117,6 @@ namespace DYE
 
             m_Time.tickUpdate();
         }
-
-        SDL_Quit();
     }
 
 
