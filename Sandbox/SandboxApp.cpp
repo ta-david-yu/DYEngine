@@ -36,14 +36,21 @@ namespace DYE
             auto sceneLayer = std::make_shared<SceneLayer>(m_Window.get());
             pushLayer(sceneLayer);
 
+            /// Init sorting layer
+            auto imgRendererUpdater = sceneLayer->GetComponentUpdaterOfType<ImageRenderer, ImageRendererUpdater>();
+            imgRendererUpdater->PushSortingLayer("TEST 00");
+            imgRendererUpdater->PushSortingLayer("TEST 01");
+            imgRendererUpdater->PushSortingLayer("TEST 02");
+            imgRendererUpdater->PushSortingLayer("TEST 03");
+
             /// Create entities and components
             auto emptyEnt = sceneLayer->CreateEntity("Empty Ent");
             auto [hasTransform, _] = emptyEnt.lock()->GetComponent<Transform>();
-            sceneLayer->LazyAddComponentToEntity<ImageRenderer>(emptyEnt);
 
             for (int i = 0; i < 4; i++)
             {
                 auto frameCounterEnt = sceneLayer->CreateEntity("Frame Counter Ent " + std::to_string(i));
+                sceneLayer->LazyAddComponentToEntity<ImageRenderer>(frameCounterEnt);
                 if (i % 2 == 0)
                 {
                     sceneLayer->LazyAddComponentToEntity<FrameCounterComponent>(frameCounterEnt);

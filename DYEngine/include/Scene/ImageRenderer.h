@@ -53,13 +53,21 @@ namespace DYE
         void RenderImages();
 
         void PushSortingLayer(const std::string& layerName);
+
+        /// Get the layer id of the given layer name
+        /// \param layerName
+        /// \return the id of the layer with the given name, return 0 if no layer with the name is found
         std::uint32_t LayerNameToLayerID(const std::string& layerName);
+
+        /// Get the layer name of the given layer id
+        /// \param id
+        /// \return the name of the layer with the given id, return "<unknown layer>" if no layer with the id is found
         std::string LayerIDToLayerName(std::uint32_t id);
 
         std::vector<std::string>& GetSortingLayers() { return m_SortingLayers; }
     private:
         /// Currently drawing target window (get dimension from this window)
         WindowBase* m_pWindow {nullptr};
-        std::vector<std::string> m_SortingLayers;
+        std::vector<std::string> m_SortingLayers { "Default" };
     };
 }
