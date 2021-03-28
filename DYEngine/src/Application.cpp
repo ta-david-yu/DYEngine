@@ -29,7 +29,9 @@ namespace DYE
 
         // Push ImGuiLayer as overlay
         m_ImGuiLayer = std::make_shared<ImGuiLayer>(m_Window.get());
-        m_LayerStack.PushOverlay(m_ImGuiLayer);
+        pushOverlay(m_ImGuiLayer);
+        //m_LayerStack.PushOverlay(m_ImGuiLayer);
+        //m_ImGuiLayer->m_pApp = this;
     }
 
     Application::~Application()
@@ -95,7 +97,6 @@ namespace DYE
             m_Time.tickUpdate();
         }
     }
-
 
     void Application::pushLayer(std::shared_ptr<LayerBase> layer)
     {

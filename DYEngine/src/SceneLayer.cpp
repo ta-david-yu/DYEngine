@@ -6,6 +6,7 @@
 #include "Logger.h"
 #include "Scene/Entity.h"
 #include "Scene/Transform.h"
+#include "Scene/ImageRenderer.h"
 #include "Util/Type.h"
 
 #include <algorithm>
@@ -30,9 +31,16 @@ namespace DYE
 
     void SceneLayer::SetupDefaultUpdaters()
     {
+        /// Setup Transform Updater
         auto transformUpdater = std::make_shared<TransformUpdater>(ComponentTypeID(typeid(Transform)));
         m_TransformUpdater = transformUpdater;
         RegisterComponentUpdater(std::move(transformUpdater));
+
+        /// Setup ImageRenderer Updater
+        auto imageRendererUpdater = std::make_shared<ImageRendererUpdater>(ComponentTypeID(typeid(ImageRenderer)),
+                                                                           m_pWindow);
+        m_ImageRendererUpdater = imageRendererUpdater;
+        RegisterComponentUpdater(std::move(imageRendererUpdater));
     }
 
     void SceneLayer::OnEvent(const std::shared_ptr<Event> &pEvent)

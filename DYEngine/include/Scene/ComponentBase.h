@@ -95,6 +95,7 @@ namespace DYE
 
         std::vector<ComponentPair> m_Components;
 
+        /// Called when a component is attached to an entity, useful for post-processing or custom data referencing
         virtual void attachEntityWithComponent(const std::weak_ptr<Entity>& entity, const std::shared_ptr<ComponentBase>& component) { };
     };
 

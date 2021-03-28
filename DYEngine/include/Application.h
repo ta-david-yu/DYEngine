@@ -28,6 +28,9 @@ namespace DYE
         /// App Entrypoint
         void Run();
 
+        /// Get the main window base instance in the application
+        /// \return a raw pointer to the main window
+        WindowBase* GetMainWindow() const { return m_Window.get(); }
     protected:
         void pushLayer(std::shared_ptr<LayerBase> layer);
         void pushOverlay(std::shared_ptr<LayerBase> overlay);
@@ -50,6 +53,7 @@ namespace DYE
         bool handleOnWindowClose(const WindowCloseEvent& event);
 
         bool handleOnWindowResize(const WindowSizeChangeEvent& event);
+
     protected:
         /// The main rendering window
         std::unique_ptr<WindowBase> m_Window;
@@ -63,6 +67,7 @@ namespace DYE
         Time m_Time;
 
     private:
+
         LayerStack m_LayerStack;
 
         /// A Flag to show if the game is still running, when WindowCloseEvent is fired, it's set to false

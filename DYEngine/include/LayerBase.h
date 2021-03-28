@@ -6,8 +6,11 @@
 
 namespace DYE
 {
+    class Application;
+
     class LayerBase
     {
+        friend Application;
     public:
         /// Ctor
         /// \param name debug purpose name

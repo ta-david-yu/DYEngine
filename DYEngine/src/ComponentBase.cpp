@@ -45,7 +45,7 @@ namespace DYE
         auto entID = entity.lock()->GetID();
         m_Components.emplace_back(entID, sharedCompPtr);
 
-        /// call subclass implementation, for instance add the component to a list
+        /// call subclass implementation, for instance add the component to a custom list or post processing
         attachEntityWithComponent(entity, sharedCompPtr);
 
         return weakCompPtr;

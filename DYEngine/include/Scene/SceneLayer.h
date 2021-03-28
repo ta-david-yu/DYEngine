@@ -14,6 +14,7 @@ namespace DYE
     class Entity;
     class ComponentUpdaterBase;
     class TransformUpdater;
+    class ImageRendererUpdater;
     class WindowBase;
 
     /// A Layer that holds a scene + entity-component system
@@ -91,6 +92,7 @@ namespace DYE
 
         // Important Updaters
         std::weak_ptr<TransformUpdater> m_TransformUpdater;
+        std::weak_ptr<ImageRendererUpdater> m_ImageRendererUpdater;
 
         /// A list of pointers to registered component updaters, it's raw because the life time of them is the same as the scene layer
         std::vector<std::shared_ptr<ComponentUpdaterBase>> m_ComponentUpdaters;
