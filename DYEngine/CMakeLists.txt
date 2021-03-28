@@ -42,7 +42,7 @@ set(HEADER_FILES
         include/Scene/Entity.h
         include/Scene/ComponentBase.h
         include/Util/Type.h
-        include/Scene/Transform.h include/Graphics/Shader.h include/Graphics/OpenGL.h include/Graphics/Buffer.h include/Graphics/Renderer.h include/Graphics/VertexArray.h)
+        include/Scene/Transform.h include/Graphics/Shader.h include/Graphics/OpenGL.h include/Graphics/Buffer.h include/Graphics/Renderer.h include/Graphics/VertexArray.h include/Graphics/RenderCommand.h src/RenderCommand.cpp)
 
 message(STATUS "DYEngine Source Files: ${SOURCE_FILES}")
 message(STATUS "DYEngine Header Files: ${HEADER_FILES}")

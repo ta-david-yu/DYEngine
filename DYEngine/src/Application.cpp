@@ -1,55 +1,34 @@
 #include "Application.h"
 #include "Base.h"
 #include "Logger.h"
+#include "Graphics/Renderer.h"
 
-#include <glad/glad.h>
 #include <SDL.h>
-#include <imgui_impl_sdl.h>
-#include <imgui_impl_opengl3.h>
-
-#include <utility>
 
 namespace DYE
 {
     Application::Application(const std::string &windowName, int fixedFramePerSecond) : m_Time(fixedFramePerSecond)
     {
-        // TODO: wrap it so SDL is abstracted
-        SDL_Init(SDL_INIT_VIDEO);
+        SDL_Init(0);
+        SDL_InitSubSystem(SDL_INIT_AUDIO);
+        SDL_InitSubSystem(SDL_INIT_VIDEO);
         DYE_LOG("--------------- Hello World ---------------");
-
         DYE_LOG("OS: %s", SDL_GetPlatform());
         DYE_LOG("CPU cores: %d", SDL_GetCPUCount());
         DYE_LOG("RAM: %.2f GB", (float) SDL_GetSystemRAM() / 1024.0f);
 
-        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-        SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+        /// Initialize system and system instances
 
-        SDL_GL_SetAttribute(
-                SDL_GL_CONTEXT_PROFILE_MASK,
-                SDL_GL_CONTEXT_PROFILE_CORE
-        );
-
-        // GL 3.0 + GLSL 130
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-        int major, minor, profile;
-        SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
-        SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
-        SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profile);
-        DYE_LOG("GL Version: %d.%d, profile - %d", major, minor, profile);
-
-        // Initialize system instances
+        // Create window and context, and then init renderer
         m_Window = WindowBase::Create(WindowProperty(windowName));
-        m_EventSystem = EventSystemBase::Create();
-        m_ImGuiLayer = std::make_shared<ImGuiLayer>(m_Window.get());
+        Renderer::Init();
 
         // Register handleOnEvent member function to the EventSystem
+        m_EventSystem = EventSystemBase::Create();
         m_EventSystem->SetEventHandler(DYE_BIND_EVENT_FUNCTION(Application::handleOnEvent));
 
         // Push ImGuiLayer as overlay
+        m_ImGuiLayer = std::make_shared<ImGuiLayer>(m_Window.get());
         m_LayerStack.PushOverlay(m_ImGuiLayer);
     }
 
@@ -61,8 +40,8 @@ namespace DYE
     void Application::Run()
     {
         /// TEMP
-        glViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
-        glClearColor(0, 0, 0, 0);
+        RenderCommand::SetViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
+        RenderCommand::SetClearColor(glm::vec4 {0, 0, 0, 0});
         /// TEMP
 
         m_IsRunning = true;
@@ -93,15 +72,13 @@ namespace DYE
             }
 
             /// Render
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+            RenderCommand::Clear();
 
             onPreRenderLayers();
-
             for (auto& layer : m_LayerStack)
             {
                 layer->OnRender();
             }
-
             onPostRenderLayers();
 
             /// ImGui
