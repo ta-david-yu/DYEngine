@@ -49,7 +49,6 @@ namespace DYE
         glClearColor(color.r, color.g, color.b, color.a);
     }
 
-    /// Clear currently bound draw buffer (color, depth, stencil)
     void RenderCommand::Clear()
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -57,6 +56,8 @@ namespace DYE
 
     void RenderCommand::DrawIndexed(const std::shared_ptr<VertexArray> &vertexArray, std::uint32_t indexCount)
     {
-
+        uint32_t count = indexCount == 0? vertexArray->GetIndexBuffer()->GetCount() : indexCount;
+        glCall(glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr));
+        //glBindTexture(GL_TEXTURE_2D, 0);
     }
 }

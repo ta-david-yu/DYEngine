@@ -6,6 +6,7 @@
 #include "Util/Type.h"
 
 #include "Graphics/OpenGL.h"
+#include "Graphics/Renderer.h"
 #include "Graphics/Shader.h"
 #include "Graphics/Buffer.h"
 #include "Graphics/VertexArray.h"
@@ -124,9 +125,11 @@ namespace DYE
 
             ///
             m_DebugVA->Bind();
+            RenderCommand::DrawIndexed(m_DebugVA);
+
 
             // Primitive Type, NumOfIndices, Index Type, pointer to the indices (nullptr because we've already bound the IBO)
-            glCall(glDrawElements(GL_TRIANGLES, m_DebugVA->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr));
+            //glCall(glDrawElements(GL_TRIANGLES, m_DebugVA->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr));
         }
     };
 }
