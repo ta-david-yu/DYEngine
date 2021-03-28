@@ -113,6 +113,7 @@ namespace DYE
 
         EventDispatcher dispatcher(*pEvent);
         dispatcher.Dispatch<WindowCloseEvent>(DYE_BIND_EVENT_FUNCTION(handleOnWindowClose));
+        dispatcher.Dispatch<WindowSizeChangeEvent>(DYE_BIND_EVENT_FUNCTION(handleOnWindowResize));
 
         // Event is passed from top to bottom layer
         for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); it++)
@@ -130,5 +131,13 @@ namespace DYE
     {
         m_IsRunning = false;
         return true;
+    }
+
+    bool Application::handleOnWindowResize(const WindowSizeChangeEvent &event)
+    {
+        Renderer::OnWindowResize(event.GetWidth(), event.GetHeight());
+
+        // return false because others might want to handle this event too
+        return false;
     }
 }

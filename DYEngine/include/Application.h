@@ -49,6 +49,7 @@ namespace DYE
         /// \return true if the event can be handled
         bool handleOnWindowClose(const WindowCloseEvent& event);
 
+        bool handleOnWindowResize(const WindowSizeChangeEvent& event);
     protected:
         /// The main rendering window
         std::unique_ptr<WindowBase> m_Window;

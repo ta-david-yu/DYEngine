@@ -10,7 +10,7 @@ namespace DYE
     enum class EventType
     {
         None = 0,
-        WindowClose, WindowResize,
+        WindowClose, WindowSizeChange,
         KeyDown, KeyUp,
         MouseDown, MouseUp, MouseMove, MouseDrag
     };
@@ -19,7 +19,7 @@ namespace DYE
     enum class EventCategory
     {
         None = 0,
-        /// Window related events, such as WindowClose, WindowResize
+        /// Window related events, such as WindowClose, WindowSizeChange
         Application =  1<<0,
         Input =        1<<1,
         Keyboard =     1<<2,

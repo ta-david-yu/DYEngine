@@ -10,7 +10,7 @@ namespace DYE
     {
     public:
         static void Init();
-        static void SetViewport(std::uint32_t x, std::uint32_t, std::uint32_t width, std::uint32_t height);
+        static void SetViewport(std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height);
         static void SetClearColor(const glm::vec4& color);
         static void Clear();
 

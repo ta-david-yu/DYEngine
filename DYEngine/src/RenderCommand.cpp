@@ -10,6 +10,7 @@ namespace DYE
 
     void RenderCommand::Init()
     {
+        DYE_LOG("--------------- Init RenderCommand ---------------");
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
@@ -38,9 +39,9 @@ namespace DYE
 
     }
 
-    void RenderCommand::SetViewport(std::uint32_t x, std::uint32_t, std::uint32_t width, std::uint32_t height)
+    void RenderCommand::SetViewport(std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height)
     {
-
+        glViewport(x, y, width, height);
     }
 
     void RenderCommand::SetClearColor(const glm::vec4 &color)

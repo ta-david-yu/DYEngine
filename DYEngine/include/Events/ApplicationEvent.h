@@ -15,10 +15,10 @@ namespace DYE
         EVENT_CLASS_TYPE(WindowClose)
     };
 
-    class WindowResizeEvent : public Event
+    class WindowSizeChangeEvent : public Event
     {
     public:
-        WindowResizeEvent(uint32_t width, uint32_t height) : m_Width(width), m_Height(height) {}
+        WindowSizeChangeEvent(uint32_t width, uint32_t height) : m_Width(width), m_Height(height) {}
 
         uint32_t GetWidth() const { return m_Width; }
         uint32_t GetHeight() const { return m_Height; }
@@ -26,11 +26,11 @@ namespace DYE
         std::string ToString() const override
         {
             std::stringstream ss;
-            ss << "WindowResizeEvent: " << m_Width << ", " << "Height";
+            ss << "WindowSizeChangeEvent: " << m_Width << ", " << "Height";
             return ss.str();
         }
 
-        EVENT_CLASS_TYPE(WindowResize)
+        EVENT_CLASS_TYPE(WindowSizeChange)
         EVENT_CLASS_CATEGORY(EventCategory::Application)
 
     private:

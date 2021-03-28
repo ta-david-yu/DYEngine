@@ -18,6 +18,8 @@ namespace DYE
                 windowFlags
         );
 
+        SDL_SetWindowResizable(m_pNativeWindow, (windowProperty.IsUserResizable ? SDL_TRUE : SDL_FALSE));
+
         // create context
         m_Context = ContextBase::Create(this);
         m_Context->Init();

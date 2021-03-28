@@ -12,12 +12,17 @@ namespace DYE
         uint32_t Width;
         uint32_t Height;
 
+        /// Whether or not the window can be resized by the user
+        bool IsUserResizable;
+
         explicit WindowProperty(std::string title,
                                 uint32_t width = 1600,
-                                uint32_t height = 900)
+                                uint32_t height = 900,
+                                bool isUserResizable = false)
                 : Title(std::move(title)),
                   Width(width),
-                  Height(height) {}
+                  Height(height),
+                  IsUserResizable(isUserResizable) {}
     };
 
     class WindowBase
