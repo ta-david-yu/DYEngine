@@ -12,7 +12,7 @@ namespace DYE
         SDL_Init(0);
         SDL_InitSubSystem(SDL_INIT_AUDIO);
         SDL_InitSubSystem(SDL_INIT_VIDEO);
-        DYE_LOG("--------------- Hello World ---------------");
+        DYE_LOG("--------------- Init SDL");
         DYE_LOG("OS: %s", SDL_GetPlatform());
         DYE_LOG("CPU cores: %d", SDL_GetCPUCount());
         DYE_LOG("RAM: %.2f GB", (float) SDL_GetSystemRAM() / 1024.0f);
@@ -21,6 +21,8 @@ namespace DYE
 
         // Create window and context, and then init renderer
         m_Window = WindowBase::Create(WindowProperty(windowName));
+
+        DYE_LOG("--------------- Init Renderer");
         Renderer::Init();
 
         // Register handleOnEvent member function to the EventSystem
@@ -30,8 +32,6 @@ namespace DYE
         // Push ImGuiLayer as overlay
         m_ImGuiLayer = std::make_shared<ImGuiLayer>(m_Window.get());
         pushOverlay(m_ImGuiLayer);
-        //m_LayerStack.PushOverlay(m_ImGuiLayer);
-        //m_ImGuiLayer->m_pApp = this;
     }
 
     Application::~Application()
@@ -41,15 +41,21 @@ namespace DYE
 
     void Application::Run()
     {
-        /// TEMP
         RenderCommand::SetViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
         RenderCommand::SetClearColor(glm::vec4 {0, 0, 0, 0});
-        /// TEMP
 
         m_IsRunning = true;
         m_Time.tickInit();
 
         double deltaTimeAccumulator = 0;
+
+        /// Init layers
+        for (auto& layer : m_LayerStack)
+        {
+            DYE_LOG("--------------- Init Layer - %s", layer->GetName().c_str());
+            layer->OnInit();
+        }
+
         while (m_IsRunning)
         {
             /// Poll Events

@@ -1,7 +1,11 @@
 #include "Scene/ImageRenderer.h"
 
+#include "Graphics/VertexArray.h"
+#include "Graphics/Shader.h"
 #include "Scene/Entity.h"
 #include "Logger.h"
+#include "Graphics/OpenGL.h"
+#include "Graphics/RenderCommand.h"
 
 #ifdef DYE_DEBUG
 #include <imgui.h>
@@ -18,7 +22,6 @@ namespace DYE
 
     void ImageRenderer::OnUpdate()
     {
-        /// TODO: Register to updater
     }
 
 #ifdef DYE_DEBUG
@@ -41,7 +44,7 @@ namespace DYE
             {
                 if (ImGui::Begin("Image Renderer: Color Picker Window", &isColorPickerOn))
                 {
-                    ImGui::ColorPicker3("##colorPicker", (float *) &m_Color);
+                    ImGui::ColorPicker4("##colorPicker", (float *) &m_Color);
                 }
                 ImGui::End();
             }
@@ -106,7 +109,46 @@ namespace DYE
 
     ImageRendererUpdater::ImageRendererUpdater(ComponentTypeID typeID, WindowBase* window) : ComponentUpdaterBase(typeID), m_pWindow(window)
     {
+    }
 
+    void ImageRendererUpdater::Init()
+    {
+        DYE_LOG("Init Image Renderer");
+
+        /// Create vertices [position]
+        float positions[4 * 2] = {
+                -0.5f, -0.5f,
+                0.5f, -0.5f,
+
+                0.5f, 0.5f,
+                -0.5f, 0.5f
+        };
+
+        // Index Buffer
+        std::uint32_t indices[] = {
+                0, 1, 2,
+                2, 3, 0
+        };
+
+        m_QuadVertexArray = VertexArray::Create();
+
+        auto vB = VertexBuffer::Create(positions, sizeof(positions));
+        BufferLayout layout {
+                BufferElement(ShaderDataType::Float2, "position", false),
+        };
+        vB->SetLayout(layout);
+        m_QuadVertexArray->AddVertexBuffer(vB);
+
+        auto iB = IndexBuffer::Create(indices, sizeof(indices) / sizeof(std::uint32_t));
+        m_QuadVertexArray->SetIndexBuffer(iB);
+
+        /// Create debug shader program
+        m_tempShaderProgram = ShaderProgram::CreateFromFile("Image", "assets/default/Image.shader");
+
+        m_tempShaderProgram->Unbind();
+        m_QuadVertexArray->Unbind();
+        vB->Unbind();
+        iB->Unbind();
     }
 
     void ImageRendererUpdater::UpdateComponents()
@@ -129,11 +171,37 @@ namespace DYE
     {
         const auto imageRenderer = std::static_pointer_cast<ImageRenderer>(component);
         imageRenderer->m_pUpdater = this;
+
+        m_CachedImageRenderers.push_back(imageRenderer);
     }
 
     void ImageRendererUpdater::RenderImages()
     {
-        /// TODO
+        /// sort and then draw
+        /// TODO: Sort
+
+        /// Draw
+        for (const auto& image : m_CachedImageRenderers)
+        {
+            if (image->GetIsEnabled())
+            {
+                ///
+                m_tempShaderProgram->Bind();
+                {
+                    unsigned int colorUniformLocation = glGetUniformLocation(m_tempShaderProgram->GetID(), "_Color");
+                    glCheckAfterCall(glGetUniformLocation(m_tempShaderProgram->GetID(), "_Color"));
+                    glCall(glUniform4f(colorUniformLocation, image->m_Color.r, image->m_Color.g, image->m_Color.b,
+                                       image->m_Color.a));
+                }
+
+                ///
+                m_QuadVertexArray->Bind();
+                RenderCommand::DrawIndexed(m_QuadVertexArray);
+
+                m_tempShaderProgram->Unbind();
+                m_QuadVertexArray->Unbind();
+            }
+        }
     }
 
     void ImageRendererUpdater::PushSortingLayer(const std::string &layerName)

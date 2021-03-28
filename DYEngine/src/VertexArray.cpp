@@ -1,5 +1,6 @@
 #include "Graphics/VertexArray.h"
 #include "Base.h"
+#include "Graphics/OpenGL.h"
 
 
 namespace DYE
@@ -36,7 +37,7 @@ namespace DYE
 
     VertexArray::VertexArray()
     {
-        glGenVertexArrays(1, &m_ID);
+        glCall(glGenVertexArrays(1, &m_ID));
     }
 
     VertexArray::~VertexArray()

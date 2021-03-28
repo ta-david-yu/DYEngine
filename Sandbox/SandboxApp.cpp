@@ -39,15 +39,14 @@ namespace DYE
             /// Init sorting layer
             auto imgRendererUpdater = sceneLayer->GetComponentUpdaterOfType<ImageRenderer, ImageRendererUpdater>();
             imgRendererUpdater->PushSortingLayer("TEST 00");
-            imgRendererUpdater->PushSortingLayer("TEST 01");
-            imgRendererUpdater->PushSortingLayer("TEST 02");
-            imgRendererUpdater->PushSortingLayer("TEST 03");
 
             /// Create entities and components
             auto emptyEnt = sceneLayer->CreateEntity("Empty Ent");
+            sceneLayer->LazyAddComponentToEntity<ImageRenderer>(emptyEnt);
+
             auto [hasTransform, _] = emptyEnt.lock()->GetComponent<Transform>();
 
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 2; i++)
             {
                 auto frameCounterEnt = sceneLayer->CreateEntity("Frame Counter Ent " + std::to_string(i));
                 sceneLayer->LazyAddComponentToEntity<ImageRenderer>(frameCounterEnt);
@@ -79,11 +78,11 @@ namespace DYE
 
             /// Create vertices [position, color]
             float positions[4 * 6] = {
-                    -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f,
-                    0.5f, -0.5f,  0.0f, 1.0f, 0.0f, 0.0f,
+                    -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+                    -0.25f, -1.0f,  0.0f, 1.0f, 0.0f, 0.0f,
 
-                    0.5f, 0.5f,   0.0f, 0.0f, 1.0f, 1.0f,
-                    -0.5f, 0.5f,  0.0f, 0.0f, 0.0f, 1.0f
+                    -0.25f, -0.25f,   0.0f, 0.0f, 1.0f, 1.0f,
+                    -1.0f, -0.25f,  0.0f, 0.0f, 0.0f, 1.0f
             };
 
             // Index Buffer
@@ -112,13 +111,14 @@ namespace DYE
             m_DebugVA->Unbind();
             vB->Unbind();
             iB->Unbind();
+
         }
 
         ~SandboxApp() final = default;
 
         void onPostRenderLayers() override
         {
-            static float colorComponent = 0;
+            static float colorComponent = 1;
             colorComponent += TIME.DeltaTime() * 0.5f;
             if (colorComponent > 1)
                 colorComponent -= 1;
@@ -135,6 +135,9 @@ namespace DYE
             ///
             m_DebugVA->Bind();
             RenderCommand::DrawIndexed(m_DebugVA);
+
+            m_DebugShaderProgram->Unbind();
+            m_DebugVA->Unbind();
         }
     };
 }

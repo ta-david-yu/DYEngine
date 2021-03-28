@@ -23,6 +23,9 @@ namespace DYE
         /// Called by LayerStack
         virtual void OnDetach() {}
 
+        /// Called before Application.Run loop
+        virtual void OnInit() {}
+
         virtual void OnFixedUpdate() {}
 
         virtual void OnUpdate() {}

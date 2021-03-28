@@ -20,7 +20,7 @@
 
 namespace DYE
 {
-    SceneLayer::SceneLayer(WindowBase *pWindow) : m_pWindow(pWindow)
+    SceneLayer::SceneLayer(WindowBase *pWindow) : LayerBase("Scene Layer"), m_pWindow(pWindow)
     {
         SetupDefaultUpdaters();
     }
@@ -43,20 +43,12 @@ namespace DYE
         RegisterComponentUpdater(std::move(imageRendererUpdater));
     }
 
-    void SceneLayer::OnEvent(const std::shared_ptr<Event> &pEvent)
+    void SceneLayer::OnInit()
     {
-#if DYE_DEBUG
-        /// Don't dispatch debug input, show window if F1
-        if (!m_SceneDebugWindowIsOpen && pEvent->GetEventType() == EventType::KeyDown)
+        for (auto& updater : m_ComponentUpdaters)
         {
-            auto keyCode = static_cast<KeyDownEvent&>(*pEvent).GetKeyCode();
-            /// Toggle scene debug window
-            if (keyCode == KeyCode::F1)
-            {
-                m_SceneDebugWindowIsOpen = true;
-            }
+            updater->Init();
         }
-#endif
     }
 
     void SceneLayer::OnUpdate()
@@ -77,6 +69,7 @@ namespace DYE
 
     void SceneLayer::OnRender()
     {
+        m_ImageRendererUpdater.lock()->RenderImages();
     }
 
     void SceneLayer::OnImGui()
@@ -489,6 +482,22 @@ namespace DYE
                 }
             }
             ImGui::End();
+        }
+#endif
+    }
+
+    void SceneLayer::OnEvent(const std::shared_ptr<Event> &pEvent)
+    {
+#if DYE_DEBUG
+        /// Don't dispatch debug input, show window if F1
+        if (!m_SceneDebugWindowIsOpen && pEvent->GetEventType() == EventType::KeyDown)
+        {
+            auto keyCode = static_cast<KeyDownEvent&>(*pEvent).GetKeyCode();
+            /// Toggle scene debug window
+            if (keyCode == KeyCode::F1)
+            {
+                m_SceneDebugWindowIsOpen = true;
+            }
         }
 #endif
     }

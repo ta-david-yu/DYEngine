@@ -10,6 +10,8 @@ namespace DYE
 {
     class ImageRendererUpdater;
     class WindowBase;
+    class VertexArray;
+    class ShaderProgram;
 
     /// ImageRenderer draws the given image texture in 2d screen space
     class ImageRenderer : public ComponentBase
@@ -45,6 +47,7 @@ namespace DYE
     public:
         explicit ImageRendererUpdater(ComponentTypeID typeID, WindowBase* window);
 
+        void Init() override;
         void UpdateComponents() override;
         void FixedUpdateComponents() override;
         void RemoveComponentsOfEntity(uint32_t entityID) override;
@@ -70,5 +73,11 @@ namespace DYE
         /// Currently drawing target window (get dimension from this window)
         WindowBase* m_pWindow {nullptr};
         std::vector<std::string> m_SortingLayers { "Default" };
+
+        /// Cache the image renderer when a image renderer is attached to an entity
+        std::vector<std::shared_ptr<ImageRenderer>> m_CachedImageRenderers;
+
+        std::shared_ptr<VertexArray> m_QuadVertexArray {nullptr};
+        std::shared_ptr<ShaderProgram> m_tempShaderProgram {nullptr};
     };
 }

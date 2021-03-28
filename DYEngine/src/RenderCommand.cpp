@@ -10,7 +10,6 @@ namespace DYE
 
     void RenderCommand::Init()
     {
-        DYE_LOG("--------------- Init RenderCommand ---------------");
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
@@ -35,7 +34,8 @@ namespace DYE
         glCall(glEnable(GL_BLEND));
         glCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
-        glCall(glEnable(GL_DEPTH_TEST));
+        //glCall(glDisable(GL_DEPTH_TEST));
+        //glCall(glEnable(GL_DEPTH_TEST));
 
     }
 
