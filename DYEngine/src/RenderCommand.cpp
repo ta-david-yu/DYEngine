@@ -48,6 +48,7 @@ namespace DYE
         glClearColor(color.r, color.g, color.b, color.a);
     }
 
+    /// Clear currently bound draw buffer (color, depth, stencil)
     void RenderCommand::Clear()
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
