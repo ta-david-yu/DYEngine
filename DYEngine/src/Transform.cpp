@@ -69,8 +69,6 @@ namespace DYE
     {
         ComponentBase::onComponentDebugWindowGUI(width, height);
 
-        ImGui::PushItemWidth(width * 0.5f / 3);
-
         ImGui::Text("Parent: ");
         ImGui::SameLine();
         if (!GetParent().expired())
@@ -112,10 +110,21 @@ namespace DYE
             ImGui::Text("No child transform");
         }
 
+
+        ImGui::PushItemWidth(width * 0.5f / 3);
+
         ImGui::Text("Position");
-        ImGui::SameLine(); ImGui::DragFloat("x##position", (float*)&m_Position.x, 1, 0, 0);
+        ImGui::DragFloat("x##position", (float*)&m_Position.x, 1, 0, 0);
         ImGui::SameLine(); ImGui::DragFloat("y##position", (float*)&m_Position.y, 1, 0, 0);
         ImGui::SameLine(); ImGui::DragFloat("z##position", (float*)&m_Position.z, 1, 0, 0);
+
+        ImGui::Text("Scale");
+        ImGui::DragFloat("x##scale", (float*)&m_Scale.x, 1, 0, 0);
+        ImGui::SameLine(); ImGui::DragFloat("y##scale", (float*)&m_Scale.y, 1, 0, 0);
+        ImGui::SameLine(); ImGui::DragFloat("z##scale", (float*)&m_Scale.z, 1, 0, 0);
+
+        ImGui::PopItemWidth();
+
 
 /*
         auto euler = glm::degrees(glm::eulerAngles(m_Rotation));

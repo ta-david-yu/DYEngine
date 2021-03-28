@@ -76,6 +76,9 @@ namespace DYE
 #if DYE_DEBUG
         static uint32_t selectedEntityID = 0;
 
+        ImVec4 enabledTextColor {1, 1, 1, 1 };
+        ImVec4 disabledTextColor {0.5, 0.5, 0.5, 1 };
+
         /// Force expand tree node of selected entity's parents
         static std::set<uint32_t> forceExpandTreeNodeEntityIDs {};
 
@@ -269,8 +272,11 @@ namespace DYE
                                         char componentViewLabel[128];
                                         sprintf(componentViewLabel, "%s##", compName.c_str());
 
+                                        ImGui::PushStyleColor(ImGuiCol_Text, comp->m_IsEnabled ? enabledTextColor : disabledTextColor);
                                         if (ImGui::TreeNode(componentViewLabel))
                                         {
+                                            ImGui::PopStyleColor();
+
                                             if (ImGui::Button("goto"))
                                             {
                                                 m_ComponentDebugWindowIsOpen = true;
@@ -283,6 +289,10 @@ namespace DYE
 
                                             ImGui::TreePop();
                                             ImGui::Separator();
+                                        }
+                                        else
+                                        {
+                                            ImGui::PopStyleColor();
                                         }
                                     }
                                     ImGui::EndTabItem();
@@ -367,10 +377,13 @@ namespace DYE
 
                                     char updaterCompLabel[128];
                                     sprintf(updaterCompLabel, "[ID: %d] %s##%d", compEntity->GetID(), compEntity->GetName().c_str(), selectedUpdaterIndex);
+
+                                    ImGui::PushStyleColor(ImGuiCol_Text, compPair.second->m_IsEnabled ? enabledTextColor : disabledTextColor);
                                     if (ImGui::Selectable(updaterCompLabel, selectedUpdaterComponentIndex == i))
                                     {
                                         selectedUpdaterComponentIndex = i;
                                     }
+                                    ImGui::PopStyleColor();
                                 }
                                 ImGui::EndChild();
                             }

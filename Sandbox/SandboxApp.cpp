@@ -11,6 +11,7 @@
 #include "Graphics/Buffer.h"
 #include "Graphics/VertexArray.h"
 
+#include "Scene/ImageRenderer.h"
 #include "SandboxLayer.h"
 #include "FrameCounterComponent.h"
 
@@ -38,6 +39,7 @@ namespace DYE
             /// Create entities and components
             auto emptyEnt = sceneLayer->CreateEntity("Empty Ent");
             auto [hasTransform, _] = emptyEnt.lock()->GetComponent<Transform>();
+            sceneLayer->LazyAddComponentToEntity<ImageRenderer>(emptyEnt);
 
             for (int i = 0; i < 4; i++)
             {
@@ -126,10 +128,6 @@ namespace DYE
             ///
             m_DebugVA->Bind();
             RenderCommand::DrawIndexed(m_DebugVA);
-
-
-            // Primitive Type, NumOfIndices, Index Type, pointer to the indices (nullptr because we've already bound the IBO)
-            //glCall(glDrawElements(GL_TRIANGLES, m_DebugVA->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr));
         }
     };
 }

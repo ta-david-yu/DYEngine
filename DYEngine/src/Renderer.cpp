@@ -40,4 +40,16 @@ namespace DYE
         vertexArray->Bind();
         RenderCommand::DrawIndexed(vertexArray);
     }
+
+//    void Renderer::Submit(const std::shared_ptr<Material>& material, const std::shared_ptr<Mesh>& mesh, const glm::mat4& transform = glm::mat4(1.0f))
+//    {
+//        const auto& shader = material->GetShader();
+//        shader->Bind();
+//        shader->SetMat4("u_ViewProjection", s_SceneData->ViewProjectionMatrix);
+//        shader->SetMat4("u_Transform", transform);
+//        material->SetUniforms();
+//
+//        const auto& vertexArray = mesh->GetVertexArray();
+//        RenderCommand::DrawIndexed(vertexArray);
+//    }
 }
