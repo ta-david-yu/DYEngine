@@ -93,3 +93,23 @@ target_link_libraries(DYEngine
         imgui
         glm)
 
+# ===========================================================================================
+# Copy default assets to the output directory
+set(DEFAULT_ASSETS
+        assets/Image.shader)
+
+foreach(ASSET ${DEFAULT_ASSETS})
+
+    # extract filename
+    get_filename_component(ASSET_FILENAME ${ASSET} NAME)
+
+    # set copy output directory
+    if(WIN32)
+        set(ASSET_OUTPUT_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets/default/${ASSET_FILENAME})
+    else()
+        set(ASSET_OUTPUT_PATH ${EXECUTABLE_OUTPUT_PATH}/assets/default/${ASSET_FILENAME})
+    endif(WIN32)
+
+    message(STATUS "DYEngine Copy Default Asset: ${ASSET_OUTPUT_PATH}")
+    configure_file(${ASSET} ${ASSET_OUTPUT_PATH})
+endforeach()
