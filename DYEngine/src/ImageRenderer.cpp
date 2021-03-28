@@ -24,53 +24,83 @@ namespace DYE
 #ifdef DYE_DEBUG
     void ImageRenderer::onComponentDebugWindowGUI(float width, float height)
     {
+        static bool isColorPickerOn = false;
+
         ComponentBase::onComponentDebugWindowGUI(width, height);
 
-        ImGui::PushItemWidth(width * 0.5f / 3);
+        /// Color Picker
+        {
+            ImGui::Text("Color");
+            ImVec4 colorIm{m_Color.r, m_Color.g, m_Color.b, m_Color.a};
+            if (ImGui::ColorButton("Color", colorIm))
+            {
+                isColorPickerOn = true;
+            }
 
-        ImGui::Text("Dimension");
-        ImGui::DragInt("width", (int*)&m_Width, 1, 0, INT32_MAX);
-        ImGui::SameLine(); ImGui::DragInt("height", (int*)&m_Height, 1, 0, INT32_MAX);
+            if (isColorPickerOn)
+            {
+                if (ImGui::Begin("Image Renderer: Color Picker Window", &isColorPickerOn))
+                {
+                    ImGui::ColorPicker3("##colorPicker", (float *) &m_Color);
+                }
+                ImGui::End();
+            }
+        }
 
-        ImGui::PopItemWidth();
+        /// Dimension
+        {
+            ImGui::PushItemWidth(width * 0.5f / 3);
+
+            ImGui::Text("Dimension");
+            ImGui::DragInt("width", (int *) &m_Width, 1, 0, INT32_MAX);
+            ImGui::SameLine();
+            ImGui::DragInt("height", (int *) &m_Height, 1, 0, INT32_MAX);
+
+            ImGui::PopItemWidth();
+        }
 
         ImGui::Separator();
 
-        ImGui::Text("Sorting Layer");
-        const auto& layers = m_pUpdater->GetSortingLayers();
-
-        char previewLayerName[128];
-        sprintf(previewLayerName, "%2d: %s", m_SortingLayerID, m_pUpdater->LayerIDToLayerName(m_SortingLayerID).c_str());
-
-        bool isDropdownOpen = ImGui::BeginCombo("##sortingLayer", previewLayerName);
-        if (isDropdownOpen)
+        /// Sorting Layer
         {
-            std::uint32_t index = 0;
-            char itemLayerName[128];
-            for (const auto& layerName : layers)
+            ImGui::Text("Sorting Layer");
+            const auto &layers = m_pUpdater->GetSortingLayers();
+
+            char previewLayerName[128];
+            sprintf(previewLayerName, "%2d: %s", m_SortingLayerID,
+                    m_pUpdater->LayerIDToLayerName(m_SortingLayerID).c_str());
+
+            bool isDropdownOpen = ImGui::BeginCombo("##sortingLayer", previewLayerName);
+            if (isDropdownOpen)
             {
-                sprintf(itemLayerName, "%2d: %s##%d", index, m_pUpdater->LayerIDToLayerName(index).c_str(), GetEntityPtr()->GetID());
+                std::uint32_t index = 0;
+                char itemLayerName[128];
+                for (const auto &layerName : layers)
+                {
+                    sprintf(itemLayerName, "%2d: %s##%d", index, m_pUpdater->LayerIDToLayerName(index).c_str(),
+                            GetEntityPtr()->GetID());
 
-                bool isSelected = (index == m_SortingLayerID);
-                if (ImGui::Selectable(itemLayerName, isSelected))
-                    m_SortingLayerID = index;
-                if (isSelected)
-                    ImGui::SetItemDefaultFocus();
+                    bool isSelected = (index == m_SortingLayerID);
+                    if (ImGui::Selectable(itemLayerName, isSelected))
+                        m_SortingLayerID = index;
+                    if (isSelected)
+                        ImGui::SetItemDefaultFocus();
 
-                index++;
+                    index++;
+                }
+                ImGui::EndCombo();
             }
-            ImGui::EndCombo();
+
+            ImGui::Text("Sorting Order In Layer");
+            ImGui::DragInt("##sortingOrder", (int *) &m_SortingOrder, 0.1f, 0, 0);
+
+            ImGui::SameLine();
+            if (ImGui::Button("<"))
+                m_SortingOrder--;
+            ImGui::SameLine();
+            if (ImGui::Button(">"))
+                m_SortingOrder++;
         }
-
-        ImGui::Text("Sorting Order In Layer");
-        ImGui::DragInt("##sortingOrder", (int*)&m_SortingOrder, 0.1f, 0, 0);
-
-        ImGui::SameLine();
-        if (ImGui::Button("<"))
-            m_SortingOrder--;
-        ImGui::SameLine();
-        if (ImGui::Button(">"))
-            m_SortingOrder++;
     }
 #endif
 
