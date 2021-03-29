@@ -3,6 +3,8 @@
 #include <memory>
 #include <string>
 
+#include <glm/glm.hpp>
+
 namespace DYE
 {
     using TextureID = std::uint32_t;
@@ -30,6 +32,11 @@ namespace DYE
         /// \param height
         /// \return
         static std::shared_ptr<Texture2D> Create(std::uint32_t width, std::uint32_t height);
+
+        /// Create a 1x1 texture2D of the given color
+        /// \param color
+        /// \return
+        static std::shared_ptr<Texture2D> Create(glm::vec4 color);
 
         /// Create a texture2D loaded from the given file path
         /// \return

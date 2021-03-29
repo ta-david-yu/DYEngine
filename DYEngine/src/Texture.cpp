@@ -31,6 +31,18 @@ namespace DYE
         glTextureParameteri(m_ID, GL_TEXTURE_WRAP_T, GL_REPEAT);
     }
 
+    std::shared_ptr<Texture2D> Texture2D::Create(glm::vec4 color)
+    {
+        unsigned char data[4] = { static_cast<unsigned char>(color.r * 255),
+                                  static_cast<unsigned char>(color.g * 255),
+                                  static_cast<unsigned char>(color.b * 255),
+                                  static_cast<unsigned char>(color.a * 255)};
+
+        auto texture = std::make_shared<Texture2D>(1, 1);
+        texture->SetData((void*) data, 1);
+        return std::move(texture);
+    }
+
     /// Temporary flip SDL_Surface code
     static void flip_surface(SDL_Surface* surface)
     {

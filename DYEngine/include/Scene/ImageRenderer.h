@@ -88,7 +88,8 @@ namespace DYE
         std::vector<std::shared_ptr<ImageRenderer>> m_CachedImageRenderers;
 
         std::shared_ptr<VertexArray> m_QuadVertexArray {nullptr};
-        std::shared_ptr<ShaderProgram> m_tempShaderProgram {nullptr};
+        std::shared_ptr<ShaderProgram> m_DefaultShaderProgram {nullptr};
+        std::shared_ptr<Texture2D> m_DefaultTexture2D {nullptr};
 
         /// Whether or not the images should be sorted before render
         bool m_IsDirty = true;
