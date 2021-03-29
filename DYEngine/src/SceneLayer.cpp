@@ -126,7 +126,7 @@ namespace DYE
 
                 if (ImGui::CollapsingHeader("Entity"))
                 {
-                    float entityViewHeight = 350;
+                    float entityViewHeight = 450;
                     float entityHierarchyWidth = 200;
 
                     if (!m_Entities.empty())

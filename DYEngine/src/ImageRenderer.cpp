@@ -3,6 +3,8 @@
 #include "Graphics/VertexArray.h"
 #include "Graphics/Shader.h"
 #include "Scene/Entity.h"
+#include "Scene/Transform.h"
+#include "WindowBase.h"
 #include "Logger.h"
 #include "Graphics/OpenGL.h"
 #include "Graphics/RenderCommand.h"
@@ -117,11 +119,11 @@ namespace DYE
 
         /// Create vertices [position]
         float positions[4 * 2] = {
+                -1.5f, -0.5f,
                 -0.5f, -0.5f,
-                0.5f, -0.5f,
 
-                0.5f, 0.5f,
-                -0.5f, 0.5f
+                -0.5f, -1.5f,
+                -1.5f, -1.5f
         };
 
         // Index Buffer
@@ -186,12 +188,20 @@ namespace DYE
             if (image->GetIsEnabled())
             {
                 ///
+                auto transform = image->GetEntityPtr()->GetTransform().lock();
+                glm::vec2 center { transform->GetLocalPosition().x / m_pWindow->GetWidth() * 2,
+                                   transform->GetLocalPosition().y / m_pWindow->GetHeight() * 2 };
+
                 m_tempShaderProgram->Bind();
                 {
                     unsigned int colorUniformLocation = glGetUniformLocation(m_tempShaderProgram->GetID(), "_Color");
                     glCheckAfterCall(glGetUniformLocation(m_tempShaderProgram->GetID(), "_Color"));
                     glCall(glUniform4f(colorUniformLocation, image->m_Color.r, image->m_Color.g, image->m_Color.b,
                                        image->m_Color.a));
+
+                    unsigned int centerPosUniformLocation = glGetUniformLocation(m_tempShaderProgram->GetID(), "_CenterPos");
+                    glCheckAfterCall(glGetUniformLocation(m_tempShaderProgram->GetID(), "_CenterPos"));
+                    glCall(glUniform2f(centerPosUniformLocation, center.x, center.y));
                 }
 
                 ///
