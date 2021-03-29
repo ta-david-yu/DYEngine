@@ -12,6 +12,7 @@ namespace DYE
     class WindowBase;
     class VertexArray;
     class ShaderProgram;
+    class Texture2D;
 
     /// ImageRenderer draws the given image texture in 2d screen space
     class ImageRenderer : public ComponentBase
@@ -26,8 +27,15 @@ namespace DYE
         std::uint32_t& GetWidth() { return m_Width; }
         std::uint32_t& GetHeight() { return m_Height; }
         void SetDimension(std::uint32_t width, std::uint32_t height) { m_Width = width; m_Height = height; }
+
+        /// Set the texture
+        /// \param texture
+        /// \param setDimension if automatically change the dimension based on the texture width/height
+        void SetTexture(std::shared_ptr<Texture2D> texture, bool setDimension = true);
     private:
         glm::vec4 m_Color {1, 1, 1, 1};
+        std::shared_ptr<Texture2D> m_Texture;
+
         std::uint32_t m_Width {100};
         std::uint32_t m_Height {100};
 

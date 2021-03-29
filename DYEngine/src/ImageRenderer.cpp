@@ -8,10 +8,12 @@
 #include "Logger.h"
 #include "Graphics/OpenGL.h"
 #include "Graphics/RenderCommand.h"
+#include "Graphics/Texture.h"
 
 #include <glm/gtc/type_ptr.hpp>
 
 #include <algorithm>
+#include <utility>
 
 #ifdef DYE_DEBUG
 #include <imgui.h>
@@ -26,6 +28,15 @@ namespace DYE
 
     void ImageRenderer::OnUpdate()
     {
+    }
+
+    void ImageRenderer::SetTexture(std::shared_ptr<Texture2D> texture, bool setDimension)
+    {
+        m_Texture = std::move(texture);
+        if (setDimension)
+        {
+            SetDimension(m_Texture->GetWidth(), m_Texture->GetHeight());
+        }
     }
 
 #ifdef DYE_DEBUG
@@ -51,6 +62,25 @@ namespace DYE
                     ImGui::ColorPicker4("##colorPicker", (float *) &m_Color);
                 }
                 ImGui::End();
+            }
+        }
+
+        /// Texture Info
+        {
+            ImGui::Text("Texture");
+            if (m_Texture)
+            {
+                ImGui::TextColored(ImVec4(1, 1, 1, 1), "%s", m_Texture->GetPath().c_str());
+                ImGui::SameLine();
+
+                if (ImGui::Button("Set Native Size"))
+                {
+                    SetDimension(m_Texture->GetWidth(), m_Texture->GetHeight());
+                }
+            }
+            else
+            {
+                ImGui::TextColored(ImVec4(1, 0.4, 0.4, 1), "<empty>");
             }
         }
 
@@ -122,6 +152,7 @@ namespace DYE
             }
         }
     }
+
 #endif
 
     ImageRendererUpdater::ImageRendererUpdater(ComponentTypeID typeID, WindowBase* window) : ComponentUpdaterBase(typeID), m_pWindow(window)
@@ -244,6 +275,16 @@ namespace DYE
 
                 m_tempShaderProgram->Bind();
                 {
+                    if (image->m_Texture)
+                    {
+                        image->m_Texture->Bind(0);
+
+                        unsigned int textureUniformLocation = glGetUniformLocation(m_tempShaderProgram->GetID(),
+                                                                                   "_MainTex");
+                        glCheckAfterCall(glGetUniformLocation(m_tempShaderProgram->GetID(), "_MainTex"));
+                        glCall(glUniform1i(textureUniformLocation, 0));
+                    }
+
                     unsigned int colorUniformLocation = glGetUniformLocation(m_tempShaderProgram->GetID(), "_Color");
                     glCheckAfterCall(glGetUniformLocation(m_tempShaderProgram->GetID(), "_Color"));
                     glCall(glUniform4f(colorUniformLocation, image->m_Color.r, image->m_Color.g, image->m_Color.b,

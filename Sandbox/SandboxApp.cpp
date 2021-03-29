@@ -10,6 +10,7 @@
 #include "Graphics/Shader.h"
 #include "Graphics/Buffer.h"
 #include "Graphics/VertexArray.h"
+#include "Graphics/Texture.h"
 
 #include "Scene/ImageRenderer.h"
 #include "SandboxLayer.h"
@@ -38,7 +39,7 @@ namespace DYE
 
             /// Create entities and components
             auto emptyEnt = sceneLayer->CreateEntity("Empty Ent");
-            sceneLayer->LazyAddComponentToEntity<ImageRenderer>(emptyEnt);
+            sceneLayer->LazyAddComponentToEntity<ImageRenderer>(emptyEnt).lock()->SetTexture(Texture2D::Create("assets/textures/Island.png"));
 
             auto [hasTransform, _] = emptyEnt.lock()->GetComponent<Transform>();
 
