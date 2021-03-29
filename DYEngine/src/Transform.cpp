@@ -1,9 +1,12 @@
 #include "Scene/Transform.h"
 #include "Scene/Entity.h"
 
-#include <algorithm>
+#include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/euler_angles.hpp>
+
+#include <algorithm>
 #include <utility>
 
 #if DYE_DEBUG
@@ -119,12 +122,16 @@ namespace DYE
         ImGui::SameLine(); ImGui::DragFloat("z##position", (float*)&m_Position.z, 1, 0, 0);
 
         ImGui::Text("Scale");
-        ImGui::DragFloat("x##scale", (float*)&m_Scale.x, 1, 0, 0);
-        ImGui::SameLine(); ImGui::DragFloat("y##scale", (float*)&m_Scale.y, 1, 0, 0);
-        ImGui::SameLine(); ImGui::DragFloat("z##scale", (float*)&m_Scale.z, 1, 0, 0);
+        ImGui::DragFloat("x##scale", (float*)&m_Scale.x, 0.1, 0, 0);
+        ImGui::SameLine(); ImGui::DragFloat("y##scale", (float*)&m_Scale.y, 0.1, 0, 0);
+        ImGui::SameLine(); ImGui::DragFloat("z##scale", (float*)&m_Scale.z, 0.1, 0, 0);
 
         ImGui::PopItemWidth();
 
+        auto rotationZ = glm::degrees(glm::roll(m_Rotation));
+        ImGui::Text("Rotation");
+        ImGui::DragFloat("z##rotation", (float*)&rotationZ, 1, 0, 0);
+        m_Rotation = glm::angleAxis(glm::radians(rotationZ), glm::vec3{0, 0, 1});
 
 /*
         auto euler = glm::degrees(glm::eulerAngles(m_Rotation));

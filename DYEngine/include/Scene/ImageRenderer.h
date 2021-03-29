@@ -24,7 +24,7 @@ namespace DYE
         void OnUpdate() override;
 
         std::uint32_t& GetWidth() { return m_Width; }
-        std::uint32_t& GetHeight() { return m_Width; }
+        std::uint32_t& GetHeight() { return m_Height; }
         void SetDimension(std::uint32_t width, std::uint32_t height) { m_Width = width; m_Height = height; }
     private:
         glm::vec4 m_Color {1, 1, 1, 1};

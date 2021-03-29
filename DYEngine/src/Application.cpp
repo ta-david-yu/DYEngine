@@ -4,6 +4,7 @@
 #include "Graphics/Renderer.h"
 
 #include <SDL.h>
+#include <SDL_image.h>
 
 namespace DYE
 {
@@ -16,6 +17,12 @@ namespace DYE
         DYE_LOG("OS: %s", SDL_GetPlatform());
         DYE_LOG("CPU cores: %d", SDL_GetCPUCount());
         DYE_LOG("RAM: %.2f GB", (float) SDL_GetSystemRAM() / 1024.0f);
+
+
+        if (IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG)
+        {
+            DYE_LOG("Failed to initialize SDL_image");
+        }
 
         /// Initialize system and system instances
 

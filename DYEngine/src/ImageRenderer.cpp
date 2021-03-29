@@ -9,11 +9,13 @@
 #include "Graphics/OpenGL.h"
 #include "Graphics/RenderCommand.h"
 
+#include <glm/gtc/type_ptr.hpp>
+
+#include <algorithm>
+
 #ifdef DYE_DEBUG
 #include <imgui.h>
 #endif
-
-#include <algorithm>
 
 namespace DYE
 {
@@ -118,12 +120,12 @@ namespace DYE
         DYE_LOG("Init Image Renderer");
 
         /// Create vertices [position]
-        float positions[4 * 2] = {
-                -1.5f, -0.5f,
-                -0.5f, -0.5f,
+        float positions[4 * 4] = {
+                -0.5f, -0.5f, 0.0f, 0.0f,
+                0.5f, -0.5f, 1.0f, 0.0f,
 
-                -0.5f, -1.5f,
-                -1.5f, -1.5f
+                0.5f, 0.5f, 1.0f, 1.0f,
+                -0.5f, 0.5f, 0.0f, 1.0f
         };
 
         // Index Buffer
@@ -137,6 +139,7 @@ namespace DYE
         auto vB = VertexBuffer::Create(positions, sizeof(positions));
         BufferLayout layout {
                 BufferElement(ShaderDataType::Float2, "position", false),
+                BufferElement(ShaderDataType::Float2, "texCoord", false),
         };
         vB->SetLayout(layout);
         m_QuadVertexArray->AddVertexBuffer(vB);
@@ -190,8 +193,19 @@ namespace DYE
             {
                 ///
                 auto transform = image->GetEntityPtr()->GetTransform().lock();
-                glm::vec2 center { transform->GetLocalPosition().x / m_pWindow->GetWidth() * 2,
-                                   transform->GetLocalPosition().y / m_pWindow->GetHeight() * 2 };
+                auto worldPos = transform->GetLocalPosition();
+                auto worldScale = transform->GetLocalScale();
+
+                glm::vec2 position {(worldPos.x - m_pWindow->GetWidth() / 2.0f) / m_pWindow->GetWidth() * 2.0f,
+                                    (worldPos.y - m_pWindow->GetHeight() / 2.0f) / m_pWindow->GetHeight() * 2.0f};
+
+                float dimensionScaleX = image->GetWidth() / ((float)m_pWindow->GetWidth() / 2);
+                float dimensionScaleY = image->GetHeight() / ((float)m_pWindow->GetHeight() / 2);
+                glm::vec2 scale {dimensionScaleX * worldScale.x, dimensionScaleY * worldScale.y};
+
+                glm::mat4 transformMatrix =
+                        glm::translate(glm::vec3(position.x, position.y, 0)) *
+                        glm::scale(glm::vec3(scale.x, scale.y, 1));
 
                 m_tempShaderProgram->Bind();
                 {
@@ -200,9 +214,9 @@ namespace DYE
                     glCall(glUniform4f(colorUniformLocation, image->m_Color.r, image->m_Color.g, image->m_Color.b,
                                        image->m_Color.a));
 
-                    unsigned int centerPosUniformLocation = glGetUniformLocation(m_tempShaderProgram->GetID(), "_CenterPos");
-                    glCheckAfterCall(glGetUniformLocation(m_tempShaderProgram->GetID(), "_CenterPos"));
-                    glCall(glUniform2f(centerPosUniformLocation, center.x, center.y));
+                    unsigned int transformMatUniformLocation = glGetUniformLocation(m_tempShaderProgram->GetID(), "_TransformMatrix");
+                    glCheckAfterCall(glGetUniformLocation(m_tempShaderProgram->GetID(), "_TransformMatrix"));
+                    glCall(glUniformMatrix4fv(transformMatUniformLocation, 1, GL_FALSE, glm::value_ptr(transformMatrix)););
                 }
 
                 ///
