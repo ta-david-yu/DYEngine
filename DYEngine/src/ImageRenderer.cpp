@@ -89,7 +89,13 @@ namespace DYE
 
                     bool isSelected = (index == m_SortingLayerID);
                     if (ImGui::Selectable(itemLayerName, isSelected))
-                        m_SortingLayerID = index;
+                    {
+                        if (index != m_SortingLayerID)
+                        {
+                            m_pUpdater->MarkDirty();
+                            m_SortingLayerID = index;
+                        }
+                    }
                     if (isSelected)
                         ImGui::SetItemDefaultFocus();
 
@@ -99,14 +105,21 @@ namespace DYE
             }
 
             ImGui::Text("Sorting Order In Layer");
-            ImGui::DragInt("##sortingOrder", (int *) &m_SortingOrder, 0.1f, 0, 0);
+            int sortingOrder = m_SortingOrder;
+            ImGui::DragInt("##sortingOrder", (int *) &sortingOrder, 0.1f, 0, 0);
 
             ImGui::SameLine();
             if (ImGui::Button("<"))
-                m_SortingOrder--;
+                sortingOrder--;
             ImGui::SameLine();
             if (ImGui::Button(">"))
-                m_SortingOrder++;
+                sortingOrder++;
+
+            if (sortingOrder != m_SortingOrder)
+            {
+                m_pUpdater->MarkDirty();
+                m_SortingOrder = sortingOrder;
+            }
         }
     }
 #endif
@@ -177,13 +190,35 @@ namespace DYE
         const auto imageRenderer = std::static_pointer_cast<ImageRenderer>(component);
         imageRenderer->m_pUpdater = this;
 
+        MarkDirty();
         m_CachedImageRenderers.push_back(imageRenderer);
     }
 
     void ImageRendererUpdater::RenderImages()
     {
         /// sort and then draw
-        /// TODO: Sort
+        if (m_IsDirty)
+        {
+            struct {
+                bool operator()(const std::shared_ptr<ImageRenderer>& a, std::shared_ptr<ImageRenderer> b) const
+                {
+                    if (a->m_SortingLayerID < b->m_SortingLayerID)
+                    {
+                        return true;
+                    }
+                    else if (a->m_SortingLayerID > b->m_SortingLayerID)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        return a->m_SortingOrder < b->m_SortingOrder;
+                    }
+                }
+            } customSort;
+            std::sort(m_CachedImageRenderers.begin(), m_CachedImageRenderers.end(), customSort);
+            m_IsDirty = false;
+        }
 
         /// Draw
         glCall(glDisable(GL_DEPTH_TEST));

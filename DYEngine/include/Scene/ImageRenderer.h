@@ -69,6 +69,8 @@ namespace DYE
         std::string LayerIDToLayerName(std::uint32_t id);
 
         std::vector<std::string>& GetSortingLayers() { return m_SortingLayers; }
+
+        void MarkDirty() { m_IsDirty = true; }
     private:
         /// Currently drawing target window (get dimension from this window)
         WindowBase* m_pWindow {nullptr};
@@ -79,5 +81,8 @@ namespace DYE
 
         std::shared_ptr<VertexArray> m_QuadVertexArray {nullptr};
         std::shared_ptr<ShaderProgram> m_tempShaderProgram {nullptr};
+
+        /// Whether or not the images should be sorted before render
+        bool m_IsDirty = true;
     };
 }
