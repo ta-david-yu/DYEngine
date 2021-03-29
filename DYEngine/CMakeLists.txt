@@ -99,7 +99,6 @@ set(DEFAULT_ASSETS
         assets/Image.shader)
 
 foreach(ASSET ${DEFAULT_ASSETS})
-
     # extract filename
     get_filename_component(ASSET_FILENAME ${ASSET} NAME)
 

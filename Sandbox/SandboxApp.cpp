@@ -26,10 +26,6 @@ namespace DYE
         SandboxApp() = delete;
         SandboxApp(const SandboxApp &) = delete;
 
-        ///
-        std::shared_ptr<ShaderProgram> m_DebugShaderProgram;
-        std::shared_ptr<VertexArray> m_DebugVA;
-
         explicit SandboxApp(const std::string &windowName, int fixedFramePerSecond = 60)
             : Application(windowName, fixedFramePerSecond)
         {
@@ -73,71 +69,12 @@ namespace DYE
                     }
                 }
             }
-
-            // Vertex Buffer
-
-//            /// Create vertices [position, color]
-//            float positions[4 * 6] = {
-//                    -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-//                    -0.25f, -1.0f,  0.0f, 1.0f, 0.0f, 0.0f,
-//
-//                    -0.25f, -0.25f,   0.0f, 0.0f, 1.0f, 1.0f,
-//                    -1.0f, -0.25f,  0.0f, 0.0f, 0.0f, 1.0f
-//            };
-//
-//            // Index Buffer
-//            std::uint32_t indices[] = {
-//                    0, 1, 2,
-//                    2, 3, 0
-//            };
-//
-//            m_DebugVA = VertexArray::Create();
-//
-//            auto vB = VertexBuffer::Create(positions, sizeof(positions));
-//            BufferLayout layout {
-//                BufferElement(ShaderDataType::Float2, "position", false),
-//                BufferElement(ShaderDataType::Float4, "color", false),
-//            };
-//            vB->SetLayout(layout);
-//            m_DebugVA->AddVertexBuffer(vB);
-//
-//            auto iB = IndexBuffer::Create(indices, sizeof(indices) / sizeof(std::uint32_t));
-//            m_DebugVA->SetIndexBuffer(iB);
-//
-//            /// Create debug shader program
-//            m_DebugShaderProgram = ShaderProgram::CreateFromFile("Basic", "assets/shaders/Basic.shader");
-//
-//            m_DebugShaderProgram->Unbind();
-//            m_DebugVA->Unbind();
-//            vB->Unbind();
-//            iB->Unbind();
-
         }
 
         ~SandboxApp() final = default;
 
         void onPostRenderLayers() override
         {
-//            static float colorComponent = 1;
-//            colorComponent += TIME.DeltaTime() * 0.5f;
-//            if (colorComponent > 1)
-//                colorComponent -= 1;
-//
-//            ///
-//            m_DebugShaderProgram->Bind();
-//            {
-//                unsigned int colorUniformLocation = glGetUniformLocation(m_DebugShaderProgram->GetID(), "_Color");
-//                glCheckAfterCall(glGetUniformLocation(m_DebugShaderProgram->GetID(), "_Color"));
-//                glCall(glUniform4f(colorUniformLocation, colorComponent, colorComponent, colorComponent,
-//                                   colorComponent));
-//            }
-//
-//            ///
-//            m_DebugVA->Bind();
-//            RenderCommand::DrawIndexed(m_DebugVA);
-//
-//            m_DebugShaderProgram->Unbind();
-//            m_DebugVA->Unbind();
         }
     };
 }

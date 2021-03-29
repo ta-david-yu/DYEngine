@@ -18,12 +18,6 @@ namespace DYE
         DYE_LOG("CPU cores: %d", SDL_GetCPUCount());
         DYE_LOG("RAM: %.2f GB", (float) SDL_GetSystemRAM() / 1024.0f);
 
-
-        if (IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG)
-        {
-            DYE_LOG("Failed to initialize SDL_image");
-        }
-
         /// Initialize system and system instances
 
         // Create window and context, and then init renderer
