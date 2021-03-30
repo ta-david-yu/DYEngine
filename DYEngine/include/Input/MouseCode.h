@@ -6,20 +6,13 @@
 
 namespace DYE
 {
-    enum class MouseCode : std::uint32_t
+    enum class MouseCode
     {
-        Button0                = 0,
-        Button1                = 1,
-        Button2                = 2,
-        Button3                = 3,
-        Button4                = 4,
-        Button5                = 5,
-        Button6                = 6,
-        Button7                = 7,
+        ButtonLeft      = SDL_BUTTON_LEFT,
+        ButtonRight     = SDL_BUTTON_RIGHT,
+        ButtonMiddle    = SDL_BUTTON_MIDDLE,
 
-        ButtonLast             = Button7,
-        ButtonLeft             = Button0,
-        ButtonRight            = Button1,
-        ButtonMiddle           = Button2
+        ButtonX1        = SDL_BUTTON_X1,
+        ButtonX2        = SDL_BUTTON_X2,
     };
 }

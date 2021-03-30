@@ -13,6 +13,7 @@ namespace DYE
     class Entity;
     class Transform;
     class ComponentUpdaterBase;
+    class Event;
 
     /// The base interface for component, owned and updated by component updater
     class ComponentBase
@@ -68,6 +69,7 @@ namespace DYE
         virtual void Init() {}
         virtual void UpdateComponents() = 0;
         virtual void FixedUpdateComponents() = 0;
+        virtual void HandleOnEvent(const Event& event) {}
 
         /// Attach the given component to the entity, and register this component to the updater list
         /// \param entity the entity to be attached to

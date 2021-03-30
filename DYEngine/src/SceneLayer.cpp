@@ -8,6 +8,7 @@
 #include "Scene/Transform.h"
 #include "Scene/ImageRenderer.h"
 #include "Util/Type.h"
+#include "Events/MouseEvent.h"
 
 #include <algorithm>
 #include <stack>
@@ -534,6 +535,25 @@ namespace DYE
             }
         }
 #endif
+        if (pEvent->GetEventType() == EventType::MouseMove)
+        {
+            const auto& mouseMoveEvent = std::static_pointer_cast<MouseMovedEvent>(pEvent);
+        }
+        else if (pEvent->GetEventType() == EventType::MouseButtonDown)
+        {
+            const auto& mouseDownEvent = std::static_pointer_cast<MouseButtonDownEvent>(pEvent);
+            DYE_LOG("DOWN: %d", mouseDownEvent->GetMouseButton());
+        }
+        else if (pEvent->GetEventType() == EventType::MouseButtonUp)
+        {
+            const auto& mouseUpEvent = std::static_pointer_cast<MouseButtonUpEvent>(pEvent);
+            DYE_LOG("UP: %d", mouseUpEvent->GetMouseButton());
+        }
+        else if (pEvent->GetEventType() == EventType::KeyDown)
+        {
+            const auto& keyDownEvent = std::static_pointer_cast<KeyDownEvent>(pEvent);
+            DYE_LOG("KEY DOWN: %d", keyDownEvent->GetKeyCode());
+        }
     }
 
     std::weak_ptr<Entity> SceneLayer::CreateEntity(const std::string& name)

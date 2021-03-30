@@ -53,9 +53,13 @@ namespace DYE
                     break;
                 case SDL_MOUSEBUTTONDOWN:
                     // TODO: Imgui Process, look at imgui_impl_sdl
+                    eventPtr.reset(new MouseButtonDownEvent(static_cast<MouseCode>(event.button.button)));
+                    caught = true;
                     break;
                 case SDL_MOUSEBUTTONUP:
                     // TODO: Imgui Process, look at imgui_impl_sdl
+                    eventPtr.reset(new MouseButtonUpEvent(static_cast<MouseCode>(event.button.button)));
+                    caught = true;
                     break;
                 default:
                     // Error
