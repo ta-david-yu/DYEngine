@@ -21,8 +21,9 @@ if (CMAKE_BUILD_TYPE MATCHES Debug)
     add_compile_definitions(DYE_DEBUG)
 elseif(CMAKE_BUILD_TYPE MATCHES Release)
     RedirectOutputTo("out/Release")
-    add_compile_definitions(DYE_DEBUG)
+    #add_compile_definitions(DYE_DEBUG)
 endif ()
+#add_compile_definitions(DYE_OPENGL_DEBUG)
 
 # Includes
 #include_directories(${CMAKE_CURRENT_SOURCE_DIR})
