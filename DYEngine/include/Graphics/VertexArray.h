@@ -26,9 +26,9 @@ namespace DYE
         virtual const std::vector<std::shared_ptr<VertexBuffer>>& GetVertexBuffers() const { return m_VertexBuffers; }
         virtual const std::shared_ptr<IndexBuffer>& GetIndexBuffer() const { return m_IndexBuffer; }
     private:
-        VertexArrayID m_ID;
+        VertexArrayID m_ID {0};
         /// The latest index of the vertex array attributes
-        BufferID m_VertexBufferAttributeIndex;
+        BufferID m_VertexBufferAttributeIndex {0};
         std::vector<std::shared_ptr<VertexBuffer>> m_VertexBuffers;
         std::shared_ptr<IndexBuffer> m_IndexBuffer;
 

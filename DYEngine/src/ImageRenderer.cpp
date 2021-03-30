@@ -47,7 +47,7 @@ namespace DYE
     {
         DYE_LOG("Init Image Renderer");
 
-        /// Create vertices [position]
+        /// Create vertices [position, texCoord]
         float positions[4 * 4] = {
                 -0.5f, -0.5f, 0.0f, 0.0f,
                 0.5f, -0.5f, 1.0f, 0.0f,
@@ -77,13 +77,11 @@ namespace DYE
 
         /// Create default shader program
         m_DefaultShaderProgram = ShaderProgram::CreateFromFile("Image", "assets/default/Image.shader");
-        /*{
-            /// Bind the main texture slot
-            unsigned int textureUniformLocation = glGetUniformLocation(m_DefaultShaderProgram->GetID(),
-                                                                       "_MainTex");
-            glCheckAfterCall(glGetUniformLocation(m_DefaultShaderProgram->GetID(), "_MainTex"));
-            glCall(glUniform1i(textureUniformLocation, 0));
-        }*/
+
+        /// Bind the main texture slot
+        m_DefaultShaderProgram->Bind();
+        auto textureUniformLocation = glGetUniformLocation(m_DefaultShaderProgram->GetID(), "_MainTex");
+        glCall(glUniform1i(textureUniformLocation, 0));
 
         /// Create default white texture
         m_DefaultTexture2D = Texture2D::Create(glm::vec4 {1, 1, 1, 1});
@@ -147,6 +145,7 @@ namespace DYE
 
         /// Draw
         glCall(glDisable(GL_DEPTH_TEST));
+
         for (const auto& image : m_CachedImageRenderers)
         {
             if (image->GetIsEnabled())
@@ -155,6 +154,7 @@ namespace DYE
                 auto transform = image->GetEntityPtr()->GetTransform().lock();
                 auto worldPos = transform->GetLocalPosition();
                 auto worldScale = transform->GetLocalScale();
+                worldPos.y = m_pWindow->GetHeight() - worldPos.y;
 
                 glm::vec2 position {(worldPos.x - m_pWindow->GetWidth() / 2.0f) / m_pWindow->GetWidth() * 2.0f,
                                     (worldPos.y - m_pWindow->GetHeight() / 2.0f) / m_pWindow->GetHeight() * 2.0f};
@@ -176,16 +176,13 @@ namespace DYE
                     else
                     {
                         m_DefaultTexture2D->Bind(0);
-                        //glBindTextureUnit(0, 0);
                     }
 
-                    unsigned int colorUniformLocation = glGetUniformLocation(m_DefaultShaderProgram->GetID(), "_Color");
-                    glCheckAfterCall(glGetUniformLocation(m_DefaultShaderProgram->GetID(), "_Color"));
+                    auto colorUniformLocation = glGetUniformLocation(m_DefaultShaderProgram->GetID(), "_Color");
                     glCall(glUniform4f(colorUniformLocation, image->m_Color.r, image->m_Color.g, image->m_Color.b,
                                        image->m_Color.a));
 
-                    unsigned int transformMatUniformLocation = glGetUniformLocation(m_DefaultShaderProgram->GetID(), "_TransformMatrix");
-                    glCheckAfterCall(glGetUniformLocation(m_DefaultShaderProgram->GetID(), "_TransformMatrix"));
+                    auto transformMatUniformLocation = glGetUniformLocation(m_DefaultShaderProgram->GetID(), "_TransformMatrix");
                     glCall(glUniformMatrix4fv(transformMatUniformLocation, 1, GL_FALSE, glm::value_ptr(transformMatrix)););
                 }
 

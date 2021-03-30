@@ -51,12 +51,10 @@ namespace DYE
             auto stranded = sceneLayer->CreateEntity("Stranded");
             image = sceneLayer->LazyAddComponentToEntity<ImageRenderer>(stranded);
             image.lock()->SetTexture(Texture2D::Create("assets/textures/stranded-social-media.png"));
-            sceneLayer->LazyAddComponentToEntity<FrameCounterComponent>(stranded);
 
             auto peaceOut = sceneLayer->CreateEntity("Peace Out");
             image = sceneLayer->LazyAddComponentToEntity<ImageRenderer>(peaceOut);
             image.lock()->SetTexture(Texture2D::Create("assets/textures/peaceout-boy.png"));
-            sceneLayer->LazyAddComponentToEntity<FrameCounterComponent>(peaceOut);
         }
 
         ~SandboxApp() final = default;

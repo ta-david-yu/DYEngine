@@ -63,7 +63,7 @@ namespace DYE
             DYE_ASSERT(false);
         }
 
-        glBindVertexArray(m_ID);
+        glCall(glBindVertexArray(m_ID));
         vertexBuffer->Bind();
 
         const auto& layout = vertexBuffer->GetLayout();
@@ -77,7 +77,7 @@ namespace DYE
                 case ShaderDataType::Float3:
                 case ShaderDataType::Float4:
                 {
-                    glEnableVertexAttribArray(m_VertexBufferAttributeIndex);
+                    glCall(glEnableVertexAttribArray(m_VertexBufferAttributeIndex));
                     glVertexAttribPointer(m_VertexBufferAttributeIndex,
                                           element.GetComponentCount(),
                                           ShaderDataTypeToOpenGLBaseType(element.Type),

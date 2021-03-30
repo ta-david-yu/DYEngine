@@ -34,6 +34,6 @@ namespace DYE
         EVENT_CLASS_CATEGORY(EventCategory::Application)
 
     private:
-        uint32_t m_Width, m_Height;
+        uint32_t m_Width {0}, m_Height {0};
     };
 }
