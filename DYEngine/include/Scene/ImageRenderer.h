@@ -58,6 +58,8 @@ namespace DYE
         void Init() override;
         void UpdateComponents() override;
         void FixedUpdateComponents() override;
+        void HandleOnEvent(Event &event) override;
+
         void RemoveComponentsOfEntity(uint32_t entityID) override;
         void attachEntityWithComponent(const std::weak_ptr<Entity> &entity, const std::shared_ptr<ComponentBase> &component) override;
 

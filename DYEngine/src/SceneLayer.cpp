@@ -535,24 +535,9 @@ namespace DYE
             }
         }
 #endif
-        if (pEvent->GetEventType() == EventType::MouseMove)
+        for (auto& updater : m_ComponentUpdaters)
         {
-            const auto& mouseMoveEvent = std::static_pointer_cast<MouseMovedEvent>(pEvent);
-        }
-        else if (pEvent->GetEventType() == EventType::MouseButtonDown)
-        {
-            const auto& mouseDownEvent = std::static_pointer_cast<MouseButtonDownEvent>(pEvent);
-            DYE_LOG("DOWN: %d", mouseDownEvent->GetMouseButton());
-        }
-        else if (pEvent->GetEventType() == EventType::MouseButtonUp)
-        {
-            const auto& mouseUpEvent = std::static_pointer_cast<MouseButtonUpEvent>(pEvent);
-            DYE_LOG("UP: %d", mouseUpEvent->GetMouseButton());
-        }
-        else if (pEvent->GetEventType() == EventType::KeyDown)
-        {
-            const auto& keyDownEvent = std::static_pointer_cast<KeyDownEvent>(pEvent);
-            DYE_LOG("KEY DOWN: %d", keyDownEvent->GetKeyCode());
+            updater->HandleOnEvent(*pEvent);
         }
     }
 

@@ -69,7 +69,7 @@ namespace DYE
         virtual void Init() {}
         virtual void UpdateComponents() = 0;
         virtual void FixedUpdateComponents() = 0;
-        virtual void HandleOnEvent(const Event& event) {}
+        virtual void HandleOnEvent(Event& event) {}
 
         /// Attach the given component to the entity, and register this component to the updater list
         /// \param entity the entity to be attached to
