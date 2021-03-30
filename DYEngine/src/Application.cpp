@@ -1,56 +1,57 @@
 #include "Application.h"
 #include "Base.h"
 #include "Logger.h"
+#include "Graphics/Renderer.h"
 
-#include <glad/glad.h>
 #include <SDL.h>
-#include <imgui_impl_sdl.h>
-#include <imgui_impl_opengl3.h>
-
-#include <utility>
+#include <SDL_image.h>
 
 namespace DYE
 {
     Application::Application(const std::string &windowName, int fixedFramePerSecond) : m_Time(fixedFramePerSecond)
     {
-        // TODO: wrap it so SDL is abstracted
-        SDL_Init(SDL_INIT_VIDEO);
-        DYE_LOG("--------------- Hello World ---------------");
-
+        SDL_Init(0);
+        SDL_InitSubSystem(SDL_INIT_AUDIO);
+        SDL_InitSubSystem(SDL_INIT_VIDEO);
+        DYE_LOG("--------------- Init SDL");
         DYE_LOG("OS: %s", SDL_GetPlatform());
         DYE_LOG("CPU cores: %d", SDL_GetCPUCount());
         DYE_LOG("RAM: %.2f GB", (float) SDL_GetSystemRAM() / 1024.0f);
+
+        // GL 4.6 + GLSL 130
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+        //SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+        int major, minor, profile;
+        SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
+        SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
+        SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profile);
+        DYE_LOG("GL Version: %d.%d, profile - %s", major, minor, profile == SDL_GL_CONTEXT_PROFILE_CORE? "core" : "compatibility");
 
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-        SDL_GL_SetAttribute(
-                SDL_GL_CONTEXT_PROFILE_MASK,
-                SDL_GL_CONTEXT_PROFILE_CORE
-        );
+        /// Initialize system and system instances
+        DYE_LOG("---------------");
 
-        // GL 3.0 + GLSL 130
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-        int major, minor, profile;
-        SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
-        SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
-        SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profile);
-        DYE_LOG("GL Version: %d.%d, profile - %d", major, minor, profile);
-
-        // Initialize system instances
+        // Create window and context, and then init renderer
+        DYE_LOG("--------------- Init Renderer");
         m_Window = WindowBase::Create(WindowProperty(windowName));
-        m_EventSystem = EventSystemBase::Create();
-        m_ImGuiLayer = std::make_shared<ImGuiLayer>(m_Window.get());
+        Renderer::Init();
+        RenderCommand::SetViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
+        RenderCommand::SetClearColor(glm::vec4 {0, 0, 0, 0});
+        DYE_LOG("---------------");
 
         // Register handleOnEvent member function to the EventSystem
+        m_EventSystem = EventSystemBase::Create();
         m_EventSystem->SetEventHandler(DYE_BIND_EVENT_FUNCTION(Application::handleOnEvent));
 
         // Push ImGuiLayer as overlay
-        m_LayerStack.PushOverlay(m_ImGuiLayer);
+        m_ImGuiLayer = std::make_shared<ImGuiLayer>(m_Window.get());
+        pushOverlay(m_ImGuiLayer);
     }
 
     Application::~Application()
@@ -60,15 +61,19 @@ namespace DYE
 
     void Application::Run()
     {
-        /// TEMP
-        glViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
-        glClearColor(0, 0, 0, 0);
-        /// TEMP
-
         m_IsRunning = true;
         m_Time.tickInit();
 
         double deltaTimeAccumulator = 0;
+
+        /// Init layers
+        for (auto& layer : m_LayerStack)
+        {
+            DYE_LOG("--------------- Init Layer - %s", layer->GetName().c_str());
+            layer->OnInit();
+            DYE_LOG("---------------");
+        }
+
         while (m_IsRunning)
         {
             /// Poll Events
@@ -93,15 +98,13 @@ namespace DYE
             }
 
             /// Render
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+            RenderCommand::Clear();
 
             onPreRenderLayers();
-
             for (auto& layer : m_LayerStack)
             {
                 layer->OnRender();
             }
-
             onPostRenderLayers();
 
             /// ImGui
@@ -117,8 +120,9 @@ namespace DYE
 
             m_Time.tickUpdate();
         }
-    }
 
+        DYE_LOG("--------------- Exit Game Loop");
+    }
 
     void Application::pushLayer(std::shared_ptr<LayerBase> layer)
     {
@@ -136,6 +140,7 @@ namespace DYE
 
         EventDispatcher dispatcher(*pEvent);
         dispatcher.Dispatch<WindowCloseEvent>(DYE_BIND_EVENT_FUNCTION(handleOnWindowClose));
+        dispatcher.Dispatch<WindowSizeChangeEvent>(DYE_BIND_EVENT_FUNCTION(handleOnWindowResize));
 
         // Event is passed from top to bottom layer
         for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); it++)
@@ -153,5 +158,13 @@ namespace DYE
     {
         m_IsRunning = false;
         return true;
+    }
+
+    bool Application::handleOnWindowResize(const WindowSizeChangeEvent &event)
+    {
+        Renderer::OnWindowResize(event.GetWidth(), event.GetHeight());
+
+        // return false because others might want to handle this event too
+        return false;
     }
 }

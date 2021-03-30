@@ -19,7 +19,15 @@ set(SOURCE_FILES
         src/Entity.cpp
         src/ComponentBase.cpp
         src/Type.cpp
-        src/Transform.cpp src/Shader.cpp src/OpenGL.cpp src/Buffer.cpp src/Renderer.cpp)
+        src/Transform.cpp
+        src/Shader.cpp
+        src/OpenGL.cpp
+        src/Buffer.cpp
+        src/Renderer.cpp
+        src/VertexArray.cpp
+        src/RenderCommand.cpp
+        src/ImageRenderer.cpp
+        src/Texture.cpp)
 set(HEADER_FILES
         include/Application.h
         include/WindowBase.h
@@ -42,7 +50,15 @@ set(HEADER_FILES
         include/Scene/Entity.h
         include/Scene/ComponentBase.h
         include/Util/Type.h
-        include/Scene/Transform.h include/Graphics/Shader.h include/Graphics/OpenGL.h include/Graphics/Buffer.h include/Graphics/Renderer.h)
+        include/Scene/Transform.h
+        include/Graphics/Shader.h
+        include/Graphics/OpenGL.h
+        include/Graphics/Buffer.h
+        include/Graphics/Renderer.h
+        include/Graphics/VertexArray.h
+        include/Graphics/RenderCommand.h
+        include/Scene/ImageRenderer.h
+        include/Graphics/Texture.h)
 
 message(STATUS "DYEngine Source Files: ${SOURCE_FILES}")
 message(STATUS "DYEngine Header Files: ${HEADER_FILES}")
@@ -93,3 +109,22 @@ target_link_libraries(DYEngine
         imgui
         glm)
 
+# ===========================================================================================
+# Copy default assets to the output directory
+set(DEFAULT_ASSETS
+        assets/Image.shader)
+
+foreach(ASSET ${DEFAULT_ASSETS})
+    # extract filename
+    get_filename_component(ASSET_FILENAME ${ASSET} NAME)
+
+    # set copy output directory
+    if(WIN32)
+        set(ASSET_OUTPUT_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets/default/${ASSET_FILENAME})
+    else()
+        set(ASSET_OUTPUT_PATH ${EXECUTABLE_OUTPUT_PATH}/assets/default/${ASSET_FILENAME})
+    endif(WIN32)
+
+    message(STATUS "DYEngine Copy Default Asset: ${ASSET_OUTPUT_PATH}")
+    configure_file(${ASSET} ${ASSET_OUTPUT_PATH})
+endforeach()

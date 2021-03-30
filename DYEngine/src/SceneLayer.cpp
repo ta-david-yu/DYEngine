@@ -6,6 +6,7 @@
 #include "Logger.h"
 #include "Scene/Entity.h"
 #include "Scene/Transform.h"
+#include "Scene/ImageRenderer.h"
 #include "Util/Type.h"
 
 #include <algorithm>
@@ -19,7 +20,7 @@
 
 namespace DYE
 {
-    SceneLayer::SceneLayer(WindowBase *pWindow) : m_pWindow(pWindow)
+    SceneLayer::SceneLayer(WindowBase *pWindow) : LayerBase("Scene Layer"), m_pWindow(pWindow)
     {
         SetupDefaultUpdaters();
     }
@@ -30,25 +31,24 @@ namespace DYE
 
     void SceneLayer::SetupDefaultUpdaters()
     {
+        /// Setup Transform Updater
         auto transformUpdater = std::make_shared<TransformUpdater>(ComponentTypeID(typeid(Transform)));
         m_TransformUpdater = transformUpdater;
         RegisterComponentUpdater(std::move(transformUpdater));
+
+        /// Setup ImageRenderer Updater
+        auto imageRendererUpdater = std::make_shared<ImageRendererUpdater>(ComponentTypeID(typeid(ImageRenderer)),
+                                                                           m_pWindow);
+        m_ImageRendererUpdater = imageRendererUpdater;
+        RegisterComponentUpdater(std::move(imageRendererUpdater));
     }
 
-    void SceneLayer::OnEvent(const std::shared_ptr<Event> &pEvent)
+    void SceneLayer::OnInit()
     {
-#if DYE_DEBUG
-        /// Don't dispatch debug input, show window if F1
-        if (!m_SceneDebugWindowIsOpen && pEvent->GetEventType() == EventType::KeyDown)
+        for (auto& updater : m_ComponentUpdaters)
         {
-            auto keyCode = static_cast<KeyDownEvent&>(*pEvent).GetKeyCode();
-            /// Toggle scene debug window
-            if (keyCode == KeyCode::F1)
-            {
-                m_SceneDebugWindowIsOpen = true;
-            }
+            updater->Init();
         }
-#endif
     }
 
     void SceneLayer::OnUpdate()
@@ -69,12 +69,16 @@ namespace DYE
 
     void SceneLayer::OnRender()
     {
+        m_ImageRendererUpdater.lock()->RenderImages();
     }
 
     void SceneLayer::OnImGui()
     {
 #if DYE_DEBUG
         static uint32_t selectedEntityID = 0;
+
+        ImVec4 enabledTextColor {1, 1, 1, 1 };
+        ImVec4 disabledTextColor {0.5, 0.5, 0.5, 1 };
 
         /// Force expand tree node of selected entity's parents
         static std::set<uint32_t> forceExpandTreeNodeEntityIDs {};
@@ -122,7 +126,7 @@ namespace DYE
 
                 if (ImGui::CollapsingHeader("Entity"))
                 {
-                    float entityViewHeight = 350;
+                    float entityViewHeight = 450;
                     float entityHierarchyWidth = 200;
 
                     if (!m_Entities.empty())
@@ -269,8 +273,11 @@ namespace DYE
                                         char componentViewLabel[128];
                                         sprintf(componentViewLabel, "%s##", compName.c_str());
 
+                                        ImGui::PushStyleColor(ImGuiCol_Text, comp->m_IsEnabled ? enabledTextColor : disabledTextColor);
                                         if (ImGui::TreeNode(componentViewLabel))
                                         {
+                                            ImGui::PopStyleColor();
+
                                             if (ImGui::Button("goto"))
                                             {
                                                 m_ComponentDebugWindowIsOpen = true;
@@ -283,6 +290,10 @@ namespace DYE
 
                                             ImGui::TreePop();
                                             ImGui::Separator();
+                                        }
+                                        else
+                                        {
+                                            ImGui::PopStyleColor();
                                         }
                                     }
                                     ImGui::EndTabItem();
@@ -358,8 +369,13 @@ namespace DYE
 
                             // Updater Comps: Left
                             {
-                                ImGui::BeginChild("updater components list view", ImVec2(compListViewWidth, 0), true);
+                                if (ImGui::Button("open updater debug window"))
+                                {
+                                    m_UpdaterDebugWindowIsOpen = true;
+                                    m_DebugTargetUpdater = updater;
+                                }
 
+                                ImGui::BeginChild("updater components list view", ImVec2(compListViewWidth, 0), true);
                                 for (int i = 0; i < updater->m_Components.size(); i++)
                                 {
                                     const auto &compPair = updater->m_Components[i];
@@ -367,10 +383,13 @@ namespace DYE
 
                                     char updaterCompLabel[128];
                                     sprintf(updaterCompLabel, "[ID: %d] %s##%d", compEntity->GetID(), compEntity->GetName().c_str(), selectedUpdaterIndex);
+
+                                    ImGui::PushStyleColor(ImGuiCol_Text, compPair.second->m_IsEnabled ? enabledTextColor : disabledTextColor);
                                     if (ImGui::Selectable(updaterCompLabel, selectedUpdaterComponentIndex == i))
                                     {
                                         selectedUpdaterComponentIndex = i;
                                     }
+                                    ImGui::PopStyleColor();
                                 }
                                 ImGui::EndChild();
                             }
@@ -468,6 +487,51 @@ namespace DYE
                 }
             }
             ImGui::End();
+        }
+
+        if (m_UpdaterDebugWindowIsOpen)
+        {
+            int debugWindowWidth = m_pWindow->GetWidth();
+            int debugWindowMaxHeight = m_pWindow->GetHeight();
+            // make controls widget width to be 1/4 of the main window width
+            if ((debugWindowWidth /= 5) < 200) { debugWindowWidth = 200; }
+            ImGui::SetNextWindowSizeConstraints(ImVec2(static_cast<float>(debugWindowWidth), 200), ImVec2(FLT_MAX, static_cast<float>(debugWindowMaxHeight - 20)));
+
+            // create a debugger window for the component
+            if (ImGui::Begin("Updater", &m_UpdaterDebugWindowIsOpen))
+            {
+                if (!m_DebugTargetUpdater.expired())
+                {
+                    const auto& updater = m_DebugTargetUpdater.lock().get();
+                    ImGui::Text("%s", demangleCTypeName(typeid(*updater).name()).c_str());
+
+                    ImGui::Separator();
+
+                    auto windowSize = ImGui::GetWindowSize();
+                    updater->onUpdaterDebugWindowGUI(windowSize.x, windowSize.y);
+                }
+                else
+                {
+                    ImGui::TextColored(ImVec4(1, 0, 0, 1), "No component is selected");
+                }
+            }
+            ImGui::End();
+        }
+#endif
+    }
+
+    void SceneLayer::OnEvent(const std::shared_ptr<Event> &pEvent)
+    {
+#if DYE_DEBUG
+        /// Don't dispatch debug input, show window if F1
+        if (!m_SceneDebugWindowIsOpen && pEvent->GetEventType() == EventType::KeyDown)
+        {
+            auto keyCode = static_cast<KeyDownEvent&>(*pEvent).GetKeyCode();
+            /// Toggle scene debug window
+            if (keyCode == KeyCode::F1)
+            {
+                m_SceneDebugWindowIsOpen = true;
+            }
         }
 #endif
     }

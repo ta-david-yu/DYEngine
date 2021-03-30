@@ -6,8 +6,11 @@
 
 namespace DYE
 {
+    class Application;
+
     class LayerBase
     {
+        friend Application;
     public:
         /// Ctor
         /// \param name debug purpose name
@@ -19,6 +22,9 @@ namespace DYE
 
         /// Called by LayerStack
         virtual void OnDetach() {}
+
+        /// Called before Application.Run loop
+        virtual void OnInit() {}
 
         virtual void OnFixedUpdate() {}
 

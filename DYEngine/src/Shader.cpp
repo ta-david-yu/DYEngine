@@ -36,40 +36,7 @@ namespace DYE
         return 0;
     }
 
-    /// A static helper function that compiles a single shader and return GL Shader ID
-    /// \param type
-    /// \param source
-    /// \return Shader ID, return 0 if the compilation failed
-    static unsigned int compileShader(ShaderType type, const std::string& source)
-    {
-        const char* src = source.c_str();
-
-        unsigned int glShaderType = shaderTypeEnumToGLShaderType(type);
-
-        unsigned int shaderID = glCreateShader(glShaderType);
-        glShaderSource(shaderID, 1, &src, nullptr);
-        glCompileShader(shaderID);
-
-        int compileResult;
-        glGetShaderiv(shaderID, GL_COMPILE_STATUS, &compileResult);
-        if (compileResult == GL_FALSE)
-        {
-            int length;
-            glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &length);
-
-            char *msg = (char *) alloca(length * sizeof(char));
-            glGetShaderInfoLog(shaderID, length, &length, msg);
-
-            DYE_LOG("Shader[%d] Compilation Error - %s", (int)type, msg);
-
-            /// reset ID to zero, which represents error
-            shaderID = 0;
-        }
-
-        return shaderID;
-    }
-
-    ShaderProgram* ShaderProgram::s_pCurrentShaderProgramInUse = nullptr;
+    //ShaderProgram* ShaderProgram::s_pCurrentShaderProgramInUse = nullptr;
 
     std::shared_ptr<ShaderProgram> ShaderProgram::CreateFromFile(const std::string& name, const std::string &filepath)
     {
@@ -85,12 +52,12 @@ namespace DYE
 
         if (success)
         {
-            DYE_LOG("-- Successfully create shader \"%s\" from %s --", name.c_str(), filepath.c_str());
+            DYE_LOG("-- Successfully create shader [%d] \"%s\" from %s --", program->m_ID, name.c_str(), filepath.c_str());
             return program;
         }
         else
         {
-            DYE_LOG("-- Failed to create shader \"%s\" from %s --", name.c_str(), filepath.c_str());
+            DYE_LOG("-- Failed to create shader [%d] \"%s\" from %s --", program->m_ID, name.c_str(), filepath.c_str());
             DYE_ASSERT(false);
             return std::shared_ptr<ShaderProgram>();
         }
@@ -105,6 +72,7 @@ namespace DYE
     {
         Unbind();
 
+        DYE_LOG("Delete Program [%d] %s", m_ID, m_Name.c_str());
         glCall(glDeleteProgram(m_ID));
     }
 
@@ -112,15 +80,15 @@ namespace DYE
     {
         glCall(glUseProgram(m_ID));
 
-        s_pCurrentShaderProgramInUse = this;
+        //s_pCurrentShaderProgramInUse = this;
     }
 
     void ShaderProgram::Unbind()
     {
-        if (s_pCurrentShaderProgramInUse == this)
+        //if (s_pCurrentShaderProgramInUse == this)
         {
             glCall(glUseProgram(0));
-            s_pCurrentShaderProgramInUse = nullptr;
+            //s_pCurrentShaderProgramInUse = nullptr;
         }
     }
 
@@ -138,6 +106,10 @@ namespace DYE
         /// Parse source
         /// if the program has certain types of shader
         bool hasShadersOfType[(int) ShaderType::NumOfType];
+        for (int i = 0; i < (int)ShaderType::NumOfType; i++)
+        {
+            hasShadersOfType[i] = false;
+        }
 
         /// source string stream for each currScopeType of shader
         std::stringstream shaderSS[(int) ShaderType::NumOfType];
@@ -195,7 +167,7 @@ namespace DYE
         }
 
         /// Compile source
-        ShaderProgramID programID = glCreateProgram();
+        m_ID = glCreateProgram();
         glCheckAfterCall(glCreateProgram());
 
         std::vector<ShaderID> createdShaderIDs;
@@ -205,11 +177,38 @@ namespace DYE
             bool hasShaderType = hasShadersOfType[typeIndex];
             if (hasShaderType)
             {
-                ShaderID shaderID = compileShader((ShaderType) typeIndex, shaderSS[typeIndex].str());
+                auto shaderSource = shaderSS[typeIndex].str();
+                auto type = (ShaderType) typeIndex;
+                ShaderID shaderID = 0;
+                {
+                    const char* src = shaderSource.c_str();
+
+                    unsigned int glShaderType = shaderTypeEnumToGLShaderType(type);
+
+                    shaderID = glCreateShader(glShaderType);
+                    glCall(glShaderSource(shaderID, 1, &src, nullptr));
+                    glCall(glCompileShader(shaderID));
+
+                    int compileResult;
+                    glCall(glGetShaderiv(shaderID, GL_COMPILE_STATUS, &compileResult));
+                    if (compileResult == GL_FALSE)
+                    {
+                        int length;
+                        glCall(glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &length));
+
+                        char *msg = (char *) alloca(length * sizeof(char));
+                        glCall(glGetShaderInfoLog(shaderID, length, &length, msg));
+
+                        DYE_LOG("Shader[%d] Compilation Error - %s", (int)type, msg);
+
+                        /// reset ID to zero, which represents error
+                        shaderID = 0;
+                    }
+                }
 
                 if (shaderID != 0)
                 {
-                    glCall(glAttachShader(programID, shaderID));
+                    glCall(glAttachShader(m_ID, shaderID));
                     createdShaderIDs.push_back(shaderID);
                 }
                 /// Compile error!
@@ -219,8 +218,6 @@ namespace DYE
                 }
             }
         }
-
-        m_ID = programID;
 
         /// Link the shaders specified by m_ID with the corresponding GPU processors
         glCall(glLinkProgram(m_ID));

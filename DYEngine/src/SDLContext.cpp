@@ -27,16 +27,16 @@ namespace DYE
         if (status < 0)
         {
             // MakeCurrent failed
-            DYE_LOG_ERROR("SDL_GL_MakeCurrent failed: %s\n", SDL_GetError());
+            DYE_LOG_ERROR("SDLContext: SDL_GL_MakeCurrent failed: %s\n", SDL_GetError());
         }
 
         if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
         {
-            DYE_LOG_ERROR("Couldn't initialize glad");
+            DYE_LOG_ERROR("SDLContext: Couldn't initialize glad");
         }
         else
         {
-            DYE_LOG("glad initialized");
+            DYE_LOG("SDLContext: glad initialized");
         }
     }
 

@@ -14,6 +14,7 @@ namespace DYE
     class Entity;
     class ComponentUpdaterBase;
     class TransformUpdater;
+    class ImageRendererUpdater;
     class WindowBase;
 
     /// A Layer that holds a scene + entity-component system
@@ -27,11 +28,12 @@ namespace DYE
         /// Setup some of the default and built-in updaters, such as TransformUpdater, RendererUpdater
         void SetupDefaultUpdaters();
 
-        void OnEvent(const std::shared_ptr<Event> &pEvent) override;
+        void OnInit() override;
         void OnUpdate() override;
         void OnFixedUpdate() override;
         void OnRender() override;
         void OnImGui() override;
+        void OnEvent(const std::shared_ptr<Event> &pEvent) override;
 
         /// Create an entity and push into the list
         /// \param name the name of the entity
@@ -62,6 +64,19 @@ namespace DYE
         /// \return a raw pointer to the updater. If the updater of the given type is not registered, return nullptr
         ComponentUpdaterBase* GetComponentUpdaterOfType(ComponentTypeID typeID);
 
+        /// Get the component updater that is responsible for updating the components of the given type. Used during adding a new component to an entity
+        /// \tparam T the component type
+        /// \return a raw pointer to the updater. If the updater of the given type is not registered, return nullptr
+        template<typename T>
+        ComponentUpdaterBase* GetComponentUpdaterOfType();
+
+        /// Get the component updater that is responsible for updating the components of the given type. Used during adding a new component to an entity
+        /// \tparam ComponentType the component type, use as a key to retrieve the updater
+        /// \tparam UpdaterType the updater type, the return pointer is cast to the type* first
+        /// \return a raw pointer to the updater. If the updater of the given type is not registered, return nullptr
+        template<typename ComponentType, typename UpdaterType>
+        UpdaterType* GetComponentUpdaterOfType();
+
         /// Create a component and attach it to the entity. If an updater with the given typeID exists, register the component to it. Otherwise, a new generic updater will be instantiated and registered
         /// \tparam T the type of the component
         /// \param entity the to-be-attached-to entity
@@ -91,6 +106,7 @@ namespace DYE
 
         // Important Updaters
         std::weak_ptr<TransformUpdater> m_TransformUpdater;
+        std::weak_ptr<ImageRendererUpdater> m_ImageRendererUpdater;
 
         /// A list of pointers to registered component updaters, it's raw because the life time of them is the same as the scene layer
         std::vector<std::shared_ptr<ComponentUpdaterBase>> m_ComponentUpdaters;
@@ -119,9 +135,39 @@ namespace DYE
 
         bool m_ComponentDebugWindowIsOpen = false;
         std::weak_ptr<ComponentBase> m_DebugTargetComponent;
+
+        bool m_UpdaterDebugWindowIsOpen = false;
+        std::weak_ptr<ComponentUpdaterBase> m_DebugTargetUpdater;
 #endif
     };
 
+    template<typename T>
+    ComponentUpdaterBase *SceneLayer::GetComponentUpdaterOfType()
+    {
+        // delete the registered component updater
+        for (auto& updater : m_ComponentUpdaters)
+        {
+            if (updater->GetTypeID() == ComponentTypeID(typeid(T)))
+            {
+                return updater.get();
+            }
+        }
+        return nullptr;
+    }
+
+    template<typename ComponentType, typename UpdaterType>
+    UpdaterType *SceneLayer::GetComponentUpdaterOfType()
+    {
+        // delete the registered component updater
+        for (auto& updater : m_ComponentUpdaters)
+        {
+            if (updater->GetTypeID() == ComponentTypeID(typeid(ComponentType)))
+            {
+                return dynamic_cast<UpdaterType*>(updater.get());
+            }
+        }
+        return nullptr;
+    }
 
     template<typename T>
     std::weak_ptr<T> SceneLayer::LazyAddComponentToEntity(std::weak_ptr<Entity> entity, ComponentTypeID typeID)
@@ -141,8 +187,7 @@ namespace DYE
     template<typename T>
     std::weak_ptr<T> SceneLayer::LazyAddComponentToEntity(std::weak_ptr<Entity> entity)
     {
-        auto pComp = new T();
-        ComponentTypeID typeID = ComponentTypeID(typeid(*pComp));
+        ComponentTypeID typeID = ComponentTypeID(typeid(T));
 
         auto updater = GetComponentUpdaterOfType(typeID);
 
@@ -152,7 +197,7 @@ namespace DYE
             updater = CreateAndRegisterGenericComponentUpdater(typeID).lock().get();
         }
 
-        auto newComp = updater->AttachEntityWithComponent(entity, pComp);
+        auto newComp = updater->AttachEntityWithComponent(entity, new T());
         return std::static_pointer_cast<T>(newComp.lock());
     }
 }

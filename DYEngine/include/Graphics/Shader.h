@@ -29,6 +29,7 @@ namespace DYE
         ~ShaderProgram();
 
         ShaderProgramID GetID() const { return m_ID; }
+        std::string GetName() const { return m_Name; }
         inline bool HasCompileError() const { return m_HasCompileError; }
 
         /// Bind and use the shader program to the rendering pipeline
@@ -41,7 +42,7 @@ namespace DYE
         static std::shared_ptr<ShaderProgram> CreateFromFile(const std::string& name, const std::string& filepath);
     private:
         /// A raw pointer to the shader program that is currently used/bound to the GPU
-        static ShaderProgram* s_pCurrentShaderProgramInUse;
+        //static ShaderProgram* s_pCurrentShaderProgramInUse;
 
         /// Compile and create shader program in the GPU driver
         /// \param filepath the source filepath of the shader

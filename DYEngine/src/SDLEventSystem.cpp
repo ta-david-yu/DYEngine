@@ -27,6 +27,14 @@ namespace DYE
                     eventPtr.reset(new WindowCloseEvent());
                     caught = true;
                     break;
+                case SDL_WINDOWEVENT:
+                    if (event.window.event == SDL_WINDOWEVENT_RESIZED)
+                    {
+                        eventPtr.reset(new WindowSizeChangeEvent(event.window.data1, event.window.data2));
+                        caught = true;
+                    }
+                    /// MORE
+                    break;
                 case SDL_KEYDOWN:
                     // static case SDL_KeyCode into DYE::KeyCode
                     eventPtr.reset(new KeyDownEvent(static_cast<KeyCode>(event.key.keysym.sym)));

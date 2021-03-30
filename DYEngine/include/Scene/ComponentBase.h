@@ -61,6 +61,8 @@ namespace DYE
         explicit ComponentUpdaterBase(ComponentTypeID typeID);
         virtual ~ComponentUpdaterBase() = default;
 
+        /// Called at SceneLayer.OnInit()
+        virtual void Init() {}
         virtual void UpdateComponents() = 0;
         virtual void FixedUpdateComponents() = 0;
 
@@ -95,7 +97,13 @@ namespace DYE
 
         std::vector<ComponentPair> m_Components;
 
+        /// Called when a component is attached to an entity, useful for post-processing or custom data referencing
         virtual void attachEntityWithComponent(const std::weak_ptr<Entity>& entity, const std::shared_ptr<ComponentBase>& component) { };
+
+    protected:
+#if DYE_DEBUG
+        virtual void onUpdaterDebugWindowGUI(float width, float height) { }
+#endif
     };
 
     /// The single generic component updater, responsible for one generic custom component
