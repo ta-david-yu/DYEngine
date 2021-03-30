@@ -77,6 +77,7 @@ find_package(SDL2_image REQUIRED)
 add_subdirectory(extern/glad)
 add_subdirectory(extern/imgui)
 add_subdirectory(extern/glm)
+add_subdirectory(extern/stb)
 
 # ===========================================================================================
 # Build DYEngine library
@@ -98,6 +99,7 @@ target_include_directories(DYEngine PRIVATE extern/glad/include)
 target_include_directories(DYEngine PUBLIC extern/imgui)
 target_include_directories(DYEngine PRIVATE extern/imgui/examples)
 target_include_directories(DYEngine PUBLIC extern/glm)
+target_include_directories(DYEngine PUBLIC extern/stb/include)
 
 # ===========================================================================================
 # Link External Libraries with DYEngine lib
@@ -107,7 +109,8 @@ target_link_libraries(DYEngine
         ${SDL2_IMAGE_LIBRARIES}
         glad
         imgui
-        glm)
+        glm
+        stb)
 
 # ===========================================================================================
 # Copy default assets to the output directory

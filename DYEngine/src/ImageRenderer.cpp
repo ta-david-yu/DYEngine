@@ -176,7 +176,6 @@ namespace DYE
                     else
                     {
                         m_DefaultTexture2D->Bind(0);
-                        //glBindTextureUnit(0, 0);
                     }
 
                     unsigned int colorUniformLocation = glGetUniformLocation(m_DefaultShaderProgram->GetID(), "_Color");

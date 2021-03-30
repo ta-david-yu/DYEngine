@@ -2,12 +2,13 @@
 #include "Graphics/OpenGL.h"
 #include "Base.h"
 
+#include <stb_image.h>
 #include <SDL_image.h>
 
 namespace DYE
 {
     /// Temporary flip SDL_Surface code
-    static void flip_surface(SDL_Surface* surface)
+    void flip_surface(SDL_Surface* surface)
     {
         SDL_LockSurface(surface);
 
@@ -71,13 +72,15 @@ namespace DYE
 
     Texture2D::Texture2D(const std::string &path) : m_Path(path)
     {
-        SDL_Surface* surface = IMG_Load(path.c_str());
+        int width, height, channels;
 
-        if (surface != nullptr)
+        stbi_set_flip_vertically_on_load(1);
+        stbi_uc* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+
+        if (data != nullptr)
         {
-            flip_surface(surface);
-            m_Width = surface->w;
-            m_Height = surface->h;
+            m_Width = width;
+            m_Height = height;
         }
         else
         {
@@ -85,22 +88,18 @@ namespace DYE
             DYE_ASSERT(false);
         }
 
-        if (surface->format->BytesPerPixel == 4)
+        if (channels == 4)
         {
             m_InternalFormat = GL_RGBA8;
             m_DataFormat = GL_RGBA;
         }
-        else if (surface->format->BytesPerPixel == 3)
+        else if (channels == 3)
         {
             m_InternalFormat = GL_RGB8;
             m_DataFormat = GL_RGB;
         }
 
         glCall(glCreateTextures(GL_TEXTURE_2D, 1, &m_ID));
-        DYE_LOG("Create Texture [%d] from %s\n\tComponents - %d\n\tDimension - %d x %d", m_ID, m_Path.c_str(),
-                surface->format->BytesPerPixel,
-                m_Width,
-                m_Height);
         glTextureStorage2D(m_ID, 1, m_InternalFormat, m_Width, m_Height);
 
         glTextureParameteri(m_ID, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -108,10 +107,14 @@ namespace DYE
         glTextureParameteri(m_ID, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTextureParameteri(m_ID, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-        glTextureSubImage2D(m_ID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, surface->pixels);
-        SDL_FreeSurface(surface);
+        glTextureSubImage2D(m_ID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
 
-        glCheckAfterCall(CreateTexture);
+        DYE_LOG("Create Texture [%d] from %s\n\tComponents - %d\n\tDimension - %d x %d", m_ID, m_Path.c_str(),
+                channels,
+                m_Width,
+                m_Height);
+
+        stbi_image_free(data);
     }
 
     Texture2D::~Texture2D()
