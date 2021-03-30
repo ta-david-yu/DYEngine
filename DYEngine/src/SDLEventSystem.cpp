@@ -1,10 +1,12 @@
 #include "Events/SDLEventSystem.h"
 
-#include <SDL.h>
-#include <imgui_impl_sdl.h>
-
+#include "Base.h"
 #include "Events/ApplicationEvent.h"
 #include "Events/KeyEvent.h"
+#include "Events/MouseEvent.h"
+
+#include <SDL.h>
+#include <imgui_impl_sdl.h>
 
 namespace DYE
 {
@@ -43,6 +45,10 @@ namespace DYE
                 case SDL_KEYUP:
                     // static case SDL_KeyCode into DYE::KeyCode
                     eventPtr.reset(new KeyUpEvent(static_cast<KeyCode>(event.key.keysym.sym)));
+                    caught = true;
+                    break;
+                case SDL_MOUSEMOTION:
+                    eventPtr.reset(new MouseMovedEvent(event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel));
                     caught = true;
                     break;
                 case SDL_MOUSEBUTTONDOWN:
