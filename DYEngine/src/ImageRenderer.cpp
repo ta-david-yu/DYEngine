@@ -151,7 +151,7 @@ namespace DYE
             if (image->GetIsEnabled())
             {
                 ///
-                auto transform = image->GetEntityPtr()->GetTransform().lock();
+                auto transform = image->GetEntityPtr()->GetTransform();
                 auto worldPos = transform->GetLocalPosition();
                 auto worldScale = transform->GetLocalScale();
                 worldPos.y = m_pWindow->GetHeight() - worldPos.y;

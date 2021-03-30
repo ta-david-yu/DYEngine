@@ -11,6 +11,7 @@ namespace DYE
 
     class SceneLayer;
     class Entity;
+    class Transform;
     class ComponentUpdaterBase;
 
     /// The base interface for component, owned and updated by component updater
@@ -31,6 +32,8 @@ namespace DYE
         /// Get entity this component belongs to
         /// \return a raw pointer to the entity if the entity exists, otherwise nullptr
         Entity* GetEntityPtr() const;
+
+        Transform* GetTransform() const;
 
         /// Get the demangled name of the component, for debug purpose only
         /// \return

@@ -55,7 +55,13 @@ namespace DYE
             return {false, std::weak_ptr<T>{}};
         }
 
-        std::weak_ptr<Transform> GetTransform() const { return m_Transform; }
+        Transform* GetTransform() const
+        {
+            if (!m_Transform.expired())
+                return m_Transform.lock().get();
+            else
+                return nullptr;
+        }
 
     private:
         uint32_t m_ID;

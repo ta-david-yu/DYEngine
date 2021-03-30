@@ -41,18 +41,22 @@ namespace DYE
 
             /// Create entities and components
             auto island = sceneLayer->CreateEntity("Island");
+            island.lock()->GetTransform()->SetLocalPosition({800, 450, 0});
             auto image = sceneLayer->LazyAddComponentToEntity<ImageRenderer>(island);
             image.lock()->SetTexture(Texture2D::Create("assets/textures/Island.png"));
 
             auto treeMoonCat = sceneLayer->CreateEntity("TreeMoonCat");
+            treeMoonCat.lock()->GetTransform()->SetLocalPosition({800, 450, 0});
             image = sceneLayer->LazyAddComponentToEntity<ImageRenderer>(treeMoonCat);
             image.lock()->SetTexture(Texture2D::Create("assets/textures/TreeMoonCat.png"));
 
             auto stranded = sceneLayer->CreateEntity("Stranded");
+            stranded.lock()->GetTransform()->SetLocalPosition({800, 450, 0});
             image = sceneLayer->LazyAddComponentToEntity<ImageRenderer>(stranded);
             image.lock()->SetTexture(Texture2D::Create("assets/textures/stranded-social-media.png"));
 
             auto peaceOut = sceneLayer->CreateEntity("Peace Out");
+            peaceOut.lock()->GetTransform()->SetLocalPosition({800, 450, 0});
             image = sceneLayer->LazyAddComponentToEntity<ImageRenderer>(peaceOut);
             image.lock()->SetTexture(Texture2D::Create("assets/textures/peaceout-boy.png"));
         }

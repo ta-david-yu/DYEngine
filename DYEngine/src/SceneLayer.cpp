@@ -91,11 +91,11 @@ namespace DYE
                 auto entItr = m_Entities.find(entityID);
                 if (entItr != m_Entities.end())
                 {
-                    auto transform = entItr->second->GetTransform().lock();
+                    auto transform = entItr->second->GetTransform();
                     while (!transform->GetParent().expired())
                     {
                         forceExpandTreeNodeEntityIDs.insert(transform->GetParent().lock()->GetEntityPtr()->GetID());
-                        transform = transform->GetParent().lock();
+                        transform = transform->GetParent().lock().get();
                     }
                 }
             }
@@ -159,9 +159,9 @@ namespace DYE
                             int hierarchyDepth = 0;
 
                             /// Push the transform into the queue if the parent is null (root transform)
-                            if (transform.lock()->GetParent().expired())
+                            if (transform->GetParent().expired())
                             {
-                                transformStack.push(transform.lock().get());
+                                transformStack.push(transform);
                                 depthStack.push(0);
                             }
 
@@ -257,7 +257,7 @@ namespace DYE
                             auto &entity = m_Entities.find(selectedEntityID)->second;
 
                             ImGui::Text("[ID: %d] %s", entity->GetID(), entity->GetName().c_str());
-                            ImGui::Text("Has Transform: %s", entity->GetTransform().expired()? "no" : "yes");
+                            ImGui::Text("Has Transform: %s", entity->GetTransform() == nullptr? "no" : "yes");
                             ImGui::Separator();
 
                             if (ImGui::BeginTabBar("##Tabs", ImGuiTabBarFlags_None))

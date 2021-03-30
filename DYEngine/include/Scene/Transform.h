@@ -23,6 +23,10 @@ namespace DYE
         glm::vec3 GetLocalPosition() const { return m_Position; }
         glm::quat GetLocalRotation() const { return m_Rotation; }
         glm::vec3 GetLocalScale() const { return m_Scale; }
+
+        void SetLocalPosition(glm::vec3 pos) { m_Position = pos; }
+        void SetLocalScale(glm::vec3 scale) { m_Scale = scale; }
+
         std::weak_ptr<Transform> GetParent() const { return m_Parent; }
         void SetParent(std::weak_ptr<Transform> parent);
 
