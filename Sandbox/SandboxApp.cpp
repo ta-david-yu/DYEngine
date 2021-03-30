@@ -30,6 +30,8 @@ namespace DYE
         explicit SandboxApp(const std::string &windowName, int fixedFramePerSecond = 60)
             : Application(windowName, fixedFramePerSecond)
         {
+            RenderCommand::SetClearColor(glm::vec4 {51, 63, 88, 255} / 255.0f);
+
             auto sceneLayer = std::make_shared<SceneLayer>(m_Window.get());
             pushLayer(sceneLayer);
 
@@ -38,38 +40,18 @@ namespace DYE
             imgRendererUpdater->PushSortingLayer("TEST 00");
 
             /// Create entities and components
-            auto emptyEnt = sceneLayer->CreateEntity("Empty Ent");
-            sceneLayer->LazyAddComponentToEntity<ImageRenderer>(emptyEnt).lock()->SetTexture(Texture2D::Create("assets/textures/Island.png"));
+            auto island = sceneLayer->CreateEntity("Island");
+            auto image = sceneLayer->LazyAddComponentToEntity<ImageRenderer>(island);
+            image.lock()->SetTexture(Texture2D::Create("assets/textures/Island.png"));
 
-            auto [hasTransform, _] = emptyEnt.lock()->GetComponent<Transform>();
+            auto treeMoonCat = sceneLayer->CreateEntity("TreeMoonCat");
+            image = sceneLayer->LazyAddComponentToEntity<ImageRenderer>(treeMoonCat);
+            image.lock()->SetTexture(Texture2D::Create("assets/textures/TreeMoonCat.png"));
 
-            for (int i = 0; i < 1; i++)
-            {
-                auto frameCounterEnt = sceneLayer->CreateEntity("Frame Counter Ent " + std::to_string(i));
-                sceneLayer->LazyAddComponentToEntity<ImageRenderer>(frameCounterEnt);
-                if (i % 2 == 0)
-                {
-                    sceneLayer->LazyAddComponentToEntity<FrameCounterComponent>(frameCounterEnt);
-                    sceneLayer->LazyAddComponentToEntity<FixedFrameCounterComponent>(frameCounterEnt);
-                }
-                else
-                {
-                    sceneLayer->LazyAddComponentToEntity<Subclass_FrameCounterComponent>(frameCounterEnt);
-                    sceneLayer->LazyAddComponentToEntity<FixedFrameCounterComponent>(frameCounterEnt);
-                }
-
-                for (int childId = 0; childId < i*2; childId++)
-                {
-                    auto childEnt = sceneLayer->CreateEntity("Child " + std::to_string(childId));
-                    childEnt.lock()->GetTransform().lock()->SetParent(frameCounterEnt.lock()->GetTransform());
-
-                    for (int grandChildId = 0; grandChildId < childId; grandChildId++)
-                    {
-                        auto grandChildEnt = sceneLayer->CreateEntity("Grand Child " + std::to_string(grandChildId));
-                        grandChildEnt.lock()->GetTransform().lock()->SetParent(childEnt.lock()->GetTransform());
-                    }
-                }
-            }
+            auto stranded = sceneLayer->CreateEntity("Stranded");
+            image = sceneLayer->LazyAddComponentToEntity<ImageRenderer>(stranded);
+            image.lock()->SetTexture(Texture2D::Create("assets/textures/stranded-social-media.png"));
+            sceneLayer->LazyAddComponentToEntity<FrameCounterComponent>(stranded);
         }
 
         ~SandboxApp() final = default;

@@ -106,6 +106,10 @@ namespace DYE
         /// Parse source
         /// if the program has certain types of shader
         bool hasShadersOfType[(int) ShaderType::NumOfType];
+        for (int i = 0; i < (int)ShaderType::NumOfType; i++)
+        {
+            hasShadersOfType[i] = false;
+        }
 
         /// source string stream for each currScopeType of shader
         std::stringstream shaderSS[(int) ShaderType::NumOfType];

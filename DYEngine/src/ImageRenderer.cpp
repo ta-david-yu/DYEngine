@@ -39,122 +39,6 @@ namespace DYE
         }
     }
 
-#ifdef DYE_DEBUG
-    void ImageRenderer::onComponentDebugWindowGUI(float width, float height)
-    {
-        static bool isColorPickerOn = false;
-
-        ComponentBase::onComponentDebugWindowGUI(width, height);
-
-        /// Color Picker
-        {
-            ImGui::Text("Color");
-            ImVec4 colorIm{m_Color.r, m_Color.g, m_Color.b, m_Color.a};
-            if (ImGui::ColorButton("Color", colorIm))
-            {
-                isColorPickerOn = true;
-            }
-
-            if (isColorPickerOn)
-            {
-                if (ImGui::Begin("Image Renderer: Color Picker Window", &isColorPickerOn))
-                {
-                    ImGui::ColorPicker4("##colorPicker", (float *) &m_Color);
-                }
-                ImGui::End();
-            }
-        }
-
-        /// Texture Info
-        {
-            ImGui::Text("Texture");
-            if (m_Texture)
-            {
-                ImGui::TextColored(ImVec4(1, 1, 1, 1), "%s", m_Texture->GetPath().c_str());
-                ImGui::SameLine();
-
-                if (ImGui::Button("Set Native Size"))
-                {
-                    SetDimension(m_Texture->GetWidth(), m_Texture->GetHeight());
-                }
-            }
-            else
-            {
-                ImGui::TextColored(ImVec4(1, 0.4, 0.4, 1), "<empty>");
-            }
-        }
-
-        /// Dimension
-        {
-            ImGui::PushItemWidth(width * 0.5f / 3);
-
-            ImGui::Text("Dimension");
-            ImGui::DragInt("width", (int *) &m_Width, 1, 0, INT32_MAX);
-            ImGui::SameLine();
-            ImGui::DragInt("height", (int *) &m_Height, 1, 0, INT32_MAX);
-
-            ImGui::PopItemWidth();
-        }
-
-        ImGui::Separator();
-
-        /// Sorting Layer
-        {
-            ImGui::Text("Sorting Layer");
-            const auto &layers = m_pUpdater->GetSortingLayers();
-
-            char previewLayerName[128];
-            sprintf(previewLayerName, "%2d: %s", m_SortingLayerID,
-                    m_pUpdater->LayerIDToLayerName(m_SortingLayerID).c_str());
-
-            bool isDropdownOpen = ImGui::BeginCombo("##sortingLayer", previewLayerName);
-            if (isDropdownOpen)
-            {
-                std::uint32_t index = 0;
-                char itemLayerName[128];
-                for (const auto &layerName : layers)
-                {
-                    sprintf(itemLayerName, "%2d: %s##%d", index, m_pUpdater->LayerIDToLayerName(index).c_str(),
-                            GetEntityPtr()->GetID());
-
-                    bool isSelected = (index == m_SortingLayerID);
-                    if (ImGui::Selectable(itemLayerName, isSelected))
-                    {
-                        if (index != m_SortingLayerID)
-                        {
-                            m_pUpdater->MarkDirty();
-                            m_SortingLayerID = index;
-                        }
-                    }
-                    if (isSelected)
-                        ImGui::SetItemDefaultFocus();
-
-                    index++;
-                }
-                ImGui::EndCombo();
-            }
-
-            ImGui::Text("Sorting Order In Layer");
-            int sortingOrder = m_SortingOrder;
-            ImGui::DragInt("##sortingOrder", (int *) &sortingOrder, 0.1f, 0, 0);
-
-            ImGui::SameLine();
-            if (ImGui::Button("<"))
-                sortingOrder--;
-            ImGui::SameLine();
-            if (ImGui::Button(">"))
-                sortingOrder++;
-
-            if (sortingOrder != m_SortingOrder)
-            {
-                m_pUpdater->MarkDirty();
-                m_SortingOrder = sortingOrder;
-            }
-        }
-    }
-
-#endif
-
     ImageRendererUpdater::ImageRendererUpdater(ComponentTypeID typeID, WindowBase* window) : ComponentUpdaterBase(typeID), m_pWindow(window)
     {
     }
@@ -193,13 +77,13 @@ namespace DYE
 
         /// Create default shader program
         m_DefaultShaderProgram = ShaderProgram::CreateFromFile("Image", "assets/default/Image.shader");
-        {
+        /*{
             /// Bind the main texture slot
             unsigned int textureUniformLocation = glGetUniformLocation(m_DefaultShaderProgram->GetID(),
                                                                        "_MainTex");
             glCheckAfterCall(glGetUniformLocation(m_DefaultShaderProgram->GetID(), "_MainTex"));
             glCall(glUniform1i(textureUniformLocation, 0));
-        }
+        }*/
 
         /// Create default white texture
         m_DefaultTexture2D = Texture2D::Create(glm::vec4 {1, 1, 1, 1});
@@ -351,4 +235,142 @@ namespace DYE
 
         return m_SortingLayers[id];
     }
+
+
+#ifdef DYE_DEBUG
+    void ImageRenderer::onComponentDebugWindowGUI(float width, float height)
+    {
+        static bool isColorPickerOn = false;
+
+        ComponentBase::onComponentDebugWindowGUI(width, height);
+
+        /// Color Picker
+        {
+            ImGui::Text("Color");
+            ImVec4 colorIm{m_Color.r, m_Color.g, m_Color.b, m_Color.a};
+            if (ImGui::ColorButton("Color", colorIm))
+            {
+                isColorPickerOn = true;
+            }
+
+            if (isColorPickerOn)
+            {
+                if (ImGui::Begin("Image Renderer: Color Picker Window", &isColorPickerOn))
+                {
+                    ImGui::ColorPicker4("##colorPicker", (float *) &m_Color);
+                }
+                ImGui::End();
+            }
+        }
+
+        /// Texture Info
+        {
+            ImGui::Text("Texture");
+            if (m_Texture)
+            {
+                ImGui::TextColored(ImVec4(1, 1, 1, 1), "%s", m_Texture->GetPath().c_str());
+                ImGui::SameLine();
+
+                if (ImGui::Button("Set Native Size"))
+                {
+                    SetDimension(m_Texture->GetWidth(), m_Texture->GetHeight());
+                }
+            }
+            else
+            {
+                ImGui::TextColored(ImVec4(1, 0.4, 0.4, 1), "<empty>");
+            }
+        }
+
+        /// Dimension
+        {
+            ImGui::PushItemWidth(width * 0.5f / 3);
+
+            ImGui::Text("Dimension");
+            ImGui::DragInt("width", (int *) &m_Width, 1, 0, INT32_MAX);
+            ImGui::SameLine();
+            ImGui::DragInt("height", (int *) &m_Height, 1, 0, INT32_MAX);
+
+            ImGui::PopItemWidth();
+        }
+
+        ImGui::Separator();
+
+        /// Sorting Layer
+        {
+            ImGui::Text("Sorting Layer");
+            const auto &layers = m_pUpdater->GetSortingLayers();
+
+            char previewLayerName[128];
+            sprintf(previewLayerName, "%2d: %s", m_SortingLayerID,
+                    m_pUpdater->LayerIDToLayerName(m_SortingLayerID).c_str());
+
+            bool isDropdownOpen = ImGui::BeginCombo("##sortingLayer", previewLayerName);
+            if (isDropdownOpen)
+            {
+                std::uint32_t index = 0;
+                char itemLayerName[128];
+                for (const auto &layerName : layers)
+                {
+                    sprintf(itemLayerName, "%2d: %s##%d", index, m_pUpdater->LayerIDToLayerName(index).c_str(),
+                            GetEntityPtr()->GetID());
+
+                    bool isSelected = (index == m_SortingLayerID);
+                    if (ImGui::Selectable(itemLayerName, isSelected))
+                    {
+                        if (index != m_SortingLayerID)
+                        {
+                            m_pUpdater->MarkDirty();
+                            m_SortingLayerID = index;
+                        }
+                    }
+                    if (isSelected)
+                        ImGui::SetItemDefaultFocus();
+
+                    index++;
+                }
+                ImGui::EndCombo();
+            }
+
+            ImGui::Text("Sorting Order In Layer");
+            int sortingOrder = m_SortingOrder;
+            ImGui::DragInt("##sortingOrder", (int *) &sortingOrder, 0.1f, 0, 0);
+
+            ImGui::SameLine();
+            if (ImGui::Button("<"))
+                sortingOrder--;
+            ImGui::SameLine();
+            if (ImGui::Button(">"))
+                sortingOrder++;
+
+            if (sortingOrder != m_SortingOrder)
+            {
+                m_pUpdater->MarkDirty();
+                m_SortingOrder = sortingOrder;
+            }
+        }
+    }
+
+    void ImageRendererUpdater::onUpdaterDebugWindowGUI(float width, float height)
+    {
+        ComponentUpdaterBase::onUpdaterDebugWindowGUI(width, height);
+
+        ImVec4 enabledTextColor {1, 1, 1, 1 };
+        ImVec4 disabledTextColor {0.5, 0.5, 0.5, 1 };
+
+        ImGui::Text("Rendering Order");
+        ImGui::BeginChild("cached image renderers", ImVec2(width - 20, 0), true);
+        for (const auto& image : m_CachedImageRenderers)
+        {
+            char imageRendererLabel[128];
+            sprintf(imageRendererLabel, "[Layer: %s, Order: %d] %s##", LayerIDToLayerName(image->m_SortingLayerID).c_str(),
+                    image->m_SortingOrder, image->GetEntityPtr()->GetName().c_str());
+
+            ImGui::PushStyleColor(ImGuiCol_Text, image->GetIsEnabled() ? enabledTextColor : disabledTextColor);
+            ImGui::Text("%s", imageRendererLabel);
+            ImGui::PopStyleColor();
+        }
+        ImGui::EndChild();
+    }
+#endif
 }

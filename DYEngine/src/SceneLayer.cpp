@@ -369,8 +369,13 @@ namespace DYE
 
                             // Updater Comps: Left
                             {
-                                ImGui::BeginChild("updater components list view", ImVec2(compListViewWidth, 0), true);
+                                if (ImGui::Button("open updater debug window"))
+                                {
+                                    m_UpdaterDebugWindowIsOpen = true;
+                                    m_DebugTargetUpdater = updater;
+                                }
 
+                                ImGui::BeginChild("updater components list view", ImVec2(compListViewWidth, 0), true);
                                 for (int i = 0; i < updater->m_Components.size(); i++)
                                 {
                                     const auto &compPair = updater->m_Components[i];
@@ -475,6 +480,35 @@ namespace DYE
 
                     auto windowSize = ImGui::GetWindowSize();
                     component->onComponentDebugWindowGUI(windowSize.x, windowSize.y);
+                }
+                else
+                {
+                    ImGui::TextColored(ImVec4(1, 0, 0, 1), "No component is selected");
+                }
+            }
+            ImGui::End();
+        }
+
+        if (m_UpdaterDebugWindowIsOpen)
+        {
+            int debugWindowWidth = m_pWindow->GetWidth();
+            int debugWindowMaxHeight = m_pWindow->GetHeight();
+            // make controls widget width to be 1/4 of the main window width
+            if ((debugWindowWidth /= 5) < 200) { debugWindowWidth = 200; }
+            ImGui::SetNextWindowSizeConstraints(ImVec2(static_cast<float>(debugWindowWidth), 200), ImVec2(FLT_MAX, static_cast<float>(debugWindowMaxHeight - 20)));
+
+            // create a debugger window for the component
+            if (ImGui::Begin("Updater", &m_UpdaterDebugWindowIsOpen))
+            {
+                if (!m_DebugTargetUpdater.expired())
+                {
+                    const auto& updater = m_DebugTargetUpdater.lock().get();
+                    ImGui::Text("%s", demangleCTypeName(typeid(*updater).name()).c_str());
+
+                    ImGui::Separator();
+
+                    auto windowSize = ImGui::GetWindowSize();
+                    updater->onUpdaterDebugWindowGUI(windowSize.x, windowSize.y);
                 }
                 else
                 {

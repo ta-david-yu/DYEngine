@@ -135,6 +135,9 @@ namespace DYE
 
         bool m_ComponentDebugWindowIsOpen = false;
         std::weak_ptr<ComponentBase> m_DebugTargetComponent;
+
+        bool m_UpdaterDebugWindowIsOpen = false;
+        std::weak_ptr<ComponentUpdaterBase> m_DebugTargetUpdater;
 #endif
     };
 

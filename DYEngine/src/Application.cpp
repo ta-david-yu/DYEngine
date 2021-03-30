@@ -18,13 +18,32 @@ namespace DYE
         DYE_LOG("CPU cores: %d", SDL_GetCPUCount());
         DYE_LOG("RAM: %.2f GB", (float) SDL_GetSystemRAM() / 1024.0f);
 
+        // GL 4.6 + GLSL 130
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+        //SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+        int major, minor, profile;
+        SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
+        SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
+        SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profile);
+        DYE_LOG("GL Version: %d.%d, profile - %s", major, minor, profile == SDL_GL_CONTEXT_PROFILE_CORE? "core" : "compatibility");
+
+        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+        SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+
         /// Initialize system and system instances
+        DYE_LOG("---------------");
 
         // Create window and context, and then init renderer
-        m_Window = WindowBase::Create(WindowProperty(windowName));
-
         DYE_LOG("--------------- Init Renderer");
+        m_Window = WindowBase::Create(WindowProperty(windowName));
         Renderer::Init();
+        RenderCommand::SetViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
+        RenderCommand::SetClearColor(glm::vec4 {0, 0, 0, 0});
+        DYE_LOG("---------------");
 
         // Register handleOnEvent member function to the EventSystem
         m_EventSystem = EventSystemBase::Create();
@@ -42,9 +61,6 @@ namespace DYE
 
     void Application::Run()
     {
-        RenderCommand::SetViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
-        RenderCommand::SetClearColor(glm::vec4 {0, 0, 0, 0});
-
         m_IsRunning = true;
         m_Time.tickInit();
 
@@ -55,6 +71,7 @@ namespace DYE
         {
             DYE_LOG("--------------- Init Layer - %s", layer->GetName().c_str());
             layer->OnInit();
+            DYE_LOG("---------------");
         }
 
         while (m_IsRunning)
@@ -103,6 +120,8 @@ namespace DYE
 
             m_Time.tickUpdate();
         }
+
+        DYE_LOG("--------------- Exit Game Loop");
     }
 
     void Application::pushLayer(std::shared_ptr<LayerBase> layer)
