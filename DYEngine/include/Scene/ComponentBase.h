@@ -70,6 +70,7 @@ namespace DYE
         virtual void UpdateComponents() = 0;
         virtual void FixedUpdateComponents() = 0;
         virtual void HandleOnEvent(Event& event) {}
+        virtual void OnImGui() {}
 
         /// Attach the given component to the entity, and register this component to the updater list
         /// \param entity the entity to be attached to

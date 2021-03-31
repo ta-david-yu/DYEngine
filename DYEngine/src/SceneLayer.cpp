@@ -75,6 +75,11 @@ namespace DYE
 
     void SceneLayer::OnImGui()
     {
+        for (auto& updater : m_ComponentUpdaters)
+        {
+            updater->OnImGui();
+        }
+
 #if DYE_DEBUG
         static uint32_t selectedEntityID = 0;
 
