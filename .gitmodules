@@ -1,3 +1,6 @@
 [submodule "DYEngine/extern/glm"]
 	path = DYEngine/extern/glm
 	url = https://github.com/ta-david-yu/glm.git
+[submodule "DYEngine/extern/yaml-cpp"]
+	path = DYEngine/extern/yaml-cpp
+	url = https://github.com/ta-david-yu/yaml-cpp.git

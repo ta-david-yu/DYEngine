@@ -78,6 +78,7 @@ add_subdirectory(extern/glad)
 add_subdirectory(extern/imgui)
 add_subdirectory(extern/glm)
 add_subdirectory(extern/stb)
+add_subdirectory(extern/yaml-cpp)
 
 # ===========================================================================================
 # Build DYEngine library
@@ -100,6 +101,7 @@ target_include_directories(DYEngine PUBLIC extern/imgui)
 target_include_directories(DYEngine PRIVATE extern/imgui/examples)
 target_include_directories(DYEngine PUBLIC extern/glm)
 target_include_directories(DYEngine PUBLIC extern/stb/include)
+target_include_directories(DYEngine PUBLIC extern/yaml-cpp/include)
 
 # ===========================================================================================
 # Link External Libraries with DYEngine lib
@@ -110,7 +112,8 @@ target_link_libraries(DYEngine
         glad
         imgui
         glm
-        stb)
+        stb
+        yaml-cpp)
 
 # ===========================================================================================
 # Copy default assets to the output directory
