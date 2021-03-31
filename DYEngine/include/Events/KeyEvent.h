@@ -9,6 +9,7 @@ namespace DYE
     {
     public:
         KeyCode GetKeyCode() const { return m_KeyCode; }
+
         EVENT_CLASS_CATEGORY(EventCategory::Keyboard | EventCategory::Input)
     protected:
         explicit KeyEvent(const KeyCode keyCode) : m_KeyCode(keyCode) { }

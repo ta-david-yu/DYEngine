@@ -29,6 +29,8 @@ namespace DYE
         void SetName(const std::string& name) { m_Name = name; }
 
         uint32_t GetID() const { return m_ID; }
+        bool IsActive() const { return m_IsActive; }
+        void SetActive(bool active) { m_IsActive = active; }
 
         /// Get Component of the given typeID
         /// \param compTypeID
@@ -55,11 +57,18 @@ namespace DYE
             return {false, std::weak_ptr<T>{}};
         }
 
-        std::weak_ptr<Transform> GetTransform() const { return m_Transform; }
+        Transform* GetTransform() const
+        {
+            if (!m_Transform.expired())
+                return m_Transform.lock().get();
+            else
+                return nullptr;
+        }
 
     private:
-        uint32_t m_ID;
+        uint32_t m_ID {0};
         std::string m_Name;
+        bool m_IsActive {true};
         //std::multimap<std::type_index, std::weak_ptr<ComponentBase>> m_Components;
         std::vector<std::pair<std::type_index, std::weak_ptr<ComponentBase>>> m_Components;
 

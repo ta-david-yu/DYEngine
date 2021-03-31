@@ -11,7 +11,9 @@ namespace DYE
 
     class SceneLayer;
     class Entity;
+    class Transform;
     class ComponentUpdaterBase;
+    class Event;
 
     /// The base interface for component, owned and updated by component updater
     class ComponentBase
@@ -31,6 +33,8 @@ namespace DYE
         /// Get entity this component belongs to
         /// \return a raw pointer to the entity if the entity exists, otherwise nullptr
         Entity* GetEntityPtr() const;
+
+        Transform* GetTransform() const;
 
         /// Get the demangled name of the component, for debug purpose only
         /// \return
@@ -65,6 +69,8 @@ namespace DYE
         virtual void Init() {}
         virtual void UpdateComponents() = 0;
         virtual void FixedUpdateComponents() = 0;
+        virtual void HandleOnEvent(Event& event) {}
+        virtual void OnImGui() {}
 
         /// Attach the given component to the entity, and register this component to the updater list
         /// \param entity the entity to be attached to

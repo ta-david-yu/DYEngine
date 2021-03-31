@@ -10,6 +10,10 @@
 #include "Graphics/RenderCommand.h"
 #include "Graphics/Texture.h"
 
+#include "Events/Event.h"
+#include "Events/MouseEvent.h"
+#include "Events/KeyEvent.h"
+
 #include <glm/gtc/type_ptr.hpp>
 
 #include <algorithm>
@@ -21,11 +25,6 @@
 
 namespace DYE
 {
-    ImageRenderer::~ImageRenderer()
-    {
-
-    }
-
     void ImageRenderer::OnUpdate()
     {
     }
@@ -104,7 +103,11 @@ namespace DYE
 
     void ImageRendererUpdater::RemoveComponentsOfEntity(uint32_t entityID)
     {
-
+        m_CachedImageRenderers.erase(std::remove_if(m_CachedImageRenderers.begin(), m_CachedImageRenderers.end(),
+                                                    [entityID](const auto& image)
+                                                    {
+                                                        return image->GetEntityPtr()->GetID() == entityID;
+                                                    }), m_CachedImageRenderers.end());
     }
 
     void ImageRendererUpdater::attachEntityWithComponent(const std::weak_ptr<Entity> &entity,
@@ -148,10 +151,10 @@ namespace DYE
 
         for (const auto& image : m_CachedImageRenderers)
         {
-            if (image->GetIsEnabled())
+            if (image->GetEntityPtr()->IsActive() && image->GetIsEnabled())
             {
                 ///
-                auto transform = image->GetEntityPtr()->GetTransform().lock();
+                auto transform = image->GetEntityPtr()->GetTransform();
                 auto worldPos = transform->GetLocalPosition();
                 auto worldScale = transform->GetLocalScale();
                 worldPos.y = m_pWindow->GetHeight() - worldPos.y;

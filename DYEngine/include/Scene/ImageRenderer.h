@@ -20,18 +20,29 @@ namespace DYE
         friend ImageRendererUpdater;
     public:
         ImageRenderer() = default;
-        ~ImageRenderer();
+        ~ImageRenderer() override = default;
 
         void OnUpdate() override;
 
         std::uint32_t& GetWidth() { return m_Width; }
         std::uint32_t& GetHeight() { return m_Height; }
         void SetDimension(std::uint32_t width, std::uint32_t height) { m_Width = width; m_Height = height; }
+        glm::vec<2, std::uint32_t> GetDimension() const { return { m_Width, m_Height }; }
+
+        std::uint32_t GetSortingLayerID() const { return m_SortingLayerID; }
+        int GetSortingOrder() const { return m_SortingOrder; }
+
+        void SetSortingLayerID(std::uint32_t id) { m_SortingLayerID = id; }
+        void SetSortingOrder(int order) { m_SortingOrder = order; }
 
         /// Set the texture
         /// \param texture
         /// \param setDimension if automatically change the dimension based on the texture width/height
         void SetTexture(std::shared_ptr<Texture2D> texture, bool setDimension = true);
+
+        /// Set the color of the image
+        /// \param color
+        void SetColor(glm::vec4 color) { m_Color = color; }
     private:
         glm::vec4 m_Color {1, 1, 1, 1};
         std::shared_ptr<Texture2D> m_Texture;
@@ -58,6 +69,7 @@ namespace DYE
         void Init() override;
         void UpdateComponents() override;
         void FixedUpdateComponents() override;
+
         void RemoveComponentsOfEntity(uint32_t entityID) override;
         void attachEntityWithComponent(const std::weak_ptr<Entity> &entity, const std::shared_ptr<ComponentBase> &component) override;
 

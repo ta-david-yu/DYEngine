@@ -12,7 +12,7 @@ namespace DYE
         None = 0,
         WindowClose, WindowSizeChange,
         KeyDown, KeyUp,
-        MouseDown, MouseUp, MouseMove, MouseDrag
+        MouseButtonDown, MouseButtonUp, MouseMove, MouseDrag
     };
 
     /// EventCategory, a higher level of categories. An event could be Input + Keyboard, or Input + Mouse event

@@ -1,6 +1,7 @@
 #include "Scene/ComponentBase.h"
 #include "Scene/Entity.h"
 #include "Util/Type.h"
+#include "Scene/Transform.h"
 
 #include <algorithm>
 #include <SDL_log.h>
@@ -13,6 +14,15 @@ namespace DYE
             return nullptr;
         else
             return m_Entity.lock().get();
+    }
+
+    Transform *ComponentBase::GetTransform() const
+    {
+        auto entity = GetEntityPtr();
+        if (entity != nullptr)
+            return entity->GetTransform();
+        else
+            return nullptr;
     }
 
     std::string ComponentBase::GetComponentName() const
@@ -82,7 +92,7 @@ namespace DYE
     {
         for (auto & pair : m_Components)
         {
-            if (pair.second->GetIsEnabled())
+            if (pair.second->GetEntityPtr()->IsActive() && pair.second->GetIsEnabled())
                 pair.second->OnUpdate();
         }
     }
@@ -91,7 +101,7 @@ namespace DYE
     {
         for (auto & pair : m_Components)
         {
-            if (pair.second->GetIsEnabled())
+            if (pair.second->GetEntityPtr()->IsActive() && pair.second->GetIsEnabled())
                 pair.second->OnFixedUpdate();
         }
     }

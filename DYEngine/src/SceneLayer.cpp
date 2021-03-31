@@ -8,6 +8,7 @@
 #include "Scene/Transform.h"
 #include "Scene/ImageRenderer.h"
 #include "Util/Type.h"
+#include "Events/MouseEvent.h"
 
 #include <algorithm>
 #include <stack>
@@ -74,6 +75,11 @@ namespace DYE
 
     void SceneLayer::OnImGui()
     {
+        for (auto& updater : m_ComponentUpdaters)
+        {
+            updater->OnImGui();
+        }
+
 #if DYE_DEBUG
         static uint32_t selectedEntityID = 0;
 
@@ -91,11 +97,11 @@ namespace DYE
                 auto entItr = m_Entities.find(entityID);
                 if (entItr != m_Entities.end())
                 {
-                    auto transform = entItr->second->GetTransform().lock();
+                    auto transform = entItr->second->GetTransform();
                     while (!transform->GetParent().expired())
                     {
                         forceExpandTreeNodeEntityIDs.insert(transform->GetParent().lock()->GetEntityPtr()->GetID());
-                        transform = transform->GetParent().lock();
+                        transform = transform->GetParent().lock().get();
                     }
                 }
             }
@@ -159,9 +165,9 @@ namespace DYE
                             int hierarchyDepth = 0;
 
                             /// Push the transform into the queue if the parent is null (root transform)
-                            if (transform.lock()->GetParent().expired())
+                            if (transform->GetParent().expired())
                             {
-                                transformStack.push(transform.lock().get());
+                                transformStack.push(transform);
                                 depthStack.push(0);
                             }
 
@@ -180,6 +186,7 @@ namespace DYE
 
                                 /// We assume transform always has an entity, otherwise it will be super buggy :))
                                 auto currEntity = currTransform->GetEntityPtr();
+                                ImGui::PushStyleColor(ImGuiCol_Text, currEntity->IsActive()? enabledTextColor : disabledTextColor);
 
                                 ImGui::PushID(currEntity->GetID());
                                 {
@@ -232,6 +239,7 @@ namespace DYE
                                 }
                                 ImGui::PopID();
 
+                                ImGui::PopStyleColor(1);
                                 prevDepth = currDepth;
                             }
 
@@ -256,8 +264,11 @@ namespace DYE
                         {
                             auto &entity = m_Entities.find(selectedEntityID)->second;
 
+                            ImGui::Checkbox("##entity.IsActive", &entity->m_IsActive);
+                            ImGui::SameLine();
+
                             ImGui::Text("[ID: %d] %s", entity->GetID(), entity->GetName().c_str());
-                            ImGui::Text("Has Transform: %s", entity->GetTransform().expired()? "no" : "yes");
+                            ImGui::Text("Has Transform: %s", entity->GetTransform() == nullptr? "no" : "yes");
                             ImGui::Separator();
 
                             if (ImGui::BeginTabBar("##Tabs", ImGuiTabBarFlags_None))
@@ -534,6 +545,10 @@ namespace DYE
             }
         }
 #endif
+        for (auto& updater : m_ComponentUpdaters)
+        {
+            updater->HandleOnEvent(*pEvent);
+        }
     }
 
     std::weak_ptr<Entity> SceneLayer::CreateEntity(const std::string& name)

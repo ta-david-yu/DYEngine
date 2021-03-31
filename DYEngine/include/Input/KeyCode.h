@@ -8,7 +8,7 @@ namespace DYE
 {
     /// KeyCode enumeration, currently mapped to SDL_KeyCode (event.key.keysym.sym)
     /// To be added with more keys
-    enum class KeyCode : std::uint32_t
+    enum class KeyCode
     {
         Space = SDL_KeyCode::SDLK_SPACE,
 
