@@ -13,6 +13,7 @@
 #include "Graphics/Texture.h"
 
 #include "Scene/ImageRenderer.h"
+#include "Scene/ImagePointerEventHandler.h"
 #include "SandboxLayer.h"
 #include "FrameCounterComponent.h"
 
@@ -35,6 +36,11 @@ namespace DYE
             auto sceneLayer = std::make_shared<SceneLayer>(m_Window.get());
             pushLayer(sceneLayer);
 
+            /// Init pointer event handler updater
+            auto pointerEventHandlerUpdater =
+                    std::make_shared<ImagePointerEventHandlerUpdater>(ComponentTypeID(typeid(ImagePointerEventHandler)), m_Window.get());
+            sceneLayer->RegisterComponentUpdater(std::move(pointerEventHandlerUpdater));
+
             /// Init sorting layer
             auto imgRendererUpdater = sceneLayer->GetComponentUpdaterOfType<ImageRenderer, ImageRendererUpdater>();
             imgRendererUpdater->PushSortingLayer("TEST 00");
@@ -44,21 +50,36 @@ namespace DYE
             island.lock()->GetTransform()->SetLocalPosition({800, 450, 0});
             auto image = sceneLayer->LazyAddComponentToEntity<ImageRenderer>(island);
             image.lock()->SetTexture(Texture2D::Create("assets/textures/Island.png"));
+            image.lock()->SetSortingOrder(0);
+            auto eventHandler = sceneLayer->LazyAddComponentToEntity<ImagePointerEventHandler>(island);
+            eventHandler.lock()->SetImage(image);
+
 
             auto treeMoonCat = sceneLayer->CreateEntity("TreeMoonCat");
             treeMoonCat.lock()->GetTransform()->SetLocalPosition({800, 450, 0});
             image = sceneLayer->LazyAddComponentToEntity<ImageRenderer>(treeMoonCat);
             image.lock()->SetTexture(Texture2D::Create("assets/textures/TreeMoonCat.png"));
+            image.lock()->SetSortingOrder(1);
+            eventHandler = sceneLayer->LazyAddComponentToEntity<ImagePointerEventHandler>(treeMoonCat);
+            eventHandler.lock()->SetImage(image);
+
 
             auto stranded = sceneLayer->CreateEntity("Stranded");
             stranded.lock()->GetTransform()->SetLocalPosition({800, 450, 0});
             image = sceneLayer->LazyAddComponentToEntity<ImageRenderer>(stranded);
             image.lock()->SetTexture(Texture2D::Create("assets/textures/stranded-social-media.png"));
+            image.lock()->SetSortingOrder(2);
+            eventHandler = sceneLayer->LazyAddComponentToEntity<ImagePointerEventHandler>(stranded);
+            eventHandler.lock()->SetImage(image);
+
 
             auto peaceOut = sceneLayer->CreateEntity("Peace Out");
             peaceOut.lock()->GetTransform()->SetLocalPosition({800, 450, 0});
             image = sceneLayer->LazyAddComponentToEntity<ImageRenderer>(peaceOut);
             image.lock()->SetTexture(Texture2D::Create("assets/textures/peaceout-boy.png"));
+            image.lock()->SetSortingOrder(3);
+            eventHandler = sceneLayer->LazyAddComponentToEntity<ImagePointerEventHandler>(peaceOut);
+            eventHandler.lock()->SetImage(image);
         }
 
         ~SandboxApp() final = default;

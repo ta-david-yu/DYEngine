@@ -25,11 +25,6 @@
 
 namespace DYE
 {
-    ImageRenderer::~ImageRenderer()
-    {
-
-    }
-
     void ImageRenderer::OnUpdate()
     {
     }
@@ -106,32 +101,13 @@ namespace DYE
 
     }
 
-    void ImageRendererUpdater::HandleOnEvent(Event &event)
-    {
-        if (event.GetEventType() == EventType::MouseMove)
-        {
-            const auto& mouseMoveEvent = static_cast<MouseMovedEvent&>(event);
-        }
-        else if (event.GetEventType() == EventType::MouseButtonDown)
-        {
-            const auto& mouseDownEvent = static_cast<MouseButtonDownEvent&>(event);
-            DYE_LOG("DOWN: %d", mouseDownEvent.GetMouseButton());
-        }
-        else if (event.GetEventType() == EventType::MouseButtonUp)
-        {
-            const auto& mouseUpEvent = static_cast<MouseButtonUpEvent&>(event);
-            DYE_LOG("UP: %d", mouseUpEvent.GetMouseButton());
-        }
-        else if (event.GetEventType() == EventType::KeyDown)
-        {
-            const auto& keyDownEvent = static_cast<KeyDownEvent&>(event);
-            DYE_LOG("KEY DOWN: %d", keyDownEvent.GetKeyCode());
-        }
-    }
-
     void ImageRendererUpdater::RemoveComponentsOfEntity(uint32_t entityID)
     {
-
+        m_CachedImageRenderers.erase(std::remove_if(m_CachedImageRenderers.begin(), m_CachedImageRenderers.end(),
+                                                    [entityID](const auto& image)
+                                                    {
+                                                        return image->GetEntityPtr()->GetID() == entityID;
+                                                    }), m_CachedImageRenderers.end());
     }
 
     void ImageRendererUpdater::attachEntityWithComponent(const std::weak_ptr<Entity> &entity,

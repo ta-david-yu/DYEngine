@@ -27,7 +27,7 @@ set(SOURCE_FILES
         src/VertexArray.cpp
         src/RenderCommand.cpp
         src/ImageRenderer.cpp
-        src/Texture.cpp)
+        src/Texture.cpp src/ImagePointerEventHandler.cpp)
 set(HEADER_FILES
         include/Application.h
         include/WindowBase.h
@@ -58,7 +58,7 @@ set(HEADER_FILES
         include/Graphics/VertexArray.h
         include/Graphics/RenderCommand.h
         include/Scene/ImageRenderer.h
-        include/Graphics/Texture.h include/Events/MouseEvent.h include/Input/MouseCode.h)
+        include/Graphics/Texture.h include/Events/MouseEvent.h include/Input/MouseCode.h include/Scene/ImagePointerEventHandler.h)
 
 message(STATUS "DYEngine Source Files: ${SOURCE_FILES}")
 message(STATUS "DYEngine Header Files: ${HEADER_FILES}")
