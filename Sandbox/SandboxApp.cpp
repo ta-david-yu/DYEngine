@@ -22,9 +22,25 @@
 
 namespace DYE
 {
-    void SetImageColor(const ImagePointerEventHandler& handler)
+    std::vector<std::weak_ptr<ImageRenderer>> g_Images;
+    int g_CurrentImageIndex {0};
+
+    void PressRightButton(const ImagePointerEventHandler& handler)
     {
-        handler.GetImage().lock()->SetColor(glm::vec4{1, 1, 1, 0.5f});
+        g_Images[g_CurrentImageIndex].lock()->GetEntityPtr()->SetActive(false);
+        g_CurrentImageIndex++;
+        if (g_CurrentImageIndex > g_Images.size() - 1)
+            g_CurrentImageIndex = 0;
+        g_Images[g_CurrentImageIndex].lock()->GetEntityPtr()->SetActive(true);
+    }
+
+    void PressLeftButton(const ImagePointerEventHandler& handler)
+    {
+        g_Images[g_CurrentImageIndex].lock()->GetEntityPtr()->SetActive(false);
+        g_CurrentImageIndex--;
+        if (g_CurrentImageIndex < 0)
+            g_CurrentImageIndex = g_Images.size() - 1;
+        g_Images[g_CurrentImageIndex].lock()->GetEntityPtr()->SetActive(true);
     }
 
     class SandboxApp final : public Application
@@ -50,25 +66,32 @@ namespace DYE
             auto imgRendererUpdater = sceneLayer->GetComponentUpdaterOfType<ImageRenderer, ImageRendererUpdater>();
             imgRendererUpdater->PushSortingLayer("TEST 00");
 
-            /// Create entities and components
-            auto island = sceneLayer->CreateEntity("Island");
-            island.lock()->GetTransform()->SetLocalPosition({800, 450, 0});
-            auto image = sceneLayer->LazyAddComponentToEntity<ImageRenderer>(island);
+            auto rightBtn = sceneLayer->CreateEntity("Right Btn");
+            rightBtn.lock()->GetTransform()->SetLocalPosition({1200, 450, 0});
+            auto image = sceneLayer->LazyAddComponentToEntity<ImageRenderer>(rightBtn);
             image.lock()->SetTexture(Texture2D::Create("assets/textures/Island.png"));
             image.lock()->SetSortingOrder(0);
-            auto eventHandler = sceneLayer->LazyAddComponentToEntity<ImagePointerEventHandler>(island);
+            auto eventHandler = sceneLayer->LazyAddComponentToEntity<ImagePointerEventHandler>(rightBtn);
             eventHandler.lock()->SetImage(image);
-            eventHandler.lock()->OnPointerDownCallback = SetImageColor;
+            eventHandler.lock()->OnPointerUpCallback = PressRightButton;
 
+            auto leftBtn = sceneLayer->CreateEntity("Right Btn");
+            leftBtn.lock()->GetTransform()->SetLocalPosition({400, 450, 0});
+            image = sceneLayer->LazyAddComponentToEntity<ImageRenderer>(leftBtn);
+            image.lock()->SetTexture(Texture2D::Create("assets/textures/Island.png"));
+            image.lock()->SetSortingOrder(0);
+            eventHandler = sceneLayer->LazyAddComponentToEntity<ImagePointerEventHandler>(leftBtn);
+            eventHandler.lock()->SetImage(image);
+            eventHandler.lock()->OnPointerUpCallback = PressLeftButton;
 
+            /// Create entities and components
             auto treeMoonCat = sceneLayer->CreateEntity("TreeMoonCat");
             treeMoonCat.lock()->GetTransform()->SetLocalPosition({800, 450, 0});
             image = sceneLayer->LazyAddComponentToEntity<ImageRenderer>(treeMoonCat);
             image.lock()->SetTexture(Texture2D::Create("assets/textures/TreeMoonCat.png"));
             image.lock()->SetSortingOrder(1);
-            eventHandler = sceneLayer->LazyAddComponentToEntity<ImagePointerEventHandler>(treeMoonCat);
-            eventHandler.lock()->SetImage(image);
-            eventHandler.lock()->OnPointerDownCallback = SetImageColor;
+
+            g_Images.push_back(image);
 
 
             auto stranded = sceneLayer->CreateEntity("Stranded");
@@ -76,9 +99,8 @@ namespace DYE
             image = sceneLayer->LazyAddComponentToEntity<ImageRenderer>(stranded);
             image.lock()->SetTexture(Texture2D::Create("assets/textures/stranded-social-media.png"));
             image.lock()->SetSortingOrder(2);
-            eventHandler = sceneLayer->LazyAddComponentToEntity<ImagePointerEventHandler>(stranded);
-            eventHandler.lock()->SetImage(image);
-            eventHandler.lock()->OnPointerDownCallback = SetImageColor;
+
+            g_Images.push_back(image);
 
 
             auto peaceOut = sceneLayer->CreateEntity("Peace Out");
@@ -86,9 +108,14 @@ namespace DYE
             image = sceneLayer->LazyAddComponentToEntity<ImageRenderer>(peaceOut);
             image.lock()->SetTexture(Texture2D::Create("assets/textures/peaceout-boy.png"));
             image.lock()->SetSortingOrder(3);
-            eventHandler = sceneLayer->LazyAddComponentToEntity<ImagePointerEventHandler>(peaceOut);
-            eventHandler.lock()->SetImage(image);
-            eventHandler.lock()->OnPointerDownCallback = SetImageColor;
+
+            g_Images.push_back(image);
+
+            for (const auto& img : g_Images)
+            {
+                img.lock()->GetEntityPtr()->SetActive(false);
+            }
+            g_Images[g_CurrentImageIndex].lock()->GetEntityPtr()->SetActive(true);
         }
 
         ~SandboxApp() final = default;
