@@ -111,7 +111,7 @@ namespace DYE
             eventHandler.lock()->OnPointerEnterCallback = HandleOnPointerEnterButton;
             eventHandler.lock()->OnPointerExitCallback = HandleOnPointerExitButton;
 
-            auto leftBtn = sceneLayer->CreateEntity("Right Btn");
+            auto leftBtn = sceneLayer->CreateEntity("Left Btn");
             leftBtn.lock()->GetTransform()->SetLocalPosition({500, 450, 0});
             image = sceneLayer->LazyAddComponentToEntity<ImageRenderer>(leftBtn);
             image.lock()->SetTexture(Texture2D::Create("assets/textures/left-arrow-inactive.png"));
