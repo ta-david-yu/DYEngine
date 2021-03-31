@@ -6,6 +6,7 @@
 #include <string>
 #include <memory>
 #include <utility>
+#include <functional>
 
 namespace DYE
 {
@@ -30,6 +31,11 @@ namespace DYE
 
         std::weak_ptr<ImageRenderer> GetImage() const { return m_Image;}
         void SetImage(std::weak_ptr<ImageRenderer> image) { m_Image = std::move(image); }
+
+        std::function<void(const ImagePointerEventHandler&)> OnPointerEnterCallback;
+        std::function<void(const ImagePointerEventHandler&)> OnPointerExitCallback;
+        std::function<void(const ImagePointerEventHandler&)> OnPointerDownCallback;
+        std::function<void(const ImagePointerEventHandler&)> OnPointerUpCallback;
 
     private:
         std::weak_ptr<ImageRenderer> m_Image;

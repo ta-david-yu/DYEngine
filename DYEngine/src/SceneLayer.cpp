@@ -181,6 +181,7 @@ namespace DYE
 
                                 /// We assume transform always has an entity, otherwise it will be super buggy :))
                                 auto currEntity = currTransform->GetEntityPtr();
+                                ImGui::PushStyleColor(ImGuiCol_Text, currEntity->IsActive()? enabledTextColor : disabledTextColor);
 
                                 ImGui::PushID(currEntity->GetID());
                                 {
@@ -233,6 +234,7 @@ namespace DYE
                                 }
                                 ImGui::PopID();
 
+                                ImGui::PopStyleColor(1);
                                 prevDepth = currDepth;
                             }
 
@@ -256,6 +258,9 @@ namespace DYE
                         if (!m_Entities.empty())
                         {
                             auto &entity = m_Entities.find(selectedEntityID)->second;
+
+                            ImGui::Checkbox("##entity.IsActive", &entity->m_IsActive);
+                            ImGui::SameLine();
 
                             ImGui::Text("[ID: %d] %s", entity->GetID(), entity->GetName().c_str());
                             ImGui::Text("Has Transform: %s", entity->GetTransform() == nullptr? "no" : "yes");

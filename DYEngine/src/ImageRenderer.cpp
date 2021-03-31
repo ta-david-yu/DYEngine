@@ -151,7 +151,7 @@ namespace DYE
 
         for (const auto& image : m_CachedImageRenderers)
         {
-            if (image->GetIsEnabled())
+            if (image->GetEntityPtr()->IsActive() && image->GetIsEnabled())
             {
                 ///
                 auto transform = image->GetEntityPtr()->GetTransform();

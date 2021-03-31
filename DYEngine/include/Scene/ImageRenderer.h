@@ -39,6 +39,10 @@ namespace DYE
         /// \param texture
         /// \param setDimension if automatically change the dimension based on the texture width/height
         void SetTexture(std::shared_ptr<Texture2D> texture, bool setDimension = true);
+
+        /// Set the color of the image
+        /// \param color
+        void SetColor(glm::vec4 color) { m_Color = color; }
     private:
         glm::vec4 m_Color {1, 1, 1, 1};
         std::shared_ptr<Texture2D> m_Texture;

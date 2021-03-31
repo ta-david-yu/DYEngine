@@ -20,21 +20,29 @@ namespace DYE
     void ImagePointerEventHandler::OnPointerEnter()
     {
         DYE_LOG("Enter %s", GetEntityPtr()->GetName().c_str());
+        if (OnPointerEnterCallback)
+            OnPointerEnterCallback(*this);
     }
 
     void ImagePointerEventHandler::OnPointerExit()
     {
         DYE_LOG("Exit %s", GetEntityPtr()->GetName().c_str());
+        if (OnPointerExitCallback)
+            OnPointerExitCallback(*this);
     }
 
     void ImagePointerEventHandler::OnPointerDown()
     {
         DYE_LOG("Down %s", GetEntityPtr()->GetName().c_str());
+        if (OnPointerDownCallback)
+            OnPointerDownCallback(*this);
     }
 
     void ImagePointerEventHandler::OnPointerUp()
     {
         DYE_LOG("Up %s", GetEntityPtr()->GetName().c_str());
+        if (OnPointerUpCallback)
+            OnPointerUpCallback(*this);
     }
 
     ImagePointerEventHandlerUpdater::ImagePointerEventHandlerUpdater(ComponentTypeID typeID, WindowBase* window)
@@ -109,28 +117,31 @@ namespace DYE
                 /// Rect testing from the image at the front to the one at the back
                 for (const auto& pointerEventHandler : m_CachedPointerEventHandlers)
                 {
-                    auto pTransform = pointerEventHandler->GetTransform();
-                    auto image = pointerEventHandler->GetImage();
-
-                    glm::vec3 worldPos = pTransform->GetLocalPosition();
-                    worldPos.y = m_pWindow->GetHeight() - worldPos.y;
-                    glm::vec<2, int> anchorPos { worldPos.x, worldPos.y };
-
-                    auto relativePos = glm::vec<2, int>{mouseMovedEvent.GetX(), mouseMovedEvent.GetY()} - anchorPos;
-
-                    glm::vec3 worldScale = pTransform->GetLocalScale();
-                    auto imageDimension = image.lock()->GetDimension();
-
-                    decltype(imageDimension) scaledDimension {worldScale.x * imageDimension.x, worldScale.y * imageDimension.y };
-                    int halfWidth = scaledDimension.x / 2;
-                    int halfHeight = scaledDimension.y / 2;
-
-                    /// If it's inside an image?
-                    if (relativePos.x <= halfWidth && relativePos.x >= -halfWidth &&
-                        relativePos.y <= halfHeight && relativePos.y >= -halfHeight)
+                    if (pointerEventHandler->GetEntityPtr()->IsActive() && pointerEventHandler->GetIsEnabled())
                     {
-                        newEventHandler = pointerEventHandler;
-                        break;
+                        auto pTransform = pointerEventHandler->GetTransform();
+                        auto image = pointerEventHandler->GetImage();
+
+                        glm::vec3 worldPos = pTransform->GetLocalPosition();
+                        glm::vec<2, int> anchorPos{worldPos.x, worldPos.y};
+
+                        auto relativePos = glm::vec<2, int>{mouseMovedEvent.GetX(), mouseMovedEvent.GetY()} - anchorPos;
+
+                        glm::vec3 worldScale = pTransform->GetLocalScale();
+                        auto imageDimension = image.lock()->GetDimension();
+
+                        decltype(imageDimension) scaledDimension{worldScale.x * imageDimension.x,
+                                                                 worldScale.y * imageDimension.y};
+                        int halfWidth = scaledDimension.x / 2;
+                        int halfHeight = scaledDimension.y / 2;
+
+                        /// If it's inside an image?
+                        if (relativePos.x <= halfWidth && relativePos.x >= -halfWidth &&
+                            relativePos.y <= halfHeight && relativePos.y >= -halfHeight)
+                        {
+                            newEventHandler = pointerEventHandler;
+                            break;
+                        }
                     }
                 }
 
@@ -201,7 +212,6 @@ namespace DYE
         for (const auto& handler : m_CachedPointerEventHandlers)
         {
             glm::vec3 worldPos = handler->GetTransform()->GetLocalPosition();
-            worldPos.y = m_pWindow->GetHeight() - worldPos.y;
             glm::vec<2, int> anchorPos { worldPos.x, worldPos.y };
             auto relativePos = glm::vec<2, int>{m_LastMousePosition.x, m_LastMousePosition.y} - anchorPos;
 

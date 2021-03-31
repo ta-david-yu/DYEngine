@@ -22,6 +22,11 @@
 
 namespace DYE
 {
+    void SetImageColor(const ImagePointerEventHandler& handler)
+    {
+        handler.GetImage().lock()->SetColor(glm::vec4{1, 1, 1, 0.5f});
+    }
+
     class SandboxApp final : public Application
     {
     public:
@@ -53,6 +58,7 @@ namespace DYE
             image.lock()->SetSortingOrder(0);
             auto eventHandler = sceneLayer->LazyAddComponentToEntity<ImagePointerEventHandler>(island);
             eventHandler.lock()->SetImage(image);
+            eventHandler.lock()->OnPointerDownCallback = SetImageColor;
 
 
             auto treeMoonCat = sceneLayer->CreateEntity("TreeMoonCat");
@@ -62,6 +68,7 @@ namespace DYE
             image.lock()->SetSortingOrder(1);
             eventHandler = sceneLayer->LazyAddComponentToEntity<ImagePointerEventHandler>(treeMoonCat);
             eventHandler.lock()->SetImage(image);
+            eventHandler.lock()->OnPointerDownCallback = SetImageColor;
 
 
             auto stranded = sceneLayer->CreateEntity("Stranded");
@@ -71,6 +78,7 @@ namespace DYE
             image.lock()->SetSortingOrder(2);
             eventHandler = sceneLayer->LazyAddComponentToEntity<ImagePointerEventHandler>(stranded);
             eventHandler.lock()->SetImage(image);
+            eventHandler.lock()->OnPointerDownCallback = SetImageColor;
 
 
             auto peaceOut = sceneLayer->CreateEntity("Peace Out");
@@ -80,6 +88,7 @@ namespace DYE
             image.lock()->SetSortingOrder(3);
             eventHandler = sceneLayer->LazyAddComponentToEntity<ImagePointerEventHandler>(peaceOut);
             eventHandler.lock()->SetImage(image);
+            eventHandler.lock()->OnPointerDownCallback = SetImageColor;
         }
 
         ~SandboxApp() final = default;

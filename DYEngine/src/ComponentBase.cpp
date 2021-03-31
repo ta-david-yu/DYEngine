@@ -92,7 +92,7 @@ namespace DYE
     {
         for (auto & pair : m_Components)
         {
-            if (pair.second->GetIsEnabled())
+            if (pair.second->GetEntityPtr()->IsActive() && pair.second->GetIsEnabled())
                 pair.second->OnUpdate();
         }
     }
@@ -101,7 +101,7 @@ namespace DYE
     {
         for (auto & pair : m_Components)
         {
-            if (pair.second->GetIsEnabled())
+            if (pair.second->GetEntityPtr()->IsActive() && pair.second->GetIsEnabled())
                 pair.second->OnFixedUpdate();
         }
     }
