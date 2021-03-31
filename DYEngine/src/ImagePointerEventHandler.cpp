@@ -29,12 +29,12 @@ namespace DYE
 
     void ImagePointerEventHandler::OnPointerDown()
     {
-
+        DYE_LOG("Down %s", GetEntityPtr()->GetName().c_str());
     }
 
     void ImagePointerEventHandler::OnPointerUp()
     {
-
+        DYE_LOG("Up %s", GetEntityPtr()->GetName().c_str());
     }
 
     ImagePointerEventHandlerUpdater::ImagePointerEventHandlerUpdater(ComponentTypeID typeID, WindowBase* window)
@@ -64,11 +64,17 @@ namespace DYE
         {
             if (event.GetEventType() == EventType::MouseButtonDown)
             {
-                /// TODO
+                if (!m_CurrentPointerEventHandler.expired())
+                {
+                    m_CurrentPointerEventHandler.lock()->OnPointerDown();
+                }
             }
             else if (event.GetEventType() == EventType::MouseButtonUp)
             {
-                /// TODO
+                if (!m_CurrentPointerEventHandler.expired())
+                {
+                    m_CurrentPointerEventHandler.lock()->OnPointerUp();
+                }
             }
             else if (event.GetEventType() == EventType::MouseMove)
             {
