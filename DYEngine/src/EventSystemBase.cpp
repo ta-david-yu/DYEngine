@@ -1,5 +1,5 @@
-#include "Events/EventSystemBase.h"
-#include "Events/SDLEventSystem.h"
+#include "Event/EventSystemBase.h"
+#include "Event/SDLEventSystem.h"
 
 namespace DYE
 {

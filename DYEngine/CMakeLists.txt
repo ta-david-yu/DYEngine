@@ -33,12 +33,12 @@ set(HEADER_FILES
         include/WindowBase.h
         include/SDLWindow.h
         include/Time.h
-        include/Events/Event.h
-        include/Events/ApplicationEvent.h
+        include/Event/Event.h
+        include/Event/ApplicationEvent.h
         include/Input/KeyCode.h
-        include/Events/KeyEvent.h
-        include/Events/EventSystemBase.h
-        include/Events/SDLEventSystem.h
+        include/Event/KeyEvent.h
+        include/Event/EventSystemBase.h
+        include/Event/SDLEventSystem.h
         include/Base.h include/ContextBase.h
         include/SDLContext.h
         include/AppEntryPoint.h
@@ -59,7 +59,7 @@ set(HEADER_FILES
         include/Graphics/RenderCommand.h
         include/Scene/ImageRenderer.h
         include/Graphics/Texture.h
-        include/Events/MouseEvent.h
+        include/Event/MouseEvent.h
         include/Input/MouseCode.h)
 
 message(STATUS "DYEngine Source Files: ${SOURCE_FILES}")

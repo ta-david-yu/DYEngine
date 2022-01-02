@@ -3,8 +3,8 @@
 #include <Scene/Entity.h>
 #include <Scene/Transform.h>
 #include <Scene/ImageRenderer.h>
-#include <Events/Event.h>
-#include <Events/MouseEvent.h>
+#include <Event/Event.h>
+#include <Event/MouseEvent.h>
 #include <WindowBase.h>
 
 #include "Base.h"

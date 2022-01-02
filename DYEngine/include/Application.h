@@ -1,8 +1,8 @@
 #pragma once
 
 #include "WindowBase.h"
-#include "Events/EventSystemBase.h"
-#include "Events/ApplicationEvent.h"
+#include "Event/EventSystemBase.h"
+#include "Event/ApplicationEvent.h"
 #include "Time.h"
 #include "LayerStack.h"
 #include "LayerBase.h"
@@ -42,7 +42,7 @@ namespace DYE
         virtual void onPostRenderLayers() { }
 
     private:
-        /// The EventHandler that handles Events polled by m_EventSystem
+        /// The EventHandler that handles Event polled by m_EventSystem
         /// \param pEvent the received event pointer
         /// \return true if the event can be handled
         bool handleOnEvent(const std::shared_ptr<Event>& pEvent);

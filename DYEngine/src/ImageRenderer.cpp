@@ -10,9 +10,9 @@
 #include "Graphics/RenderCommand.h"
 #include "Graphics/Texture.h"
 
-#include "Events/Event.h"
-#include "Events/MouseEvent.h"
-#include "Events/KeyEvent.h"
+#include "Event/Event.h"
+#include "Event/MouseEvent.h"
+#include "Event/KeyEvent.h"
 
 #include <glm/gtc/type_ptr.hpp>
 

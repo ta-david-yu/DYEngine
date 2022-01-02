@@ -4,7 +4,7 @@
 
 namespace DYE
 {
-    // TODO: Events are currently blocking, should be using EventQueue later
+    // TODO: Event are currently blocking, should be using EventQueue later
 
     /// EventType, described event types
     enum class EventType

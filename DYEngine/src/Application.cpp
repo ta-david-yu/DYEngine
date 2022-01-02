@@ -80,7 +80,7 @@ namespace DYE
 
         while (m_IsRunning)
         {
-            /// Poll Events
+            /// Poll Event
             m_EventSystem->PollEvent();
 
             /// Fixed Update

@@ -1,9 +1,9 @@
-#include "Events/SDLEventSystem.h"
+#include "Event/SDLEventSystem.h"
 
 #include "Base.h"
-#include "Events/ApplicationEvent.h"
-#include "Events/KeyEvent.h"
-#include "Events/MouseEvent.h"
+#include "Event/ApplicationEvent.h"
+#include "Event/KeyEvent.h"
+#include "Event/MouseEvent.h"
 
 #include <SDL.h>
 #include <imgui_impl_sdl.h>
