@@ -14,10 +14,23 @@ namespace DYE
 
     void SandboxLayer::OnEvent(const std::shared_ptr<Event> &pEvent)
     {
-        EventDispatcher dispatcher(*pEvent);
+        auto eventType = pEvent->GetEventType();
 
-        dispatcher.Dispatch<KeyDownEvent>(DYE_BIND_EVENT_FUNCTION(handleOnKeyDown));
-        dispatcher.Dispatch<KeyUpEvent>(DYE_BIND_EVENT_FUNCTION(handleOnKeyUp));
+        if (eventType == EventType::KeyDown)
+        {
+            auto keyEvent = std::static_pointer_cast<KeyEvent>(pEvent);
+            DYE_ASSERT(keyEvent->GetKeyCode() != KeyCode::Space);
+            DYE_ASSERT_RELEASE(keyEvent->GetKeyCode() != KeyCode::Right);
+
+            //Logger::Log("Sandbox, KeyDown - %d", event.GetKeyCode());
+            DYE_LOG("Sandbox, KeyDown - %d", keyEvent->GetKeyCode());
+        }
+        else if (eventType == EventType::KeyUp)
+        {
+            auto keyEvent = std::static_pointer_cast<KeyEvent>(pEvent);
+            //Logger::Log("Sandbox, KeyUp - %d", event.GetKeyCode());
+            DYE_LOG("Sandbox, KeyUp - %d", keyEvent->GetKeyCode());
+        }
     }
 
     void SandboxLayer::OnUpdate()
@@ -100,22 +113,5 @@ namespace DYE
 
         ImGui::ShowDemoWindow();
 
-    }
-
-    bool SandboxLayer::handleOnKeyDown(const KeyDownEvent &event)
-    {
-        DYE_ASSERT(event.GetKeyCode() != KeyCode::Space);
-        DYE_ASSERT_RELEASE(event.GetKeyCode() != KeyCode::Right);
-
-        //Logger::Log("Sandbox, KeyDown - %d", event.GetKeyCode());
-        SDL_Log("Sandbox, KeyDown - %d", event.GetKeyCode());
-        return true;
-    }
-
-    bool SandboxLayer::handleOnKeyUp(const KeyUpEvent &event)
-    {
-        //Logger::Log("Sandbox, KeyUp - %d", event.GetKeyCode());
-        SDL_Log("Sandbox, KeyUp - %d", event.GetKeyCode());
-        return true;
     }
 }

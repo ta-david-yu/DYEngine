@@ -47,7 +47,6 @@ namespace DYE
     /// Event data structure
     class Event
     {
-        friend class EventDispatcher;
     public:
         virtual ~Event() = default;
 
@@ -69,32 +68,6 @@ namespace DYE
         }
 
         bool IsUsed = false;
-    };
-
-    /// The helper class that dispatches the event
-    class EventDispatcher
-    {
-    public:
-        explicit EventDispatcher(Event& event) : m_Event(event) {}
-
-        ///
-        /// \tparam T The type of the Event
-        /// \tparam F The type of the event callback function (it is deduced from the parameter by compiler)
-        /// \param func The callback function that handles the event
-        /// \return return true if the Event type (T) matches up with m_Event, else return false
-        template<typename T, typename F>
-        bool Dispatch(const F& func)
-        {
-            if (m_Event.GetEventType() == T::GetStaticType())
-            {
-                m_Event.IsUsed |= func(static_cast<T&>(m_Event));
-                return true;
-            }
-            return false;
-        }
-
-    private:
-        Event& m_Event;
     };
 
     inline std::ostream & operator<<(std::ostream& os, const Event& evt)

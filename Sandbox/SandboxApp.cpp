@@ -13,8 +13,8 @@
 #include "Graphics/Texture.h"
 
 #include "Scene/ImageRenderer.h"
-#include "Scene/ImagePointerEventHandler.h"
 
+#include "ImagePointerEventHandler.h"
 #include "SandboxLayer.h"
 #include "FrameCounterComponent.h"
 #include "SubtitleUpdater.h"

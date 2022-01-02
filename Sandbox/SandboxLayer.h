@@ -18,9 +18,6 @@ namespace DYE
         void OnFixedUpdate() override;
         void OnImGui() override;
     private:
-        bool handleOnKeyDown(const KeyDownEvent& event);
-        bool handleOnKeyUp(const KeyUpEvent& event);
-
         WindowBase* m_pWindow;
         double m_FpsAccumulator = 0;
         int m_FramesCounter = 0;

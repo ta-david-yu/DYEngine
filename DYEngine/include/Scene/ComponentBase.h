@@ -51,7 +51,7 @@ namespace DYE
 #endif
     };
 
-    /// The abstract base interface for any component updater that is responsible for updating a list of components. It shouldn't be inherited directly.
+    /// The abstract base interface for any component updater that is responsible for updating a list of components.
     class ComponentUpdaterBase
     {
         friend SceneLayer;

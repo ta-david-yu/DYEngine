@@ -1,4 +1,4 @@
-#include <Scene/ImagePointerEventHandler.h>
+#include <ImagePointerEventHandler.h>
 
 #include <Scene/Entity.h>
 #include <Scene/Transform.h>
@@ -130,8 +130,8 @@ namespace DYE
                         glm::vec3 worldScale = pTransform->GetLocalScale();
                         auto imageDimension = image.lock()->GetDimension();
 
-                        decltype(imageDimension) scaledDimension{worldScale.x * imageDimension.x,
-                                                                 worldScale.y * imageDimension.y};
+                        decltype(imageDimension) scaledDimension { worldScale.x * imageDimension.x,
+                                                                 worldScale.y * imageDimension.y };
                         int halfWidth = scaledDimension.x / 2;
                         int halfHeight = scaledDimension.y / 2;
 

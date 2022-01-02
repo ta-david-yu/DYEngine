@@ -142,9 +142,23 @@ namespace DYE
     {
         auto eventType = pEvent->GetEventType();
 
-        EventDispatcher dispatcher(*pEvent);
-        dispatcher.Dispatch<WindowCloseEvent>(DYE_BIND_EVENT_FUNCTION(handleOnWindowClose));
-        dispatcher.Dispatch<WindowSizeChangeEvent>(DYE_BIND_EVENT_FUNCTION(handleOnWindowResize));
+        // Handle WindowEvent on application level
+        if (eventType == EventType::WindowClose)
+        {
+            bool isHandled = handleOnWindowClose(static_cast<const WindowCloseEvent&>(*pEvent));
+            if (isHandled)
+            {
+                pEvent->IsUsed = isHandled;
+            }
+        }
+        else if (eventType == EventType::WindowSizeChange)
+        {
+            bool isHandled = handleOnWindowResize(static_cast<const WindowSizeChangeEvent&>(*pEvent));
+            if (isHandled)
+            {
+                pEvent->IsUsed = isHandled;
+            }
+        }
 
         // Event is passed from top to bottom layer
         for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); it++)
