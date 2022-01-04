@@ -12,24 +12,24 @@ namespace DYE
     {
     }
 
-    void SandboxLayer::OnEvent(const std::shared_ptr<Event> &pEvent)
+    void SandboxLayer::OnEvent(Event& event)
     {
-        auto eventType = pEvent->GetEventType();
+        auto eventType = event.GetEventType();
 
         if (eventType == EventType::KeyDown)
         {
-            auto keyEvent = std::static_pointer_cast<KeyEvent>(pEvent);
-            DYE_ASSERT(keyEvent->GetKeyCode() != KeyCode::Space);
-            DYE_ASSERT_RELEASE(keyEvent->GetKeyCode() != KeyCode::Right);
+            auto keyEvent = static_cast<KeyDownEvent&>(event);
+            DYE_ASSERT(keyEvent.GetKeyCode() != KeyCode::Space);
+            DYE_ASSERT_RELEASE(keyEvent.GetKeyCode() != KeyCode::Right);
 
             //Logger::Log("Sandbox, KeyDown - %d", event.GetKeyCode());
-            DYE_LOG("Sandbox, KeyDown - %d", keyEvent->GetKeyCode());
+            DYE_LOG("Sandbox, KeyDown - %d", keyEvent.GetKeyCode());
         }
         else if (eventType == EventType::KeyUp)
         {
-            auto keyEvent = std::static_pointer_cast<KeyEvent>(pEvent);
+            auto keyEvent = static_cast<KeyUpEvent&>(event);
             //Logger::Log("Sandbox, KeyUp - %d", event.GetKeyCode());
-            DYE_LOG("Sandbox, KeyUp - %d", keyEvent->GetKeyCode());
+            DYE_LOG("Sandbox, KeyUp - %d", keyEvent.GetKeyCode());
         }
     }
 

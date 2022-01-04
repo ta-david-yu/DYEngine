@@ -36,14 +36,14 @@ namespace DYE
         ImGui::DestroyContext();
     }
 
-    void ImGuiLayer::OnEvent(const std::shared_ptr<Event> &pEvent)
+    void ImGuiLayer::OnEvent(Event& event)
     {
         if (m_BlockEvents)
         {
             // Use up an event if ImGui wants it
             auto& io = ImGui::GetIO();
-            pEvent->IsUsed |= pEvent->IsInCategory(EventCategory::Mouse) && io.WantCaptureMouse;
-            pEvent->IsUsed |= pEvent->IsInCategory(EventCategory::Keyboard) && io.WantCaptureKeyboard;
+            event.IsUsed |= event.IsInCategory(EventCategory::Mouse) && io.WantCaptureMouse;
+            event.IsUsed |= event.IsInCategory(EventCategory::Keyboard) && io.WantCaptureKeyboard;
             // TODO: use EventCategory::TextInput
         }
     }

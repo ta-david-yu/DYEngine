@@ -71,11 +71,15 @@ namespace DYE
             // Dispatch event
             if (caught)
             {
-                // Check if EventHandler is referring to a callable target
+                broadcast(*eventPtr);
+
+                /*
+                // Check if EventHandleFunction is referring to a callable target
                 if (m_EventHandler)
                 {
                     m_EventHandler.operator()(eventPtr);
                 }
+                 */
             }
         }
     }

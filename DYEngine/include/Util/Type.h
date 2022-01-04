@@ -10,7 +10,7 @@ std::string demangleCTypeName(const char* name);
 /// \param t
 /// \return a string of the name
 template <class T>
-std::string getTypeName(const T& t) {
-
+std::string getTypeName(const T& t)
+{
     return demangleCTypeName(typeid(t).name());
 }

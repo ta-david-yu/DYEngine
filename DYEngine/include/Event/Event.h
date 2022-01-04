@@ -1,6 +1,9 @@
 #pragma once
 
+#include "Message/Messaging.h"
+
 #include <string>
+#include <type_traits>
 
 namespace DYE
 {
@@ -45,15 +48,12 @@ namespace DYE
 								virtual std::string GetName() const override { return #type; }\
 
     /// Event data structure
-    class Event
+    class Event : MessageData
     {
     public:
-        virtual ~Event() = default;
+        ~Event() override = default;
 
         virtual EventType GetEventType() const = 0;
-
-        /// Return the debug name of the Event
-        virtual std::string GetName() const = 0;
 
         /// Return flags of the category, formed with EventCategory class
         virtual int GetCategoryFlags() const = 0;
@@ -74,4 +74,11 @@ namespace DYE
     {
         return os << evt.ToString();
     }
+
+    /// EventHandleFunction handles all the Events emit by an EventSystemBase
+    class EventHandler : MessageHandlerBase<Event>
+    {
+    public:
+        void Handle(Event& event) override = 0;
+    };
 }

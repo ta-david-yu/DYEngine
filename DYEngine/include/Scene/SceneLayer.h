@@ -33,7 +33,7 @@ namespace DYE
         void OnFixedUpdate() override;
         void OnRender() override;
         void OnImGui() override;
-        void OnEvent(const std::shared_ptr<Event> &pEvent) override;
+        void OnEvent(Event& event) override;
 
         /// Create an entity and push into the list
         /// \param name the name of the entity

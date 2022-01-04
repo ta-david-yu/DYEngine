@@ -531,13 +531,13 @@ namespace DYE
 #endif
     }
 
-    void SceneLayer::OnEvent(const std::shared_ptr<Event> &pEvent)
+    void SceneLayer::OnEvent(Event& event)
     {
 #if DYE_DEBUG
         /// Don't dispatch debug input, show window if F1
-        if (!m_SceneDebugWindowIsOpen && pEvent->GetEventType() == EventType::KeyDown)
+        if (!m_SceneDebugWindowIsOpen && event.GetEventType() == EventType::KeyDown)
         {
-            auto keyCode = static_cast<KeyDownEvent&>(*pEvent).GetKeyCode();
+            auto keyCode = static_cast<KeyDownEvent&>(event).GetKeyCode();
             /// Toggle scene debug window
             if (keyCode == KeyCode::F1)
             {
@@ -547,7 +547,7 @@ namespace DYE
 #endif
         for (auto& updater : m_ComponentUpdaters)
         {
-            updater->HandleOnEvent(*pEvent);
+            updater->HandleOnEvent(event);
         }
     }
 

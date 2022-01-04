@@ -14,7 +14,7 @@ namespace DYE
 
         void OnAttach() override;
         void OnDetach() override;
-        void OnEvent(const std::shared_ptr<Event> &pEvent) override;
+        void OnEvent(Event& event) override;
 
         void BeginImGui();
         void EndImGui();

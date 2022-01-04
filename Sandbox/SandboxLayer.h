@@ -13,7 +13,7 @@ namespace DYE
         explicit SandboxLayer(WindowBase* pWindow);
         SandboxLayer() = delete;
 
-        void OnEvent(const std::shared_ptr<Event> &pEvent) override;
+        void OnEvent(Event& event) override;
         void OnUpdate() override;
         void OnFixedUpdate() override;
         void OnImGui() override;

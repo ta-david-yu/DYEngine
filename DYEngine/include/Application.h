@@ -12,7 +12,7 @@
 
 namespace DYE
 {
-    class Application
+    class Application : EventHandler
     {
     public:
         Application() = delete;
@@ -28,9 +28,12 @@ namespace DYE
         /// App Entrypoint
         void Run();
 
+        void Handle(Event& event) override;
+
         /// Get the main window base instance in the application
         /// \return a raw pointer to the main window
         WindowBase* GetMainWindow() const { return m_Window.get(); }
+
     protected:
         void pushLayer(std::shared_ptr<LayerBase> layer);
         void pushOverlay(std::shared_ptr<LayerBase> overlay);
@@ -42,17 +45,8 @@ namespace DYE
         virtual void onPostRenderLayers() { }
 
     private:
-        /// The EventHandler that handles Event polled by m_EventSystem
-        /// \param pEvent the received event pointer
-        /// \return true if the event can be handled
-        bool handleOnEvent(const std::shared_ptr<Event>& pEvent);
-
-        /// The EventHandler that handles OnWindowClose Event, set IsRunning to false
-        /// \param event WindowCloseEvent
-        /// \return true if the event can be handled
-        bool handleOnWindowClose(const WindowCloseEvent& event);
-
-        bool handleOnWindowResize(const WindowSizeChangeEvent& event);
+        void handleOnWindowClose(const WindowCloseEvent& event);
+        void handleOnWindowResize(const WindowSizeChangeEvent& event);
 
     protected:
         /// The main rendering window

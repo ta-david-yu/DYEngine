@@ -34,7 +34,7 @@ namespace DYE
 
         virtual void OnImGui() {}
 
-        virtual void OnEvent(const std::shared_ptr<Event>& pEvent) {}
+        virtual void OnEvent(Event& event) {}
 
         const std::string& GetName() const { return m_Name; }
 
