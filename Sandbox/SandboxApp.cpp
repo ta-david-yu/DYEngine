@@ -18,6 +18,7 @@
 #include "SandboxLayer.h"
 #include "FrameCounterComponent.h"
 #include "SubtitleUpdater.h"
+#include "SandboxMessage.h"
 
 #include <glm/glm.hpp>
 #include <glad/glad.h>
@@ -157,6 +158,8 @@ namespace DYE
             {
                 DYE_LOG("Failed to load the yaml file");
             }
+
+            SandboxMessageHandler testHandler { };
 /*
             auto treeMoonCat = sceneLayer->CreateEntity("TreeMoonCat");
             treeMoonCat.lock()->GetTransform()->SetLocalPosition({800, 450, 0});
