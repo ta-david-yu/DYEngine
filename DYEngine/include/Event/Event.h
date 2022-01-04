@@ -76,7 +76,7 @@ namespace DYE
     }
 
     /// EventHandleFunction handles all the Events emit by an EventSystemBase
-    class EventHandler : MessageHandlerBase<Event>
+    class EventHandler : public MessageHandlerBase<Event>
     {
     public:
         void Handle(Event& event) override = 0;

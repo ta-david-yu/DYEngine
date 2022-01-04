@@ -12,7 +12,7 @@
 
 namespace DYE
 {
-    class Application : EventHandler
+    class Application : public EventHandler
     {
     public:
         Application() = delete;

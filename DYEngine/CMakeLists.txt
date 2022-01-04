@@ -60,7 +60,8 @@ set(HEADER_FILES
         include/Scene/ImageRenderer.h
         include/Graphics/Texture.h
         include/Event/MouseEvent.h
-        include/Input/MouseCode.h include/Message/Messaging.h)
+        include/Input/MouseCode.h
+        include/Message/Messaging.h)
 
 message(STATUS "DYEngine Source Files: ${SOURCE_FILES}")
 message(STATUS "DYEngine Header Files: ${HEADER_FILES}")
