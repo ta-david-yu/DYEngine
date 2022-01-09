@@ -72,8 +72,8 @@ namespace DYE
 
         /// Get the component updater that is responsible for updating the components of the given type. Used during adding a new component to an entity
         /// \tparam ComponentType the component type, use as a key to retrieve the updater
-        /// \tparam UpdaterType the updater type, the return pointer is cast to the type* first
-        /// \return a raw pointer to the updater. If the updater of the given type is not registered, return nullptr
+        /// \tparam UpdaterType the updater type, the return pointer is cast to UpdaterType* first
+        /// \return a raw pointer to the updater of the given UpdaterType. If the updater of the given type is not registered, return nullptr
         template<typename ComponentType, typename UpdaterType>
         UpdaterType* GetComponentUpdaterOfType();
 
@@ -144,6 +144,8 @@ namespace DYE
     template<typename T>
     ComponentUpdaterBase *SceneLayer::GetComponentUpdaterOfType()
     {
+        static_assert(std::is_base_of<ComponentUpdaterBase, T>::value, "T must inherit from ComponentUpdaterBase.");
+
         // delete the registered component updater
         for (auto& updater : m_ComponentUpdaters)
         {
@@ -158,6 +160,9 @@ namespace DYE
     template<typename ComponentType, typename UpdaterType>
     UpdaterType *SceneLayer::GetComponentUpdaterOfType()
     {
+        static_assert(std::is_base_of<ComponentBase, ComponentType>::value, "ComponentType must inherit from ComponentBase.");
+        static_assert(std::is_base_of<ComponentUpdaterBase, UpdaterType>::value, "UpdaterType must inherit from ComponentUpdaterBase.");
+
         // delete the registered component updater
         for (auto& updater : m_ComponentUpdaters)
         {
@@ -172,6 +177,8 @@ namespace DYE
     template<typename T>
     std::weak_ptr<T> SceneLayer::LazyAddComponentToEntity(std::weak_ptr<Entity> entity, ComponentTypeID typeID)
     {
+        static_assert(std::is_base_of<ComponentBase, T>::value, "T must inherit from ComponentBase.");
+
         auto updater = GetComponentUpdaterOfType(typeID);
 
         // if it doesn't exist already, create a new one
@@ -187,6 +194,8 @@ namespace DYE
     template<typename T>
     std::weak_ptr<T> SceneLayer::LazyAddComponentToEntity(std::weak_ptr<Entity> entity)
     {
+        static_assert(std::is_base_of<ComponentBase, T>::value, "T must inherit from ComponentBase.");
+
         ComponentTypeID typeID = ComponentTypeID(typeid(T));
 
         auto updater = GetComponentUpdaterOfType(typeID);

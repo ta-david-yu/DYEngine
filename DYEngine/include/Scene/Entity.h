@@ -45,6 +45,7 @@ namespace DYE
         template<typename T>
         std::tuple<bool, std::weak_ptr<T>> GetComponent()
         {
+            static_assert(std::is_base_of<ComponentBase, T>::value, "T must inherit from ComponentBase.");
             for (const auto & pair : m_Components)
             {
                 auto comp = pair.second.lock();

@@ -34,7 +34,7 @@ namespace DYE
         /// Register message event handler, we pass in a raw pointer because the handler itself is responsible for registering & unregistering.
         void Register(MessageHandlerBase<TMessageData>* handler)
         {
-#if DYE_DEBUG
+#ifdef DYE_DEBUG
             auto registeredHandlerItr = std::find(std::begin(m_MessageHandlers), std::end(m_MessageHandlers), handler);
 
             if (registeredHandlerItr != std::end(m_MessageHandlers))
