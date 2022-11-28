@@ -106,6 +106,9 @@ namespace DYE
         /// Whether or not the images should be sorted before render
         bool m_IsDirty = true;
 
+    private:
+        void sortCachedImageRenderers();
+
     protected:
 #if DYE_DEBUG
         void onUpdaterDebugWindowGUI(float width, float height) override;

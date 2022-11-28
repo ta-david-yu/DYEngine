@@ -122,27 +122,10 @@ namespace DYE
 
     void ImageRendererUpdater::RenderImages()
     {
-        /// sort and then draw
         if (m_IsDirty)
         {
-            struct {
-                bool operator()(const std::shared_ptr<ImageRenderer>& a, std::shared_ptr<ImageRenderer> b) const
-                {
-                    if (a->m_SortingLayerID < b->m_SortingLayerID)
-                    {
-                        return true;
-                    }
-                    else if (a->m_SortingLayerID > b->m_SortingLayerID)
-                    {
-                        return false;
-                    }
-                    else
-                    {
-                        return a->m_SortingOrder < b->m_SortingOrder;
-                    }
-                }
-            } customSort;
-            std::sort(m_CachedImageRenderers.begin(), m_CachedImageRenderers.end(), customSort);
+            /// Sort first if it's marked as dirty
+            sortCachedImageRenderers();
             m_IsDirty = false;
         }
 
@@ -151,51 +134,62 @@ namespace DYE
 
         for (const auto& image : m_CachedImageRenderers)
         {
-            if (image->GetEntityPtr()->IsActive() && image->GetIsEnabled())
+            if (!image->GetEntityPtr()->IsActive())
             {
-                ///
-                auto transform = image->GetEntityPtr()->GetTransform();
-                auto worldPos = transform->GetLocalPosition();
-                auto worldScale = transform->GetLocalScale();
-                worldPos.y = m_pWindow->GetHeight() - worldPos.y;
+                continue;
+            }
 
-                glm::vec2 position {(worldPos.x - m_pWindow->GetWidth() / 2.0f) / m_pWindow->GetWidth() * 2.0f,
-                                    (worldPos.y - m_pWindow->GetHeight() / 2.0f) / m_pWindow->GetHeight() * 2.0f};
+            if (!image->GetIsEnabled())
+            {
+                continue;
+            }
 
-                float dimensionScaleX = image->GetWidth() / ((float)m_pWindow->GetWidth() / 2);
-                float dimensionScaleY = image->GetHeight() / ((float)m_pWindow->GetHeight() / 2);
-                glm::vec2 scale {dimensionScaleX * worldScale.x, dimensionScaleY * worldScale.y};
+            ///
+            auto transform = image->GetEntityPtr()->GetTransform();
+            auto worldPos = transform->GetLocalPosition();
+            auto worldScale = transform->GetLocalScale();
 
-                glm::mat4 transformMatrix =
-                        glm::translate(glm::vec3(position.x, position.y, 0)) *
-                        glm::scale(glm::vec3(scale.x, scale.y, 1));
+            auto windowWidth = (float) m_pWindow->GetWidth();
+            auto windowHeight = (float) m_pWindow->GetHeight();
+            auto imageWidth = (float) image->GetWidth();
+            auto imageHeight = (float) image->GetHeight();
 
-                m_DefaultShaderProgram->Bind();
-                {
-                    if (image->m_Texture)
-                    {
-                        image->m_Texture->Bind(0);
-                    }
-                    else
-                    {
-                        m_DefaultTexture2D->Bind(0);
-                    }
+            worldPos.y = windowHeight - worldPos.y;
 
-                    auto colorUniformLocation = glGetUniformLocation(m_DefaultShaderProgram->GetID(), "_Color");
-                    glCall(glUniform4f(colorUniformLocation, image->m_Color.r, image->m_Color.g, image->m_Color.b,
-                                       image->m_Color.a));
+            glm::vec2 position{(worldPos.x - windowWidth / 2.0f) / windowWidth * 2.0f,
+                               (worldPos.y - windowHeight / 2.0f) / windowHeight * 2.0f};
 
-                    auto transformMatUniformLocation = glGetUniformLocation(m_DefaultShaderProgram->GetID(), "_TransformMatrix");
-                    glCall(glUniformMatrix4fv(transformMatUniformLocation, 1, GL_FALSE, glm::value_ptr(transformMatrix)););
+            float dimensionScaleX = imageWidth / (windowWidth * 0.5f);
+            float dimensionScaleY = imageHeight / (windowHeight * 0.5f);
+            glm::vec2 scale{dimensionScaleX * worldScale.x, dimensionScaleY * worldScale.y};
+
+            glm::mat4 transformMatrix =
+                    glm::translate(glm::vec3(position.x, position.y, 0)) *
+                    glm::scale(glm::vec3(scale.x, scale.y, 1));
+
+            m_DefaultShaderProgram->Bind();
+            {
+                if (image->m_Texture) {
+                    image->m_Texture->Bind(0);
+                } else {
+                    m_DefaultTexture2D->Bind(0);
                 }
 
-                ///
-                m_QuadVertexArray->Bind();
-                RenderCommand::DrawIndexed(m_QuadVertexArray);
+                auto colorUniformLocation = glGetUniformLocation(m_DefaultShaderProgram->GetID(), "_Color");
+                glCall(glUniform4f(colorUniformLocation, image->m_Color.r, image->m_Color.g, image->m_Color.b,
+                                   image->m_Color.a));
 
-                m_DefaultShaderProgram->Unbind();
-                m_QuadVertexArray->Unbind();
+                auto transformMatUniformLocation = glGetUniformLocation(m_DefaultShaderProgram->GetID(),
+                                                                        "_TransformMatrix");
+                glCall(glUniformMatrix4fv(transformMatUniformLocation, 1, GL_FALSE, glm::value_ptr(transformMatrix)););
             }
+
+            ///
+            m_QuadVertexArray->Bind();
+            RenderCommand::DrawIndexed(m_QuadVertexArray);
+
+            m_DefaultShaderProgram->Unbind();
+            m_QuadVertexArray->Unbind();
         }
     }
 
@@ -211,7 +205,7 @@ namespace DYE
         }
     }
 
-    std::uint32_t ImageRendererUpdater::LayerNameToLayerID(const std::string &layerName)
+	std::uint32_t ImageRendererUpdater::LayerNameToLayerID(const std::string &layerName)
     {
         std::uint32_t id = 0;
         for (const auto& name : m_SortingLayers)
@@ -236,6 +230,29 @@ namespace DYE
         return m_SortingLayers[id];
     }
 
+
+    void ImageRendererUpdater::sortCachedImageRenderers()
+	{
+		struct
+		{
+			bool operator()(const std::shared_ptr<ImageRenderer> &a, std::shared_ptr<ImageRenderer> b) const
+			{
+				if (a->m_SortingLayerID < b->m_SortingLayerID)
+				{
+					return true;
+				}
+				else if (a->m_SortingLayerID > b->m_SortingLayerID)
+				{
+					return false;
+				}
+				else
+				{
+					return a->m_SortingOrder < b->m_SortingOrder;
+				}
+			}
+		} customSort;
+		std::sort(m_CachedImageRenderers.begin(), m_CachedImageRenderers.end(), customSort);
+	}
 
 #ifdef DYE_DEBUG
     void ImageRenderer::onComponentDebugWindowGUI(float width, float height)
@@ -324,8 +341,11 @@ namespace DYE
                             m_SortingLayerID = index;
                         }
                     }
+
                     if (isSelected)
-                        ImGui::SetItemDefaultFocus();
+					{
+						ImGui::SetItemDefaultFocus();
+					}
 
                     index++;
                 }
@@ -372,5 +392,6 @@ namespace DYE
         }
         ImGui::EndChild();
     }
+
 #endif
 }
