@@ -168,21 +168,24 @@ namespace DYE
                     glm::scale(glm::vec3(scale.x, scale.y, 1));
 
             m_DefaultShaderProgram->Bind();
-            {
-                if (image->m_Texture) {
-                    image->m_Texture->Bind(0);
-                } else {
-                    m_DefaultTexture2D->Bind(0);
-                }
+			{
+				if (image->m_Texture)
+				{
+					image->m_Texture->Bind(0);
+				}
+				else
+				{
+					m_DefaultTexture2D->Bind(0);
+				}
 
-                auto colorUniformLocation = glGetUniformLocation(m_DefaultShaderProgram->GetID(), "_Color");
-                glCall(glUniform4f(colorUniformLocation, image->m_Color.r, image->m_Color.g, image->m_Color.b,
-                                   image->m_Color.a));
+				auto colorUniformLocation = glGetUniformLocation(m_DefaultShaderProgram->GetID(), "_Color");
+				glCall(glUniform4f(colorUniformLocation, image->m_Color.r, image->m_Color.g, image->m_Color.b,
+								   image->m_Color.a));
 
-                auto transformMatUniformLocation = glGetUniformLocation(m_DefaultShaderProgram->GetID(),
-                                                                        "_TransformMatrix");
-                glCall(glUniformMatrix4fv(transformMatUniformLocation, 1, GL_FALSE, glm::value_ptr(transformMatrix)););
-            }
+				auto transformMatUniformLocation = glGetUniformLocation(m_DefaultShaderProgram->GetID(),
+																		"_TransformMatrix");
+				glCall(glUniformMatrix4fv(transformMatUniformLocation, 1, GL_FALSE, glm::value_ptr(transformMatrix)););
+			}
 
             ///
             m_QuadVertexArray->Bind();
