@@ -80,128 +80,102 @@ namespace DYE
         explicit SandboxApp(const std::string &windowName, int fixedFramePerSecond = 60)
             : Application(windowName, fixedFramePerSecond)
         {
-            RenderCommand::SetClearColor(glm::vec4 {51, 63, 88, 255} / 255.0f);
-
-            auto sceneLayer = std::make_shared<SceneLayer>(m_Window.get());
-            pushLayer(sceneLayer);
-
-            /// Init pointer event handler updater
-            auto pointerEventHandlerUpdater =
-                    std::make_shared<ImagePointerEventHandlerUpdater>(ComponentTypeID(typeid(ImagePointerEventHandler)), m_Window.get());
-            sceneLayer->RegisterComponentUpdater(std::move(pointerEventHandlerUpdater));
-
-            auto subtitleUpdater =
-                    std::make_shared<SubtitleUpdater>(ComponentTypeID(typeid(SubtitleUpdater)));
-            m_SubtitleUpdater = subtitleUpdater;
-            sceneLayer->RegisterComponentUpdater(std::move(subtitleUpdater));
-
-            /// Init sorting layer
-            auto imgRendererUpdater = sceneLayer->GetComponentUpdaterOfType<ImageRenderer, ImageRendererUpdater>();
-            imgRendererUpdater->PushSortingLayer("TEST 00");
-
-            auto rightBtn = sceneLayer->CreateEntity("Right Btn");
-            rightBtn.lock()->GetTransform()->SetLocalPosition({1100, 450, 0});
-            auto image = sceneLayer->LazyAddComponentToEntity<ImageRenderer>(rightBtn);
-            image.lock()->SetTexture(Texture2D::Create("assets/textures/right-arrow-inactive.png"));
-            image.lock()->SetSortingOrder(0);
-            image.lock()->SetColor({1, 1, 1, 0.5});
-            auto eventHandler = sceneLayer->LazyAddComponentToEntity<ImagePointerEventHandler>(rightBtn);
-            eventHandler.lock()->SetImage(image);
-            eventHandler.lock()->OnPointerUpCallback = ReleasedRightButton;
-            eventHandler.lock()->OnPointerDownCallback = PressedButton;
-            eventHandler.lock()->OnPointerEnterCallback = HandleOnPointerEnterButton;
-            eventHandler.lock()->OnPointerExitCallback = HandleOnPointerExitButton;
-
-            auto leftBtn = sceneLayer->CreateEntity("Left Btn");
-            leftBtn.lock()->GetTransform()->SetLocalPosition({500, 450, 0});
-            image = sceneLayer->LazyAddComponentToEntity<ImageRenderer>(leftBtn);
-            image.lock()->SetTexture(Texture2D::Create("assets/textures/left-arrow-inactive.png"));
-            image.lock()->SetSortingOrder(0);
-            image.lock()->SetColor({1, 1, 1, 0.5});
-            eventHandler = sceneLayer->LazyAddComponentToEntity<ImagePointerEventHandler>(leftBtn);
-            eventHandler.lock()->SetImage(image);
-            eventHandler.lock()->OnPointerUpCallback = ReleasedLeftButton;
-            eventHandler.lock()->OnPointerDownCallback = PressedButton;
-            eventHandler.lock()->OnPointerEnterCallback = HandleOnPointerEnterButton;
-            eventHandler.lock()->OnPointerExitCallback = HandleOnPointerExitButton;
-
-            /// Loading Gallery
-            YAML::Node rootNode = YAML::LoadFile("assets/gallery.yaml");
-            if (rootNode)
-            {
-                const auto& galleryNode = rootNode["Gallery"];
-                for (const auto& imageNode : galleryNode)
-                {
-                    const auto& name = imageNode["Name"].as<std::string>();
-                    const auto& texturePath = imageNode["Texture"].as<std::string>();
-                    const auto& description = imageNode["Description"].as<std::string>();
-                    glm::vec2 position { imageNode["Position"][0].as<float>(), imageNode["Position"][1].as<float>() };
-
-                    DYE_LOG("Insert - Name: %s, Texture: %s, Description %s at [%f, %f]",
-                            name.c_str(),
-                            texturePath.c_str(),
-                            description.c_str(),
-                            position[0],
-                            position[1]);
-
-                    auto newEntry = sceneLayer->CreateEntity(name);
-                    newEntry.lock()->GetTransform()->SetLocalPosition({position.x, position.y, 0});
-                    image = sceneLayer->LazyAddComponentToEntity<ImageRenderer>(newEntry);
-                    image.lock()->SetTexture(Texture2D::Create(texturePath));
-                    image.lock()->SetSortingOrder(0);
-
-                    g_Images.push_back(image);
-                    g_Descriptions.emplace_back(description);
-                }
-            }
-            else
-            {
-                DYE_LOG("Failed to load the yaml file");
-            }
-
-            SandboxMessageHandler testHandler { };
-/*
-            auto treeMoonCat = sceneLayer->CreateEntity("TreeMoonCat");
-            treeMoonCat.lock()->GetTransform()->SetLocalPosition({800, 450, 0});
-            image = sceneLayer->LazyAddComponentToEntity<ImageRenderer>(treeMoonCat);
-            image.lock()->SetTexture(Texture2D::Create("assets/textures/TreeMoonCat.png"));
-            image.lock()->SetSortingOrder(1);
-
-            g_Images.push_back(image);
-            g_Descriptions.emplace_back("???");
-
-
-            auto island = sceneLayer->CreateEntity("Island");
-            island.lock()->GetTransform()->SetLocalPosition({800, 450, 0});
-            image = sceneLayer->LazyAddComponentToEntity<ImageRenderer>(island);
-            image.lock()->SetTexture(Texture2D::Create("assets/textures/Island.png"));
-            image.lock()->SetSortingOrder(2);
-
-            g_Images.push_back(image);
-            g_Descriptions.emplace_back("TESTINGASFDASFASFASFASFASFSAFSAFTESTINGASFDASFASFASFASFASFSAFSAFTESTINGASFDASFASFASFASFASFSAFSAFTESTINGASFDASFASFASFASFASFSAFSAF");
-
-            auto island2 = sceneLayer->CreateEntity("Island");
-            island2.lock()->GetTransform()->SetLocalPosition({800, 450, 0});
-            image = sceneLayer->LazyAddComponentToEntity<ImageRenderer>(island2);
-            image.lock()->SetTexture(Texture2D::Create("assets/textures/Island.png"));
-            image.lock()->SetSortingOrder(2);
-
-            g_Images.push_back(image);
-            g_Descriptions.emplace_back("222222222222222222222");
-*/
-            for (const auto& img : g_Images)
-            {
-                img.lock()->GetEntityPtr()->SetActive(false);
-            }
-            g_Images[g_CurrentImageIndex].lock()->GetEntityPtr()->SetActive(true);
-            m_SubtitleUpdater.lock()->Description = g_Descriptions[g_CurrentImageIndex];
+			auto sandboxLayer = std::make_shared<SandboxLayer>(m_Window.get());
+			pushLayer(sandboxLayer);
         }
 
         ~SandboxApp() final = default;
 
-        void onPostRenderLayers() override
-        {
-        }
+	private:
+		/// Function made for CGL BA3 assignment (point n click game engine).
+		/// Call this function in SandboxApp ctor to create the level.
+		void createSceneAndPopulateGallery()
+		{
+			RenderCommand::SetClearColor(glm::vec4 {51, 63, 88, 255} / 255.0f);
+			auto sceneLayer = std::make_shared<SceneLayer>(m_Window.get());
+			pushLayer(sceneLayer);
+
+			/// Init pointer event handler updater
+			auto pointerEventHandlerUpdater =
+					std::make_shared<ImagePointerEventHandlerUpdater>(ComponentTypeID(typeid(ImagePointerEventHandler)), m_Window.get());
+			sceneLayer->RegisterComponentUpdater(std::move(pointerEventHandlerUpdater));
+
+			auto subtitleUpdater =
+					std::make_shared<SubtitleUpdater>(ComponentTypeID(typeid(SubtitleUpdater)));
+			m_SubtitleUpdater = subtitleUpdater;
+			sceneLayer->RegisterComponentUpdater(std::move(subtitleUpdater));
+
+			/// Init sorting layer
+			auto imgRendererUpdater = sceneLayer->GetComponentUpdaterOfType<ImageRenderer, ImageRendererUpdater>();
+			imgRendererUpdater->PushSortingLayer("TEST 00");
+
+			auto rightBtn = sceneLayer->CreateEntity("Right Btn");
+			rightBtn.lock()->GetTransform()->SetLocalPosition({1100, 450, 0});
+			auto image = sceneLayer->LazyAddComponentToEntity<ImageRenderer>(rightBtn);
+			image.lock()->SetTexture(Texture2D::Create("assets/textures/right-arrow-inactive.png"));
+			image.lock()->SetSortingOrder(0);
+			image.lock()->SetColor({1, 1, 1, 0.5});
+			auto eventHandler = sceneLayer->LazyAddComponentToEntity<ImagePointerEventHandler>(rightBtn);
+			eventHandler.lock()->SetImage(image);
+			eventHandler.lock()->OnPointerUpCallback = ReleasedRightButton;
+			eventHandler.lock()->OnPointerDownCallback = PressedButton;
+			eventHandler.lock()->OnPointerEnterCallback = HandleOnPointerEnterButton;
+			eventHandler.lock()->OnPointerExitCallback = HandleOnPointerExitButton;
+
+			auto leftBtn = sceneLayer->CreateEntity("Left Btn");
+			leftBtn.lock()->GetTransform()->SetLocalPosition({500, 450, 0});
+			image = sceneLayer->LazyAddComponentToEntity<ImageRenderer>(leftBtn);
+			image.lock()->SetTexture(Texture2D::Create("assets/textures/left-arrow-inactive.png"));
+			image.lock()->SetSortingOrder(0);
+			image.lock()->SetColor({1, 1, 1, 0.5});
+			eventHandler = sceneLayer->LazyAddComponentToEntity<ImagePointerEventHandler>(leftBtn);
+			eventHandler.lock()->SetImage(image);
+			eventHandler.lock()->OnPointerUpCallback = ReleasedLeftButton;
+			eventHandler.lock()->OnPointerDownCallback = PressedButton;
+			eventHandler.lock()->OnPointerEnterCallback = HandleOnPointerEnterButton;
+			eventHandler.lock()->OnPointerExitCallback = HandleOnPointerExitButton;
+
+			/// Loading Gallery
+			YAML::Node rootNode = YAML::LoadFile("assets/gallery.yaml");
+			if (rootNode)
+			{
+				const auto& galleryNode = rootNode["Gallery"];
+				for (const auto& imageNode : galleryNode)
+				{
+					const auto& name = imageNode["Name"].as<std::string>();
+					const auto& texturePath = imageNode["Texture"].as<std::string>();
+					const auto& description = imageNode["Description"].as<std::string>();
+					glm::vec2 position { imageNode["Position"][0].as<float>(), imageNode["Position"][1].as<float>() };
+
+					DYE_LOG("Insert - Name: %s, Texture: %s, Description %s at [%f, %f]",
+							name.c_str(),
+							texturePath.c_str(),
+							description.c_str(),
+							position[0],
+							position[1]);
+
+					auto newEntry = sceneLayer->CreateEntity(name);
+					newEntry.lock()->GetTransform()->SetLocalPosition({position.x, position.y, 0});
+					image = sceneLayer->LazyAddComponentToEntity<ImageRenderer>(newEntry);
+					image.lock()->SetTexture(Texture2D::Create(texturePath));
+					image.lock()->SetSortingOrder(0);
+
+					g_Images.push_back(image);
+					g_Descriptions.emplace_back(description);
+				}
+			}
+			else
+			{
+				DYE_LOG("Failed to load the yaml file");
+			}
+
+			for (const auto& img : g_Images)
+			{
+				img.lock()->GetEntityPtr()->SetActive(false);
+			}
+			g_Images[g_CurrentImageIndex].lock()->GetEntityPtr()->SetActive(true);
+			m_SubtitleUpdater.lock()->Description = g_Descriptions[g_CurrentImageIndex];
+		}
     };
 }
 
