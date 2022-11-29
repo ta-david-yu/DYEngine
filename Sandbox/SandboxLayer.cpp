@@ -128,12 +128,12 @@ namespace DYE
         // here we set the calculated width and also make the height to be
         // be the height of the main window also with some margin
         ImGui::SetNextWindowSize(
-                ImVec2(static_cast<float>(controls_width), static_cast<float>(sdl_height - 20)),
+                ImVec2(static_cast<float>(controls_width), static_cast<float>(sdl_height * 0.5f)),
                 ImGuiCond_Always
         );
 
         // create a window and append into it
-        ImGui::Begin("Controls", &m_IsControlWindowOpen, ImGuiWindowFlags_NoResize);
+        ImGui::Begin("Controls", &m_IsControlWindowOpen, ImGuiWindowFlags_None);
         ImGui::Dummy(ImVec2(0.0f, 1.0f));
         ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "Platform");
         ImGui::Text("%s", SDL_GetPlatform());
@@ -167,6 +167,18 @@ namespace DYE
         {
             DYE_MSG_BOX(SDL_MESSAGEBOX_WARNING, "HAHA", "Test");
         }
+
+		if (ImGui::Button("Wireframe Rendering Mode"))
+		{
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Normal Rendering Mode"))
+		{
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		}
 
         ImGui::End();
 
