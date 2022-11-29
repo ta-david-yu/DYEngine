@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Graphics/RenderCommand.h"
-#include "Graphics/Shader.h"
 
 #include <memory>
 

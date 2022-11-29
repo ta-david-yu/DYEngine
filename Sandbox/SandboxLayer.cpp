@@ -3,6 +3,10 @@
 #include "Time.h"
 #include "WindowBase.h"
 #include "Logger.h"
+#include "Graphics/VertexArray.h"
+#include "Graphics/Shader.h"
+#include "Graphics/RenderCommand.h"
+#include "Graphics/OpenGL.h"
 
 #include <imgui.h>
 
@@ -10,7 +14,62 @@ namespace DYE
 {
     SandboxLayer::SandboxLayer(WindowBase *pWindow) : m_pWindow(pWindow)
     {
+		RenderCommand::SetClearColor(glm::vec4{0.5f, 0.5f, 0.5f, 0.5f});
+
+		// Create vertices [position, texCoord]
+		//				   [       3,        2] = 5 elements per vertex
+		float vertices[5 * 4] =
+			{
+				-0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
+				0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+
+				0.5f, 0.5f, 0.0f, 1.0f, 1.0f,
+				-0.5f, 0.5f, 0.0f, 0.0f, 1.0f
+			};
+
+		std::uint32_t indices[] =
+			{
+				0, 1, 2,
+				2, 3, 0,
+			};
+
+		m_VertexArrayObject = VertexArray::Create();
+		{
+			auto vertexBufferObject = VertexBuffer::Create(vertices, sizeof(vertices));
+			BufferLayout vertexLayout
+				{
+					BufferElement(ShaderDataType::Float3, "position", false),
+					BufferElement(ShaderDataType::Float2, "texCoord", false),
+				};
+			vertexBufferObject->SetLayout(vertexLayout);
+			m_VertexArrayObject->AddVertexBuffer(vertexBufferObject);
+
+			auto indexBufferObject = IndexBuffer::Create(indices, sizeof(indices));
+			m_VertexArrayObject->SetIndexBuffer(indexBufferObject);
+		}
+
+		m_ShaderProgram = ShaderProgram::CreateFromFile("Unlit", "assets/default/Unlit.shader");
+
+		//m_ShaderProgram->Bind();
+
     }
+
+	void SandboxLayer::OnRender()
+	{
+		m_ShaderProgram->Bind();
+
+		{
+			// Binding uniform variables values, ideally we want to add a data layer to this (i.e. Material data).
+			// With Material class implemented, we could then have a function called RenderCommand::DrawIndexedWithMaterial()
+			auto colorUniformLocation = glGetUniformLocation(m_ShaderProgram->GetID(), "_Color");
+			glCall(glUniform4f(colorUniformLocation, 1, 0, 0, 1));
+		}
+
+		m_VertexArrayObject->Bind();
+		RenderCommand::DrawIndexed(m_VertexArrayObject);
+		m_ShaderProgram->Unbind();
+		m_VertexArrayObject->Unbind();
+	}
 
     void SandboxLayer::OnEvent(Event& event)
     {
@@ -74,7 +133,7 @@ namespace DYE
         );
 
         // create a window and append into it
-        ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoResize);
+        ImGui::Begin("Controls", &m_IsControlWindowOpen, ImGuiWindowFlags_NoResize);
         ImGui::Dummy(ImVec2(0.0f, 1.0f));
         ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "Platform");
         ImGui::Text("%s", SDL_GetPlatform());

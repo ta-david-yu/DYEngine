@@ -1,6 +1,8 @@
-#include "Graphics/RenderCommand.h"
 #include "Logger.h"
+#include "Graphics/RenderCommand.h"
 #include "Graphics/OpenGL.h"
+#include "Graphics/VertexArray.h"
+#include "Graphics/Shader.h"
 
 #include <SDL.h>
 #include <glad/glad.h>
@@ -67,8 +69,13 @@ namespace DYE
 
     void RenderCommand::DrawIndexed(const std::shared_ptr<VertexArray> &vertexArray, std::uint32_t indexCount)
     {
-        uint32_t count = indexCount == 0? vertexArray->GetIndexBuffer()->GetCount() : indexCount;
+        std::uint32_t count = indexCount;
         glCall(glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr));
-        //glBindTexture(GL_TEXTURE_2D, 0);
     }
+
+	void RenderCommand::DrawIndexed(const std::shared_ptr<VertexArray> &vertexArray)
+	{
+		std::uint32_t count = vertexArray->GetIndexBuffer()->GetCount();
+		glCall(glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr));
+	}
 }

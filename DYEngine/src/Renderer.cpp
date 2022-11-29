@@ -1,8 +1,10 @@
 #include "Graphics/Renderer.h"
 
+#include "Graphics/VertexArray.h"
+#include "Graphics/Shader.h"
+
 namespace DYE
 {
-
     void Renderer::Init()
     {
         RenderCommand::Init();

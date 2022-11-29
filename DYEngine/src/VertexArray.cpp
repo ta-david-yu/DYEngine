@@ -94,7 +94,7 @@ namespace DYE
                 case ShaderDataType::Int4:
                 case ShaderDataType::Bool:
                 {
-                    glEnableVertexAttribArray(m_VertexBufferAttributeIndex);
+					glCall(glEnableVertexAttribArray(m_VertexBufferAttributeIndex));
                     glVertexAttribIPointer(m_VertexBufferAttributeIndex,
                                            element.GetComponentCount(),
                                            ShaderDataTypeToOpenGLBaseType(element.Type),
@@ -110,7 +110,7 @@ namespace DYE
                     uint8_t count = element.GetComponentCount();
                     for (uint8_t i = 0; i < count; i++)
                     {
-                        glEnableVertexAttribArray(m_VertexBufferAttributeIndex);
+						glCall(glEnableVertexAttribArray(m_VertexBufferAttributeIndex));
                         glVertexAttribPointer(m_VertexBufferAttributeIndex,
                                               count,
                                               ShaderDataTypeToOpenGLBaseType(element.Type),

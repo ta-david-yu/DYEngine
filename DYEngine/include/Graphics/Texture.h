@@ -44,7 +44,7 @@ namespace DYE
 
         Texture2D() = delete;
 
-        Texture2D(std::uint32_t width, std::uint32_t height);
+        explicit Texture2D(std::uint32_t width, std::uint32_t height);
         explicit Texture2D(const std::string& path);
         ~Texture2D();
 

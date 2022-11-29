@@ -64,10 +64,11 @@ namespace DYE
         m_QuadVertexArray = VertexArray::Create();
 
         auto vB = VertexBuffer::Create(positions, sizeof(positions));
-        BufferLayout layout {
-                BufferElement(ShaderDataType::Float2, "position", false),
-                BufferElement(ShaderDataType::Float2, "texCoord", false),
-        };
+        BufferLayout layout
+		{
+			BufferElement(ShaderDataType::Float2, "position", false),
+			BufferElement(ShaderDataType::Float2, "texCoord", false),
+		};
         vB->SetLayout(layout);
         m_QuadVertexArray->AddVertexBuffer(vB);
 
@@ -179,11 +180,9 @@ namespace DYE
 				}
 
 				auto colorUniformLocation = glGetUniformLocation(m_DefaultShaderProgram->GetID(), "_Color");
-				glCall(glUniform4f(colorUniformLocation, image->m_Color.r, image->m_Color.g, image->m_Color.b,
-								   image->m_Color.a));
+				glCall(glUniform4f(colorUniformLocation, image->m_Color.r, image->m_Color.g, image->m_Color.b, image->m_Color.a));
 
-				auto transformMatUniformLocation = glGetUniformLocation(m_DefaultShaderProgram->GetID(),
-																		"_TransformMatrix");
+				auto transformMatUniformLocation = glGetUniformLocation(m_DefaultShaderProgram->GetID(), "_TransformMatrix");
 				glCall(glUniformMatrix4fv(transformMatUniformLocation, 1, GL_FALSE, glm::value_ptr(transformMatrix)););
 			}
 
