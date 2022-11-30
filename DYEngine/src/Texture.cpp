@@ -54,7 +54,7 @@ namespace DYE
         int width, height, channels;
 
         stbi_set_flip_vertically_on_load(1);
-        stbi_uc* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+        stbi_uc* data = stbi_load(path.c_str(), &width, &height, &channels, 4);
 
         if (data != nullptr)
         {
@@ -77,6 +77,11 @@ namespace DYE
             m_InternalFormat = GL_RGB8;
             m_DataFormat = GL_RGB;
         }
+		else if (channels == 2)
+		{
+			m_InternalFormat = GL_RGBA8;
+			m_DataFormat = GL_RGBA;
+		}
 
         glCreateTextures(GL_TEXTURE_2D, 1, &m_ID);
         glTextureStorage2D(m_ID, 1, m_InternalFormat, m_Width, m_Height);
