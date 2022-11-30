@@ -54,7 +54,7 @@ namespace DYE
         std::string GetPath() const { return m_Path; }
 
         void SetData(void *data, std::uint32_t size) override;
-        void Bind(std::uint32_t texSlot) override;
+        void Bind(std::uint32_t textureUnitSlot) override;
 
     private:
         std::string m_Path {"empty"};

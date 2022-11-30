@@ -64,10 +64,10 @@ namespace DYE
         m_QuadVertexArray = VertexArray::Create();
 
         auto vB = VertexBuffer::Create(positions, sizeof(positions));
-        BufferLayout layout
+        VertexLayout layout
 		{
-			BufferElement(ShaderDataType::Float2, "position", false),
-			BufferElement(ShaderDataType::Float2, "texCoord", false),
+			VertexAttribute(VertexAttributeType::Float2, "position", false),
+			VertexAttribute(VertexAttributeType::Float2, "texCoord", false),
 		};
         vB->SetLayout(layout);
         m_QuadVertexArray->AddVertexBuffer(vB);
@@ -77,11 +77,6 @@ namespace DYE
 
         /// Create default shader program
         m_DefaultShaderProgram = ShaderProgram::CreateFromFile("Image", "assets/default/Image.shader");
-
-        /// Bind the main texture slot
-        m_DefaultShaderProgram->Bind();
-        auto textureUniformLocation = glGetUniformLocation(m_DefaultShaderProgram->GetID(), "_MainTex");
-        glCall(glUniform1i(textureUniformLocation, 0));
 
         /// Create default white texture
         m_DefaultTexture2D = Texture2D::Create(glm::vec4 {1, 1, 1, 1});
@@ -168,14 +163,16 @@ namespace DYE
                     glm::translate(glm::vec3(position.x, position.y, 0)) *
                     glm::scale(glm::vec3(scale.x, scale.y, 1));
 
-            m_DefaultShaderProgram->Bind();
+            m_DefaultShaderProgram->Use();
 			{
 				if (image->m_Texture)
 				{
+					// Bind the texture to the first texture slot.
 					image->m_Texture->Bind(0);
 				}
 				else
 				{
+					// Bind the texture to the first texture slot.
 					m_DefaultTexture2D->Bind(0);
 				}
 

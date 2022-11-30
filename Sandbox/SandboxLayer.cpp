@@ -7,6 +7,7 @@
 #include "Graphics/Shader.h"
 #include "Graphics/RenderCommand.h"
 #include "Graphics/OpenGL.h"
+#include "Graphics/Texture.h"
 
 #include <imgui.h>
 
@@ -21,7 +22,7 @@ namespace DYE
 		float vertices[9 * 4] =
 			{
 				-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-				0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
+				0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
 
 				0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f,
 				-0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f
@@ -36,11 +37,11 @@ namespace DYE
 		m_VertexArrayObject = VertexArray::Create();
 		{
 			auto vertexBufferObject = VertexBuffer::Create(vertices, sizeof(vertices));
-			BufferLayout vertexLayout
+			VertexLayout vertexLayout
 				{
-					BufferElement(ShaderDataType::Float3, "position", false),
-					BufferElement(ShaderDataType::Float4, "color", false),
-					BufferElement(ShaderDataType::Float2, "texCoord", false),
+					VertexAttribute(VertexAttributeType::Float3, "position", false),
+					VertexAttribute(VertexAttributeType::Float4, "color", false),
+					VertexAttribute(VertexAttributeType::Float2, "texCoord", false),
 				};
 			vertexBufferObject->SetLayout(vertexLayout);
 			m_VertexArrayObject->AddVertexBuffer(vertexBufferObject);
@@ -50,21 +51,30 @@ namespace DYE
 		}
 
 		m_ShaderProgram = ShaderProgram::CreateFromFile("Unlit", "assets/default/Unlit.shader");
+		m_ShaderProgram->Use();
 
-		//m_ShaderProgram->Bind();
+		m_DefaultTexture = Texture2D::Create("assets\\textures\\Island.png");
+		//m_DefaultTexture = Texture2D::Create(glm::vec4{1, 1, 1, 1});
+
+		//m_ShaderProgram->Use();
 
     }
 
 	void SandboxLayer::OnRender()
 	{
-		m_ShaderProgram->Bind();
+		m_ShaderProgram->Use();
 
 		{
 			// Binding uniform variables values, ideally we want to add a data layer to this (i.e. Material data).
 			// With Material class implemented, we could then have a function called RenderCommand::DrawIndexedWithMaterial()
+
 			auto colorUniformLocation = glGetUniformLocation(m_ShaderProgram->GetID(), "_Color");
 			glm::vec4 color {1, 1, 1, m_FpsAccumulator / 0.25f};
 			glCall(glUniform4f(colorUniformLocation, color.r, color.g, color.b, color.a));
+
+			// Bind the default texture to the first texture unit slot.
+			std::uint32_t textureSlot = 0;
+			m_DefaultTexture->Bind(textureSlot);
 		}
 
 		RenderCommand::DrawIndexed(m_VertexArrayObject);

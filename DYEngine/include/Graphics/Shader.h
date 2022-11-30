@@ -1,12 +1,15 @@
 #pragma once
 
+#include "Graphics/Uniform.h"
+
 #include <string>
 #include <memory>
+#include <vector>
 
 namespace DYE
 {
-    using ShaderProgramID = uint32_t;
-    using ShaderID = uint32_t;
+    using ShaderProgramID = std::uint32_t;
+    using ShaderID = std::uint32_t;
 
     enum class ShaderType
     {
@@ -32,8 +35,8 @@ namespace DYE
         std::string GetName() const { return m_Name; }
         inline bool HasCompileError() const { return m_HasCompileError; }
 
-        /// Bind and use the shader program to the rendering pipeline
-        void Bind();
+        /// Use the shader program to the rendering pipeline
+        void Use();
         void Unbind();
 
         /// A factory function that creates a shader program with the given shader source file
@@ -54,10 +57,17 @@ namespace DYE
         /// \return true if succeed, else false
         bool createProgramFromSource(const std::string& source);
 
+		/// Populate uniform infos vector with the shader uniforms information.
+		void updateUniformInfos();
+
+	private:
         /// ShaderProgramName (debugging)
         std::string m_Name;
         /// ShaderProgramID
         ShaderProgramID m_ID{};
+
+		std::vector<UniformInfo> m_UniformInfos{};
+
         bool m_HasCompileError = false;
     };
 }

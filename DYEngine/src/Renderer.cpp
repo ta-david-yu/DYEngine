@@ -36,7 +36,7 @@ namespace DYE
                           const glm::mat4 &transform)
     {
         // TODO: draw 3d object, set VP matrix uniform
-        shader->Bind();
+        shader->Use();
         //shader->SetMat4("u_ViewProjection", s_SceneData->ViewProjectionMatrix);
         //shader->SetMat4("u_Transform", transform);
         vertexArray->Bind();
@@ -46,7 +46,7 @@ namespace DYE
 //    void Renderer::Submit(const std::shared_ptr<Material>& material, const std::shared_ptr<Mesh>& mesh, const glm::mat4& transform = glm::mat4(1.0f))
 //    {
 //        const auto& shader = material->GetShader();
-//        shader->Bind();
+//        shader->Use();
 //        shader->SetMat4("u_ViewProjection", s_SceneData->ViewProjectionMatrix);
 //        shader->SetMat4("u_Transform", transform);
 //        material->SetUniforms();

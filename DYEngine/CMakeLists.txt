@@ -20,6 +20,7 @@ set(SOURCE_FILES
         src/ComponentBase.cpp
         src/Type.cpp
         src/Transform.cpp
+        src/Uniform.cpp
         src/Shader.cpp
         src/OpenGL.cpp
         src/Buffer.cpp
@@ -51,6 +52,7 @@ set(HEADER_FILES
         include/Scene/ComponentBase.h
         include/Util/Type.h
         include/Scene/Transform.h
+        include/Graphics/Uniform.h
         include/Graphics/Shader.h
         include/Graphics/OpenGL.h
         include/Graphics/Buffer.h

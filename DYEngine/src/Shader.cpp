@@ -1,6 +1,6 @@
+#include "Base.h"
 #include "Graphics/Shader.h"
 #include "Graphics/OpenGL.h"
-#include "Base.h"
 
 #include <utility>
 #include <iostream>
@@ -39,29 +39,27 @@ namespace DYE
     //ShaderProgram* ShaderProgram::s_pCurrentShaderProgramInUse = nullptr;
 
     std::shared_ptr<ShaderProgram> ShaderProgram::CreateFromFile(const std::string& name, const std::string &filepath)
-    {
-        DYE_LOG("-- Start creating shader \"%s\" from %s --", name.c_str(), filepath.c_str());
+	{
+		DYE_LOG("-- Start creating shader \"%s\" from %s --", name.c_str(), filepath.c_str());
 
-        auto program = std::make_shared<ShaderProgram>(name);
-        bool success = program->createProgramFromSourceFile(filepath);
+		auto program = std::make_shared<ShaderProgram>(name);
+		bool success = program->createProgramFromSourceFile(filepath);
 
-        if (program->HasCompileError())
-        {
-            DYE_LOG("There are compile errors in the shader!");
-        }
+		if (program->HasCompileError())
+		{
+			DYE_LOG("There are compile errors in the shader!");
+		}
 
-        if (success)
-        {
-            DYE_LOG("-- Successfully create shader [%d] \"%s\" from %s --", program->m_ID, name.c_str(), filepath.c_str());
-            return program;
-        }
-        else
-        {
-            DYE_LOG("-- Failed to create shader [%d] \"%s\" from %s --", program->m_ID, name.c_str(), filepath.c_str());
-            DYE_ASSERT(false);
-            return std::shared_ptr<ShaderProgram>();
-        }
-    }
+		if (!success)
+		{
+			DYE_LOG("-- Failed to create shader [%d] \"%s\" from %s --", program->m_ID, name.c_str(), filepath.c_str());
+			DYE_ASSERT(false);
+			return std::shared_ptr<ShaderProgram>();
+		}
+
+		DYE_LOG("-- Successfully create shader [%d] \"%s\" from %s --", program->m_ID, name.c_str(), filepath.c_str());
+		return program;
+	}
 
     DYE::ShaderProgram::ShaderProgram(std::string name) : m_ID(0), m_Name(std::move(name))
     {
@@ -76,7 +74,7 @@ namespace DYE
         glCall(glDeleteProgram(m_ID));
     }
 
-    void ShaderProgram::Bind()
+    void ShaderProgram::Use()
     {
         glCall(glUseProgram(m_ID));
 
@@ -229,6 +227,61 @@ namespace DYE
             glCall(glDeleteShader(shaderID));
         }
 
+		/// Update uniforms info
+		updateUniformInfos();
+
         return true;
     }
+
+	void ShaderProgram::updateUniformInfos()
+	{
+		/// Init vector.
+		m_UniformInfos.clear();
+
+		/// Parse uniform variables and cache the information.
+		std::int32_t numberOfUniforms = 0;
+		glGetProgramiv(m_ID, GL_ACTIVE_UNIFORMS, &numberOfUniforms);
+
+		if (numberOfUniforms <= 0)
+		{
+			return;
+		}
+
+		std::int32_t maxUniformNameLength = 0;
+		UniformSize uniformNameLength = 0;
+		UniformSize uniformSize = 0;
+		GLUniformEnum uniformType = GL_NONE;
+
+		glGetProgramiv(m_ID, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxUniformNameLength);
+		auto uniformName = std::make_unique<char[]>(maxUniformNameLength);
+
+		/// Use this program before reading/writing uniforms.
+		Use();
+
+		int textureUnitSlotCounter = 0;
+		for (std::int32_t i = 0; i < numberOfUniforms; i++)
+		{
+			glGetActiveUniform(m_ID, i, maxUniformNameLength, &uniformNameLength, &uniformSize, &uniformType,
+							   uniformName.get());
+
+		 	UniformInfo info{};
+			info.Name = std::string(uniformName.get(), uniformNameLength);
+			info.Type = GLTypeToUniformType(uniformType);
+			info.Location = glGetUniformLocation(m_ID, uniformName.get());
+
+			if (info.Type == UniformType::Texture2D)
+			{
+				// If the variable is a texture,
+				// we want to bind texture unit slot to the uniform.
+				glCall(glUniform1i(info.Location, textureUnitSlotCounter));
+
+				textureUnitSlotCounter++;
+			}
+			// TODO: add more texture type here (sampler)
+
+			m_UniformInfos.push_back(info);
+		}
+
+		DYE_LOG("There are [%d] uniform variables", m_UniformInfos.size());
+	}
 }

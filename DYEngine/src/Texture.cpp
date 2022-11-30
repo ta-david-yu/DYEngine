@@ -111,8 +111,10 @@ namespace DYE
         glTextureSubImage2D(m_ID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
     }
 
-    void Texture2D::Bind(std::uint32_t texSlot)
+	/// Bind this texture to the given texture unit location.
+	/// \param textureUnitSlot texture unit location
+    void Texture2D::Bind(std::uint32_t textureUnitSlot)
     {
-        glBindTextureUnit(texSlot, m_ID);
+        glBindTextureUnit(textureUnitSlot, m_ID);
     }
 }

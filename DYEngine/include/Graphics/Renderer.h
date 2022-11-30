@@ -19,7 +19,7 @@ namespace DYE
         static void EndCameraView();
 
         /// TODO: Create a mesh class
-        /// Bind the given shader program, VAO and use the transform to draw the geometry
+        /// Use the given shader program, VAO and use the transform to draw the geometry
         /// \param shader the shader program used to draw the geometry
         /// \param vertexArray the VAO with geometry/vertices data
         /// \param transform the transform of the geometry

@@ -1643,7 +1643,7 @@ Other Changes:
 - Examples: OpenGL3+GLFW,SDL: Creating VAO in the render function so it can be more easily used by multiple shared OpenGL contexts. (#1217)
 - Examples: OpenGL3+GLFW: Using 3.2 context instead of 3.3. (#1466)
 - Examples: OpenGL: Setting up glPixelStorei() explicitly before uploading texture.
-- Examples: OpenGL: Calls to glPolygonMode() are casting parameters as GLEnum to not fail with more strict bindings. (#1628) [@ilia-glushchenko]
+- Examples: OpenGL: Calls to glPolygonMode() are casting parameters as GLUniformEnum to not fail with more strict bindings. (#1628) [@ilia-glushchenko]
 - Examples: Win32 (DirectX9,10,11,12): Added support for mouse cursor shapes. (#1495)
 - Examples: Win32 (DirectX9,10,11,12: Support for windows using the CS_DBLCLKS class flag by handling the double-click messages (WM_LBUTTONDBLCLK etc.). (#1538, #754) [@ndandoulakis]
 - Examples: Win32 (DirectX9,10,11,12): Made the Win32 proc handlers not assert if there is no active context yet, to be more flexible with creation order. (#1565)
