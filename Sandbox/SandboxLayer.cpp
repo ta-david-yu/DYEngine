@@ -54,7 +54,7 @@ namespace DYE
 		m_ShaderProgram = ShaderProgram::CreateFromFile("Unlit", "assets/default/Unlit.shader");
 		m_ShaderProgram->Use();
 
-		m_DefaultTexture = Texture2D::Create("assets\\textures\\Island.png");
+		m_DefaultTexture = Texture2D::Create("assets\\textures\\profile.png");
 		//m_DefaultTexture = Texture2D::Create(glm::vec4{1, 1, 1, 1});
 
 		//m_ShaderProgram->Use();
@@ -63,6 +63,10 @@ namespace DYE
 
 	void SandboxLayer::OnRender()
 	{
+		glCall(glEnable(GL_DEPTH_TEST));
+		//glCall(glEnable(GL_CULL_FACE));
+		//glCall(glCullFace(GL_BACK));
+
 		m_ShaderProgram->Use();
 
 		{
@@ -71,7 +75,7 @@ namespace DYE
 
 			// Color
 			auto colorUniformLocation = glGetUniformLocation(m_ShaderProgram->GetID(), "_Color");
-			glm::vec4 color {1, 1, 1, m_FpsAccumulator / 0.25f};
+			glm::vec4 color {1, 1, 1, 1};
 			glCall(glUniform4f(colorUniformLocation, color.r, color.g, color.b, color.a));
 
 			// Bind the default texture to the first texture unit slot.
@@ -79,13 +83,31 @@ namespace DYE
 			m_DefaultTexture->Bind(textureSlot);
 
 			// Transform Matrix: ideally this should be a default process to the rendering pipeline
-			glm::mat4 transformMatrix = glm::mat4(1.0f);
-			transformMatrix = glm::translate(transformMatrix, m_ObjectPosition);
-			transformMatrix = glm::rotate(transformMatrix, glm::radians(m_ObjectZRotationInDegree), glm::vec3{0, 0, 1});
-			transformMatrix = glm::scale(transformMatrix, m_ObjectScale);
 
-			auto transformMatrixLocation = glGetUniformLocation(m_ShaderProgram->GetID(), DefaultUniformNames::TransformMatrix.c_str());
-			glCall(glUniformMatrix4fv(transformMatrixLocation, 1, GL_FALSE, glm::value_ptr(transformMatrix)));
+			// Local to world space
+			glm::mat4 modelMatrix = glm::mat4{1.0f};
+			modelMatrix = glm::translate(modelMatrix, m_ObjectPosition);
+			modelMatrix = glm::rotate(modelMatrix, glm::radians(m_ObjectZRotationInDegree), glm::vec3{0, 0, 1});
+			modelMatrix = glm::rotate(modelMatrix, (float)TIME.TimePassedSinceStart(), glm::vec3{1, 0, 0});
+			modelMatrix = glm::scale(modelMatrix, m_ObjectScale);
+
+			auto modelMatrixLoc = glGetUniformLocation(m_ShaderProgram->GetID(), DefaultUniformNames::ModelMatrix);
+			glCall(glUniformMatrix4fv(modelMatrixLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix)));
+
+			// World space to camera space
+			glm::mat4 viewMatrix = glm::mat4{1.0f};
+			viewMatrix = glm::translate(viewMatrix, -m_CameraPosition);
+
+			auto viewMatrixLoc = glGetUniformLocation(m_ShaderProgram->GetID(), DefaultUniformNames::ViewMatrix);
+			glCall(glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix)));
+
+			// Camera space to clip space
+			float aspectRatio = (float) m_pWindow->GetWidth() / m_pWindow->GetHeight();
+			glm::mat4 projectionMatrix = glm::mat4{1.0f};
+			projectionMatrix = glm::perspective(glm::radians(m_FieldOfView), aspectRatio, m_NearClipDistance, m_FarClipDistance);
+
+			auto projectionMatrixLoc = glGetUniformLocation(m_ShaderProgram->GetID(), DefaultUniformNames::ProjectionMatrix);
+			glCall(glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, glm::value_ptr(projectionMatrix)));
 		}
 
 		RenderCommand::DrawIndexed(m_VertexArrayObject);

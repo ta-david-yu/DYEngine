@@ -126,8 +126,6 @@ namespace DYE
         }
 
         /// Draw
-        glCall(glDisable(GL_DEPTH_TEST));
-
         for (const auto& image : m_CachedImageRenderers)
         {
             if (!image->GetEntityPtr()->IsActive())

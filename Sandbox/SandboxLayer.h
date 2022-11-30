@@ -34,8 +34,13 @@ namespace DYE
 		std::shared_ptr<ShaderProgram> m_ShaderProgram;
 		std::shared_ptr<Texture2D> m_DefaultTexture;
 
-		glm::vec3 m_ObjectPosition{0.0f, 0, 0};
+		glm::vec3 m_ObjectPosition{0, 0, 0};
 		glm::vec3 m_ObjectScale{1, 1, 1};
 		float m_ObjectZRotationInDegree = 0;
+
+		glm::vec3 m_CameraPosition{0, 0, 3};
+		float m_FieldOfView = 45;
+		float m_NearClipDistance = 0.1f;
+		float m_FarClipDistance = 100;
 	};
 }

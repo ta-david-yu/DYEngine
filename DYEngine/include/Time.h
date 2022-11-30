@@ -26,6 +26,8 @@ namespace DYE
         /// \return 1 / m_Fps
         double FixedDeltaTime() const { return 1.0 / m_FixedFramePerSecond; }
 
+		double TimePassedSinceStart() const { return m_TicksSinceStart / 1000.0; }
+
         uint32_t FixedFramePerSecond() const { return m_FixedFramePerSecond; }
 
     private:
