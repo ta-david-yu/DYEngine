@@ -355,8 +355,8 @@ namespace DYE
 
                                 char updaterLabel[128];
                                 sprintf(updaterLabel, "%d: %s [%s]##%d", i,
-                                        demangleCTypeName(updater->GetTypeID().name()).c_str(),
-                                        getTypeName(*updater).c_str(), i);
+										demangleCTypeName(updater->GetTypeID().name()).c_str(),
+										GetTypeName(*updater).c_str(), i);
                                 if (ImGui::Selectable(updaterLabel, selectedUpdaterIndex == i))
                                 {
                                     selectedUpdaterIndex = i;

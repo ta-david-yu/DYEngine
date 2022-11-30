@@ -10,6 +10,7 @@
 #include "Graphics/Texture.h"
 
 #include <imgui.h>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace DYE
 {
@@ -68,6 +69,7 @@ namespace DYE
 			// Binding uniform variables values, ideally we want to add a data layer to this (i.e. Material data).
 			// With Material class implemented, we could then have a function called RenderCommand::DrawIndexedWithMaterial()
 
+			// Color
 			auto colorUniformLocation = glGetUniformLocation(m_ShaderProgram->GetID(), "_Color");
 			glm::vec4 color {1, 1, 1, m_FpsAccumulator / 0.25f};
 			glCall(glUniform4f(colorUniformLocation, color.r, color.g, color.b, color.a));
@@ -75,6 +77,15 @@ namespace DYE
 			// Bind the default texture to the first texture unit slot.
 			std::uint32_t textureSlot = 0;
 			m_DefaultTexture->Bind(textureSlot);
+
+			// Transform Matrix: ideally this should be a default process to the rendering pipeline
+			glm::mat4 transformMatrix = glm::mat4(1.0f);
+			transformMatrix = glm::translate(transformMatrix, m_ObjectPosition);
+			transformMatrix = glm::rotate(transformMatrix, glm::radians(m_ObjectZRotationInDegree), glm::vec3{0, 0, 1});
+			transformMatrix = glm::scale(transformMatrix, m_ObjectScale);
+
+			auto transformMatrixLocation = glGetUniformLocation(m_ShaderProgram->GetID(), DefaultUniformNames::TransformMatrix.c_str());
+			glCall(glUniformMatrix4fv(transformMatrixLocation, 1, GL_FALSE, glm::value_ptr(transformMatrix)));
 		}
 
 		RenderCommand::DrawIndexed(m_VertexArrayObject);
@@ -188,6 +199,18 @@ namespace DYE
 		if (ImGui::Button("Normal Rendering Mode"))
 		{
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		}
+
+		if (ImGui::Button("Rotate -10"))
+		{
+			m_ObjectZRotationInDegree -= 10.0f;
+		}
+		ImGui::SameLine();
+		ImGui::Text("Rotation Z: [%f]", m_ObjectZRotationInDegree);
+		ImGui::SameLine();
+		if (ImGui::Button("Rotate +10"))
+		{
+			m_ObjectZRotationInDegree += 10.0f;
 		}
 
         ImGui::End();

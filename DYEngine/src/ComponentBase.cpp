@@ -27,7 +27,7 @@ namespace DYE
 
     std::string ComponentBase::GetComponentName() const
     {
-        return std::move(getTypeName(*this));
+        return std::move(GetTypeName(*this));
     }
 
     ComponentUpdaterBase::ComponentUpdaterBase(ComponentTypeID typeID) : m_TypeID(typeID)

@@ -17,7 +17,6 @@ void main()
 
     vec4 point4 = vec4(position, 1.0);
     gl_Position = _TransformMatrix * point4;
-    gl_Position = point4;
 };
 
 #shader fragment

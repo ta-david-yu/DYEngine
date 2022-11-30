@@ -6,6 +6,11 @@
 
 namespace DYE
 {
+	namespace DefaultUniformNames
+	{
+		const std::string TransformMatrix = "_TransformMatrix";
+	}
+
 	using UniformLocation = std::uint32_t;
 	using UniformSize = GLsizei;
 	using GLUniformEnum = GLenum;
@@ -72,5 +77,5 @@ namespace DYE
 		std::string Name;
 		UniformType Type;
 		UniformLocation Location;
-	};
+	} __attribute__((aligned(64)));
 }
