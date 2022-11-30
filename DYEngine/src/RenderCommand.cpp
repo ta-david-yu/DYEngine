@@ -69,13 +69,14 @@ namespace DYE
 
     void RenderCommand::DrawIndexed(const std::shared_ptr<VertexArray> &vertexArray, std::uint32_t indexCount)
     {
-        std::uint32_t count = indexCount;
-        glCall(glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr));
+		vertexArray->Bind();
+        glCall(glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr));
     }
 
 	void RenderCommand::DrawIndexed(const std::shared_ptr<VertexArray> &vertexArray)
 	{
-		std::uint32_t count = vertexArray->GetIndexBuffer()->GetCount();
-		glCall(glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr));
+		vertexArray->Bind();
+		std::uint32_t indexCount = vertexArray->GetIndexBuffer()->GetCount();
+		glCall(glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr));
 	}
 }

@@ -16,15 +16,15 @@ namespace DYE
     {
 		RenderCommand::SetClearColor(glm::vec4{0.5f, 0.5f, 0.5f, 0.5f});
 
-		// Create vertices [position, texCoord]
-		//				   [       3,        2] = 5 elements per vertex
-		float vertices[5 * 4] =
+		// Create vertices [position, color, texCoord]
+		//				   [       3,     4,        2] = 9 elements per vertex
+		float vertices[9 * 4] =
 			{
-				-0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
-				0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+				-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+				0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
 
-				0.5f, 0.5f, 0.0f, 1.0f, 1.0f,
-				-0.5f, 0.5f, 0.0f, 0.0f, 1.0f
+				0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+				-0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f
 			};
 
 		std::uint32_t indices[] =
@@ -39,6 +39,7 @@ namespace DYE
 			BufferLayout vertexLayout
 				{
 					BufferElement(ShaderDataType::Float3, "position", false),
+					BufferElement(ShaderDataType::Float4, "color", false),
 					BufferElement(ShaderDataType::Float2, "texCoord", false),
 				};
 			vertexBufferObject->SetLayout(vertexLayout);
@@ -62,13 +63,12 @@ namespace DYE
 			// Binding uniform variables values, ideally we want to add a data layer to this (i.e. Material data).
 			// With Material class implemented, we could then have a function called RenderCommand::DrawIndexedWithMaterial()
 			auto colorUniformLocation = glGetUniformLocation(m_ShaderProgram->GetID(), "_Color");
-			glCall(glUniform4f(colorUniformLocation, 1, 0, 0, 1));
+			glm::vec4 color {1, 1, 1, m_FpsAccumulator / 0.25f};
+			glCall(glUniform4f(colorUniformLocation, color.r, color.g, color.b, color.a));
 		}
 
-		m_VertexArrayObject->Bind();
 		RenderCommand::DrawIndexed(m_VertexArrayObject);
 		m_ShaderProgram->Unbind();
-		m_VertexArrayObject->Unbind();
 	}
 
     void SandboxLayer::OnEvent(Event& event)
@@ -126,7 +126,7 @@ namespace DYE
         // position the controls widget in the top-right corner with some margin
         ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Always);
         // here we set the calculated width and also make the height to be
-        // be the height of the main window also with some margin
+        // the half height of the main window
         ImGui::SetNextWindowSize(
                 ImVec2(static_cast<float>(controls_width), static_cast<float>(sdl_height * 0.5f)),
                 ImGuiCond_Always
@@ -182,7 +182,7 @@ namespace DYE
 
         ImGui::End();
 
-        ImGui::ShowDemoWindow();
+        //ImGui::ShowDemoWindow();
 
     }
 }
