@@ -11,6 +11,7 @@
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 namespace DYE
 {
@@ -51,10 +52,11 @@ namespace DYE
 			m_VertexArrayObject->SetIndexBuffer(indexBufferObject);
 		}
 
-		m_ShaderProgram = ShaderProgram::CreateFromFile("Unlit", "assets/default/Unlit.shader");
+		m_ShaderProgram = ShaderProgram::CreateFromFile("Unlit", "assets/default/SpritesDefault.shader");
 		m_ShaderProgram->Use();
 
-		m_DefaultTexture = Texture2D::Create("assets\\textures\\profile.png");
+		m_DefaultTexture = Texture2D::Create(glm::vec4{1, 1, 1, 1}, 200, 100);
+		//m_DefaultTexture = Texture2D::Create("assets\\textures\\profile.png");
 		//m_DefaultTexture = Texture2D::Create(glm::vec4{1, 1, 1, 1});
 
 		//m_ShaderProgram->Use();
@@ -85,29 +87,39 @@ namespace DYE
 			// Transform Matrix: ideally this should be a default process to the rendering pipeline
 
 			// Local to world space
-			glm::mat4 modelMatrix = glm::mat4{1.0f};
-			modelMatrix = glm::translate(modelMatrix, m_ObjectPosition);
-			modelMatrix = glm::rotate(modelMatrix, glm::radians(m_ObjectZRotationInDegree), glm::vec3{0, 0, 1});
-			modelMatrix = glm::rotate(modelMatrix, (float)TIME.TimePassedSinceStart(), glm::vec3{1, 0, 0});
-			modelMatrix = glm::scale(modelMatrix, m_ObjectScale);
+			{
+				glm::mat4 modelMatrix = glm::mat4 {1.0f};
 
-			auto modelMatrixLoc = glGetUniformLocation(m_ShaderProgram->GetID(), DefaultUniformNames::ModelMatrix);
-			glCall(glUniformMatrix4fv(modelMatrixLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix)));
+				modelMatrix = glm::translate(modelMatrix, m_ObjectPosition);
+				modelMatrix = modelMatrix * glm::toMat4(m_ObjectRotation);
+
+				auto scale = m_ObjectScale * m_DefaultTexture->GetScaleFromTextureDimensions();
+				modelMatrix = glm::scale(modelMatrix, scale);
+
+				auto modelMatrixLoc = glGetUniformLocation(m_ShaderProgram->GetID(), DefaultUniformNames::ModelMatrix);
+				glCall(glUniformMatrix4fv(modelMatrixLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix)));
+			}
 
 			// World space to camera space
-			glm::mat4 viewMatrix = glm::mat4{1.0f};
-			viewMatrix = glm::translate(viewMatrix, -m_CameraPosition);
+			{
+				glm::mat4 viewMatrix = glm::mat4 {1.0f};
+				viewMatrix = glm::translate(viewMatrix, -m_CameraPosition);
 
-			auto viewMatrixLoc = glGetUniformLocation(m_ShaderProgram->GetID(), DefaultUniformNames::ViewMatrix);
-			glCall(glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix)));
+				auto viewMatrixLoc = glGetUniformLocation(m_ShaderProgram->GetID(), DefaultUniformNames::ViewMatrix);
+				glCall(glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix)));
+			}
 
 			// Camera space to clip space
-			float aspectRatio = (float) m_pWindow->GetWidth() / m_pWindow->GetHeight();
-			glm::mat4 projectionMatrix = glm::mat4{1.0f};
-			projectionMatrix = glm::perspective(glm::radians(m_FieldOfView), aspectRatio, m_NearClipDistance, m_FarClipDistance);
+			{
+				float aspectRatio = (float) m_pWindow->GetWidth() / m_pWindow->GetHeight();
+				glm::mat4 projectionMatrix = glm::mat4 {1.0f};
+				projectionMatrix = glm::perspective(glm::radians(m_FieldOfView), aspectRatio, m_NearClipDistance,
+													m_FarClipDistance);
 
-			auto projectionMatrixLoc = glGetUniformLocation(m_ShaderProgram->GetID(), DefaultUniformNames::ProjectionMatrix);
-			glCall(glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, glm::value_ptr(projectionMatrix)));
+				auto projectionMatrixLoc = glGetUniformLocation(m_ShaderProgram->GetID(),
+																DefaultUniformNames::ProjectionMatrix);
+				glCall(glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, glm::value_ptr(projectionMatrix)));
+			}
 		}
 
 		RenderCommand::DrawIndexed(m_VertexArrayObject);
@@ -215,25 +227,25 @@ namespace DYE
 		{
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		}
-
 		ImGui::SameLine();
-
 		if (ImGui::Button("Normal Rendering Mode"))
 		{
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
 
-		if (ImGui::Button("Rotate -10"))
-		{
-			m_ObjectZRotationInDegree -= 10.0f;
+		ImGui::DragFloat3("Object Position", glm::value_ptr(m_ObjectPosition), 0.1f, 0.0f, 0.0f, "%.1f");
+		ImGui::DragFloat3("Object Scale", glm::value_ptr(m_ObjectScale), 0.1f, 0.0f, 0.0f, "%.1f");
+
+
+		glm::vec3 rotationInEulerAnglesDegree = glm::eulerAngles(m_ObjectRotation);
+		rotationInEulerAnglesDegree += glm::vec3(0.f);
+		rotationInEulerAnglesDegree = glm::degrees(rotationInEulerAnglesDegree);
+		if (ImGui::DragFloat3("Object Rotation", glm::value_ptr(rotationInEulerAnglesDegree), 0.1f, 0.0f, 0.0f, "%.1f")) {
+			rotationInEulerAnglesDegree.y = glm::clamp(rotationInEulerAnglesDegree.y, -90.f, 90.f);
+			m_ObjectRotation = glm::quat{glm::radians(rotationInEulerAnglesDegree)};
 		}
-		ImGui::SameLine();
-		ImGui::Text("Rotation Z: [%f]", m_ObjectZRotationInDegree);
-		ImGui::SameLine();
-		if (ImGui::Button("Rotate +10"))
-		{
-			m_ObjectZRotationInDegree += 10.0f;
-		}
+
+		ImGui::DragFloat3("Camera Position", glm::value_ptr(m_CameraPosition), 0.1f, 0.0f, 0.0f, "%.1f");
 
         ImGui::End();
 

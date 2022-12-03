@@ -4,6 +4,7 @@
 #include "Event/KeyEvent.h"
 
 #include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 namespace DYE
 {
@@ -36,7 +37,7 @@ namespace DYE
 
 		glm::vec3 m_ObjectPosition{0, 0, 0};
 		glm::vec3 m_ObjectScale{1, 1, 1};
-		float m_ObjectZRotationInDegree = 0;
+		glm::quat m_ObjectRotation{glm::vec3 {0, 0, 0}};
 
 		glm::vec3 m_CameraPosition{0, 0, 3};
 		float m_FieldOfView = 45;
