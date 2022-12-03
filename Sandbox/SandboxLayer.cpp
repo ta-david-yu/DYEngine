@@ -55,8 +55,8 @@ namespace DYE
 		m_ShaderProgram = ShaderProgram::CreateFromFile("Unlit", "assets/default/SpritesDefault.shader");
 		m_ShaderProgram->Use();
 
-		m_DefaultTexture = Texture2D::Create(glm::vec4{1, 1, 1, 1}, 200, 100);
-		//m_DefaultTexture = Texture2D::Create("assets\\textures\\profile.png");
+		//m_DefaultTexture = Texture2D::Create(glm::vec4{1, 1, 1, 1}, 200, 100);
+		m_DefaultTexture = Texture2D::Create("assets\\textures\\Island.png");
 		//m_DefaultTexture = Texture2D::Create(glm::vec4{1, 1, 1, 1});
 
 		//m_ShaderProgram->Use();
@@ -111,7 +111,7 @@ namespace DYE
 
 			// Camera space to clip space
 			{
-				float aspectRatio = (float) m_pWindow->GetWidth() / m_pWindow->GetHeight();
+				float aspectRatio = (float) m_pWindow->GetWidth() / (float) m_pWindow->GetHeight();
 				glm::mat4 projectionMatrix = glm::mat4 {1.0f};
 				projectionMatrix = glm::perspective(glm::radians(m_FieldOfView), aspectRatio, m_NearClipDistance,
 													m_FarClipDistance);

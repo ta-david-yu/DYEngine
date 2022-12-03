@@ -4,6 +4,8 @@
 
 #include <stb_image.h>
 #include <glm/gtx/transform.hpp>
+#include <vector>
+#include <array>
 
 namespace DYE
 {
@@ -27,22 +29,23 @@ namespace DYE
 	std::shared_ptr<Texture2D> Texture2D::Create(glm::vec4 color, std::uint32_t width, std::uint32_t height)
 	{
 		// Create texture data dynamically.
-		auto data = new unsigned char[width * height * 4];
 		std::uint32_t numberOfPixels = width * height;
-		for (std::uint32_t i = 0; i < numberOfPixels; i++)
+		std::vector data
 		{
-			std::uint32_t pixelStartIndex = i * 4;
-			data[pixelStartIndex + 0] = static_cast<unsigned char>(color.r * 255);
-			data[pixelStartIndex + 1] = static_cast<unsigned char>(color.g * 255);
-			data[pixelStartIndex + 2] = static_cast<unsigned char>(color.b * 255);
-			data[pixelStartIndex + 3] = static_cast<unsigned char>(color.a * 255);
-		}
+			numberOfPixels,
+
+			// array of color components (R, G, B, A)
+			std::array<unsigned char, 4>
+			    {
+					static_cast<unsigned char>(color.r * 255),
+					static_cast<unsigned char>(color.g * 255),
+					static_cast<unsigned char>(color.b * 255),
+					static_cast<unsigned char>(color.a * 255)
+				}
+		};
 
   		auto texture = std::make_shared<Texture2D>(width, height);
-		texture->SetData((void*) data, numberOfPixels);
-
-		// Delete dynamically allocated memory.
-		delete[] data;
+		texture->SetData(data.data(), numberOfPixels);
 
 		return std::move(texture);
 	}
