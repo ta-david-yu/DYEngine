@@ -33,7 +33,7 @@ set(HEADER_FILES
         include/Application.h
         include/WindowBase.h
         include/SDLWindow.h
-        include/Time.h
+        include/Util/Time.h
         include/Event/Event.h
         include/Event/ApplicationEvent.h
         include/Input/KeyCode.h

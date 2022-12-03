@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Scene/ComponentBase.h"
-#include "Time.h"
+#include "Util/Time.h"
 
 namespace DYE
 {
