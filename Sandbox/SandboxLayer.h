@@ -31,17 +31,18 @@ namespace DYE
         int m_FramesCounter = 0;
         int m_FixedUpdateCounter = 0;
 
-		std::shared_ptr<VertexArray> m_VertexArrayObject;
-		std::shared_ptr<ShaderProgram> m_ShaderProgram;
-		std::shared_ptr<Texture2D> m_DefaultTexture;
+		std::shared_ptr<VertexArray> m_VertexArrayObject; // Mesh
+		std::shared_ptr<ShaderProgram> m_ShaderProgram; // Material
+		std::shared_ptr<Texture2D> m_DefaultTexture; // Material
+		glm::vec4 m_Color {1, 1, 1, 1}; // Material
 
-		glm::vec3 m_ObjectPosition{0, 0, 0};
-		glm::vec3 m_ObjectScale{1, 1, 1};
-		glm::quat m_ObjectRotation{glm::vec3 {0, 0, 0}};
+		glm::vec3 m_ObjectPosition{0, 0, 0}; // Entity/Object Transform
+		glm::vec3 m_ObjectScale{1, 1, 1}; // Entity/Object Transform
+		glm::quat m_ObjectRotation{glm::vec3 {0, 0, 0}}; // Entity/Object Transform
 
-		glm::vec3 m_CameraPosition{0, 0, 3};
-		float m_FieldOfView = 45;
-		float m_NearClipDistance = 0.1f;
-		float m_FarClipDistance = 100;
+		glm::vec3 m_CameraPosition{0, 0, 3}; // Camera Object Transform
+		float m_FieldOfView = 45; // Camera
+		float m_NearClipDistance = 0.1f; // Camera
+		float m_FarClipDistance = 100; // Camera
 	};
 }

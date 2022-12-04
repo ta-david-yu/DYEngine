@@ -52,11 +52,11 @@ namespace DYE
 			m_VertexArrayObject->SetIndexBuffer(indexBufferObject);
 		}
 
-		m_ShaderProgram = ShaderProgram::CreateFromFile("Unlit", "assets/default/SpritesDefault.shader");
+		m_ShaderProgram = ShaderProgram::CreateFromFile("SpritesDefault", "assets/default/SpritesDefault.shader");
 		m_ShaderProgram->Use();
 
 		//m_DefaultTexture = Texture2D::Create(glm::vec4{1, 1, 1, 1}, 200, 100);
-		m_DefaultTexture = Texture2D::Create("assets\\textures\\Island.png");
+		m_DefaultTexture = Texture2D::Create("assets\\textures\\profile.png");
 		//m_DefaultTexture = Texture2D::Create(glm::vec4{1, 1, 1, 1});
 
 		//m_ShaderProgram->Use();
@@ -70,15 +70,13 @@ namespace DYE
 		//glCall(glCullFace(GL_BACK));
 
 		m_ShaderProgram->Use();
-
 		{
 			// Binding uniform variables values, ideally we want to add a data layer to this (i.e. Material data).
 			// With Material class implemented, we could then have a function called RenderCommand::DrawIndexedWithMaterial()
 
 			// Color
 			auto colorUniformLocation = glGetUniformLocation(m_ShaderProgram->GetID(), "_Color");
-			glm::vec4 color {1, 1, 1, 1};
-			glCall(glUniform4f(colorUniformLocation, color.r, color.g, color.b, color.a));
+			glCall(glUniform4f(colorUniformLocation, m_Color.r, m_Color.g, m_Color.b, m_Color.a));
 
 			// Bind the default texture to the first texture unit slot.
 			std::uint32_t textureSlot = 0;
@@ -236,13 +234,33 @@ namespace DYE
 		ImGui::DragFloat3("Object Position", glm::value_ptr(m_ObjectPosition), 0.1f, 0.0f, 0.0f, "%.1f");
 		ImGui::DragFloat3("Object Scale", glm::value_ptr(m_ObjectScale), 0.1f, 0.0f, 0.0f, "%.1f");
 
-
 		glm::vec3 rotationInEulerAnglesDegree = glm::eulerAngles(m_ObjectRotation);
 		rotationInEulerAnglesDegree += glm::vec3(0.f);
 		rotationInEulerAnglesDegree = glm::degrees(rotationInEulerAnglesDegree);
 		if (ImGui::DragFloat3("Object Rotation", glm::value_ptr(rotationInEulerAnglesDegree), 0.1f, 0.0f, 0.0f, "%.1f")) {
 			rotationInEulerAnglesDegree.y = glm::clamp(rotationInEulerAnglesDegree.y, -90.f, 90.f);
 			m_ObjectRotation = glm::quat{glm::radians(rotationInEulerAnglesDegree)};
+		}
+
+		static bool isColorPickerOn = false;
+
+		/// Color Picker
+		{
+			ImGui::Text("Color");
+			ImVec4 colorIm{m_Color.r, m_Color.g, m_Color.b, m_Color.a};
+			if (ImGui::ColorButton("Color", colorIm))
+			{
+				isColorPickerOn = true;
+			}
+
+			if (isColorPickerOn)
+			{
+				if (ImGui::Begin("Color Picker Window", &isColorPickerOn))
+				{
+					ImGui::ColorPicker4("##colorPicker", (float *) &m_Color);
+				}
+				ImGui::End();
+			}
 		}
 
 		ImGui::DragFloat3("Camera Position", glm::value_ptr(m_CameraPosition), 0.1f, 0.0f, 0.0f, "%.1f");
