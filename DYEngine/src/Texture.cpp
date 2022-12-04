@@ -50,7 +50,7 @@ namespace DYE
 		return std::move(texture);
 	}
 
-    std::shared_ptr<Texture2D> Texture2D::Create(const std::string& path)
+    std::shared_ptr<Texture2D> Texture2D::Create(const std::filesystem::path& path)
     {
         return std::make_shared<Texture2D>(path);
     }
@@ -76,12 +76,12 @@ namespace DYE
 #endif
     }
 
-    Texture2D::Texture2D(const std::string &path) : m_Path(path)
+    Texture2D::Texture2D(const std::filesystem::path& path) : m_Path(path)
     {
         int width, height, channels;
 
         stbi_set_flip_vertically_on_load(1);
-        stbi_uc* data = stbi_load(path.c_str(), &width, &height, &channels, 4);
+        stbi_uc* data = stbi_load(path.string().c_str(), &width, &height, &channels, 4);
 
         if (data != nullptr)
         {
@@ -90,16 +90,16 @@ namespace DYE
         }
         else
         {
-            DYE_LOG("Failed to load texture %s!", path.c_str());
+            DYE_LOG("Failed to load texture %s!", path.string().c_str());
             DYE_ASSERT(false);
         }
 
-        if (channels == 4)
-        {
+		if (channels == 4)
+		{
             m_InternalFormat = GL_RGBA8;
             m_DataFormat = GL_RGBA;
         }
-        else if (channels == 3)
+		else if (channels == 3)
         {
             m_InternalFormat = GL_RGB8;
             m_DataFormat = GL_RGB;
@@ -127,7 +127,7 @@ namespace DYE
 
 #ifdef DYE_DEBUG
         // apply the name, -1 means NULL terminated
-        glObjectLabel(GL_TEXTURE, m_ID, -1, m_Path.c_str());
+        glObjectLabel(GL_TEXTURE, m_ID, -1, m_Path.string().c_str());
 #endif
 
         stbi_image_free(data);

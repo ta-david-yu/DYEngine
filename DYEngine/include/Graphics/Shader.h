@@ -5,6 +5,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <filesystem>
 
 namespace DYE
 {
@@ -42,7 +43,7 @@ namespace DYE
         /// A factory function that creates a shader program with the given shader source file
         /// \param filepath
         /// \return a shared pointer to the newly created ShaderProgram, return shared_ptr(nullptr) if failed
-        static std::shared_ptr<ShaderProgram> CreateFromFile(const std::string& name, const std::string& filepath);
+        static std::shared_ptr<ShaderProgram> CreateFromFile(const std::string& name, const std::filesystem::path& filepath);
     private:
         /// A raw pointer to the shader program that is currently used/bound to the GPU
         //static ShaderProgram* s_pCurrentShaderProgramInUse;
@@ -50,7 +51,7 @@ namespace DYE
         /// Compile and create shader program in the GPU driver
         /// \param filepath the source filepath of the shader
         /// \return true if succeed, else false
-        bool createProgramFromSourceFile(const std::string& filepath);
+        bool createProgramFromSourceFile(const std::filesystem::path& filepath);
 
         /// Compile and create shader program in the GPU driver
         /// \param source the source code of the shader

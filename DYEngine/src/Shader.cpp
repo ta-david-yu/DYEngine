@@ -29,7 +29,6 @@ namespace DYE
                 return GL_FRAGMENT_SHADER;
                 break;
             case ShaderType::NumOfType:
-                break;
             case ShaderType::Invalid:
                 break;
         }
@@ -38,7 +37,7 @@ namespace DYE
 
     //ShaderProgram* ShaderProgram::s_pCurrentShaderProgramInUse = nullptr;
 
-    std::shared_ptr<ShaderProgram> ShaderProgram::CreateFromFile(const std::string& name, const std::string &filepath)
+    std::shared_ptr<ShaderProgram> ShaderProgram::CreateFromFile(const std::string& name, const std::filesystem::path &filepath)
 	{
 		DYE_LOG("-- Start creating shader \"%s\" from %s --", name.c_str(), filepath.c_str());
 
@@ -90,7 +89,7 @@ namespace DYE
         }
     }
 
-    bool ShaderProgram::createProgramFromSourceFile(const std::string &filepath)
+    bool ShaderProgram::createProgramFromSourceFile(const std::filesystem::path &filepath)
     {
         std::ifstream fs(filepath);
         std::string content((std::istreambuf_iterator<char>(fs)),
