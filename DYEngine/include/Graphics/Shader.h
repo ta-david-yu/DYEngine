@@ -61,6 +61,7 @@ namespace DYE
 		/// Populate uniform infos vector with the shader uniforms information.
 		void updateUniformInfos();
 
+
 	private:
         /// ShaderProgramName (debugging)
         std::string m_Name;

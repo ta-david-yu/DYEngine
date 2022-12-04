@@ -92,10 +92,6 @@ add_library(DYEngine STATIC
         ${HEADER_FILES})
 
 # ===========================================================================================
-# Precompiled Header
-target_precompile_headers(DYEngine PRIVATE Precompiled.h)
-
-# ===========================================================================================
 # Include Headers to DYEngine
 target_include_directories(DYEngine PUBLIC include)
 # SDL2_INCLUDE_DIR variable set by the FindSDL2 module (if it finds directory).
