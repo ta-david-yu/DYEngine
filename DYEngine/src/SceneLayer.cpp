@@ -278,7 +278,7 @@ namespace DYE
                                     /// draw each component view
                                     for (auto &compPair : entity->m_Components)
                                     {
-                                        const auto &compName = demangleCTypeName(compPair.first.name());
+                                        const auto &compName = TypeUtil::demangleCTypeName(compPair.first.name());
                                         auto comp = compPair.second.lock();
 
                                         char componentViewLabel[128];
@@ -355,8 +355,8 @@ namespace DYE
 
                                 char updaterLabel[128];
                                 sprintf(updaterLabel, "%d: %s [%s]##%d", i,
-										demangleCTypeName(updater->GetTypeID().name()).c_str(),
-										GetTypeName(*updater).c_str(), i);
+										TypeUtil::demangleCTypeName(updater->GetTypeID().name()).c_str(),
+										TypeUtil::GetTypeName(*updater).c_str(), i);
                                 if (ImGui::Selectable(updaterLabel, selectedUpdaterIndex == i))
                                 {
                                     selectedUpdaterIndex = i;
@@ -415,8 +415,8 @@ namespace DYE
                                     const auto &compPair = updater->m_Components[selectedUpdaterComponentIndex];
                                     auto compPtr = compPair.second.get();
                                     auto compTypeID = ComponentTypeID(typeid(*compPtr));
-                                    auto compName = demangleCTypeName(compTypeID.name());
-                                    auto updaterTypeName = demangleCTypeName(updater->GetTypeID().name());
+                                    auto compName = TypeUtil::demangleCTypeName(compTypeID.name());
+                                    auto updaterTypeName = TypeUtil::demangleCTypeName(updater->GetTypeID().name());
                                     auto entPtr = compPair.second->GetEntityPtr();
 
                                     char entityLabel[128];
@@ -514,7 +514,7 @@ namespace DYE
                 if (!m_DebugTargetUpdater.expired())
                 {
                     const auto& updater = m_DebugTargetUpdater.lock().get();
-                    ImGui::Text("%s", demangleCTypeName(typeid(*updater).name()).c_str());
+                    ImGui::Text("%s", TypeUtil::demangleCTypeName(typeid(*updater).name()).c_str());
 
                     ImGui::Separator();
 

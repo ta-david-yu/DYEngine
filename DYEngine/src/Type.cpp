@@ -5,25 +5,31 @@
 #include <memory>
 #include <cxxabi.h>
 
-std::string demangleCTypeName(const char* name)
+namespace DYE::TypeUtil
 {
-    int status = -4; // some arbitrary value to eliminate the compiler warning
+	std::string demangleCTypeName(const char *name)
+	{
+		int status = -4; // some arbitrary value to eliminate the compiler warning
 
-    // enable c++11 by passing the flag -std=c++11 to g++
-    std::unique_ptr<char, void(*)(void*)> res {
-            abi::__cxa_demangle(name, nullptr, nullptr, &status),
-            std::free
-    };
+		// enable c++11 by passing the flag -std=c++11 to g++
+		std::unique_ptr<char, void (*)(void *)> res {
+			abi::__cxa_demangle(name, nullptr, nullptr, &status),
+			std::free
+		};
 
-    return (status==0) ? res.get() : name ;
+		return (status == 0) ? res.get() : name;
+	}
 }
 
 #else
 
-// does nothing if not g++
-std::string demangle(const char* name)
+namespace DYE::Type
 {
-    return name;
+	// does nothing if not g++
+	std::string demangle(const char* name)
+	{
+		return name;
+	}
 }
 
 #endif
