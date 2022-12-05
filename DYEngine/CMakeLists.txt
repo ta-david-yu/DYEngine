@@ -28,7 +28,8 @@ set(SOURCE_FILES
         src/VertexArray.cpp
         src/RenderCommand.cpp
         src/ImageRenderer.cpp
-        src/Texture.cpp)
+        src/Texture.cpp
+        src/CameraProperties.cpp)
 set(HEADER_FILES
         include/Application.h
         include/WindowBase.h
@@ -63,7 +64,8 @@ set(HEADER_FILES
         include/Graphics/Texture.h
         include/Event/MouseEvent.h
         include/Input/MouseCode.h
-        include/Message/Messaging.h)
+        include/Message/Messaging.h
+        include/Graphics/CameraProperties.h
 
 message(STATUS "DYEngine Source Files: ${SOURCE_FILES}")
 message(STATUS "DYEngine Header Files: ${HEADER_FILES}")

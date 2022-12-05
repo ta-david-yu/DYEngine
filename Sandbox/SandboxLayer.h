@@ -40,9 +40,12 @@ namespace DYE
 		glm::vec3 m_ObjectScale{1, 1, 1}; // Entity/Object Transform
 		glm::quat m_ObjectRotation{glm::vec3 {0, 0, 0}}; // Entity/Object Transform
 
+
+
 		glm::vec3 m_CameraPosition{0, 0, 3}; // Camera Object Transform
 		float m_FieldOfView = 45; // Camera
 		float m_NearClipDistance = 0.1f; // Camera
 		float m_FarClipDistance = 100; // Camera
+		float m_OrthographicCameraSize = 1; // Camera
 	};
 }

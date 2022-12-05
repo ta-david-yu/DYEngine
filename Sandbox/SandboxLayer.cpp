@@ -109,11 +109,24 @@ namespace DYE
 
 			// Camera space to clip space
 			{
-				float aspectRatio = (float) m_pWindow->GetWidth() / (float) m_pWindow->GetHeight();
+				float windowWidth = (float) m_pWindow->GetWidth();
+				float windowHeight = (float) m_pWindow->GetHeight();
+				float aspectRatio = windowWidth / windowHeight;
 				glm::mat4 projectionMatrix = glm::mat4 {1.0f};
-				projectionMatrix = glm::perspective(glm::radians(m_FieldOfView), aspectRatio, m_NearClipDistance,
-													m_FarClipDistance);
+				projectionMatrix =
+					glm::perspective(glm::radians(m_FieldOfView), aspectRatio, m_NearClipDistance, m_FarClipDistance);
 
+#if 1
+				projectionMatrix = glm::ortho
+					(
+						-aspectRatio * 0.5f * m_OrthographicCameraSize,
+						aspectRatio * 0.5f * m_OrthographicCameraSize,
+						-0.5f * m_OrthographicCameraSize,
+						0.5f * m_OrthographicCameraSize,
+						m_NearClipDistance,
+						m_FarClipDistance
+					);
+#endif
 				auto projectionMatrixLoc = glGetUniformLocation(m_ShaderProgram->GetID(),
 																DefaultUniformNames::ProjectionMatrix);
 				glCall(glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, glm::value_ptr(projectionMatrix)));
