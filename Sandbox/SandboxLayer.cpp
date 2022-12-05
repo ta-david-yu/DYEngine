@@ -1,13 +1,18 @@
 #include "Base.h"
+
 #include "SandboxLayer.h"
-#include "Util/Time.h"
 #include "WindowBase.h"
 #include "Logger.h"
+
+#include "Util/Time.h"
+#include "Util/ImGuiUtil.h"
+
 #include "Graphics/VertexArray.h"
 #include "Graphics/Shader.h"
 #include "Graphics/RenderCommand.h"
 #include "Graphics/OpenGL.h"
 #include "Graphics/Texture.h"
+#include "Graphics/CameraProperties.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -61,6 +66,8 @@ namespace DYE
 
 		//m_ShaderProgram->Use();
 
+		m_CameraProperties = std::make_shared<CameraProperties>();
+		m_CameraProperties->Position = glm::vec3 {0, 0, 3};
     }
 
 	void SandboxLayer::OnRender()
@@ -101,7 +108,7 @@ namespace DYE
 			// World space to camera space
 			{
 				glm::mat4 viewMatrix = glm::mat4 {1.0f};
-				viewMatrix = glm::translate(viewMatrix, -m_CameraPosition);
+				viewMatrix = glm::translate(viewMatrix, -m_CameraProperties->Position);
 
 				auto viewMatrixLoc = glGetUniformLocation(m_ShaderProgram->GetID(), DefaultUniformNames::ViewMatrix);
 				glCall(glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix)));
@@ -112,21 +119,7 @@ namespace DYE
 				float windowWidth = (float) m_pWindow->GetWidth();
 				float windowHeight = (float) m_pWindow->GetHeight();
 				float aspectRatio = windowWidth / windowHeight;
-				glm::mat4 projectionMatrix = glm::mat4 {1.0f};
-				projectionMatrix =
-					glm::perspective(glm::radians(m_FieldOfView), aspectRatio, m_NearClipDistance, m_FarClipDistance);
-
-#if 1
-				projectionMatrix = glm::ortho
-					(
-						-aspectRatio * 0.5f * m_OrthographicCameraSize,
-						aspectRatio * 0.5f * m_OrthographicCameraSize,
-						-0.5f * m_OrthographicCameraSize,
-						0.5f * m_OrthographicCameraSize,
-						m_NearClipDistance,
-						m_FarClipDistance
-					);
-#endif
+				glm::mat4 projectionMatrix = m_CameraProperties->GetProjectionMatrix(aspectRatio);
 				auto projectionMatrixLoc = glGetUniformLocation(m_ShaderProgram->GetID(),
 																DefaultUniformNames::ProjectionMatrix);
 				glCall(glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, glm::value_ptr(projectionMatrix)));
@@ -244,43 +237,27 @@ namespace DYE
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
 
-		ImGui::DragFloat3("Object Position", glm::value_ptr(m_ObjectPosition), 0.1f, 0.0f, 0.0f, "%.1f");
-		ImGui::DragFloat3("Object Scale", glm::value_ptr(m_ObjectScale), 0.1f, 0.0f, 0.0f, "%.1f");
+		ImGuiUtil::DrawVec3Control("Obj Pos", m_ObjectPosition);
+		ImGuiUtil::DrawVec3Control("Obj Scale", m_ObjectScale);
 
 		glm::vec3 rotationInEulerAnglesDegree = glm::eulerAngles(m_ObjectRotation);
 		rotationInEulerAnglesDegree += glm::vec3(0.f);
 		rotationInEulerAnglesDegree = glm::degrees(rotationInEulerAnglesDegree);
-		if (ImGui::DragFloat3("Object Rotation", glm::value_ptr(rotationInEulerAnglesDegree), 0.1f, 0.0f, 0.0f, "%.1f")) {
+		if (ImGuiUtil::DrawVec3Control("Obj Rot", rotationInEulerAnglesDegree))
+		{
 			rotationInEulerAnglesDegree.y = glm::clamp(rotationInEulerAnglesDegree.y, -90.f, 90.f);
 			m_ObjectRotation = glm::quat{glm::radians(rotationInEulerAnglesDegree)};
 		}
 
-		static bool isColorPickerOn = false;
-
 		/// Color Picker
-		{
-			ImGui::Text("Color");
-			ImVec4 colorIm{m_Color.r, m_Color.g, m_Color.b, m_Color.a};
-			if (ImGui::ColorButton("Color", colorIm))
-			{
-				isColorPickerOn = true;
-			}
+		ImGuiUtil::DrawColor4Control("Color", m_Color);
 
-			if (isColorPickerOn)
-			{
-				if (ImGui::Begin("Color Picker Window", &isColorPickerOn))
-				{
-					ImGui::ColorPicker4("##colorPicker", (float *) &m_Color);
-				}
-				ImGui::End();
-			}
-		}
-
-		ImGui::DragFloat3("Camera Position", glm::value_ptr(m_CameraPosition), 0.1f, 0.0f, 0.0f, "%.1f");
+		ImGui::Separator();
+		ImGuiUtil::DrawCameraPropertiesControl("Camera", *m_CameraProperties.get());
 
         ImGui::End();
 
-        //ImGui::ShowDemoWindow();
+        ImGui::ShowDemoWindow();
 
     }
 }

@@ -3,7 +3,7 @@
 #include "Scene/Entity.h"
 #include "Scene/SceneLayer.h"
 #include "Scene/Transform.h"
-#include "Util/Type.h"
+#include "Util/TypeUtil.h"
 
 #include "Graphics/OpenGL.h"
 #include "Graphics/Renderer.h"

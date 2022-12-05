@@ -5,12 +5,10 @@
 
 namespace DYE
 {
-	struct CameraProperties
+	class CameraProperties
 	{
 	public:
 		glm::vec3 Position{0, 0, 0};
-
-		bool IsOrthographic = false;
 
 		/// The vertical field of view of the Camera, in degrees. The value is when IsOrthographic is true.
 		float FieldOfView = 45;
@@ -21,9 +19,9 @@ namespace DYE
 		float NearClipDistance = 0.1f;
 		float FarClipDistance = 100;
 
+		bool IsOrthographic = false;
+
 	public:
-
 		glm::mat4 GetProjectionMatrix(float aspectRatio) const;
-
-	} __attribute__((aligned(32)));
+	};
 }

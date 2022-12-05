@@ -7,7 +7,7 @@
 #include "Scene/Entity.h"
 #include "Scene/Transform.h"
 #include "Scene/ImageRenderer.h"
-#include "Util/Type.h"
+#include "Util/TypeUtil.h"
 #include "Event/MouseEvent.h"
 
 #include <algorithm>

@@ -18,7 +18,7 @@ set(SOURCE_FILES
         src/SceneLayer.cpp
         src/Entity.cpp
         src/ComponentBase.cpp
-        src/Type.cpp
+        src/TypeUtil.cpp
         src/Transform.cpp
         src/Uniform.cpp
         src/Shader.cpp
@@ -29,7 +29,7 @@ set(SOURCE_FILES
         src/RenderCommand.cpp
         src/ImageRenderer.cpp
         src/Texture.cpp
-        src/CameraProperties.cpp)
+        src/CameraProperties.cpp src/ImGuiUtil.cpp)
 set(HEADER_FILES
         include/Application.h
         include/WindowBase.h
@@ -51,7 +51,7 @@ set(HEADER_FILES
         include/Scene/SceneLayer.h
         include/Scene/Entity.h
         include/Scene/ComponentBase.h
-        include/Util/Type.h
+        include/Util/TypeUtil.h
         include/Scene/Transform.h
         include/Graphics/Uniform.h
         include/Graphics/Shader.h
@@ -66,6 +66,7 @@ set(HEADER_FILES
         include/Input/MouseCode.h
         include/Message/Messaging.h
         include/Graphics/CameraProperties.h
+        include/Util/ImGuiUtil.h)
 
 message(STATUS "DYEngine Source Files: ${SOURCE_FILES}")
 message(STATUS "DYEngine Header Files: ${HEADER_FILES}")

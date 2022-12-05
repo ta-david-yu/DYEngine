@@ -1,6 +1,6 @@
 #include "Scene/ComponentBase.h"
 #include "Scene/Entity.h"
-#include "Util/Type.h"
+#include "Util/TypeUtil.h"
 #include "Scene/Transform.h"
 
 #include <algorithm>

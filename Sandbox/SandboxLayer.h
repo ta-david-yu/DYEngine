@@ -12,6 +12,7 @@ namespace DYE
 	class VertexArray;
 	class ShaderProgram;
 	class Texture2D;
+	class CameraProperties;
 
     class SandboxLayer : public LayerBase
     {
@@ -41,6 +42,7 @@ namespace DYE
 		glm::quat m_ObjectRotation{glm::vec3 {0, 0, 0}}; // Entity/Object Transform
 
 
+		std::shared_ptr<CameraProperties> m_CameraProperties;
 
 		glm::vec3 m_CameraPosition{0, 0, 3}; // Camera Object Transform
 		float m_FieldOfView = 45; // Camera
