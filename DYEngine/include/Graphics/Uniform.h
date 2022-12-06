@@ -8,10 +8,10 @@ namespace DYE
 {
 	namespace DefaultUniformNames
 	{
-		static const char* TransformMatrix = "_TransformMatrix";
-		static const char* ModelMatrix = "_ModelMatrix";
-		static const char* ViewMatrix = "_ViewMatrix";
-		static const char* ProjectionMatrix = "_ProjectionMatrix";
+		constexpr const char* TransformMatrix = "_TransformMatrix";
+		constexpr const char* ModelMatrix = "_ModelMatrix";
+		constexpr const char* ViewMatrix = "_ViewMatrix";
+		constexpr const char* ProjectionMatrix = "_ProjectionMatrix";
 	}
 
 	using UniformLocation = std::uint32_t;
