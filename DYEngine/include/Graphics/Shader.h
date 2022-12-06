@@ -12,16 +12,31 @@ namespace DYE
     using ShaderProgramID = std::uint32_t;
     using ShaderID = std::uint32_t;
 
+	namespace ShaderConstants
+	{
+		constexpr int NumberOfShaderTypes = 3; // Vertex, Fragment, Geometry
+	}
+
     enum class ShaderType
     {
+		Invalid = -1,
+
         Vertex = 0,
         Geometry,
         Fragment,
-
-        NumOfType,
-
-        Invalid
     };
+
+	struct ShaderTypeParseResult
+	{
+		bool Success;
+		std::vector<std::pair<ShaderType, std::string>> ShaderSources;
+	};
+
+	struct ShaderCompilationResult
+	{
+		bool Success;
+		ShaderID CompiledShaderID;
+	};
 
     /// A Shader Program wraps the GL ShaderProgramID and functions.
     /// Current implementation is in OpenGL
@@ -51,12 +66,24 @@ namespace DYE
         /// Compile and create shader program in the GPU driver
         /// \param filepath the source filepath of the shader
         /// \return true if succeed, else false
-        bool createProgramFromSourceFile(const std::filesystem::path& filepath);
+        bool initializeProgramFromSourceFile(const std::filesystem::path& filepath);
 
         /// Compile and create shader program in the GPU driver
         /// \param source the source code of the shader
         /// \return true if succeed, else false
-        bool createProgramFromSource(const std::string& source);
+        bool initializeProgramFromSource(const std::string& source);
+
+		/// Parse the given shader program source code into multiple shader sources.
+		/// \param programSource
+		/// \return If .Success is true, the result is a vector of pair (ShaderType -> ShaderSource), with all the shader sources stored in it.
+		static ShaderTypeParseResult parseShaderProgramSourceIntoShaderSources(const std::string& programSource);
+
+		/// Compile a shader of the given type with the given source code and attach it to the given shader program.
+		/// \param programId The id of the shader program to attach the compiled shader to.
+		/// \param type Shader type.
+		/// \param source Shader source code.
+		/// \return result. When .Success is false, ShaderID is set to 0 (which also means the default shader in the render API).
+		static ShaderCompilationResult compileShaderForProgram(ShaderProgramID programId, ShaderType type, const std::string& source);
 
 		/// Populate uniform infos vector with the shader uniforms information.
 		void updateUniformInfos();
