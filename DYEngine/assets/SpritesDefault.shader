@@ -1,3 +1,6 @@
+#property [uniform_type] [uniform_name]
+#property sampler2D _MainTex
+
 #shader vertex
 #version 330 core
 

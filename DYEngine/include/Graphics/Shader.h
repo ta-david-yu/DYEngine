@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Graphics/Uniform.h"
+#include "Graphics/UniformType.h"
 
 #include <string>
 #include <memory>

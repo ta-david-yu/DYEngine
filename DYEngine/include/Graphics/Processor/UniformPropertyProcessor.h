@@ -1,8 +1,18 @@
-//
-// Created by d3660 on 2022/12/6.
-//
+#pragma once
 
-#ifndef DYENGINEROOT_UNIFORMPROPERTYPROCESSOR_H
-#define DYENGINEROOT_UNIFORMPROPERTYPROCESSOR_H
+#include "Graphics/ShaderProcessorBase.h"
 
-#endif //DYENGINEROOT_UNIFORMPROPERTYPROCESSOR_H
+namespace DYE::ShaderProcessor
+{
+	/// Process the uniform properties of the shader. Properties are uniforms exposed to users.
+	///  Properties declared in Shader will be serialized into Material (namely Shader Instance Data).
+	class UniformPropertyProcessor : public ShaderProcessorBase
+	{
+		constexpr static const char* UniformPropertySpecifier = "#property";
+
+	public:
+		UniformPropertyProcessor() : ShaderProcessorBase("Uniform Property Processor") {}
+		void OnBegin(DYE::ShaderProgram &shaderProgram) override;
+		void OnEnd(DYE::ShaderProgram &shaderProgram) override;
+	};
+}

@@ -1,8 +1,11 @@
 #pragma once
 
 #include <string>
-
 #include <glad/glad.h>
+
+#ifndef nameof
+	#define nameof(enum) #enum
+#endif
 
 namespace DYE
 {
@@ -18,10 +21,14 @@ namespace DYE
 	using UniformSize = GLsizei;
 	using GLUniformEnum = GLenum;
 
+	namespace UniformConstants
+	{
+		constexpr int NumberOfUniformTypes = 9;
+	}
 	enum class UniformType
 	{
 		Invalid = -1,
-		Float,
+		Float = 0,
 		Float2,
 		Float3,
 		Float4,
@@ -47,7 +54,6 @@ namespace DYE
 			case UniformType::Texture2D: return GL_SAMPLER_2D;
 
 			case UniformType::Invalid:
-				break;
 			default:
 				break;
 		}
@@ -72,6 +78,46 @@ namespace DYE
 				break;
 		}
 		return UniformType::Invalid;
+	}
+
+	static std::string UniformTypeToPropertyTypeQualifier(UniformType type)
+	{
+		switch (type)
+		{
+			case UniformType::Float: return "float";
+			case UniformType::Float2: return "vec2";
+			case UniformType::Float3: return "vec3";
+			case UniformType::Float4: return "vec4";
+			case UniformType::Mat3: return "mat3";
+			case UniformType::Mat4: return "mat4";
+			case UniformType::Int: return "int";
+			case UniformType::Boolean: return "bool";
+			case UniformType::Texture2D: return "sampler2D";
+
+			case UniformType::Invalid:
+			default:
+				break;
+		}
+		return "invalid-type";
+	}
+
+	static bool HasValidPropertyTypeKeywordInLine(const std::string& line, UniformType& outUniformType)
+	{
+		bool result = false;
+
+		for (int i = 0; i < UniformConstants::NumberOfUniformTypes; i++)
+		{
+			auto uniformType = (UniformType) i;
+			auto typeQualifier = UniformTypeToPropertyTypeQualifier(uniformType);
+			if (line.find(typeQualifier) != std::string::npos)
+			{
+				outUniformType = uniformType;
+				result = true;
+				break;
+			}
+		}
+
+		return result;
 	}
 
 	/// Represent the information about an uniform variable in the Shader

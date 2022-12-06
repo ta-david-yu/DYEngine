@@ -3,6 +3,7 @@
 #include "Graphics/OpenGL.h"
 
 #include "Graphics/ShaderProcessorBase.h"
+#include "Graphics/Processor/UniformPropertyProcessor.h"
 
 #include <utility>
 #include <iostream>
@@ -82,7 +83,10 @@ namespace DYE
 		std::string shaderProgramSource((std::istreambuf_iterator<char>(fs)),
 										(std::istreambuf_iterator<char>()));
 
+		// Populate shader processors!
 		std::vector<std::unique_ptr<ShaderProcessorBase>> shaderProcessors {};
+		shaderProcessors.emplace_back(std::make_unique<ShaderProcessor::UniformPropertyProcessor>());
+
 		bool success = program->initializeProgramFromSource(shaderProgramSource, shaderProcessors);
 
 		if (program->HasCompileError())

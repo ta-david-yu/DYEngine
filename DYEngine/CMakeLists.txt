@@ -20,7 +20,7 @@ set(SOURCE_FILES
         src/ComponentBase.cpp
         src/TypeUtil.cpp
         src/Transform.cpp
-        src/Uniform.cpp
+        src/UniformType.cpp
         src/Shader.cpp
         src/OpenGL.cpp
         src/Buffer.cpp
@@ -31,7 +31,8 @@ set(SOURCE_FILES
         src/Texture.cpp
         src/CameraProperties.cpp
         src/ImGuiUtil.cpp
-        src/ShaderProcessorBase.cpp)
+        src/ShaderProcessorBase.cpp
+        src/UniformPropertyProcessor.cpp)
 set(HEADER_FILES
         include/Application.h
         include/WindowBase.h
@@ -55,7 +56,7 @@ set(HEADER_FILES
         include/Scene/ComponentBase.h
         include/Util/TypeUtil.h
         include/Scene/Transform.h
-        include/Graphics/Uniform.h
+        include/Graphics/UniformType.h
         include/Graphics/Shader.h
         include/Graphics/OpenGL.h
         include/Graphics/Buffer.h
@@ -69,7 +70,8 @@ set(HEADER_FILES
         include/Message/Messaging.h
         include/Graphics/CameraProperties.h
         include/Util/ImGuiUtil.h
-        include/Graphics/ShaderProcessorBase.h)
+        include/Graphics/ShaderProcessorBase.h
+        include/Graphics/Processor/UniformPropertyProcessor.h)
 
 message(STATUS "DYEngine Source Files: ${SOURCE_FILES}")
 message(STATUS "DYEngine Header Files: ${HEADER_FILES}")
