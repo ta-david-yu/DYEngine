@@ -123,8 +123,16 @@ namespace DYE
 	/// Represent the information about an uniform variable in the Shader
 	struct UniformInfo
 	{
-		std::string Name;
 		UniformType Type;
+		std::string Name;
 		UniformLocation Location;
-	} __attribute__((aligned(64)));
+	};
+
+	/// Represent the information about a (uniform) property defined in the Shader
+	struct PropertyInfo
+	{
+		UniformType Type;
+		std::string UniformName;
+		std::string DisplayName;
+	};
 }

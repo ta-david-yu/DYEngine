@@ -136,6 +136,60 @@ namespace DYE
         }
     }
 
+	std::vector<UniformInfo> ShaderProgram::GetAllUniformInfo()
+	{
+		/// Init vector.
+		std::vector<UniformInfo> infos {};
+
+		/// Parse uniform variables and cache the information.
+		std::int32_t numberOfUniforms = 0;
+		glGetProgramiv(m_ID, GL_ACTIVE_UNIFORMS, &numberOfUniforms);
+
+		if (numberOfUniforms <= 0)
+		{
+			return {};
+		}
+
+		std::int32_t maxUniformNameLength = 0;
+		UniformSize uniformNameLength = 0;
+		UniformSize uniformSize = 0;
+		GLUniformEnum uniformType = GL_NONE;
+
+		glGetProgramiv(m_ID, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxUniformNameLength);
+		auto uniformName = std::make_unique<char[]>(maxUniformNameLength);
+
+		/// Use this program before reading/writing uniforms.
+		Use();
+
+		int textureUnitSlotCounter = 0;
+		for (std::int32_t i = 0; i < numberOfUniforms; i++)
+		{
+			glGetActiveUniform(m_ID, i, maxUniformNameLength, &uniformNameLength, &uniformSize, &uniformType,
+							   uniformName.get());
+
+			UniformInfo info{};
+			info.Name = std::string(uniformName.get(), uniformNameLength);
+			info.Type = GLTypeToUniformType(uniformType);
+			info.Location = glGetUniformLocation(m_ID, uniformName.get());
+
+			if (info.Type == UniformType::Texture2D)
+			{
+				// If the variable is a texture,
+				// we want to bind texture unit slot to the uniform.
+				glCall(glUniform1i(info.Location, textureUnitSlotCounter));
+
+				textureUnitSlotCounter++;
+			}
+			// TODO: add more texture type here (sampler)
+
+			infos.push_back(info);
+		}
+
+		DYE_LOG("There are [%d] uniform variables", infos.size());
+
+		return std::move(infos);
+	}
+
     bool ShaderProgram::initializeProgramFromSource(std::string &source, const std::vector<std::unique_ptr<ShaderProcessorBase>>& shaderProcessors)
     {
 		bool hasCompileError = false;
@@ -152,8 +206,16 @@ namespace DYE
 			processor->OnPreShaderTypeParse(source);
 		}
 
+		std::vector<std::string> processorDirectivesToIgnore {};
+		for (auto& processor : shaderProcessors)
+		{
+			// Collect all the directives to ignore into one list.
+			auto directives = processor->GetDirectivesToIgnoreInShaderTypeParsePhase();
+			processorDirectivesToIgnore.insert(processorDirectivesToIgnore.end(), directives.begin(), directives.end());
+		}
+
 		// Parse ShaderProgram into Shader Sources of different types
-		ShaderTypeParseResult shaderTypeParseResult = parseShaderProgramSourceIntoShaderSources(source);
+		ShaderTypeParseResult shaderTypeParseResult = parseShaderProgramSourceIntoShaderSources(source, processorDirectivesToIgnore);
 		if (!shaderTypeParseResult.Success)
 		{
 			hasCompileError = true;
@@ -165,10 +227,11 @@ namespace DYE
 			processor->OnPostShaderTypeParse(shaderTypeParseResult);
 		}
 
-        // Compile source
+        // Create shader program on GPU
         m_ID = glCreateProgram();
         glCheckAfterCall(glCreateProgram());
 
+		// Actually compile shader(s)
         std::vector<ShaderID> createdShaderIDs;
 		for (auto& shaderSourcePair : shaderTypeParseResult.ShaderSources)
 		{
@@ -200,11 +263,11 @@ namespace DYE
 			}
 		}
 
-        /// Link the shaders specified by m_ID with the corresponding GPU processors
+        // Link the shaders specified by m_ID with the corresponding GPU processors
         glCall(glLinkProgram(m_ID));
         glCall(glValidateProgram(m_ID));
 
-        /// Clean up shaders
+        // Clean up shaders
         for (auto shaderID : createdShaderIDs)
         {
             glCall(glDeleteShader(shaderID));
@@ -216,14 +279,11 @@ namespace DYE
 			processor->OnEnd(*this);
 		}
 
-		/// Update uniforms info /// TODO: change this to an uniform processor that gets called OnEnd()
-		updateUniformInfos();
-
 		m_HasCompileError = hasCompileError;
         return !hasCompileError;
     }
 
-	ShaderProgram::ShaderTypeParseResult ShaderProgram::parseShaderProgramSourceIntoShaderSources(const std::string &programSource)
+	ShaderProgram::ShaderTypeParseResult ShaderProgram::parseShaderProgramSourceIntoShaderSources(const std::string &programSource, const std::vector<std::string>& directivesToIgnore)
 	{
 		bool hasParseError = false;
 
@@ -252,6 +312,7 @@ namespace DYE
 		{
 			if (line.find(ShaderConstants::ShaderTypeSpecifier) != std::string::npos)
 			{
+				// Found #shader preprocessor directive! Parse the shader type.
 				bool hasShaderTypeKeyword = HasValidShaderTypeKeywordInLine(line, currScopeType);
 				if (hasShaderTypeKeyword)
 				{
@@ -274,17 +335,24 @@ namespace DYE
 				}
 
 				hasShadersOfType[currScopeTypeIndex] = true;
+				continue;
 			}
-			else
-			{
-				if (!isInValidTypeScope)
-				{
-					continue;
-				}
 
-				// Add the line to the corresponding shader string stream if the type is valid.
-				shaderSS[(int) currScopeType] << line << '\n';
+			auto firstToken = line.substr(0, line.find(' '));
+			if (std::find(directivesToIgnore.begin(), directivesToIgnore.end(), firstToken) != std::end(directivesToIgnore))
+			{
+				// This line is marked as ignored by one of the processors' directives. Skip it!
+				continue;
 			}
+
+			if (!isInValidTypeScope)
+			{
+				// The current line is not under a specific shader type scope. Skip it!
+				continue;
+			}
+
+			// Add the line to the corresponding shader string stream if the type is valid.
+			shaderSS[(int) currScopeType] << line << '\n';
 		}
 
 		for (int typeIndex = 0; typeIndex < ShaderConstants::NumberOfShaderTypes; typeIndex++)
@@ -330,57 +398,5 @@ namespace DYE
 		}
 
 		return ShaderCompilationResult { .Success = true, .CompiledShaderID = shaderID };
-	}
-
-	void ShaderProgram::updateUniformInfos()
-	{
-		/// Init vector.
-		m_UniformInfos.clear();
-
-		/// Parse uniform variables and cache the information.
-		std::int32_t numberOfUniforms = 0;
-		glGetProgramiv(m_ID, GL_ACTIVE_UNIFORMS, &numberOfUniforms);
-
-		if (numberOfUniforms <= 0)
-		{
-			return;
-		}
-
-		std::int32_t maxUniformNameLength = 0;
-		UniformSize uniformNameLength = 0;
-		UniformSize uniformSize = 0;
-		GLUniformEnum uniformType = GL_NONE;
-
-		glGetProgramiv(m_ID, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxUniformNameLength);
-		auto uniformName = std::make_unique<char[]>(maxUniformNameLength);
-
-		/// Use this program before reading/writing uniforms.
-		Use();
-
-		int textureUnitSlotCounter = 0;
-		for (std::int32_t i = 0; i < numberOfUniforms; i++)
-		{
-			glGetActiveUniform(m_ID, i, maxUniformNameLength, &uniformNameLength, &uniformSize, &uniformType,
-							   uniformName.get());
-
-		 	UniformInfo info{};
-			info.Name = std::string(uniformName.get(), uniformNameLength);
-			info.Type = GLTypeToUniformType(uniformType);
-			info.Location = glGetUniformLocation(m_ID, uniformName.get());
-
-			if (info.Type == UniformType::Texture2D)
-			{
-				// If the variable is a texture,
-				// we want to bind texture unit slot to the uniform.
-				glCall(glUniform1i(info.Location, textureUnitSlotCounter));
-
-				textureUnitSlotCounter++;
-			}
-			// TODO: add more texture type here (sampler)
-
-			m_UniformInfos.push_back(info);
-		}
-
-		DYE_LOG("There are [%d] uniform variables", m_UniformInfos.size());
 	}
 }

@@ -1,6 +1,3 @@
-#property [uniform_type] [uniform_name]
-#property sampler2D _MainTex
-
 #shader vertex
 #version 330 core
 
@@ -30,7 +27,10 @@ void main()
 in vec4 v_Color;
 in vec2 v_TexCoord;
 
+@property _MainTex "Main Texture"
 uniform sampler2D _MainTex;
+
+@property _Color "Color"
 uniform vec4 _Color;
 
 layout(location = 0) out vec4 color;

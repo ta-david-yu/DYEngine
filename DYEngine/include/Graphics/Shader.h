@@ -56,6 +56,11 @@ namespace DYE
         void Use();
         void Unbind();
 
+		std::vector<UniformInfo> GetAllUniformInfo();
+		const std::vector<PropertyInfo>& GetAllPropertyInfo() const { return m_Properties; }
+		void AddPropertyInfo(const PropertyInfo& propertyInfo) { m_Properties.emplace_back(propertyInfo); }
+		void ClearPropertyInfo() { m_Properties.clear(); }
+
         /// A factory function that creates a shader program with the given shader source file
         /// \param filepath
         /// \return a shared pointer to the newly created ShaderProgram, return shared_ptr(nullptr) if failed
@@ -72,7 +77,7 @@ namespace DYE
 		/// Parse the given shader program source code into multiple shader sources.
 		/// \param programSource
 		/// \return If .Success is true, the result is a vector of pair (ShaderType -> ShaderSource), with all the shader sources stored in it.
-		static ShaderTypeParseResult parseShaderProgramSourceIntoShaderSources(const std::string& programSource);
+		static ShaderTypeParseResult parseShaderProgramSourceIntoShaderSources(const std::string& programSource, const std::vector<std::string>& directivesToIgnore);
 
 		/// Compile a shader of the given type with the given source code and attach it to the given shader program.
 		/// \param programId The id of the shader program to attach the compiled shader to.
@@ -81,17 +86,13 @@ namespace DYE
 		/// \return result. When .Success is false, ShaderID is set to 0 (which also means the default shader in the render API).
 		static ShaderCompilationResult compileShaderForProgram(ShaderProgramID programId, ShaderType type, const std::string& source);
 
-		/// Populate uniform infos vector with the shader uniforms information.
-		void updateUniformInfos();
-
-
 	private:
         /// ShaderProgramName (debugging)
         std::string m_Name;
         /// ShaderProgramID
-        ShaderProgramID m_ID{};
+        ShaderProgramID m_ID {};
 
-		std::vector<UniformInfo> m_UniformInfos{};
+		std::vector<PropertyInfo> m_Properties {};
 
         bool m_HasCompileError = false;
     };
