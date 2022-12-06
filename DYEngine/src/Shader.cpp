@@ -31,6 +31,47 @@ namespace DYE
         return 0;
     }
 
+	static std::string ShaderTypeEnumToShaderTypeKeyword(ShaderType type)
+	{
+		switch (type)
+		{
+			case ShaderType::Vertex:
+				return "vertex";
+			case ShaderType::Geometry:
+				return "geometry";
+			case ShaderType::Fragment:
+				return "fragment";
+		}
+		return "invalid-type";
+	}
+
+	/// Check if the given line contains a valid shader type keyword. The contained shader type will be return through outShaderType parameter.
+	/// \param shaderSourceLine
+	/// \param outShaderType The output shader type if the return value is true.
+	/// \return true if the line includes a shader type keyword.
+	static bool HasValidShaderTypeKeywordInLine(const std::string& shaderSourceLine, ShaderType& outShaderType)
+	{
+		if (shaderSourceLine.find("vertex") != std::string::npos)
+		{
+			outShaderType = ShaderType::Vertex;
+			return true;
+		}
+
+		if (shaderSourceLine.find("geometry") != std::string::npos)
+		{
+			outShaderType = ShaderType::Geometry;
+			return true;
+		}
+
+		if (shaderSourceLine.find("fragment") != std::string::npos)
+		{
+			outShaderType = ShaderType::Fragment;
+			return true;
+		}
+
+		return false;
+	}
+
     std::shared_ptr<ShaderProgram> ShaderProgram::CreateFromFile(const std::string& name, const std::filesystem::path &filepath)
 	{
 		DYE_LOG("-- Start creating shader \"%s\" from %s --", name.c_str(), filepath.string().c_str());
@@ -178,7 +219,7 @@ namespace DYE
         return !hasCompileError;
     }
 
-	ShaderTypeParseResult ShaderProgram::parseShaderProgramSourceIntoShaderSources(const std::string &programSource)
+	ShaderProgram::ShaderTypeParseResult ShaderProgram::parseShaderProgramSourceIntoShaderSources(const std::string &programSource)
 	{
 		bool hasParseError = false;
 
@@ -205,24 +246,11 @@ namespace DYE
 		std::string line;
 		while (std::getline(stream, line))
 		{
-			if (line.find("#shader") != std::string::npos)
+			if (line.find(ShaderConstants::ShaderTypeSpecifier) != std::string::npos)
 			{
-				if (line.find("vertex") != std::string::npos)
+				bool hasShaderTypeKeyword = HasValidShaderTypeKeywordInLine(line, currScopeType);
+				if (hasShaderTypeKeyword)
 				{
-					/// TO Vertex
-					currScopeType = ShaderType::Vertex;
-					isInValidTypeScope = true;
-				}
-				else if (line.find("geometry") != std::string::npos)
-				{
-					/// To Geometry
-					currScopeType = ShaderType::Geometry;
-					isInValidTypeScope = true;
-				}
-				else if (line.find("fragment") != std::string::npos)
-				{
-					/// To Fragment
-					currScopeType = ShaderType::Fragment;
 					isInValidTypeScope = true;
 				}
 				else
@@ -270,7 +298,7 @@ namespace DYE
 		return ShaderTypeParseResult { .Success = !hasParseError, .ShaderSources = std::move(shaderSources) };
 	}
 
-	ShaderCompilationResult ShaderProgram::compileShaderForProgram(DYE::ShaderProgramID programId, DYE::ShaderType type, const std::string &source)
+	ShaderProgram::ShaderCompilationResult ShaderProgram::compileShaderForProgram(DYE::ShaderProgramID programId, DYE::ShaderType type, const std::string &source)
 	{
 		ShaderID shaderID = 0;
 

@@ -17,6 +17,7 @@ namespace DYE
 	namespace ShaderConstants
 	{
 		constexpr int NumberOfShaderTypes = 3; // Vertex, Fragment, Geometry
+		constexpr const char* ShaderTypeSpecifier = "#shader";
 	}
     enum class ShaderType
     {
@@ -25,24 +26,25 @@ namespace DYE
         Fragment,
     };
 
-	struct ShaderTypeParseResult
-	{
-		bool Success;
-		std::vector<std::pair<ShaderType, std::string>> ShaderSources;
-	};
-
-	struct ShaderCompilationResult
-	{
-		bool Success;
-		ShaderID CompiledShaderID;
-	};
 
     /// A Shader Program wraps the GL ShaderProgramID and functions.
     /// Current implementation is in OpenGL
     class ShaderProgram
     {
     public:
-        /// The constructor should not be called directly, use ShaderProgram::CreateFromFile instead
+		struct ShaderTypeParseResult
+		{
+			bool Success;
+			std::vector<std::pair<ShaderType, std::string>> ShaderSources;
+		};
+
+		struct ShaderCompilationResult
+		{
+			bool Success;
+			ShaderID CompiledShaderID;
+		};
+
+		/// The constructor should not be called directly, use ShaderProgram::CreateFromFile instead
         explicit ShaderProgram(std::string name);
         ~ShaderProgram();
 
