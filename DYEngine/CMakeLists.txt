@@ -29,7 +29,9 @@ set(SOURCE_FILES
         src/RenderCommand.cpp
         src/ImageRenderer.cpp
         src/Texture.cpp
-        src/CameraProperties.cpp src/ImGuiUtil.cpp)
+        src/CameraProperties.cpp
+        src/ImGuiUtil.cpp
+        src/ShaderProcessorBase.cpp)
 set(HEADER_FILES
         include/Application.h
         include/WindowBase.h
@@ -66,7 +68,8 @@ set(HEADER_FILES
         include/Input/MouseCode.h
         include/Message/Messaging.h
         include/Graphics/CameraProperties.h
-        include/Util/ImGuiUtil.h)
+        include/Util/ImGuiUtil.h
+        include/Graphics/ShaderProcessorBase.h)
 
 message(STATUS "DYEngine Source Files: ${SOURCE_FILES}")
 message(STATUS "DYEngine Header Files: ${HEADER_FILES}")

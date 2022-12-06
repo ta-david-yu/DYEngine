@@ -2,6 +2,8 @@
 #include "Graphics/Shader.h"
 #include "Graphics/OpenGL.h"
 
+#include "Graphics/ShaderProcessorBase.h"
+
 #include <utility>
 #include <iostream>
 #include <sstream>
@@ -34,7 +36,13 @@ namespace DYE
 		DYE_LOG("-- Start creating shader \"%s\" from %s --", name.c_str(), filepath.string().c_str());
 
 		auto program = std::make_shared<ShaderProgram>(name);
-		bool success = program->initializeProgramFromSourceFile(filepath);
+
+		std::ifstream fs(filepath);
+		std::string shaderProgramSource((std::istreambuf_iterator<char>(fs)),
+										(std::istreambuf_iterator<char>()));
+
+		std::vector<std::unique_ptr<ShaderProcessorBase>> shaderProcessors {};
+		bool success = program->initializeProgramFromSource(shaderProgramSource, shaderProcessors);
 
 		if (program->HasCompileError())
 		{
@@ -83,43 +91,52 @@ namespace DYE
         }
     }
 
-    bool ShaderProgram::initializeProgramFromSourceFile(const std::filesystem::path &filepath)
-    {
-        std::ifstream fs(filepath);
-        std::string content((std::istreambuf_iterator<char>(fs)),
-                             (std::istreambuf_iterator<char>()));
-
-        return initializeProgramFromSource(content);
-    }
-
-    bool ShaderProgram::initializeProgramFromSource(const std::string &source)
+    bool ShaderProgram::initializeProgramFromSource(std::string &source, const std::vector<std::unique_ptr<ShaderProcessorBase>>& shaderProcessors)
     {
 		bool hasCompileError = false;
 
-		/// TODO: Processors.OnBegin
+		// Processors.OnBegin
+		for (auto& processor : shaderProcessors)
+		{
+			processor->OnBegin(*this);
+		}
 
-		/// TODO: Processors.OnPreShaderTypeKeyword
+		// Processors.OnPreShaderTypeParse
+		for (auto& processor : shaderProcessors)
+		{
+			processor->OnPreShaderTypeParse(source);
+		}
 
+		// Parse ShaderProgram into Shader Sources of different types
 		ShaderTypeParseResult shaderTypeParseResult = parseShaderProgramSourceIntoShaderSources(source);
 		if (!shaderTypeParseResult.Success)
 		{
 			hasCompileError = true;
 		}
 
-		/// TODO: Processors.OnPostShaderTypeKeyword
+		// Processors.OnPostShaderTypeParse
+		for (auto& processor : shaderProcessors)
+		{
+			processor->OnPostShaderTypeParse(shaderTypeParseResult);
+		}
 
-        /// Compile source
+        // Compile source
         m_ID = glCreateProgram();
         glCheckAfterCall(glCreateProgram());
 
         std::vector<ShaderID> createdShaderIDs;
-		for (std::pair<ShaderType, std::string>& shaderSourcePair : shaderTypeParseResult.ShaderSources)
+		for (auto& shaderSourcePair : shaderTypeParseResult.ShaderSources)
 		{
-			/// TODO: Processors.OnPreShaderCompilation
-			auto type = shaderSourcePair.first;
+			auto shaderType = shaderSourcePair.first;
 			auto shaderSource = shaderSourcePair.second;
 
-			ShaderCompilationResult compileShaderResult = compileShaderForProgram(m_ID, type, shaderSource);
+			// Processors.OnPreShaderCompilation
+			for (auto& processor : shaderProcessors)
+			{
+				processor->OnPreShaderCompilation(shaderType, shaderSource);
+			}
+
+			ShaderCompilationResult compileShaderResult = compileShaderForProgram(m_ID, shaderType, shaderSource);
 			if (compileShaderResult.Success)
 			{
 				glCall(glAttachShader(m_ID, compileShaderResult.CompiledShaderID));
@@ -130,7 +147,12 @@ namespace DYE
 				/// Compile error!
 				hasCompileError = true;
 			}
-			/// TODO: Processors.OnPostShaderCompilation
+
+			// Processors.OnPostShaderCompilation
+			for (auto& processor : shaderProcessors)
+			{
+				processor->OnPostShaderCompilation(shaderType, compileShaderResult);
+			}
 		}
 
         /// Link the shaders specified by m_ID with the corresponding GPU processors
@@ -143,8 +165,13 @@ namespace DYE
             glCall(glDeleteShader(shaderID));
         }
 
-		/// TODO: Processors.OnEnd
-		/// Update uniforms info /// TODO: change this to a uniform processors
+		// Processors.OnEnd
+		for (auto& processor : shaderProcessors)
+		{
+			processor->OnEnd(*this);
+		}
+
+		/// Update uniforms info /// TODO: change this to an uniform processor that gets called OnEnd()
 		updateUniformInfos();
 
 		m_HasCompileError = hasCompileError;

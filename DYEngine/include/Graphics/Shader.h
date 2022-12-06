@@ -12,11 +12,12 @@ namespace DYE
     using ShaderProgramID = std::uint32_t;
     using ShaderID = std::uint32_t;
 
+	class ShaderProcessorBase;
+
 	namespace ShaderConstants
 	{
 		constexpr int NumberOfShaderTypes = 3; // Vertex, Fragment, Geometry
 	}
-
     enum class ShaderType
     {
         Vertex = 0,
@@ -62,14 +63,9 @@ namespace DYE
         //static ShaderProgram* s_pCurrentShaderProgramInUse;
 
         /// Compile and create shader program in the GPU driver
-        /// \param filepath the source filepath of the shader
-        /// \return true if succeed, else false
-        bool initializeProgramFromSourceFile(const std::filesystem::path& filepath);
-
-        /// Compile and create shader program in the GPU driver
         /// \param source the source code of the shader
         /// \return true if no compile error, else false
-        bool initializeProgramFromSource(const std::string& source);
+        bool initializeProgramFromSource(std::string& source,  const std::vector<std::unique_ptr<ShaderProcessorBase>>& shaderProcessors);
 
 		/// Parse the given shader program source code into multiple shader sources.
 		/// \param programSource
