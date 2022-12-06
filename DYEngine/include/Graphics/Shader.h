@@ -19,8 +19,6 @@ namespace DYE
 
     enum class ShaderType
     {
-		Invalid = -1,
-
         Vertex = 0,
         Geometry,
         Fragment,
@@ -70,7 +68,7 @@ namespace DYE
 
         /// Compile and create shader program in the GPU driver
         /// \param source the source code of the shader
-        /// \return true if succeed, else false
+        /// \return true if no compile error, else false
         bool initializeProgramFromSource(const std::string& source);
 
 		/// Parse the given shader program source code into multiple shader sources.

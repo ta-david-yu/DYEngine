@@ -15,30 +15,23 @@ namespace DYE
     /// Map the ShaderType enum to GL_(TYPE)_SHADER
     /// \param type enum ShaderType
     /// \return unsigned int (GL Shader Type)
-    static unsigned int shaderTypeEnumToGLShaderType(ShaderType type)
+    static unsigned int ShaderTypeEnumToGLShaderType(ShaderType type)
     {
         switch (type)
         {
             case ShaderType::Vertex:
                 return GL_VERTEX_SHADER;
-                break;
             case ShaderType::Geometry:
                 return GL_GEOMETRY_SHADER;
-                break;
             case ShaderType::Fragment:
                 return GL_FRAGMENT_SHADER;
-                break;
-            case ShaderType::Invalid:
-                break;
         }
         return 0;
     }
 
-    //ShaderProgram* ShaderProgram::s_pCurrentShaderProgramInUse = nullptr;
-
     std::shared_ptr<ShaderProgram> ShaderProgram::CreateFromFile(const std::string& name, const std::filesystem::path &filepath)
 	{
-		DYE_LOG("-- Start creating shader \"%s\" from %s --", name.c_str(), filepath.c_str());
+		DYE_LOG("-- Start creating shader \"%s\" from %s --", name.c_str(), filepath.string().c_str());
 
 		auto program = std::make_shared<ShaderProgram>(name);
 		bool success = program->initializeProgramFromSourceFile(filepath);
@@ -50,12 +43,14 @@ namespace DYE
 
 		if (!success)
 		{
-			DYE_LOG("-- Failed to create shader [%d] \"%s\" from %s --", program->m_ID, name.c_str(), filepath.c_str());
+			DYE_LOG("-- Failed to create shader [%d] \"%s\" from %s --", program->m_ID, name.c_str(), filepath.string().c_str());
 			DYE_ASSERT(false);
-			return std::shared_ptr<ShaderProgram>();
+
+			// We still return the program. In the future we might want to return a purple shader program.
+			return program;
 		}
 
-		DYE_LOG("-- Successfully create shader [%d] \"%s\" from %s --", program->m_ID, name.c_str(), filepath.c_str());
+		DYE_LOG("-- Successfully create shader [%d] \"%s\" from %s --", program->m_ID, name.c_str(), filepath.string().c_str());
 		return program;
 	}
 
@@ -99,73 +94,17 @@ namespace DYE
 
     bool ShaderProgram::initializeProgramFromSource(const std::string &source)
     {
+		bool hasCompileError = false;
+
 		/// TODO: Processors.OnBegin
 
 		/// TODO: Processors.OnPreShaderTypeKeyword
 
-        /// Parse source
-        /// if the program has certain types of shader
-        bool hasShadersOfType[ShaderConstants::NumberOfShaderTypes];
-        for (bool& hasShaderOfType : hasShadersOfType)
-        {
-			hasShaderOfType = false;
-        }
-
-        /// source string stream for each currScopeType of shader
-        std::stringstream shaderSS[ShaderConstants::NumberOfShaderTypes];
-
-        /// open the file and read the source from it
-        std::stringstream stream(source);
-
-        /// the type of the current shader that is being parsed
-        ShaderType currScopeType = ShaderType::Invalid;
-
-
-        std::string line;
-        while (std::getline(stream, line))
-        {
-            if (line.find("#shader") != std::string::npos)
-            {
-                if (line.find("vertex") != std::string::npos)
-                {
-                    /// TO Vertex
-                    currScopeType = ShaderType::Vertex;
-                }
-                else if (line.find("geometry") != std::string::npos)
-                {
-                    /// To Geometry
-                    currScopeType = ShaderType::Geometry;
-                }
-                else if (line.find("fragment") != std::string::npos)
-                {
-                    /// To Fragment
-                    currScopeType = ShaderType::Fragment;
-                }
-                else
-                {
-                    DYE_LOG("Unknown shader type - %s", line.c_str());
-                    m_HasCompileError = true;
-                }
-
-                /// The shader of the type has already existed!
-                if (hasShadersOfType[(int) currScopeType])
-                {
-                    DYE_LOG("Duplicate shader type - %s", line.c_str());
-                    m_HasCompileError = true;
-                }
-                else
-                {
-                    hasShadersOfType[(int) currScopeType] = true;
-                }
-            }
-            else
-            {
-                if (currScopeType != ShaderType::Invalid)
-                {
-                    shaderSS[(int) currScopeType] << line << '\n';
-                }
-            }
-        }
+		ShaderTypeParseResult shaderTypeParseResult = parseShaderProgramSourceIntoShaderSources(source);
+		if (!shaderTypeParseResult.Success)
+		{
+			hasCompileError = true;
+		}
 
 		/// TODO: Processors.OnPostShaderTypeKeyword
 
@@ -174,30 +113,25 @@ namespace DYE
         glCheckAfterCall(glCreateProgram());
 
         std::vector<ShaderID> createdShaderIDs;
+		for (std::pair<ShaderType, std::string>& shaderSourcePair : shaderTypeParseResult.ShaderSources)
+		{
+			/// TODO: Processors.OnPreShaderCompilation
+			auto type = shaderSourcePair.first;
+			auto shaderSource = shaderSourcePair.second;
 
-        for (int typeIndex = 0; typeIndex < ShaderConstants::NumberOfShaderTypes; typeIndex++)
-        {
-            bool hasShaderType = hasShadersOfType[typeIndex];
-            if (hasShaderType)
-            {
-				/// TODO: Processors.OnPreShaderCompilation
-                auto shaderSource = shaderSS[typeIndex].str();
-                auto type = (ShaderType) typeIndex;
-
-				ShaderCompilationResult result = compileShaderForProgram(m_ID, type, shaderSource);
-				if (result.Success)
-				{
-					glCall(glAttachShader(m_ID, result.CompiledShaderID));
-					createdShaderIDs.push_back(result.CompiledShaderID);
-				}
-				else
-				{
-					/// Compile error!
-					m_HasCompileError = true;
-				}
-				/// TODO: Processors.OnPostShaderCompilation
-            }
-        }
+			ShaderCompilationResult compileShaderResult = compileShaderForProgram(m_ID, type, shaderSource);
+			if (compileShaderResult.Success)
+			{
+				glCall(glAttachShader(m_ID, compileShaderResult.CompiledShaderID));
+				createdShaderIDs.push_back(compileShaderResult.CompiledShaderID);
+			}
+			else
+			{
+				/// Compile error!
+				hasCompileError = true;
+			}
+			/// TODO: Processors.OnPostShaderCompilation
+		}
 
         /// Link the shaders specified by m_ID with the corresponding GPU processors
         glCall(glLinkProgram(m_ID));
@@ -209,10 +143,12 @@ namespace DYE
             glCall(glDeleteShader(shaderID));
         }
 
-		/// Update uniforms info
+		/// TODO: Processors.OnEnd
+		/// Update uniforms info /// TODO: change this to a uniform processors
 		updateUniformInfos();
 
-        return true;
+		m_HasCompileError = hasCompileError;
+        return !hasCompileError;
     }
 
 	ShaderTypeParseResult ShaderProgram::parseShaderProgramSourceIntoShaderSources(const std::string &programSource)
@@ -236,7 +172,8 @@ namespace DYE
 		std::stringstream stream(programSource);
 
 		/// the type of the current shader that is being parsed
-		ShaderType currScopeType = ShaderType::Invalid;
+		bool isInValidTypeScope = false;
+		ShaderType currScopeType = ShaderType::Vertex;
 
 		std::string line;
 		while (std::getline(stream, line))
@@ -247,40 +184,47 @@ namespace DYE
 				{
 					/// TO Vertex
 					currScopeType = ShaderType::Vertex;
+					isInValidTypeScope = true;
 				}
 				else if (line.find("geometry") != std::string::npos)
 				{
 					/// To Geometry
 					currScopeType = ShaderType::Geometry;
+					isInValidTypeScope = true;
 				}
 				else if (line.find("fragment") != std::string::npos)
 				{
 					/// To Fragment
 					currScopeType = ShaderType::Fragment;
+					isInValidTypeScope = true;
 				}
 				else
 				{
 					DYE_LOG("Unknown shader type - %s", line.c_str());
 					hasParseError = true;
+					isInValidTypeScope = false;
 				}
 
 				/// The shader of the type has already existed!
-				if (hasShadersOfType[(int) currScopeType])
+				int currScopeTypeIndex = (int) currScopeType;
+				if (hasShadersOfType[currScopeTypeIndex])
 				{
 					DYE_LOG("Duplicate shader type - %s", line.c_str());
 					hasParseError = true;
+					continue;
 				}
-				else
-				{
-					hasShadersOfType[(int) currScopeType] = true;
-				}
+
+				hasShadersOfType[currScopeTypeIndex] = true;
 			}
 			else
 			{
-				if (currScopeType != ShaderType::Invalid)
+				if (!isInValidTypeScope)
 				{
-					shaderSS[(int) currScopeType] << line << '\n';
+					continue;
 				}
+
+				// Add the line to the corresponding shader string stream if the type is valid.
+				shaderSS[(int) currScopeType] << line << '\n';
 			}
 		}
 
@@ -305,7 +249,7 @@ namespace DYE
 
 		const char *shaderSource = source.c_str();
 
-		unsigned int glShaderType = shaderTypeEnumToGLShaderType(type);
+		unsigned int glShaderType = ShaderTypeEnumToGLShaderType(type);
 
 		shaderID = glCreateShader(glShaderType);
 		glCall(glShaderSource(shaderID, 1, &shaderSource, nullptr));
