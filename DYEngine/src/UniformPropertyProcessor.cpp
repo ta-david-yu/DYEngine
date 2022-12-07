@@ -28,7 +28,6 @@ namespace DYE::ShaderProcessor
 		std::stringstream stream(m_ShaderProgramSourceCache);
 
 		std::string line;
-		std::string uniformDeclarationLine;
 		while (std::getline(stream, line))
 		{
 			auto firstToken = getFirstTokenFromLine(line);
@@ -41,7 +40,7 @@ namespace DYE::ShaderProcessor
 			// Match directive line into tokens with pattern of '\s+' (whitespaces).
 			// We want to use this pattern to split the string into 3 tokens:
 			//     i.e. @property [uniform_name] [display_name]
-			std::regex directiveRegexPattern(R"(\s+)");
+			std::regex const directiveRegexPattern(R"(\s+)");
 			std::vector<std::string> tokens;
 			int numberOfMatches = 0;
 			std::smatch matchObject;
@@ -66,22 +65,9 @@ namespace DYE::ShaderProcessor
 				}
 			}
 
-			/*
-			// -1 here means collect unmatched substrings. You could also put 0 in the list to collect matched substrings (i.e. whitespace).
-			std::sregex_token_iterator tokenIterator(line.begin(), line.end(), directiveRegexPattern, {-1});
-			std::remove_copy_if
-				(
-					tokenIterator,
-					std::sregex_token_iterator(),
-					std::back_inserter(tokens),
-					[](std::string const &s) { return s.empty(); }
-				);
-			*/
-
 			if (tokens.size() < 2)
 			{
-				// There should be at least two tokens in the line i.e. @property _Color
-				// Otherwise we would ignore it.
+				// There should be at least two tokens in the line i.e. @property _Color. Otherwise we would ignore it.
 				DYE_LOG("Property directive '%s' is presented but no uniform variable name follows. Property directive is ignored.", line.c_str());
 				continue;
 			}
@@ -131,8 +117,8 @@ namespace DYE::ShaderProcessor
 			{
 				// Third token exists, could potentially be the custom display name for the property.
 				auto candidateDisplayName = tokens[2];
-				std::regex displayNameRegexPattern(R"(".+")");
-				bool isValidDisplayName = std::regex_match(candidateDisplayName, displayNameRegexPattern);
+				std::regex const displayNameRegexPattern(R"(".+")");
+				bool const isValidDisplayName = std::regex_match(candidateDisplayName, displayNameRegexPattern);
 				if (isValidDisplayName)
 				{
 					// Remove the first and the last characters (\") in the string.
@@ -140,7 +126,7 @@ namespace DYE::ShaderProcessor
 				}
 			}
 
-			DYE_LOG("%s", line.c_str());
+			//DYE_LOG("%s", line.c_str());
 			shaderProgram.AddPropertyInfo(PropertyInfo { .Type = uniformInfo.Type, .UniformName = uniformInfo.Name, .DisplayName = displayName });
 		}
 
