@@ -19,8 +19,12 @@ namespace DYE
     {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
+
         ImGuiIO& io = ImGui::GetIO(); (void)io;
+		// TODO: we want to move these somewhere the users can modify them.
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+		io.ConfigWindowsMoveFromTitleBarOnly = true;
+		//ImGUiConf
 
         ImGui::StyleColorsDark();
 
@@ -61,5 +65,9 @@ namespace DYE
         // rendering
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+		ImGuiIO& io = ImGui::GetIO();
+
+		// TODO:
     }
 }

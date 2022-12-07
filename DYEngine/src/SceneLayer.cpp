@@ -199,7 +199,7 @@ namespace DYE
                                         /// Whether or not the tree node (entity) is forced open
                                         if (forceExpandTreeNodeEntityIDs.find(currEntity->GetID()) != forceExpandTreeNodeEntityIDs.end())
                                         {
-                                            ImGui::SetNextTreeNodeOpen(true);
+                                            ImGui::SetNextItemOpen(true);
                                         }
                                         bool openNode = ImGui::TreeNodeEx(entityNodeLabel);
 

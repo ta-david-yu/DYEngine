@@ -107,7 +107,7 @@ target_include_directories(DYEngine PUBLIC ${SDL2_INCLUDE_DIR})     # This shoul
 target_include_directories(DYEngine PUBLIC ${SDL2_IMAGE_INCLUDE_DIRS})     # This should be a private inclusion though, because of KeyCode.h implementation, this needs to be PUBLIC
 target_include_directories(DYEngine PRIVATE extern/glad/include)
 target_include_directories(DYEngine PUBLIC extern/imgui)
-target_include_directories(DYEngine PRIVATE extern/imgui/examples)
+target_include_directories(DYEngine PRIVATE extern/imgui/backends)
 target_include_directories(DYEngine PUBLIC extern/glm)
 target_include_directories(DYEngine PUBLIC extern/stb/include)
 target_include_directories(DYEngine PUBLIC extern/yaml-cpp/include)
