@@ -86,12 +86,17 @@ find_package(SDL2 REQUIRED)
 set(SDL2_IMAGE_PATH "extern/SDL2_image")
 find_package(SDL2_image REQUIRED)
 
+# Define RTTR_DIR here that will be used in FindRTTR module
+#set(RTTR_DIR "extern/rttr/rttr")
+#find_package(RTTR CONFIG REQUIRED Core)
+
 # Build External Static Library
 add_subdirectory(extern/glad)
 add_subdirectory(extern/imgui)
 add_subdirectory(extern/glm)
 add_subdirectory(extern/stb)
 add_subdirectory(extern/yaml-cpp)
+add_subdirectory(extern/rttr)
 
 # ===========================================================================================
 # Build DYEngine library
@@ -122,7 +127,9 @@ target_link_libraries(DYEngine
         imgui
         glm
         stb
-        yaml-cpp)
+        yaml-cpp
+        RTTR::Core_Lib
+    )
 
 # ===========================================================================================
 # Copy default assets to the output directory
