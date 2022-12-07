@@ -1,6 +1,7 @@
 #include "ImGuiLayer.h"
 
 #include "WindowBase.h"
+#include "ContextBase.h"
 
 #include <SDL.h>
 #include <imgui.h>
@@ -22,9 +23,11 @@ namespace DYE
 
         ImGuiIO& io = ImGui::GetIO(); (void)io;
 		// TODO: we want to move these somewhere the users can modify them.
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 		io.ConfigWindowsMoveFromTitleBarOnly = true;
-		//ImGUiConf
+
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+		//io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
         ImGui::StyleColorsDark();
 
@@ -66,8 +69,13 @@ namespace DYE
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
+		// TODO: Move these code to individual window / context class to support different platforms libraries
 		ImGuiIO& io = ImGui::GetIO();
-
-		// TODO:
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault();
+			SDL_GL_MakeCurrent(m_pWindow->GetTypedNativeWindowPtr<SDL_Window>(), m_pWindow->GetContext().GetNativeContextPtr());
+		}
     }
 }

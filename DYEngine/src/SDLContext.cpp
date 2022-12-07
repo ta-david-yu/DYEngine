@@ -44,4 +44,9 @@ namespace DYE
     {
         SDL_GL_SwapWindow(m_pWindow->GetTypedNativeWindowPtr<SDL_Window>());
     }
+
+	void *SDLContext::GetNativeContextPtr() const
+	{
+		return m_pNativeContext;
+	}
 }

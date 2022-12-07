@@ -6,6 +6,8 @@
 
 namespace DYE
 {
+	class ContextBase;
+
     struct WindowProperty
     {
         std::string Title;
@@ -35,6 +37,7 @@ namespace DYE
 
         virtual uint32_t GetWidth() const = 0;
         virtual uint32_t GetHeight() const = 0;
+		virtual ContextBase& GetContext() const = 0;
 
         /// Get the pointer to the native window based on the platform library being used. ex. SDLWindow for Windows platform
         /// \return a pointer to the library native window object
@@ -47,6 +50,7 @@ namespace DYE
         {
             return static_cast<T*>(GetNativeWindowPtr());
         }
+
 
         /// A factory function that creates a window based on the platform with the given property setup
         /// \param windowProperty the settings property for the created window (name, width, height)

@@ -17,8 +17,8 @@ namespace DYE
         void OnUpdate() override;
 
         uint32_t GetWidth() const override;
-
         uint32_t GetHeight() const override;
+		ContextBase & GetContext() const override;
 
         void *GetNativeWindowPtr() const override { return m_pNativeWindow; }
 

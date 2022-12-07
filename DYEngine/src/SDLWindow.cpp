@@ -51,4 +51,9 @@ namespace DYE
         SDL_GetWindowSize(m_pNativeWindow, reinterpret_cast<int *>(&width), reinterpret_cast<int *>(&height));
         return height;
     }
+
+	ContextBase &SDLWindow::GetContext() const
+	{
+		return *m_Context;
+	}
 }

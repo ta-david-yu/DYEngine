@@ -15,6 +15,10 @@ namespace DYE
         virtual void Init() = 0;
         virtual void SwapBuffers() = 0;
 
+		/// Get the pointer to the native context based on the platform library being used. ex. SDLContext for Windows platform
+		/// \return a pointer to the library native context object
+		virtual void *GetNativeContextPtr() const = 0;
+
         /// A factory function that creates a graphics context based on the platform
         /// \param pWindow a pointer to the window object that the created context belongs to (i.e. SDLWindow)
         /// \return a unique pointer to the created window
