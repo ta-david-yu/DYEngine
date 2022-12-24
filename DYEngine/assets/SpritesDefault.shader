@@ -1,3 +1,5 @@
+@blendFunc SrcAlpha OneMinusSrcAlpha
+
 #shader vertex
 #version 330 core
 

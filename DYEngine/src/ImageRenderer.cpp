@@ -182,7 +182,7 @@ namespace DYE
 			}
 
             ///
-            RenderCommand::DrawIndexed(m_QuadVertexArray);
+			RenderCommand::DrawIndexedNow(*m_QuadVertexArray.get());
 
             m_DefaultShaderProgram->Unbind();
         }

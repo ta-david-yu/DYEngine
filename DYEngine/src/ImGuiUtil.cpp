@@ -1,6 +1,8 @@
 #include "Util/ImGuiUtil.h"
 
 #include "Graphics/CameraProperties.h"
+#include "Graphics/Material.h"
+#include "Graphics/Shader.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -212,6 +214,7 @@ namespace DYE::ImGuiUtil
 	bool DrawCameraPropertiesControl(const std::string& label, CameraProperties& cameraProperties)
 	{
 		bool isValueChanged = false;
+		ImGui::Text(label.c_str());
 
 		isValueChanged |= DrawVec3Control("Position", cameraProperties.Position);
 		isValueChanged |= DrawBooleanControl("Is Orthographic", cameraProperties.IsOrthographic);
@@ -229,5 +232,71 @@ namespace DYE::ImGuiUtil
 		isValueChanged |= DrawFloatControl("Clip Distance | Far", cameraProperties.FarClipDistance, 100);
 
 		return false;
+	}
+
+	bool DrawMaterialControl(const std::string& label, Material& material)
+	{
+		bool isValueChanged = false;
+		auto uiId = "##" + material.GetName();
+		ImGui::Text(label.c_str());
+
+		ShaderProgram const& shader = material.GetShaderProgram();
+		auto const& allProperties = shader.GetAllPropertyInfo();
+
+		for (auto& propertyInfo : allProperties)
+		{
+			bool isPropertyValueChanged = false;
+			auto& propertyName = propertyInfo.UniformName;
+
+			// TODO: Add more type UI support
+			float floatValue;
+			glm::vec4 float4Value;
+			switch (propertyInfo.Type)
+			{
+				case UniformType::Float:
+					floatValue = material.GetFloat(propertyName);
+					isPropertyValueChanged = DrawFloatControl(propertyInfo.DisplayName + uiId, floatValue, 0.0f);
+					if (isPropertyValueChanged)
+					{
+						material.SetFloat(propertyName, floatValue);
+					}
+					break;
+				case UniformType::Float2:
+					ImGui::Text(propertyInfo.DisplayName.c_str());
+					break;
+				case UniformType::Float3:
+					ImGui::Text(propertyInfo.DisplayName.c_str());
+					break;
+				case UniformType::Float4:
+					float4Value = material.GetFloat4(propertyName);
+					isPropertyValueChanged = DrawColor4Control(propertyInfo.DisplayName + uiId, float4Value);
+					if (isPropertyValueChanged)
+					{
+						material.SetFloat4(propertyName, float4Value);
+					}
+					break;
+				case UniformType::Mat3:
+					ImGui::Text(propertyInfo.DisplayName.c_str());
+					break;
+				case UniformType::Mat4:
+					ImGui::Text(propertyInfo.DisplayName.c_str());
+					break;
+				case UniformType::Int:
+					ImGui::Text(propertyInfo.DisplayName.c_str());
+					break;
+				case UniformType::Boolean:
+					ImGui::Text(propertyInfo.DisplayName.c_str());
+					break;
+				case UniformType::Texture2D:
+					ImGui::Text(propertyInfo.DisplayName.c_str());
+					break;
+				case UniformType::Invalid:
+					break;
+			}
+
+			isValueChanged |= isPropertyValueChanged;
+		}
+
+		return isValueChanged;
 	}
 }

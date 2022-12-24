@@ -13,6 +13,7 @@
 #include "Graphics/OpenGL.h"
 #include "Graphics/Texture.h"
 #include "Graphics/CameraProperties.h"
+#include "Graphics/Material.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -57,14 +58,21 @@ namespace DYE
 			m_VertexArrayObject->SetIndexBuffer(indexBufferObject);
 		}
 
-		m_ShaderProgram = ShaderProgram::CreateFromFile("SpritesDefault", "assets/default/SpritesDefault.shader");
+		m_ShaderProgram = ShaderProgram::CreateFromFile("Shader_SpritesDefault", "assets/default/SpritesDefault.shader");
 		m_ShaderProgram->Use();
 
-		//m_DefaultTexture = Texture2D::Create(glm::vec4{1, 1, 1, 1}, 200, 100);
-		m_DefaultTexture = Texture2D::Create("assets\\textures\\profile.png");
-		//m_DefaultTexture = Texture2D::Create(glm::vec4{1, 1, 1, 1});
+		m_ProfileObject = std::make_shared<MaterialObject>();
+		m_ProfileObject->Name = "Profile";
+		m_ProfileObject->Material = Material::CreateFromShader("Material_Sprite", m_ShaderProgram);
+		m_ProfileObject->Material->SetFloat4("_Color", glm::vec4{1, 1, 1, 1});
+		m_ProfileObject->Material->SetTexture("_MainTex", Texture2D::Create("assets\\textures\\Island.png"));
 
-		//m_ShaderProgram->Use();
+		m_WhiteObject = std::make_shared<MaterialObject>();
+		m_WhiteObject->Name = "White";
+		m_WhiteObject->Material = Material::CreateFromShader("Material_Sprite", m_ShaderProgram);
+		m_WhiteObject->Material->SetFloat4("_Color", glm::vec4{1, 1, 1, 1});
+		m_WhiteObject->Material->SetTexture("_MainTex", Texture2D::Create("assets\\textures\\Island.png"));
+		// Texture2D::Create(glm::vec4{1, 1, 1, 1}, 200, 100)
 
 		m_CameraProperties = std::make_shared<CameraProperties>();
 		m_CameraProperties->Position = glm::vec3 {0, 0, 3};
@@ -72,62 +80,30 @@ namespace DYE
 
 	void SandboxLayer::OnRender()
 	{
-		glCall(glEnable(GL_DEPTH_TEST));
-		//glCall(glEnable(GL_CULL_FACE));
-		//glCall(glCullFace(GL_BACK));
+		glCall(glDisable(GL_DEPTH_TEST));
+		glCall(glEnable(GL_BLEND));
+		glCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+		renderMaterialObject(*m_ProfileObject);
+		renderMaterialObject(*m_WhiteObject);
+	}
 
-		m_ShaderProgram->Use();
-		{
-			// Binding uniform variables values, ideally we want to add a data layer to this (i.e. Material data).
-			// With Material class implemented, we could then have a function called RenderCommand::DrawIndexedWithMaterial()
+	void SandboxLayer::renderMaterialObject(MaterialObject &object)
+	{
+		glm::mat4 modelMatrix = glm::mat4 {1.0f};
+		modelMatrix = glm::translate(modelMatrix, object.Position);
+		modelMatrix = modelMatrix * glm::toMat4(object.Rotation);
 
-			// Color
-			auto colorUniformLocation = glGetUniformLocation(m_ShaderProgram->GetID(), "_Color");
-			glCall(glUniform4f(colorUniformLocation, m_Color.r, m_Color.g, m_Color.b, m_Color.a));
+		auto tex2D = static_cast<Texture2D*>(object.Material->GetTexture("_MainTex"));
+		auto scale = object.Scale * tex2D->GetScaleFromTextureDimensions();
+		modelMatrix = glm::scale(modelMatrix, scale);
 
-			// Bind the default texture to the first texture unit slot.
-			std::uint32_t textureSlot = 0;
-			m_DefaultTexture->Bind(textureSlot);
-
-			// Transform Matrix: ideally this should be a default process to the rendering pipeline
-
-			// Local to world space
+		RenderParameters const params
 			{
-				glm::mat4 modelMatrix = glm::mat4 {1.0f};
-
-				modelMatrix = glm::translate(modelMatrix, m_ObjectPosition);
-				modelMatrix = modelMatrix * glm::toMat4(m_ObjectRotation);
-
-				auto scale = m_ObjectScale * m_DefaultTexture->GetScaleFromTextureDimensions();
-				modelMatrix = glm::scale(modelMatrix, scale);
-
-				auto modelMatrixLoc = glGetUniformLocation(m_ShaderProgram->GetID(), DefaultUniformNames::ModelMatrix);
-				glCall(glUniformMatrix4fv(modelMatrixLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix)));
-			}
-
-			// World space to camera space
-			{
-				glm::mat4 viewMatrix = glm::mat4 {1.0f};
-				viewMatrix = glm::translate(viewMatrix, -m_CameraProperties->Position);
-
-				auto viewMatrixLoc = glGetUniformLocation(m_ShaderProgram->GetID(), DefaultUniformNames::ViewMatrix);
-				glCall(glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix)));
-			}
-
-			// Camera space to clip space
-			{
-				float windowWidth = (float) m_pWindow->GetWidth();
-				float windowHeight = (float) m_pWindow->GetHeight();
-				float aspectRatio = windowWidth / windowHeight;
-				glm::mat4 projectionMatrix = m_CameraProperties->GetProjectionMatrix(aspectRatio);
-				auto projectionMatrixLoc = glGetUniformLocation(m_ShaderProgram->GetID(),
-																DefaultUniformNames::ProjectionMatrix);
-				glCall(glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, glm::value_ptr(projectionMatrix)));
-			}
-		}
-
-		RenderCommand::DrawIndexed(m_VertexArrayObject);
-		m_ShaderProgram->Unbind();
+				.Camera = *m_CameraProperties,
+				.Material = object.Material,
+				.AspectRatio = (float) m_pWindow->GetWidth() / (float) m_pWindow->GetHeight()
+			};
+		RenderCommand::DrawIndexedNow(params, *m_VertexArrayObject, modelMatrix);
 	}
 
     void SandboxLayer::OnEvent(Event& event)
@@ -193,7 +169,7 @@ namespace DYE
         ImGui::SetNextWindowSize
 			(
                 ImVec2(static_cast<float>(controls_width), static_cast<float>(sdl_height * 0.5f)),
-                ImGuiCond_Always
+                ImGuiCond_FirstUseEver
 			);
 
         // create a window and append into it
@@ -244,28 +220,39 @@ namespace DYE
 				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			}
 
-			ImGuiUtil::DrawVec3Control("Obj Pos", m_ObjectPosition);
-			ImGuiUtil::DrawVec3Control("Obj Scale", m_ObjectScale);
-
-			glm::vec3 rotationInEulerAnglesDegree = glm::eulerAngles(m_ObjectRotation);
-			rotationInEulerAnglesDegree += glm::vec3(0.f);
-			rotationInEulerAnglesDegree = glm::degrees(rotationInEulerAnglesDegree);
-			if (ImGuiUtil::DrawVec3Control("Obj Rot", rotationInEulerAnglesDegree))
-			{
-				rotationInEulerAnglesDegree.y = glm::clamp(rotationInEulerAnglesDegree.y, -90.f, 90.f);
-				m_ObjectRotation = glm::quat {glm::radians(rotationInEulerAnglesDegree)};
-			}
-
-			/// Color Picker
-			ImGuiUtil::DrawColor4Control("Color", m_Color);
+			ImGui::Separator();
+			ImGuiUtil::DrawCameraPropertiesControl("Camera Properties", *m_CameraProperties);
 
 			ImGui::Separator();
-			ImGuiUtil::DrawCameraPropertiesControl("Camera", *m_CameraProperties.get());
+			imguiMaterialObject(*m_ProfileObject);
+
+			ImGui::Separator();
+			imguiMaterialObject(*m_WhiteObject);
 		}
 
         ImGui::End();
 
         ImGui::ShowDemoWindow();
-
     }
+
+	void SandboxLayer::imguiMaterialObject(MaterialObject &object)
+	{
+		ImGui::PushID(object.Name.c_str());
+
+		ImGuiUtil::DrawVec3Control("Position##" + object.Name, object.Position);
+		ImGuiUtil::DrawVec3Control("Scale##" + object.Name, object.Scale);
+
+		glm::vec3 rotationInEulerAnglesDegree = glm::eulerAngles(object.Rotation);
+		rotationInEulerAnglesDegree += glm::vec3(0.f);
+		rotationInEulerAnglesDegree = glm::degrees(rotationInEulerAnglesDegree);
+		if (ImGuiUtil::DrawVec3Control("Rotation##" + object.Name, rotationInEulerAnglesDegree))
+		{
+			rotationInEulerAnglesDegree.y = glm::clamp(rotationInEulerAnglesDegree.y, -90.f, 90.f);
+			object.Rotation = glm::quat {glm::radians(rotationInEulerAnglesDegree)};
+		}
+
+		ImGuiUtil::DrawMaterialControl(object.Material->GetName(), *object.Material);
+
+		ImGui::PopID();
+	}
 }

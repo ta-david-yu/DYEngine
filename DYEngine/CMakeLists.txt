@@ -32,7 +32,8 @@ set(SOURCE_FILES
         src/CameraProperties.cpp
         src/ImGuiUtil.cpp
         src/ShaderProcessorBase.cpp
-        src/UniformPropertyProcessor.cpp)
+        src/UniformPropertyProcessor.cpp
+        src/Material.cpp src/RenderState.cpp src/BlendStateCommandProcessor.cpp)
 set(HEADER_FILES
         include/Application.h
         include/WindowBase.h
@@ -71,7 +72,8 @@ set(HEADER_FILES
         include/Graphics/CameraProperties.h
         include/Util/ImGuiUtil.h
         include/Graphics/ShaderProcessorBase.h
-        include/Graphics/Processor/UniformPropertyProcessor.h)
+        include/Graphics/Processor/UniformPropertyProcessor.h
+        include/Graphics/Material.h include/Graphics/RenderState.h include/Graphics/Processor/BlendStateCommandProcessor.h)
 
 message(STATUS "DYEngine Source Files: ${SOURCE_FILES}")
 message(STATUS "DYEngine Header Files: ${HEADER_FILES}")
@@ -116,6 +118,7 @@ target_include_directories(DYEngine PRIVATE extern/imgui/backends)
 target_include_directories(DYEngine PUBLIC extern/glm)
 target_include_directories(DYEngine PUBLIC extern/stb/include)
 target_include_directories(DYEngine PUBLIC extern/yaml-cpp/include)
+target_include_directories(DYEngine PUBLIC extern/rttr/rttr/src)
 
 # ===========================================================================================
 # Link External Libraries with DYEngine lib

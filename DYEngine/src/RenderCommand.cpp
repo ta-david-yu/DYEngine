@@ -3,9 +3,11 @@
 #include "Graphics/OpenGL.h"
 #include "Graphics/VertexArray.h"
 #include "Graphics/Shader.h"
+#include "Graphics/Material.h"
 
 #include <SDL.h>
 #include <glad/glad.h>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace DYE
 {
@@ -67,16 +69,54 @@ namespace DYE
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
 
-    void RenderCommand::DrawIndexed(const std::shared_ptr<VertexArray> &vertexArray, std::uint32_t indexCount)
+    void RenderCommand::DrawIndexedNow(VertexArray const& vertexArray, std::uint32_t indexCount)
     {
-		vertexArray->Bind();
+		vertexArray.Bind();
         glCall(glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr));
     }
 
-	void RenderCommand::DrawIndexed(const std::shared_ptr<VertexArray> &vertexArray)
+	void RenderCommand::DrawIndexedNow(VertexArray const& vertexArray)
 	{
-		vertexArray->Bind();
-		std::uint32_t indexCount = vertexArray->GetIndexBuffer()->GetCount();
+		vertexArray.Bind();
+		std::uint32_t const indexCount = vertexArray.GetIndexBuffer()->GetCount();
+		glCall(glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr));
+	}
+
+	void RenderCommand::DrawIndexedNow(RenderParameters const& renderParameters, VertexArray const& vertexArray, glm::mat4 objectToWorldMatrix)
+	{
+		auto& shader = renderParameters.Material->GetShaderProgram();
+
+		// Set render state
+		shader.GetDefaultRenderState().Apply();
+
+		// Bind shader
+		shader.Use();
+
+		// Bind built-in uniforms (matrices)
+		{
+			// Local to world space
+			auto modelMatrixLoc = glGetUniformLocation(shader.GetID(), DefaultUniformNames::ModelMatrix);
+			glCall(glUniformMatrix4fv(modelMatrixLoc, 1, GL_FALSE, glm::value_ptr(objectToWorldMatrix)));
+
+			// World space to camera space
+			glm::mat4 viewMatrix = glm::mat4 {1.0f};
+			viewMatrix = glm::translate(viewMatrix, -renderParameters.Camera.Position);
+			auto viewMatrixLoc = glGetUniformLocation(shader.GetID(), DefaultUniformNames::ViewMatrix);
+			glCall(glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix)));
+
+			// Camera space to clip space
+			float const aspectRatio = renderParameters.AspectRatio;
+			glm::mat4 projectionMatrix = renderParameters.Camera.GetProjectionMatrix(aspectRatio);
+			auto projectionMatrixLoc = glGetUniformLocation(shader.GetID(), DefaultUniformNames::ProjectionMatrix);
+			glCall(glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, glm::value_ptr(projectionMatrix)));
+		}
+
+		// Bind property uniforms
+		renderParameters.Material->updateUniformValuesToGPU();
+
+		// Bind mesh (VAO)
+		vertexArray.Bind();
+		std::uint32_t const indexCount = vertexArray.GetIndexBuffer()->GetCount();
 		glCall(glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr));
 	}
 }

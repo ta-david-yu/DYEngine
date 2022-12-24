@@ -11,8 +11,20 @@ namespace DYE
     class WindowBase;
 	class VertexArray;
 	class ShaderProgram;
+	class Material;
 	class Texture2D;
 	class CameraProperties;
+
+	struct MaterialObject
+	{
+		std::string Name;
+
+		glm::vec3 Position{0, 0, 0};
+		glm::vec3 Scale{1, 1, 1};
+		glm::quat Rotation{glm::vec3 {0, 0, 0}};
+
+		std::shared_ptr<Material> Material;
+	};
 
     class SandboxLayer : public LayerBase
     {
@@ -25,6 +37,11 @@ namespace DYE
         void OnFixedUpdate() override;
 		void OnRender() override;
         void OnImGui() override;
+
+	private:
+		void renderMaterialObject(MaterialObject& object);
+		void imguiMaterialObject(MaterialObject& object);
+
     private:
         WindowBase* m_pWindow;
 		bool m_IsControlWindowOpen = false;
@@ -34,20 +51,10 @@ namespace DYE
 
 		std::shared_ptr<VertexArray> m_VertexArrayObject; // Mesh
 		std::shared_ptr<ShaderProgram> m_ShaderProgram; // Material
-		std::shared_ptr<Texture2D> m_DefaultTexture; // Material
-		glm::vec4 m_Color {1, 1, 1, 1}; // Material
 
-		glm::vec3 m_ObjectPosition{0, 0, 0}; // Entity/Object Transform
-		glm::vec3 m_ObjectScale{1, 1, 1}; // Entity/Object Transform
-		glm::quat m_ObjectRotation{glm::vec3 {0, 0, 0}}; // Entity/Object Transform
-
+		std::shared_ptr<MaterialObject> m_ProfileObject;
+		std::shared_ptr<MaterialObject> m_WhiteObject;
 
 		std::shared_ptr<CameraProperties> m_CameraProperties;
-
-		glm::vec3 m_CameraPosition{0, 0, 3}; // Camera Object Transform
-		float m_FieldOfView = 45; // Camera
-		float m_NearClipDistance = 0.1f; // Camera
-		float m_FarClipDistance = 100; // Camera
-		float m_OrthographicCameraSize = 1; // Camera
 	};
 }

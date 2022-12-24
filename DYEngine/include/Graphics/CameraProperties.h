@@ -5,7 +5,7 @@
 
 namespace DYE
 {
-	class CameraProperties
+	struct CameraProperties
 	{
 	public:
 		glm::vec3 Position{0, 0, 0};

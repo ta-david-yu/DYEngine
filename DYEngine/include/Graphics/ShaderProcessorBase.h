@@ -4,8 +4,9 @@
 
 #include <vector>
 #include <string>
+#include <regex>
 
-namespace DYE
+namespace DYE::ShaderProcessor
 {
 	class ShaderProcessorBase
 	{
@@ -38,6 +39,35 @@ namespace DYE
 			return firstToken;
 		}
 
+		static std::vector<std::string> splitLineIntoTokensBySpace(const std::string& line)
+		{
+			std::regex const directiveRegexPattern(R"(\s+)");
+			std::vector<std::string> tokens;
+			int numberOfMatches = 0;
+			std::smatch matchObject;
+
+			std::string lineToBeProcessed = line;
+			while (std::regex_search(lineToBeProcessed, matchObject, directiveRegexPattern))
+			{
+				// Add the token
+				tokens.emplace_back(lineToBeProcessed.substr(0, matchObject.position()));
+
+				// Skip the matched string (whitespaces)
+				lineToBeProcessed = lineToBeProcessed.substr(matchObject.position() + matchObject.length());
+
+				numberOfMatches++;
+				if (numberOfMatches >= 2)
+				{
+					// We only need at most 3 tokens,
+					// so 2 matches would already give us 3 tokens.
+					// Push the rest of the string as the final token.
+					tokens.emplace_back(lineToBeProcessed);
+					break;
+				}
+			}
+
+			return std::move(tokens);
+		}
 	private:
 		std::string m_Name;
 	};

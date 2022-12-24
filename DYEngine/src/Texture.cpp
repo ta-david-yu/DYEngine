@@ -29,7 +29,7 @@ namespace DYE
 	std::shared_ptr<Texture2D> Texture2D::Create(glm::vec4 color, std::uint32_t width, std::uint32_t height)
 	{
 		// Create texture data dynamically.
-		std::uint32_t numberOfPixels = width * height;
+		std::uint32_t const numberOfPixels = width * height;
 		std::vector data
 		{
 			numberOfPixels,
@@ -54,6 +54,12 @@ namespace DYE
     {
         return std::make_shared<Texture2D>(path);
     }
+
+	std::shared_ptr<Texture2D> Texture2D::GetWhiteTexture()
+	{
+		static std::shared_ptr<Texture2D> const whiteTexture = Create(glm::vec4{1, 1, 1, 1});
+		return whiteTexture;
+	}
 
     Texture2D::Texture2D(std::uint32_t width, std::uint32_t height)
         : m_Width(width), m_Height(height)

@@ -45,6 +45,8 @@ namespace DYE
         /// \return
         static std::shared_ptr<Texture2D> Create(const std::filesystem::path& path);
 
+		static std::shared_ptr<Texture2D> GetWhiteTexture();
+
         Texture2D() = delete;
 
         explicit Texture2D(std::uint32_t width, std::uint32_t height);

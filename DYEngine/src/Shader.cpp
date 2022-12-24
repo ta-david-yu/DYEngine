@@ -4,12 +4,14 @@
 
 #include "Graphics/ShaderProcessorBase.h"
 #include "Graphics/Processor/UniformPropertyProcessor.h"
+#include "Graphics/Processor/BlendStateCommandProcessor.h"
 
 #include <utility>
 #include <iostream>
 #include <sstream>
 #include <fstream>
 #include <vector>
+#include <algorithm>
 
 #include <glad/glad.h>
 
@@ -84,10 +86,11 @@ namespace DYE
 										(std::istreambuf_iterator<char>()));
 
 		// Populate shader processors!
-		std::vector<std::unique_ptr<ShaderProcessorBase>> shaderProcessors {};
+		std::vector<std::unique_ptr<ShaderProcessor::ShaderProcessorBase>> shaderProcessors {};
 		shaderProcessors.emplace_back(std::make_unique<ShaderProcessor::UniformPropertyProcessor>());
+		shaderProcessors.emplace_back(std::make_unique<ShaderProcessor::BlendStateCommandProcessor>());
 
-		bool success = program->initializeProgramFromSource(shaderProgramSource, shaderProcessors);
+		bool const success = program->initializeProgramFromSource(shaderProgramSource, shaderProcessors);
 
 		if (program->HasCompileError())
 		{
@@ -120,77 +123,51 @@ namespace DYE
         glCall(glDeleteProgram(m_ID));
     }
 
-    void ShaderProgram::Use()
+    void ShaderProgram::Use() const
     {
         glCall(glUseProgram(m_ID));
 
-        //s_pCurrentShaderProgramInUse = this;
     }
 
-    void ShaderProgram::Unbind()
+    void ShaderProgram::Unbind() const
     {
-        //if (s_pCurrentShaderProgramInUse == this)
-        {
-            glCall(glUseProgram(0));
-            //s_pCurrentShaderProgramInUse = nullptr;
-        }
+        glCall(glUseProgram(0));
     }
 
-	std::vector<UniformInfo> ShaderProgram::GetAllUniformInfo()
+	std::optional<UniformInfo> ShaderProgram::TryGetUniformInfo(const std::string &name) const
 	{
-		/// Init vector.
-		std::vector<UniformInfo> infos {};
-
-		/// Parse uniform variables and cache the information.
-		std::int32_t numberOfUniforms = 0;
-		glGetProgramiv(m_ID, GL_ACTIVE_UNIFORMS, &numberOfUniforms);
-
-		if (numberOfUniforms <= 0)
+		for (const auto& info : m_Uniforms)
 		{
-			return {};
-		}
-
-		std::int32_t maxUniformNameLength = 0;
-		UniformSize uniformNameLength = 0;
-		UniformSize uniformSize = 0;
-		GLUniformEnum uniformType = GL_NONE;
-
-		glGetProgramiv(m_ID, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxUniformNameLength);
-		auto uniformName = std::make_unique<char[]>(maxUniformNameLength);
-
-		/// Use this program before reading/writing uniforms.
-		Use();
-
-		int textureUnitSlotCounter = 0;
-		for (std::int32_t i = 0; i < numberOfUniforms; i++)
-		{
-			glGetActiveUniform(m_ID, i, maxUniformNameLength, &uniformNameLength, &uniformSize, &uniformType,
-							   uniformName.get());
-
-			UniformInfo info{};
-			info.Name = std::string(uniformName.get(), uniformNameLength);
-			info.Type = GLTypeToUniformType(uniformType);
-			info.Location = glGetUniformLocation(m_ID, uniformName.get());
-
-			if (info.Type == UniformType::Texture2D)
+			if (info.Name == name)
 			{
-				// If the variable is a texture,
-				// we want to bind texture unit slot to the uniform.
-				glCall(glUniform1i(info.Location, textureUnitSlotCounter));
-
-				textureUnitSlotCounter++;
+				return info;
 			}
-			// TODO: add more texture type here (sampler)
-
-			infos.push_back(info);
 		}
-
-		DYE_LOG("There are [%d] uniform variables", infos.size());
-
-		return std::move(infos);
+		return std::nullopt;
 	}
 
-    bool ShaderProgram::initializeProgramFromSource(std::string &source, const std::vector<std::unique_ptr<ShaderProcessorBase>>& shaderProcessors)
+	std::optional<UniformInfo> ShaderProgram::TryGetUniformInfoFromLocation(UniformLocation location) const
+	{
+		for (const auto& info : m_Uniforms)
+		{
+			if (info.Location == location)
+			{
+				return info;
+			}
+		}
+		return std::nullopt;
+	}
+
+	bool ShaderProgram::HasUniform(const std::string &name) const
+	{
+		return std::ranges::any_of
+					(
+						m_Uniforms,
+						[&](UniformInfo const &uniformInfo) { return uniformInfo.Name == name; }
+					);
+	}
+
+    bool ShaderProgram::initializeProgramFromSource(std::string &source, const std::vector<std::unique_ptr<ShaderProcessor::ShaderProcessorBase>>& shaderProcessors)
     {
 		bool hasCompileError = false;
 
@@ -313,7 +290,7 @@ namespace DYE
 			if (line.find(ShaderConstants::ShaderTypeSpecifier) != std::string::npos)
 			{
 				// Found #shader preprocessor directive! Parse the shader type.
-				bool hasShaderTypeKeyword = HasValidShaderTypeKeywordInLine(line, currScopeType);
+				bool const hasShaderTypeKeyword = HasValidShaderTypeKeywordInLine(line, currScopeType);
 				if (hasShaderTypeKeyword)
 				{
 					isInValidTypeScope = true;
@@ -326,7 +303,7 @@ namespace DYE
 				}
 
 				/// The shader of the type has already existed!
-				int currScopeTypeIndex = (int) currScopeType;
+				int const currScopeTypeIndex = (int) currScopeType;
 				if (hasShadersOfType[currScopeTypeIndex])
 				{
 					DYE_LOG("Duplicate shader type - %s", line.c_str());
@@ -357,7 +334,7 @@ namespace DYE
 
 		for (int typeIndex = 0; typeIndex < ShaderConstants::NumberOfShaderTypes; typeIndex++)
 		{
-			bool hasShaderType = hasShadersOfType[typeIndex];
+			bool const hasShaderType = hasShadersOfType[typeIndex];
 			if (!hasShaderType)
 			{
 				continue;
@@ -376,7 +353,7 @@ namespace DYE
 
 		const char *shaderSource = source.c_str();
 
-		unsigned int glShaderType = ShaderTypeEnumToGLShaderType(type);
+		unsigned int const glShaderType = ShaderTypeEnumToGLShaderType(type);
 
 		shaderID = glCreateShader(glShaderType);
 		glCall(glShaderSource(shaderID, 1, &shaderSource, nullptr));

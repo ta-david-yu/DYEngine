@@ -6,6 +6,7 @@
 namespace DYE
 {
 	class CameraProperties;
+	class Material;
 }
 
 namespace DYE::ImGuiUtil
@@ -30,4 +31,5 @@ namespace DYE::ImGuiUtil
 	bool DrawColor4Control(const std::string& label, glm::vec4& value);
 
 	bool DrawCameraPropertiesControl(const std::string& label, CameraProperties& cameraProperties);
+	bool DrawMaterialControl(const std::string& label, Material& material);
 }

@@ -20,4 +20,8 @@
     #define DYE_ASSERT(condition)
 #endif
 
+#ifndef NAME_OF
+	#define NAME_OF(x) #x
+#endif
+
 #define DYE_ASSERT_RELEASE(condition) SDL_assert_release((condition))

@@ -1,11 +1,9 @@
 #pragma once
 
+#include "Base.h"
+
 #include <string>
 #include <glad/glad.h>
-
-#ifndef nameof
-	#define nameof(enum) #enum
-#endif
 
 namespace DYE
 {
@@ -120,19 +118,22 @@ namespace DYE
 		return result;
 	}
 
-	/// Represent the information about an uniform variable in the Shader
+	// Represent the information about an uniform variable in the Shader
 	struct UniformInfo
 	{
-		UniformType Type;
 		std::string Name;
+		UniformType Type;
 		UniformLocation Location;
+		// The texture unit slot this uniform is tied to If the type is a texture.
+		// Pass this value in Texture.Bind(int slot) function.
+		int TextureUnitSlotIfTexture;
 	};
 
-	/// Represent the information about a (uniform) property defined in the Shader
+	// Represent the information about a (uniform) property defined in the Shader
 	struct PropertyInfo
 	{
-		UniformType Type;
 		std::string UniformName;
+		UniformType Type;
 		std::string DisplayName;
 	};
 }

@@ -2,6 +2,7 @@
 
 #include "Base.h"
 #include "Graphics/UniformType.h"
+#include "Graphics/OpenGL.h"
 
 #include <regex>
 
@@ -9,9 +10,6 @@ namespace DYE::ShaderProcessor
 {
 	void UniformPropertyProcessor::OnBegin(DYE::ShaderProgram &shaderProgram)
 	{
-		UniformType type;
-		//DYE_ASSERT(HasValidPropertyTypeKeywordInLine("#property sampler1D Matrix4x4", type));
-		//DYE_LOG(UniformTypeToPropertyTypeQualifier(UniformType::Boolean).c_str());
 	}
 
 	void UniformPropertyProcessor::OnPreShaderTypeParse(std::string &programSource)
@@ -22,7 +20,8 @@ namespace DYE::ShaderProcessor
 	void UniformPropertyProcessor::OnEnd(DYE::ShaderProgram &shaderProgram)
 	{
 		// Acquire uniform information from shader program.
-		auto uniformInfos = shaderProgram.GetAllUniformInfo();
+		auto uniformInfos = getAllActiveUniformInfoFromShaderProgram(shaderProgram);
+		shaderProgram.addUniformInfo(uniformInfos);
 
 		// Parse property information from cached shader program source.
 		std::stringstream stream(m_ShaderProgramSourceCache);
@@ -37,33 +36,9 @@ namespace DYE::ShaderProcessor
 				continue;
 			}
 
-			// Match directive line into tokens with pattern of '\s+' (whitespaces).
-			// We want to use this pattern to split the string into 3 tokens:
-			//     i.e. @property [uniform_name] [display_name]
-			std::regex const directiveRegexPattern(R"(\s+)");
-			std::vector<std::string> tokens;
-			int numberOfMatches = 0;
-			std::smatch matchObject;
-
-			std::string lineToBeProcessed = line;
-			while (std::regex_search(lineToBeProcessed, matchObject, directiveRegexPattern))
-			{
-				// Add the token
-				tokens.emplace_back(lineToBeProcessed.substr(0, matchObject.position()));
-
-				// Skip the matched string (whitespaces)
-				lineToBeProcessed = lineToBeProcessed.substr(matchObject.position() + matchObject.length());
-
-				numberOfMatches++;
-				if (numberOfMatches >= 2)
-				{
-					// We only need at most 3 tokens,
-					// so 2 matches would already give us 3 tokens.
-					// Push the rest of the string as the final token.
-					tokens.emplace_back(lineToBeProcessed);
-					break;
-				}
-			}
+			// We want to split the string into 3 tokens:
+			// 		i.e. @property [uniform_name] [display_name]
+			std::vector<std::string> const tokens = splitLineIntoTokensBySpace(line);
 
 			if (tokens.size() < 2)
 			{
@@ -92,7 +67,6 @@ namespace DYE::ShaderProcessor
 				DYE_LOG("A Property targeting uniform '%s' has already been recorded. Property directive '%s' is ignored.", targetUniformName.c_str(), line.c_str());
 				continue;
 			}
-
 
 			auto findUniformIterator = std::find_if
 				(
@@ -126,10 +100,67 @@ namespace DYE::ShaderProcessor
 				}
 			}
 
-			//DYE_LOG("%s", line.c_str());
-			shaderProgram.AddPropertyInfo(PropertyInfo { .Type = uniformInfo.Type, .UniformName = uniformInfo.Name, .DisplayName = displayName });
+			shaderProgram.addPropertyInfo(
+				PropertyInfo {.UniformName = uniformInfo.Name, .Type = uniformInfo.Type, .DisplayName = displayName});
 		}
 
 		DYE_LOG("There are [%d] uniform properties.", shaderProgram.GetAllPropertyInfo().size());
+	}
+
+	std::vector<UniformInfo> UniformPropertyProcessor::getAllActiveUniformInfoFromShaderProgram(ShaderProgram& shaderProgram)
+	{
+		/// Init vector.
+		std::vector<UniformInfo> infos {};
+
+		ShaderID const shaderId = shaderProgram.GetID();
+
+		/// Parse uniform variables and cache the information.
+		std::int32_t numberOfUniforms = 0;
+		glGetProgramiv(shaderId, GL_ACTIVE_UNIFORMS, &numberOfUniforms);
+
+		if (numberOfUniforms <= 0)
+		{
+			return {};
+		}
+
+		std::int32_t maxUniformNameLength = 0;
+		UniformSize uniformNameLength = 0;
+		UniformSize uniformSize = 0;
+		GLUniformEnum uniformType = GL_NONE;
+
+		glGetProgramiv(shaderProgram.GetID(), GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxUniformNameLength);
+		auto uniformName = std::make_unique<char[]>(maxUniformNameLength);
+
+		/// Use this program before reading/writing uniforms.
+		shaderProgram.Use();
+
+		int textureUnitSlotCounter = 0;
+		for (std::int32_t i = 0; i < numberOfUniforms; i++)
+		{
+			glGetActiveUniform(shaderId, i, maxUniformNameLength, &uniformNameLength, &uniformSize, &uniformType,
+							   uniformName.get());
+
+			UniformInfo info{};
+			info.Name = std::string(uniformName.get(), uniformNameLength);
+			info.Type = GLTypeToUniformType(uniformType);
+			info.Location = glGetUniformLocation(shaderId, uniformName.get());
+
+			if (info.Type == UniformType::Texture2D)
+			{
+				// If the variable is a texture,
+				// we want to bind texture unit slot to the uniform.
+				glCall(glUniform1i(info.Location, textureUnitSlotCounter));
+				info.TextureUnitSlotIfTexture = textureUnitSlotCounter;
+
+				textureUnitSlotCounter++;
+			}
+			// TODO: add more texture type here (sampler)
+
+			infos.push_back(info);
+		}
+
+		DYE_LOG("There are [%d] uniform variables", infos.size());
+
+		return std::move(infos);
 	}
 }
