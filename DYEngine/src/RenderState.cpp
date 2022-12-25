@@ -3,9 +3,53 @@
 namespace DYE
 {
 
+	std::optional<CompareFunction> StringToCompareFunction(std::string const& input)
+	{
+		if (input == "Never")
+		{
+			return CompareFunction::Never;
+		}
+
+		if (input == "Less")
+		{
+			return CompareFunction::Less;
+		}
+
+		if (input == "Equal")
+		{
+			return CompareFunction::Equal;
+		}
+
+		if (input == "LessEqual" || input == "LEqual")
+		{
+			return CompareFunction::LessEqual;
+		}
+
+		if (input == "Greater")
+		{
+			return CompareFunction::Greater;
+		}
+
+		if (input == "NotEqual")
+		{
+			return CompareFunction::NotEqual;
+		}
+
+		if (input == "GreaterEqual" || input == "GEqual")
+		{
+			return CompareFunction::GreaterEqual;
+		}
+
+		if (input == "Always")
+		{
+			return CompareFunction::Always;
+		}
+
+		return {};
+	}
+
 	void RenderState::Apply()
 	{
-		// TODO: set depth command
 		applyDepthState();
 		applyBlendState();
 	}

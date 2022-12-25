@@ -1,4 +1,6 @@
-@blendFunc SrcAlpha OneMinusSrcAlpha
+@blend SrcAlpha OneMinusSrcAlpha
+@zWrite Off
+@zTest Always
 
 #shader vertex
 #version 330 core

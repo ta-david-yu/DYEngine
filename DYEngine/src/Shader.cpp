@@ -5,6 +5,7 @@
 #include "Graphics/ShaderProcessorBase.h"
 #include "Graphics/Processor/UniformPropertyProcessor.h"
 #include "Graphics/Processor/BlendStateCommandProcessor.h"
+#include "Graphics/Processor/DepthStateCommandProcessor.h"
 
 #include <utility>
 #include <iostream>
@@ -89,6 +90,7 @@ namespace DYE
 		std::vector<std::unique_ptr<ShaderProcessor::ShaderProcessorBase>> shaderProcessors {};
 		shaderProcessors.emplace_back(std::make_unique<ShaderProcessor::UniformPropertyProcessor>());
 		shaderProcessors.emplace_back(std::make_unique<ShaderProcessor::BlendStateCommandProcessor>());
+		shaderProcessors.emplace_back(std::make_unique<ShaderProcessor::DepthStateCommandProcessor>());
 
 		bool const success = program->initializeProgramFromSource(shaderProgramSource, shaderProcessors);
 

@@ -7,17 +7,17 @@ namespace DYE::ShaderProcessor
 {
 	/// Process the uniform properties of the shader. Properties are uniforms exposed to users.
 	/// Properties declared in Shader will be serialized into Material (namely Shader Instance Data).
-	class BlendStateCommandProcessor : public ShaderProcessorBase
+	class DepthStateCommandProcessor : public ShaderProcessorBase
 	{
-		constexpr static const char* BlendFunctionCommandDirective = "@blend";
-		constexpr static const char* BlendOperationCommandDirective = "@blendOp";
+		constexpr static const char* ZWriteCommandDirective = "@zWrite";
+		constexpr static const char* ZTestCommandDirective = "@zTest";
 
 	public:
-		BlendStateCommandProcessor() : ShaderProcessorBase("BlendState Command Processor") {}
+		DepthStateCommandProcessor() : ShaderProcessorBase("DepthState Command Processor") {}
 
 		std::vector<std::string> GetDirectivesToIgnoreInShaderTypeParsePhase() const override
 		{
-			return { BlendFunctionCommandDirective, BlendOperationCommandDirective };
+			return { ZWriteCommandDirective, ZTestCommandDirective };
 		}
 
 		void OnBegin(DYE::ShaderProgram &shaderProgram) override;
@@ -25,10 +25,8 @@ namespace DYE::ShaderProcessor
 		void OnEnd(DYE::ShaderProgram &shaderProgram) override;
 
 	private:
-		static BlendState parseBlendFunctionLine(std::string const& line);
-		static void parseBlendOperationLine(std::string const& line);
-
-		static std::optional<BlendState::BlendFactor> stringToBlendFactor(std::string const& input);
+		static CompareFunction parseZTestLine(std::string const& line);
+		static bool parseZWriteLine(std::string const& line);
 	private:
 		std::string m_ShaderProgramSourceCache;
 	};

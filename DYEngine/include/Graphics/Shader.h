@@ -19,6 +19,7 @@ namespace DYE
 		class ShaderProcessorBase;
 		class UniformPropertyProcessor;
 		class BlendStateCommandProcessor;
+		class DepthStateCommandProcessor;
 	}
 
 	namespace ShaderConstants
@@ -40,6 +41,7 @@ namespace DYE
     {
 		friend ShaderProcessor::UniformPropertyProcessor;
 		friend ShaderProcessor::BlendStateCommandProcessor;
+		friend ShaderProcessor::DepthStateCommandProcessor;
 
     public:
 		struct ShaderTypeParseResult

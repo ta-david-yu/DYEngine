@@ -2,6 +2,8 @@
 
 #include "Graphics/OpenGL.h"
 
+#include <optional>
+
 namespace DYE
 {
 	enum class CompareFunction
@@ -16,9 +18,11 @@ namespace DYE
 		Always = GL_ALWAYS
 	};
 
+	std::optional<CompareFunction> StringToCompareFunction(std::string const& input);
+
 	struct DepthState
 	{
-		bool IsEnabled = false;
+		bool IsEnabled = true;
 		bool IsWriteEnabled = true;
 		CompareFunction CompareFunction = CompareFunction::Less;
 	};
