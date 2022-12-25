@@ -28,6 +28,6 @@ namespace DYE::ShaderProcessor
 		static CompareFunction parseZTestLine(std::string const& line);
 		static bool parseZWriteLine(std::string const& line);
 	private:
-		std::string m_ShaderProgramSourceCache;
+		DepthState m_DepthStateCache;
 	};
 }

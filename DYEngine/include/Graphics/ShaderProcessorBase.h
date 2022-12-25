@@ -22,7 +22,7 @@ namespace DYE::ShaderProcessor
 		virtual std::vector<std::string> GetDirectivesToIgnoreInShaderTypeParsePhase() const
 		{
 			// By default, it's empty.
-			return { };
+			return {};
 		};
 
 		virtual void OnBegin(ShaderProgram& shaderProgram) = 0;

@@ -4,20 +4,14 @@ namespace DYE::ShaderProcessor
 {
 	void DepthStateCommandProcessor::OnBegin(ShaderProgram &shaderProgram)
 	{
-
+		// Init DepthState cache.
+		m_DepthStateCache = DepthState {};
 	}
 
 	void DepthStateCommandProcessor::OnPreShaderTypeParse(std::string &programSource)
 	{
-		m_ShaderProgramSourceCache = programSource;
-	}
-
-	void DepthStateCommandProcessor::OnEnd(ShaderProgram &shaderProgram)
-	{
-		// Parse property information from cached shader program source.
-		std::stringstream stream(m_ShaderProgramSourceCache);
-
-		RenderState renderState = shaderProgram.GetDefaultRenderState();
+		// Parse property information from shader program source.
+		std::stringstream stream(programSource);
 
 		std::string line;
 		while (std::getline(stream, line))
@@ -25,19 +19,25 @@ namespace DYE::ShaderProcessor
 			auto firstToken = getFirstTokenFromLine(line);
 			if (firstToken == ZTestCommandDirective)
 			{
-				renderState.DepthState.IsEnabled = true;
-				renderState.DepthState.CompareFunction = parseZTestLine(line);
+				m_DepthStateCache.IsEnabled = true;
+				m_DepthStateCache.CompareFunction = parseZTestLine(line);
 				continue;
 			}
 
 			if (firstToken == ZWriteCommandDirective)
 			{
-				renderState.DepthState.IsEnabled = true;
-				renderState.DepthState.IsWriteEnabled = parseZWriteLine(line);
+				m_DepthStateCache.IsEnabled = true;
+				m_DepthStateCache.IsWriteEnabled = parseZWriteLine(line);
 				continue;
 			}
 		}
+	}
 
+	void DepthStateCommandProcessor::OnEnd(ShaderProgram &shaderProgram)
+	{
+		// Set cached DepthState to Shader's render state.
+		RenderState renderState = shaderProgram.GetDefaultRenderState();
+		renderState.DepthState = m_DepthStateCache;
 		shaderProgram.setDefaultRenderState(renderState);
 	}
 

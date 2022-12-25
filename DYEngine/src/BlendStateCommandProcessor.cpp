@@ -2,23 +2,16 @@
 
 namespace DYE::ShaderProcessor
 {
-
 	void BlendStateCommandProcessor::OnBegin(ShaderProgram &shaderProgram)
 	{
-
+		// Init BlendState cache.
+		m_BlendStateCache = BlendState {};
 	}
 
 	void BlendStateCommandProcessor::OnPreShaderTypeParse(std::string &programSource)
 	{
-		m_ShaderProgramSourceCache = programSource;
-	}
-
-	void BlendStateCommandProcessor::OnEnd(ShaderProgram &shaderProgram)
-	{
-		// Parse property information from cached shader program source.
-		std::stringstream stream(m_ShaderProgramSourceCache);
-
-		RenderState renderState = shaderProgram.GetDefaultRenderState();
+		// Parse property information from shader program source.
+		std::stringstream stream(programSource);
 
 		std::string line;
 		while (std::getline(stream, line))
@@ -26,7 +19,7 @@ namespace DYE::ShaderProcessor
 			auto firstToken = getFirstTokenFromLine(line);
 			if (firstToken == BlendFunctionCommandDirective)
 			{
-				renderState.BlendState = parseBlendFunctionLine(line);
+				m_BlendStateCache = parseBlendFunctionLine(line);
 				continue;
 			}
 
@@ -36,7 +29,13 @@ namespace DYE::ShaderProcessor
 				continue;
 			}
 		}
+	}
 
+	void BlendStateCommandProcessor::OnEnd(ShaderProgram &shaderProgram)
+	{
+		// Set cached BlendState to Shader's render state.
+		RenderState renderState = shaderProgram.GetDefaultRenderState();
+		renderState.BlendState = m_BlendStateCache;
 		shaderProgram.setDefaultRenderState(renderState);
 	}
 
