@@ -4,11 +4,10 @@
 #include "Graphics/Renderer.h"
 
 #include <SDL.h>
-#include <SDL_image.h>
 
 namespace DYE
 {
-    Application::Application(const std::string &windowName, int fixedFramePerSecond) : m_Time(fixedFramePerSecond)
+    Application::Application(const std::string &windowName, int fixedFramePerSecond)
     {
         SDL_Init(0);
         SDL_InitSubSystem(SDL_INIT_AUDIO);
@@ -40,13 +39,14 @@ namespace DYE
 
         /// Initialize system and system instances
         DYE_LOG("---------------");
+		Time::InitSingleton(fixedFramePerSecond);
 
         // Create window and context, and then init renderer
         DYE_LOG("--------------- Init Renderer");
         m_Window = WindowBase::Create(WindowProperty(windowName));
-        Renderer::Init();
-        RenderCommand::SetViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
-        RenderCommand::SetClearColor(glm::vec4 {0, 0, 0, 0});
+		RenderCommand::InitSingleton();
+		RenderCommand::GetInstance().SetViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
+		RenderCommand::GetInstance().SetClearColor(glm::vec4 {0, 0, 0, 0});
         DYE_LOG("---------------");
 
         // Register handleOnEvent member function to the EventSystem
@@ -68,7 +68,7 @@ namespace DYE
     void Application::Run()
     {
         m_IsRunning = true;
-        m_Time.tickInit();
+        TIME.tickInit();
 
         double deltaTimeAccumulator = 0;
 
@@ -86,15 +86,15 @@ namespace DYE
             m_EventSystem->PollEvent();
 
             /// Fixed Update
-            deltaTimeAccumulator += m_Time.DeltaTime();
-            while (deltaTimeAccumulator >= m_Time.FixedDeltaTime())
+            deltaTimeAccumulator += TIME.DeltaTime();
+            while (deltaTimeAccumulator >= TIME.FixedDeltaTime())
             {
                 for (auto& layer : m_LayerStack)
                 {
                     layer->OnFixedUpdate();
                 }
 
-                deltaTimeAccumulator -= m_Time.FixedDeltaTime();
+                deltaTimeAccumulator -= TIME.FixedDeltaTime();
             }
 
             /// Update
@@ -104,7 +104,7 @@ namespace DYE
             }
 
             /// Render
-            RenderCommand::Clear();
+			RenderCommand::GetInstance().Clear();
 
             onPreRenderLayers();
             for (auto& layer : m_LayerStack)
@@ -124,7 +124,7 @@ namespace DYE
             /// Swap Buffers
             m_Window->OnUpdate();
 
-            m_Time.tickUpdate();
+			TIME.tickUpdate();
         }
 
         DYE_LOG("--------------- Exit Game Loop");

@@ -79,7 +79,7 @@ set(HEADER_FILES
         include/Graphics/RenderState.h
         include/Graphics/Processor/UniformPropertyProcessor.h
         include/Graphics/Processor/BlendStateCommandProcessor.h
-        include/Graphics/Processor/DepthStateCommandProcessor.h)
+        include/Graphics/Processor/DepthStateCommandProcessor.h include/Graphics/Renderer2D.h)
 
 message(STATUS "DYEngine Source Files: ${SOURCE_FILES}")
 message(STATUS "DYEngine Header Files: ${HEADER_FILES}")

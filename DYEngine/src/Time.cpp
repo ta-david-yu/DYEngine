@@ -4,7 +4,12 @@
 
 namespace DYE
 {
-    Time* Time::s_pInstance = nullptr;
+	Time Time::s_Instance {};
+
+	void Time::InitSingleton(uint32_t fixedFps)
+	{
+		s_Instance = Time(fixedFps);
+	}
 
     void Time::tickInit()
     {

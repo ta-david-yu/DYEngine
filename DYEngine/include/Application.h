@@ -57,9 +57,6 @@ namespace DYE
 
         std::shared_ptr<ImGuiLayer> m_ImGuiLayer;
 
-        /// Time for counting delta time per frame
-        Time m_Time;
-
     private:
 
         LayerStack m_LayerStack;

@@ -23,7 +23,7 @@ namespace DYE
 {
     SandboxLayer::SandboxLayer(WindowBase *pWindow) : m_pWindow(pWindow)
     {
-		RenderCommand::SetClearColor(glm::vec4{0.5f, 0.5f, 0.5f, 0.5f});
+		RenderCommand::GetInstance().SetClearColor(glm::vec4{0.5f, 0.5f, 0.5f, 0.5f});
 
 		// Create vertices [position, color, texCoord]
 		//				   [       3,     4,        2] = 9 elements per vertex
@@ -103,7 +103,7 @@ namespace DYE
 				.Material = object.Material,
 				.AspectRatio = (float) m_pWindow->GetWidth() / (float) m_pWindow->GetHeight()
 			};
-		RenderCommand::DrawIndexedNow(params, *m_VertexArrayObject, modelMatrix);
+		RenderCommand::GetInstance().DrawIndexedNow(params, *m_VertexArrayObject, modelMatrix);
 	}
 
     void SandboxLayer::OnEvent(Event& event)

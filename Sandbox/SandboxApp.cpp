@@ -91,7 +91,7 @@ namespace DYE
 		/// Call this function in SandboxApp ctor to create the level.
 		void createSceneAndPopulateGallery()
 		{
-			RenderCommand::SetClearColor(glm::vec4 {51, 63, 88, 255} / 255.0f);
+			RenderCommand::GetInstance().SetClearColor(glm::vec4 {51, 63, 88, 255} / 255.0f);
 			auto sceneLayer = std::make_shared<SceneLayer>(m_Window.get());
 			pushLayer(sceneLayer);
 

@@ -9,6 +9,8 @@
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <memory>
+
 namespace DYE
 {
 #ifdef DYE_OPENGL_DEBUG
@@ -33,9 +35,15 @@ namespace DYE
     }
 #endif
 
-    void RenderCommand::Init()
-    {
+	std::unique_ptr<RenderCommand> RenderCommand::s_Instance {};
 
+	RenderCommand& RenderCommand::GetInstance()
+	{
+		return *s_Instance;
+	}
+
+    void RenderCommand::InitSingleton()
+    {
 #ifdef DYE_OPENGL_DEBUG
         // Enable the debug callback
         glEnable(GL_DEBUG_OUTPUT);
@@ -45,13 +53,7 @@ namespace DYE
                 GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, true
         );
 #endif
-
-        // Enable GL functionalities
-        glCall(glEnable(GL_BLEND));
-        glCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-
-        // Enable Depth Test by default
-        glCall(glEnable(GL_DEPTH_TEST));
+		s_Instance = std::make_unique<RenderCommand>();
     }
 
     void RenderCommand::SetViewport(std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height)
@@ -67,12 +69,6 @@ namespace DYE
     void RenderCommand::Clear()
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-    }
-
-    void RenderCommand::DrawIndexedNow(VertexArray const& vertexArray, std::uint32_t indexCount)
-    {
-		vertexArray.Bind();
-        glCall(glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr));
     }
 
 	void RenderCommand::DrawIndexedNow(VertexArray const& vertexArray)

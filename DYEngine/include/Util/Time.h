@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
 
 #define TIME Time::GetInstance()
 
@@ -12,9 +13,10 @@ namespace DYE
     {
         friend class Application;
     public:
-        static Time& GetInstance() { return *s_pInstance; }
+        static Time& GetInstance() { return s_Instance; }
 
-        Time() = delete;
+		/// Initialize internal timer instance.
+		static void InitSingleton(uint32_t fixedFps);
 
         Time(const Time &) = delete;
 
@@ -31,14 +33,17 @@ namespace DYE
         uint32_t FixedFramePerSecond() const { return m_FixedFramePerSecond; }
 
     private:
-        static Time* s_pInstance;
 
-        /// The created Time instance is assigned as the singleton instance
-        /// \param fixedFps The number of frames per second in FixedUpdate event, used to determine FixedDeltaTime()
-        explicit Time(uint32_t fixedFps) : m_FixedFramePerSecond(fixedFps), m_LastTicks(0), m_TicksSinceStart(0), m_DeltaTicks(0)
-        {
-            s_pInstance = this;
-        }
+		Time() = default;
+
+		/// The created Time instance is assigned as the singleton instance
+		/// \param fixedFps The number of frames per second in FixedUpdate event, used to determine FixedDeltaTime()
+		explicit Time(uint32_t fixedFps) : m_FixedFramePerSecond(fixedFps), m_LastTicks(0), m_TicksSinceStart(0), m_DeltaTicks(0)
+		{
+		}
+
+	private:
+        static Time s_Instance;
 
         /// The number of frames per second, used to determine FixedDeltaTime()
         uint32_t m_FixedFramePerSecond;

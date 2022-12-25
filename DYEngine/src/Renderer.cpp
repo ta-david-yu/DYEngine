@@ -7,7 +7,6 @@ namespace DYE
 {
     void Renderer::Init()
     {
-        RenderCommand::Init();
     }
 
     void Renderer::Shutdown()
@@ -18,7 +17,7 @@ namespace DYE
     void Renderer::OnWindowResize(std::uint32_t width, std::uint32_t height)
     {
         /// TODO: set viewport per camera (under BeginCameraView)
-        RenderCommand::SetViewport(0, 0, width, height);
+		RenderCommand::GetInstance().SetViewport(0, 0, width, height);
     }
 
     /// TODO: Pass in a camera, camera also has viewport information
@@ -40,7 +39,7 @@ namespace DYE
         //shader->SetMat4("u_ViewProjection", s_SceneData->ViewProjectionMatrix);
         //shader->SetMat4("u_Transform", transform);
         vertexArray->Bind();
-		RenderCommand::DrawIndexedNow(*vertexArray.get());
+		RenderCommand::GetInstance().DrawIndexedNow(*vertexArray.get());
     }
 
 //    void Renderer::Submit(const std::shared_ptr<Material>& material, const std::shared_ptr<Mesh>& mesh, const glm::mat4& transform = glm::mat4(1.0f))
