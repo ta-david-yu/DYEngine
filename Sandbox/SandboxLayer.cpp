@@ -45,7 +45,7 @@ namespace DYE
 		m_VertexArrayObject = VertexArray::Create();
 		{
 			auto vertexBufferObject = VertexBuffer::Create(vertices, sizeof(vertices));
-			VertexLayout vertexLayout
+			VertexLayout const vertexLayout
 				{
 					VertexAttribute(VertexAttributeType::Float3, "position", false),
 					VertexAttribute(VertexAttributeType::Float4, "color", false),
@@ -75,6 +75,7 @@ namespace DYE
 		// Texture2D::Create(glm::vec4{1, 1, 1, 1}, 200, 100)
 
 		m_CameraProperties = std::make_shared<CameraProperties>();
+		m_CameraProperties->AspectRatio = (float) m_pWindow->GetWidth() / (float) m_pWindow->GetHeight();
 		m_CameraProperties->Position = glm::vec3 {0, 0, 3};
     }
 
@@ -100,8 +101,7 @@ namespace DYE
 		RenderParameters const params
 			{
 				.Camera = *m_CameraProperties,
-				.Material = object.Material,
-				.AspectRatio = (float) m_pWindow->GetWidth() / (float) m_pWindow->GetHeight()
+				.Material = object.Material
 			};
 		RenderCommand::GetInstance().DrawIndexedNow(params, *m_VertexArrayObject, modelMatrix);
 	}

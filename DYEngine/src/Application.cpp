@@ -1,7 +1,9 @@
 #include "Application.h"
 #include "Base.h"
 #include "Logger.h"
-#include "Graphics/Renderer.h"
+#include "Graphics/RenderCommand.h"
+#include "Graphics/RenderPipelineManager.h"
+#include "Graphics/RenderPipeline2D.h"
 
 #include <SDL.h>
 
@@ -12,7 +14,7 @@ namespace DYE
         SDL_Init(0);
         SDL_InitSubSystem(SDL_INIT_AUDIO);
         SDL_InitSubSystem(SDL_INIT_VIDEO);
-        DYE_LOG("--------------- Init SDL");
+        DYE_LOG("Init SDL");
         DYE_LOG("OS: %s", SDL_GetPlatform());
         DYE_LOG("CPU cores: %d", SDL_GetCPUCount());
         DYE_LOG("RAM: %.2f GB", (float) SDL_GetSystemRAM() / 1024.0f);
@@ -38,21 +40,19 @@ namespace DYE
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
         /// Initialize system and system instances
-        DYE_LOG("---------------");
 		Time::InitSingleton(fixedFramePerSecond);
 
         // Create window and context, and then init renderer
-        DYE_LOG("--------------- Init Renderer");
+        DYE_LOG("Init Renderer");
         m_Window = WindowBase::Create(WindowProperty(windowName));
 		RenderCommand::InitSingleton();
 		RenderCommand::GetInstance().SetViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
 		RenderCommand::GetInstance().SetClearColor(glm::vec4 {0, 0, 0, 0});
-        DYE_LOG("---------------");
+		RenderPipelineManager::SetActiveRenderPipeline(std::make_shared<RenderPipeline2D>());	// Use 2D RenderPipeline by default
 
         // Register handleOnEvent member function to the EventSystem
         m_EventSystem = EventSystemBase::Create();
         m_EventSystem->Register(this);
-        //m_EventSystem->SetEventHandler(DYE_BIND_EVENT_FUNCTION(Application::handleOnEvent));
 
         // Push ImGuiLayer as overlay
         m_ImGuiLayer = std::make_shared<ImGuiLayer>(m_Window.get());
@@ -72,20 +72,18 @@ namespace DYE
 
         double deltaTimeAccumulator = 0;
 
-        /// Init layers
+        // Init layers
         for (auto& layer : m_LayerStack)
         {
-            DYE_LOG("--------------- Init Layer - %s", layer->GetName().c_str());
             layer->OnInit();
-            DYE_LOG("---------------");
         }
 
         while (m_IsRunning)
         {
-            /// Poll Event
+            // Poll Event
             m_EventSystem->PollEvent();
 
-            /// Fixed Update
+            // Fixed Update
             deltaTimeAccumulator += TIME.DeltaTime();
             while (deltaTimeAccumulator >= TIME.FixedDeltaTime())
             {
@@ -97,13 +95,13 @@ namespace DYE
                 deltaTimeAccumulator -= TIME.FixedDeltaTime();
             }
 
-            /// Update
+            // Update
             for (auto& layer : m_LayerStack)
             {
                 layer->OnUpdate();
             }
 
-            /// Render
+            // Render
 			RenderCommand::GetInstance().Clear();
 
             onPreRenderLayers();
@@ -113,7 +111,7 @@ namespace DYE
             }
             onPostRenderLayers();
 
-            /// ImGui
+            // ImGui
             m_ImGuiLayer->BeginImGui();
             for (auto& layer : m_LayerStack)
             {
@@ -121,13 +119,13 @@ namespace DYE
             }
             m_ImGuiLayer->EndImGui();
 
-            /// Swap Buffers
+            // Swap Buffers
             m_Window->OnUpdate();
 
 			TIME.tickUpdate();
         }
 
-        DYE_LOG("--------------- Exit Game Loop");
+        DYE_LOG("Exit Game Loop");
     }
 
     void Application::Handle(Event& event)
@@ -173,6 +171,8 @@ namespace DYE
 
     void Application::handleOnWindowResize(const WindowSizeChangeEvent &event)
     {
-        Renderer::OnWindowResize(event.GetWidth(), event.GetHeight());
+		/// TODO: instead of calling set viewport here,
+		/// TODO: set viewport per camera (in RenderPipelineBase/RenderPipelineManager camera loop)
+		RenderCommand::GetInstance().SetViewport(0, 0, event.GetWidth(), event.GetHeight());
     }
 }

@@ -40,7 +40,6 @@ namespace DYE
 
         /// Called after glClear(), before ForEach.layer.OnRender()
         virtual void onPreRenderLayers() { }
-
         /// Called after ForEach.layer.OnRender(), before BeginImGui()
         virtual void onPostRenderLayers() { }
 
@@ -58,7 +57,6 @@ namespace DYE
         std::shared_ptr<ImGuiLayer> m_ImGuiLayer;
 
     private:
-
         LayerStack m_LayerStack;
 
         /// A Flag to show if the game is still running, when WindowCloseEvent is fired, it's set to false

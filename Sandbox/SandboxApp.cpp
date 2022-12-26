@@ -6,11 +6,11 @@
 #include "Util/TypeUtil.h"
 
 #include "Graphics/OpenGL.h"
-#include "Graphics/Renderer.h"
 #include "Graphics/Shader.h"
 #include "Graphics/Buffer.h"
 #include "Graphics/VertexArray.h"
 #include "Graphics/Texture.h"
+#include "Graphics/RenderCommand.h"
 
 #include "Scene/ImageRenderer.h"
 

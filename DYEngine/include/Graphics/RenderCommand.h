@@ -16,9 +16,6 @@ namespace DYE
 	{
 		CameraProperties Camera;
 		std::shared_ptr<Material> Material;
-
-		// TODO: removed these! They should be stored in Camera.
-		float AspectRatio;
 	};
 
     class RenderCommand

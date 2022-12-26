@@ -24,7 +24,6 @@ set(SOURCE_FILES
         src/Shader.cpp
         src/OpenGL.cpp
         src/Buffer.cpp
-        src/Renderer.cpp
         src/VertexArray.cpp
         src/RenderCommand.cpp
         src/ImageRenderer.cpp
@@ -36,7 +35,10 @@ set(SOURCE_FILES
         src/RenderState.cpp
         src/UniformPropertyProcessor.cpp
         src/BlendStateCommandProcessor.cpp
-        src/DepthStateCommandProcessor.cpp)
+        src/DepthStateCommandProcessor.cpp
+        src/RenderPipelineManager.cpp
+        src/RenderPipelineBase.cpp
+        src/RenderPipeline2D.cpp)
 set(HEADER_FILES
         include/Application.h
         include/WindowBase.h
@@ -64,7 +66,6 @@ set(HEADER_FILES
         include/Graphics/Shader.h
         include/Graphics/OpenGL.h
         include/Graphics/Buffer.h
-        include/Graphics/Renderer.h
         include/Graphics/VertexArray.h
         include/Graphics/RenderCommand.h
         include/Scene/ImageRenderer.h
@@ -79,7 +80,10 @@ set(HEADER_FILES
         include/Graphics/RenderState.h
         include/Graphics/Processor/UniformPropertyProcessor.h
         include/Graphics/Processor/BlendStateCommandProcessor.h
-        include/Graphics/Processor/DepthStateCommandProcessor.h include/Graphics/Renderer2D.h)
+        include/Graphics/Processor/DepthStateCommandProcessor.h
+        include/Graphics/RenderPipelineManager.h
+        include/Graphics/RenderPipelineBase.h
+        include/Graphics/RenderPipeline2D.h)
 
 message(STATUS "DYEngine Source Files: ${SOURCE_FILES}")
 message(STATUS "DYEngine Header Files: ${HEADER_FILES}")

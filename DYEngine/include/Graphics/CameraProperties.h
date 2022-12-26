@@ -21,6 +21,8 @@ namespace DYE
 
 		bool IsOrthographic = false;
 
+		float AspectRatio = 1;
+
 	public:
 		glm::mat4 GetProjectionMatrix(float aspectRatio) const;
 	};

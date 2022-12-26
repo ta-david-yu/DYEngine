@@ -73,6 +73,7 @@ namespace DYE
 
 	void RenderCommand::DrawIndexedNow(VertexArray const& vertexArray)
 	{
+		// Bind mesh (VAO)
 		vertexArray.Bind();
 		std::uint32_t const indexCount = vertexArray.GetIndexBuffer()->GetCount();
 		glCall(glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr));
@@ -101,7 +102,7 @@ namespace DYE
 			glCall(glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix)));
 
 			// Camera space to clip space
-			float const aspectRatio = renderParameters.AspectRatio;
+			float const aspectRatio = renderParameters.Camera.AspectRatio;
 			glm::mat4 projectionMatrix = renderParameters.Camera.GetProjectionMatrix(aspectRatio);
 			auto projectionMatrixLoc = glGetUniformLocation(shader.GetID(), DefaultUniformNames::ProjectionMatrix);
 			glCall(glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, glm::value_ptr(projectionMatrix)));
