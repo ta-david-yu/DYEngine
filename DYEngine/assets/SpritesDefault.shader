@@ -1,6 +1,6 @@
 @Blend SrcAlpha OneMinusSrcAlpha
-@ZWrite Off
-@ZTest Always
+@ZWrite On
+@ZTest Less
 
 
 #Shader Vertex
@@ -42,8 +42,13 @@ layout(location = 0) out vec4 color;
 
 void main()
 {
-    color = _Color * texture(_MainTex, v_TexCoord);
+    vec4 finalColor = _Color * texture(_MainTex, v_TexCoord);
 
-    // Use this to visualize texture coordinate
-    // vec4(v_TexCoord, 0.0, 1.0);
+    if (finalColor.a < 0.01)
+    {
+        discard;
+    }
+
+    color = finalColor;
+
 };
