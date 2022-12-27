@@ -9,8 +9,8 @@ namespace DYE::ShaderProcessor
 	/// Properties declared in Shader will be serialized into Material (namely Shader Instance Data).
 	class BlendStateCommandProcessor : public ShaderProcessorBase
 	{
-		constexpr static const char* BlendFunctionCommandDirective = "@blend";
-		constexpr static const char* BlendOperationCommandDirective = "@blendOp";
+		constexpr static const char* BlendFunctionCommandDirective = "@Blend";
+		constexpr static const char* BlendOperationCommandDirective = "@BlendOp";
 
 	public:
 		BlendStateCommandProcessor() : ShaderProcessorBase("BlendState Command Processor") {}

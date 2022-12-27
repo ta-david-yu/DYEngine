@@ -41,7 +41,7 @@ namespace DYE::ShaderProcessor
 
 	BlendState BlendStateCommandProcessor::parseBlendFunctionLine(std::string const&line)
 	{
-		std::vector<std::string> const tokens = splitLineIntoTokensBySpace(line);
+		std::vector<std::string> const tokens = splitLineIntoTokensBySpace(line, 3);
 		if (tokens.size() < 2)
 		{
 			// There should be at least 2 tokens!

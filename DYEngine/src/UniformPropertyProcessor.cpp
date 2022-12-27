@@ -38,7 +38,7 @@ namespace DYE::ShaderProcessor
 
 			// We want to split the string into 3 tokens:
 			// 		i.e. @property [uniform_name] [display_name]
-			std::vector<std::string> const tokens = splitLineIntoTokensBySpace(line);
+			std::vector<std::string> const tokens = splitLineIntoTokensBySpace(line, 3);
 
 			if (tokens.size() < 2)
 			{
@@ -159,7 +159,7 @@ namespace DYE::ShaderProcessor
 			infos.push_back(info);
 		}
 
-		DYE_LOG("There are [%d] uniform variables", infos.size());
+		DYE_LOG("There are [%d] uniform variables.", infos.size());
 
 		return std::move(infos);
 	}

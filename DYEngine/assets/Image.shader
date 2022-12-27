@@ -1,4 +1,4 @@
-#shader vertex
+#Shader Vertex
 #version 330 core
 
 layout(location = 0) in vec2 position;
@@ -15,7 +15,7 @@ void main()
     gl_Position = _TransformMatrix * point4;
 };
 
-#shader fragment
+#Shader Fragment
 #version 330 core
 
 layout(location = 0) out vec4 color;

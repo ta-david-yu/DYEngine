@@ -1,8 +1,9 @@
-@blend SrcAlpha OneMinusSrcAlpha
-@zWrite Off
-@zTest Always
+@Blend SrcAlpha OneMinusSrcAlpha
+@ZWrite Off
+@ZTest Always
 
-#shader vertex
+
+#Shader Vertex
 #version 330 core
 
 layout(location = 0) in vec3 position;
@@ -25,16 +26,16 @@ void main()
     gl_Position = _ProjectionMatrix * _ViewMatrix * _ModelMatrix * point4;
 };
 
-#shader fragment
+#Shader Fragment
 #version 330 core
 
 in vec4 v_Color;
 in vec2 v_TexCoord;
 
-@property _MainTex "Main Texture"
+@Property _MainTex "Main Texture"
 uniform sampler2D _MainTex;
 
-@property _Color "Color"
+@Property _Color "Color"
 uniform vec4 _Color;
 
 layout(location = 0) out vec4 color;

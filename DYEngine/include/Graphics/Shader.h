@@ -25,7 +25,7 @@ namespace DYE
 	namespace ShaderConstants
 	{
 		constexpr int NumberOfShaderTypes = 3; // Vertex, Fragment, Geometry
-		constexpr const char* ShaderTypeSpecifier = "#shader";
+		constexpr const char* ShaderTypeSpecifier = "#Shader";
 	}
 
     enum class ShaderType

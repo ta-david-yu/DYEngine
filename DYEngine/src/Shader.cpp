@@ -55,19 +55,19 @@ namespace DYE
 	/// \return true if the line includes a shader type keyword.
 	static bool HasValidShaderTypeKeywordInLine(const std::string& shaderSourceLine, ShaderType& outShaderType)
 	{
-		if (shaderSourceLine.find("vertex") != std::string::npos)
+		if (shaderSourceLine.find("Vertex") != std::string::npos)
 		{
 			outShaderType = ShaderType::Vertex;
 			return true;
 		}
 
-		if (shaderSourceLine.find("geometry") != std::string::npos)
+		if (shaderSourceLine.find("Geometry") != std::string::npos)
 		{
 			outShaderType = ShaderType::Geometry;
 			return true;
 		}
 
-		if (shaderSourceLine.find("fragment") != std::string::npos)
+		if (shaderSourceLine.find("Fragment") != std::string::npos)
 		{
 			outShaderType = ShaderType::Fragment;
 			return true;
@@ -78,7 +78,7 @@ namespace DYE
 
     std::shared_ptr<ShaderProgram> ShaderProgram::CreateFromFile(const std::string& name, const std::filesystem::path &filepath)
 	{
-		DYE_LOG("-- Start creating shader \"%s\" from %s --", name.c_str(), filepath.string().c_str());
+		DYE_LOG("<< Start creating shader \"%s\" from %s -", name.c_str(), filepath.string().c_str());
 
 		auto program = std::make_shared<ShaderProgram>(name);
 
@@ -101,14 +101,14 @@ namespace DYE
 
 		if (!success)
 		{
-			DYE_LOG("-- Failed to create shader [%d] \"%s\" from %s --", program->m_ID, name.c_str(), filepath.string().c_str());
+			DYE_LOG("- Failed to create shader [%d] \"%s\" from %s >>", program->m_ID, name.c_str(), filepath.string().c_str());
 			DYE_ASSERT(false);
 
 			// We still return the program. In the future we might want to return a purple shader program.
 			return program;
 		}
 
-		DYE_LOG("-- Successfully create shader [%d] \"%s\" from %s --", program->m_ID, name.c_str(), filepath.string().c_str());
+		DYE_LOG("- Successfully create shader [%d] \"%s\" from %s >>", program->m_ID, name.c_str(), filepath.string().c_str());
 		return program;
 	}
 

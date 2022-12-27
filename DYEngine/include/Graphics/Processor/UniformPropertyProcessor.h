@@ -8,7 +8,7 @@ namespace DYE::ShaderProcessor
 	/// Properties declared in Shader will be serialized into Material (namely Shader Instance Data).
 	class UniformPropertyProcessor : public ShaderProcessorBase
 	{
-		constexpr static const char* UniformPropertyDirective = "@property";
+		constexpr static const char* UniformPropertyDirective = "@Property";
 
 	public:
 		UniformPropertyProcessor() : ShaderProcessorBase("Uniform Property Processor") {}

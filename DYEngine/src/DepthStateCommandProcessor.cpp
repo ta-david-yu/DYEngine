@@ -43,18 +43,18 @@ namespace DYE::ShaderProcessor
 
 	CompareFunction DepthStateCommandProcessor::parseZTestLine(const std::string &line)
 	{
-		std::vector<std::string> const tokens = splitLineIntoTokensBySpace(line);
+		std::vector<std::string> const tokens = splitLineIntoTokensBySpace(line, 2);
 		if (tokens.size() < 2)
 		{
 			// There should be at least 2 tokens!
-			DYE_LOG("ZTest directive '%s' is presented but no parameters follow. ZTest::Always is returned instead", line.c_str());
+			DYE_LOG("ZTest directive '%s' is presented but no parameters follow. ZTest::Always is returned instead.", line.c_str());
 			return CompareFunction::Always;
 		}
 
 		auto compareFunction = StringToCompareFunction(tokens[1]);
 		if (!compareFunction.has_value())
 		{
-			DYE_LOG("ZTest directive '%s' is presented but with invalid parameter '%s'. ZTest::Always is returned instead", line.c_str(), tokens[1].c_str());
+			DYE_LOG("ZTest directive '%s' is presented but with invalid parameter '%s'. ZTest::Always is returned instead.", line.c_str(), tokens[1].c_str());
 			return CompareFunction::Always;
 		}
 
@@ -63,11 +63,11 @@ namespace DYE::ShaderProcessor
 
 	bool DepthStateCommandProcessor::parseZWriteLine(const std::string &line)
 	{
-		std::vector<std::string> const tokens = splitLineIntoTokensBySpace(line);
+		std::vector<std::string> const tokens = splitLineIntoTokensBySpace(line, 2);
 		if (tokens.size() < 2)
 		{
 			// There should be at least 2 tokens!
-			DYE_LOG("ZWrite directive '%s' is presented but no parameter follows. ZWrite is enabled by default", line.c_str());
+			DYE_LOG("ZWrite directive '%s' is presented but no parameter follows. ZWrite is enabled by default.", line.c_str());
 			return true;
 		}
 
@@ -81,7 +81,7 @@ namespace DYE::ShaderProcessor
 			return true;
 		}
 
-		DYE_LOG("ZWrite directive '%s' is presented but with invalid parameter. ZWrite is enabled by default", line.c_str());
+		DYE_LOG("ZWrite directive '%s' is presented but with invalid parameter. ZWrite is enabled by default.", line.c_str());
 		return true;
 	}
 }

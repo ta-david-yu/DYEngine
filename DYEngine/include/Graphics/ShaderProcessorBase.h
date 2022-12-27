@@ -39,7 +39,7 @@ namespace DYE::ShaderProcessor
 			return firstToken;
 		}
 
-		static std::vector<std::string> splitLineIntoTokensBySpace(const std::string& line)
+		static std::vector<std::string> splitLineIntoTokensBySpace(std::string const& line, uint32_t numberOfTokensNeeded)
 		{
 			std::regex const directiveRegexPattern(R"(\s+)");
 			std::vector<std::string> tokens;
@@ -50,16 +50,16 @@ namespace DYE::ShaderProcessor
 			while (std::regex_search(lineToBeProcessed, matchObject, directiveRegexPattern))
 			{
 				// Add the token
-				tokens.emplace_back(lineToBeProcessed.substr(0, matchObject.position()));
+				std::string const token = lineToBeProcessed.substr(0, matchObject.position());
+				tokens.emplace_back(token);
 
 				// Skip the matched string (whitespaces)
 				lineToBeProcessed = lineToBeProcessed.substr(matchObject.position() + matchObject.length());
 
 				numberOfMatches++;
-				if (numberOfMatches >= 2)
+				if (numberOfMatches >= numberOfTokensNeeded - 1)
 				{
-					// We only need at most 3 tokens,
-					// so 2 matches would already give us 3 tokens.
+					// #(numberOfTokensNeeded - 1) matches would already give us #numberOfTokensNeeded tokens.
 					// Push the rest of the string as the final token.
 					tokens.emplace_back(lineToBeProcessed);
 					break;

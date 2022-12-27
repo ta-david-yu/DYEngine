@@ -9,8 +9,8 @@ namespace DYE::ShaderProcessor
 	/// Properties declared in Shader will be serialized into Material (namely Shader Instance Data).
 	class DepthStateCommandProcessor : public ShaderProcessorBase
 	{
-		constexpr static const char* ZWriteCommandDirective = "@zWrite";
-		constexpr static const char* ZTestCommandDirective = "@zTest";
+		constexpr static const char* ZWriteCommandDirective = "@ZWrite";
+		constexpr static const char* ZTestCommandDirective = "@ZTest";
 
 	public:
 		DepthStateCommandProcessor() : ShaderProcessorBase("DepthState Command Processor") {}
