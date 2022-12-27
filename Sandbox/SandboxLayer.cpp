@@ -7,9 +7,11 @@
 #include "Util/Time.h"
 #include "Util/ImGuiUtil.h"
 
+#include "Graphics/RenderCommand.h"
+#include "Graphics/RenderPipelineManager.h"
+
 #include "Graphics/VertexArray.h"
 #include "Graphics/Shader.h"
-#include "Graphics/RenderCommand.h"
 #include "Graphics/OpenGL.h"
 #include "Graphics/Texture.h"
 #include "Graphics/CameraProperties.h"
@@ -81,9 +83,7 @@ namespace DYE
 
 	void SandboxLayer::OnRender()
 	{
-		glCall(glDisable(GL_DEPTH_TEST));
-		glCall(glEnable(GL_BLEND));
-		glCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+		RenderPipelineManager::RegisterCameraForNextRender(*m_CameraProperties);
 		renderMaterialObject(*m_ProfileObject);
 		renderMaterialObject(*m_WhiteObject);
 	}
@@ -98,12 +98,7 @@ namespace DYE
 		auto scale = object.Scale * tex2D->GetScaleFromTextureDimensions();
 		modelMatrix = glm::scale(modelMatrix, scale);
 
-		RenderParameters const params
-			{
-				.Camera = *m_CameraProperties,
-				.Material = object.Material
-			};
-		RenderCommand::GetInstance().DrawIndexedNow(params, *m_VertexArrayObject, modelMatrix);
+		RenderPipelineManager::GetActiveRenderPipeline()->Submit(m_VertexArrayObject, object.Material, modelMatrix);
 	}
 
     void SandboxLayer::OnEvent(Event& event)

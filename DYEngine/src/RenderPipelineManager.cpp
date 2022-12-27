@@ -1,12 +1,13 @@
 #include "Graphics/RenderPipelineManager.h"
 
-#include "Graphics/RenderPipelineBase.h"
+#include "Base.h"
 
 namespace DYE
 {
 	std::shared_ptr<RenderPipelineBase> RenderPipelineManager::s_ActiveRenderPipeline = {};
+	std::vector<CameraProperties> RenderPipelineManager::s_CameraProperties = {};
 
-	void RenderPipelineManager::RenderWithActivePipeline(std::vector<CameraProperties> const& cameras)
+	void RenderPipelineManager::RenderWithActivePipeline()
 	{
 		if (!s_ActiveRenderPipeline)
 		{
@@ -14,6 +15,29 @@ namespace DYE
 			return;
 		}
 
-		s_ActiveRenderPipeline->render(cameras);
+		if (s_CameraProperties.empty())
+		{
+			DYE_LOG("RenderPipelineManager::RenderWithActivePipeline is called, but no camera has been registered.");
+		}
+
+		s_ActiveRenderPipeline->render(s_CameraProperties);
+
+		s_CameraProperties.clear();
+	}
+
+
+	std::shared_ptr<RenderPipelineBase> RenderPipelineManager::GetActiveRenderPipeline()
+	{
+		return s_ActiveRenderPipeline;
+	}
+
+	void RenderPipelineManager::SetActiveRenderPipeline(std::shared_ptr<RenderPipelineBase> renderPipeline)
+	{
+		s_ActiveRenderPipeline = std::move(renderPipeline);
+	}
+
+	void RenderPipelineManager::RegisterCameraForNextRender(CameraProperties cameraProperties)
+	{
+		s_CameraProperties.push_back(cameraProperties);
 	}
 }

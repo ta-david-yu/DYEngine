@@ -83,7 +83,8 @@ set(HEADER_FILES
         include/Graphics/Processor/DepthStateCommandProcessor.h
         include/Graphics/RenderPipelineManager.h
         include/Graphics/RenderPipelineBase.h
-        include/Graphics/RenderPipeline2D.h)
+        include/Graphics/RenderPipeline2D.h
+        include/Util/Algorithm.h)
 
 message(STATUS "DYEngine Source Files: ${SOURCE_FILES}")
 message(STATUS "DYEngine Header Files: ${HEADER_FILES}")

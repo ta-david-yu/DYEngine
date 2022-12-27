@@ -2,6 +2,13 @@
 
 namespace DYE
 {
+	glm::mat4 CameraProperties::GetViewMatrix() const
+	{
+		// TODO: Add scale, rotation transformation
+		auto const viewMatrix = glm::mat4 {1.0f};
+		return glm::translate(viewMatrix, -Position);
+	}
+
 	glm::mat4 CameraProperties::GetProjectionMatrix(float aspectRatio) const
 	{
 		if (IsOrthographic)

@@ -1,6 +1,8 @@
 #include "Graphics/RenderPipeline2D.h"
 
 #include "Graphics/RenderCommand.h"
+#include "Graphics/Material.h"
+#include "Util/Algorithm.h"
 
 namespace DYE
 {
@@ -10,17 +12,18 @@ namespace DYE
 		for (auto const& camera : cameras)
 		{
 			// Sort the submission (render queue, sorting layer, camera distance etc).
+			glm::mat4 const viewMatrix = camera.GetViewMatrix();
 			// TODO:
 
 			// Draw calls.
 			for (auto const &submission: m_Submissions)
 			{
 				RenderCommand::GetInstance().DrawIndexedNow
-					(
-						RenderParameters { .Camera = camera, .Material = submission.Material },
-						*submission.VertexArray,
-						submission.ObjectToWorldMatrix
-					);
+				(
+					RenderParameters { .Camera = camera, .Material = submission.Material },
+					*submission.VertexArray,
+					submission.ObjectToWorldMatrix
+				);
 			}
 		}
 
@@ -34,8 +37,18 @@ namespace DYE
 		glm::mat4 objectToWorldMatrix)
 	{
 		m_Submissions.push_back
-			(
-				RenderSubmission2D { .VertexArray = vertexArray, .Material = material, .ObjectToWorldMatrix = objectToWorldMatrix }
-			);
+		(
+			RenderSubmission2D { .VertexArray = vertexArray, .Material = material, .ObjectToWorldMatrix = objectToWorldMatrix }
+		);
+
+		Algorithm::InsertionSort
+		(
+			m_Submissions.begin(),
+			m_Submissions.end(),
+			[](auto const& submissionA, auto const& submissionB)
+			{
+				return true;
+			}
+		);
 	}
 }

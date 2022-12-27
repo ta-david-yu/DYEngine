@@ -111,6 +111,8 @@ namespace DYE
             }
             onPostRenderLayers();
 
+			RenderPipelineManager::RenderWithActivePipeline();
+
             // ImGui
             m_ImGuiLayer->BeginImGui();
             for (auto& layer : m_LayerStack)
