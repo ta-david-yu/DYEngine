@@ -14,7 +14,8 @@
 namespace DYE
 {
 #ifdef DYE_OPENGL_DEBUG
-    static void APIENTRY openglCallbackFunction(
+    static void APIENTRY openglCallbackFunction
+		(
             GLenum source,
             GLenum type,
             GLuint id,
@@ -22,16 +23,19 @@ namespace DYE
             GLsizei length,
             const GLchar* message,
             const void* userParam
-    ){
+    	)
+	{
         (void)source; (void)type; (void)id;
         (void)severity; (void)length; (void)userParam;
 
-        DYE_LOG("%s", message);
-
-        if (severity==GL_DEBUG_SEVERITY_MEDIUM) {
-            DYE_LOG("ABORTING....");
-            DYE_ASSERT(false);
-        }
+		switch (severity)
+		{
+			case GL_DEBUG_SEVERITY_HIGH:
+				DYE_LOG_ERROR("[OpenGL Debug HIGH] %s", message);
+				DYE_ASSERT(false);
+			case GL_DEBUG_SEVERITY_MEDIUM:
+				DYE_LOG_WARN("[OpenGL Debug HIGH] %s", message);
+		}
     }
 #endif
 

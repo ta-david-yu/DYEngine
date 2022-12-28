@@ -1,7 +1,6 @@
 @Blend SrcAlpha OneMinusSrcAlpha
-@ZWrite On
+@ZWrite Off
 @ZTest Less
-
 
 #Shader Vertex
 #version 330 core
