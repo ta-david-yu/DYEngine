@@ -38,7 +38,8 @@ set(SOURCE_FILES
         src/DepthStateCommandProcessor.cpp
         src/RenderPipelineManager.cpp
         src/RenderPipelineBase.cpp
-        src/RenderPipeline2D.cpp)
+        src/RenderPipeline2D.cpp
+        src/KeyCode.cpp)
 set(HEADER_FILES
         include/Application.h
         include/WindowBase.h

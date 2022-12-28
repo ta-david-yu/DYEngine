@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <cstdint>
 
 #include <SDL.h>
@@ -26,4 +27,6 @@ namespace DYE
         F2 = SDL_KeyCode::SDLK_F2,
         F3 = SDL_KeyCode::SDLK_F3
     };
+
+	std::string GetKeyName(KeyCode keyCode);
 }

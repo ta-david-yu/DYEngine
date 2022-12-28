@@ -119,7 +119,7 @@ namespace DYE
 			}
             //DYE_ASSERT(keyEvent.GetKeyCode() != KeyCode::Space);
             //DYE_ASSERT_RELEASE(keyEvent.GetKeyCode() != KeyCode::Right);
-            //DYE_LOG("Sandbox, KeyDown - %d", keyEvent.GetKeyCode());
+            DYE_LOG("Sandbox, KeyDown - %s", GetKeyName(keyEvent.GetKeyCode()).c_str());
         }
         else if (eventType == EventType::KeyUp)
         {
