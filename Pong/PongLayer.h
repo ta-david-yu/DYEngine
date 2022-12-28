@@ -50,6 +50,10 @@ namespace DYE
         int m_FramesCounter = 0;
         int m_FixedUpdateCounter = 0;
 
+		int m_KeyDownCounter = 0;
+		int m_KeyUpCounter = 0;
+		int m_KeyCounter = 0;
+
 		std::shared_ptr<VertexArray> m_VertexArrayObject; // Mesh
 		std::shared_ptr<ShaderProgram> m_ShaderProgram; // Material
 

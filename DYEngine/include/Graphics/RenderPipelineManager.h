@@ -27,7 +27,7 @@ namespace DYE
 			return static_cast<T*>(s_ActiveRenderPipeline.get());
 		}
 
-		static std::shared_ptr<RenderPipelineBase> GetActiveRenderPipeline();
+		static RenderPipelineBase& GetActiveRenderPipeline();
 		static void SetActiveRenderPipeline(std::shared_ptr<RenderPipelineBase> renderPipeline);
 
 		static void RegisterCameraForNextRender(CameraProperties cameraProperties);

@@ -1,6 +1,7 @@
 #include "Application.h"
 #include "Base.h"
 #include "Logger.h"
+#include "Input/InputManager.h"
 #include "Graphics/RenderCommand.h"
 #include "Graphics/RenderPipelineManager.h"
 #include "Graphics/RenderPipeline2D.h"
@@ -39,8 +40,9 @@ namespace DYE
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-        /// Initialize system and system instances
+        // Initialize core manager & systems
 		Time::InitSingleton(fixedFramePerSecond);
+		InputManager::InitSingleton();
 
         // Create window and context, and then init renderer
         DYE_LOG("Init Renderer");
@@ -82,6 +84,9 @@ namespace DYE
         {
             // Poll Event
             m_EventSystem->PollEvent();
+
+			// Update Input States
+			INPUT.UpdateInputState();
 
             // Fixed Update
             deltaTimeAccumulator += TIME.DeltaTime();
@@ -132,7 +137,8 @@ namespace DYE
 
     void Application::Handle(Event& event)
     {
-        auto eventType = event.GetEventType();
+        auto const& eventType = event.GetEventType();
+		auto const& eventCategory = event.GetCategoryFlags();
 
         // Handle WindowEvent on application level
         if (eventType == EventType::WindowClose)
@@ -150,7 +156,10 @@ namespace DYE
         {
             // Has been handled, break the loop
             if (event.IsUsed)
-                break;
+			{
+				break;
+			}
+
             (*it)->OnEvent(event);
         }
 

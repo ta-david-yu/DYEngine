@@ -43,6 +43,9 @@ namespace DYE
 
 	RenderCommand& RenderCommand::GetInstance()
 	{
+		DYE_ASSERT_RELEASE(
+			s_Instance != nullptr &&
+			"You might have forgot to call RenderCommand::InitSingleton beforehand?");
 		return *s_Instance;
 	}
 

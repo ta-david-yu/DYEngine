@@ -26,9 +26,12 @@ namespace DYE
 	}
 
 
-	std::shared_ptr<RenderPipelineBase> RenderPipelineManager::GetActiveRenderPipeline()
+	RenderPipelineBase& RenderPipelineManager::GetActiveRenderPipeline()
 	{
-		return s_ActiveRenderPipeline;
+		DYE_ASSERT_RELEASE(
+			s_ActiveRenderPipeline.get() != nullptr &&
+			"You might have forgot to set a render pipeline by calling RenderPipelineManager::SetActiveRenderPipeline beforehand?");
+		return *s_ActiveRenderPipeline;
 	}
 
 	void RenderPipelineManager::SetActiveRenderPipeline(std::shared_ptr<RenderPipelineBase> renderPipeline)

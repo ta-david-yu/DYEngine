@@ -7,6 +7,8 @@
 #include "Util/Time.h"
 #include "Util/ImGuiUtil.h"
 
+#include "Input/InputManager.h"
+
 #include "Graphics/RenderCommand.h"
 #include "Graphics/RenderPipelineManager.h"
 
@@ -102,7 +104,7 @@ namespace DYE
 		auto scale = object.Scale * tex2D->GetScaleFromTextureDimensions();
 		modelMatrix = glm::scale(modelMatrix, scale);
 
-		RenderPipelineManager::GetActiveRenderPipeline()->Submit(m_VertexArrayObject, object.Material, modelMatrix);
+		RenderPipelineManager::GetActiveRenderPipeline().Submit(m_VertexArrayObject, object.Material, modelMatrix);
 	}
 
     void PongLayer::OnEvent(Event& event)
@@ -141,6 +143,21 @@ namespace DYE
             m_FramesCounter = 0;
             m_FpsAccumulator = 0;
         }
+
+		if (INPUT.GetKey(KeyCode::Space))
+		{
+			m_KeyCounter++;
+		}
+
+		if (INPUT.GetKeyDown(KeyCode::Space))
+		{
+			m_KeyDownCounter++;
+		}
+
+		if (INPUT.GetKeyUp(KeyCode::Space))
+		{
+			m_KeyUpCounter++;
+		}
     }
 
     void PongLayer::OnFixedUpdate()
@@ -200,19 +217,6 @@ namespace DYE
 			ImGui::Text("FixedDeltaTime: [%f]", TIME.FixedDeltaTime());
 			ImGui::Text("FixedUpdateFrameCounter: [%d]", m_FixedUpdateCounter);
 
-			if (ImGui::Button("Reset FixedUpdate Counter"))
-			{
-				//SDL_Log("Reset FixedUpdate Counter");
-				DYE_ASSERT(m_FixedUpdateCounter % 2 == 0);
-				DYE_LOG_INFO("Reset Fixed Update Counter %d", m_FixedUpdateCounter);
-				m_FixedUpdateCounter = 0;
-			}
-
-			if (ImGui::Button("Test Message Box Button"))
-			{
-				DYE_MSG_BOX(SDL_MESSAGEBOX_WARNING, "HAHA", "Test");
-			}
-
 			if (ImGui::Button("Wireframe Rendering Mode"))
 			{
 				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -222,6 +226,8 @@ namespace DYE
 			{
 				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			}
+
+			ImGui::Text("Space Key: {%d}, Down: {%d}, Up: {%d}", m_KeyCounter, m_KeyDownCounter, m_KeyUpCounter);
 
 			ImGui::Separator();
 			ImGuiUtil::DrawCameraPropertiesControl("Camera Properties", *m_CameraProperties);
