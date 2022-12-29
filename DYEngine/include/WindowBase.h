@@ -56,5 +56,7 @@ namespace DYE
         /// \param windowProperty the settings property for the created window (name, width, height)
         /// \return a unique pointer to the created window
         static std::unique_ptr<WindowBase> Create(const WindowProperty &windowProperty);
+
+
     };
 }

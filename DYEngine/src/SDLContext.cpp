@@ -45,6 +45,17 @@ namespace DYE
         SDL_GL_SwapWindow(m_pWindow->GetTypedNativeWindowPtr<SDL_Window>());
     }
 
+	bool SDLContext::SetVSyncCount(int count)
+	{
+		bool const success = SDL_GL_SetSwapInterval(count) == 0;
+		if (!success)
+		{
+			DYE_LOG("SetVSyncCount(%d) failed: %s", count, SDL_GetError());
+		}
+
+		return success;
+	}
+
 	void *SDLContext::GetNativeContextPtr() const
 	{
 		return m_pNativeContext;

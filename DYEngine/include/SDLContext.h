@@ -15,6 +15,7 @@ namespace DYE
 
         void Init() override;
         void SwapBuffers() override;
+		bool SetVSyncCount(int count) override;
 		void * GetNativeContextPtr() const override;
     private:
         /// The owner of this Context

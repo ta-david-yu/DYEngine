@@ -15,6 +15,11 @@ namespace DYE
         virtual void Init() = 0;
         virtual void SwapBuffers() = 0;
 
+		/// Set vSync count for the context.
+		/// \param count
+		/// \return true if the call succeeds. Otherwise false.
+		virtual bool SetVSyncCount(int count) = 0;
+
 		/// Get the pointer to the native context based on the platform library being used. ex. SDLContext for Windows platform
 		/// \return a pointer to the library native context object
 		virtual void *GetNativeContextPtr() const = 0;

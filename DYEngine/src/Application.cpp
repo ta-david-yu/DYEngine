@@ -2,6 +2,7 @@
 #include "Base.h"
 #include "Logger.h"
 #include "Input/InputManager.h"
+#include "ContextBase.h"
 #include "Graphics/RenderCommand.h"
 #include "Graphics/RenderPipelineManager.h"
 #include "Graphics/RenderPipeline2D.h"
@@ -47,6 +48,8 @@ namespace DYE
         // Create window and context, and then init renderer
         DYE_LOG("Init Renderer");
         m_Window = WindowBase::Create(WindowProperty(windowName));
+		m_Window->GetContext().SetVSyncCount(0);
+
 		RenderCommand::InitSingleton();
 		RenderCommand::GetInstance().SetViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
 		RenderCommand::GetInstance().SetClearColor(glm::vec4 {0, 0, 0, 0});

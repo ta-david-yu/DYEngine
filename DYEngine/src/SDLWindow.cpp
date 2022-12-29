@@ -23,9 +23,6 @@ namespace DYE
         // create context
         m_Context = ContextBase::Create(this);
         m_Context->Init();
-
-        // TODO: DO Set VSync in WindowBase, instead of calling this manually
-        SDL_GL_SetSwapInterval(1);
     }
 
     SDLWindow::~SDLWindow()
