@@ -15,7 +15,7 @@ namespace DYE
 	class Texture2D;
 	class CameraProperties;
 
-	struct MaterialObject
+	struct SpriteObject
 	{
 		std::string Name;
 
@@ -23,7 +23,8 @@ namespace DYE
 		glm::vec3 Scale{1, 1, 1};
 		glm::quat Rotation{glm::vec3 {0, 0, 0}};
 
-		std::shared_ptr<Material> Material;
+		std::shared_ptr<Texture2D> Texture;
+		glm::vec4 Color {1, 1, 1, 1};
 	};
 
     class PongLayer : public LayerBase
@@ -40,8 +41,8 @@ namespace DYE
         void OnImGui() override;
 
 	private:
-		void renderMaterialObject(MaterialObject& object);
-		void imguiMaterialObject(MaterialObject& object);
+		void renderMaterialObject(SpriteObject& object);
+		void imguiMaterialObject(SpriteObject& object);
 
     private:
         WindowBase* m_pWindow;
@@ -57,8 +58,8 @@ namespace DYE
 		std::shared_ptr<VertexArray> m_VertexArrayObject; // Mesh
 		std::shared_ptr<ShaderProgram> m_ShaderProgram; // Material
 
-		std::shared_ptr<MaterialObject> m_ProfileObject;
-		std::shared_ptr<MaterialObject> m_WhiteObject;
+		std::shared_ptr<SpriteObject> m_ProfileObject;
+		std::shared_ptr<SpriteObject> m_WhiteObject;
 
 		std::shared_ptr<CameraProperties> m_CameraProperties;
 	};

@@ -1,7 +1,7 @@
 #include "Graphics/Material.h"
 
-#include "Graphics/Shader.h"
 #include "Graphics/OpenGL.h"
+#include "Graphics/Shader.h"
 #include "Graphics/Texture.h"
 
 #include <utility>
@@ -12,7 +12,7 @@ namespace DYE
 {
 	std::shared_ptr<Material> Material::CreateFromShader(const std::string& name, std::shared_ptr<ShaderProgram> const& shader)
 	{
-		DYE_LOG("-- Start creating material \"%s\" from shader \"%s\" --", name.c_str(), shader->GetName().c_str());
+		DYE_LOG("<< Start creating material \"%s\" from shader \"%s\" >>", name.c_str(), shader->GetName().c_str());
 
 		auto material = std::make_shared<Material>(name, shader);
 		for (const auto& propertyInfo : shader->GetAllPropertyInfo())

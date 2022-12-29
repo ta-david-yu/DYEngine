@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Graphics/CameraProperties.h"
+#include "Graphics/MaterialPropertyBlock.h"
 
 #include <glm/glm.hpp>
 
@@ -16,6 +17,7 @@ namespace DYE
 	{
 		CameraProperties Camera;
 		std::shared_ptr<Material> Material;
+		MaterialPropertyBlock PropertyBlock;
 	};
 
     class RenderCommand
@@ -39,6 +41,10 @@ namespace DYE
 		/// \param vertexArray
 		void DrawIndexedNow(VertexArray const& vertexArray);
 
+		/// Execute draw call.
+		/// \param renderParameters
+		/// \param vertexArray
+		/// \param objectToWorldMatrix
 		void DrawIndexedNow(RenderParameters const& renderParameters, VertexArray const& vertexArray, glm::mat4 objectToWorldMatrix);
 
 	private:

@@ -11,6 +11,7 @@
 
 #include "Graphics/RenderCommand.h"
 #include "Graphics/RenderPipelineManager.h"
+#include "Graphics/RenderPipeline2D.h"
 
 #include "Graphics/VertexArray.h"
 #include "Graphics/Shader.h"
@@ -69,18 +70,13 @@ namespace DYE
 		m_ShaderProgram = ShaderProgram::CreateFromFile("Shader_SpritesDefault", "assets/default/SpritesDefault.shader");
 		m_ShaderProgram->Use();
 
-		m_ProfileObject = std::make_shared<MaterialObject>();
+		m_ProfileObject = std::make_shared<SpriteObject>();
 		m_ProfileObject->Name = "Profile";
-		m_ProfileObject->Material = Material::CreateFromShader("Material_Sprite", m_ShaderProgram);
-		m_ProfileObject->Material->SetFloat4("_Color", glm::vec4{1, 1, 1, 1});
-		m_ProfileObject->Material->SetTexture("_MainTex", Texture2D::Create("assets\\textures\\Island.png"));
+		m_ProfileObject->Texture = Texture2D::Create("assets\\textures\\Island.png");
 
-		m_WhiteObject = std::make_shared<MaterialObject>();
+		m_WhiteObject = std::make_shared<SpriteObject>();
 		m_WhiteObject->Name = "White";
-		m_WhiteObject->Material = Material::CreateFromShader("Material_Sprite", m_ShaderProgram);
-		m_WhiteObject->Material->SetFloat4("_Color", glm::vec4{1, 1, 1, 1});
-		m_WhiteObject->Material->SetTexture("_MainTex", Texture2D::Create("assets\\textures\\Island.png"));
-		// Texture2D::Create(glm::vec4{1, 1, 1, 1}, 200, 100)
+		m_WhiteObject->Texture = Texture2D::Create("assets\\textures\\Island.png");
 
 		m_CameraProperties = std::make_shared<CameraProperties>();
 		m_CameraProperties->AspectRatio = (float) m_pWindow->GetWidth() / (float) m_pWindow->GetHeight();
@@ -94,17 +90,14 @@ namespace DYE
 		renderMaterialObject(*m_WhiteObject);
 	}
 
-	void PongLayer::renderMaterialObject(MaterialObject &object)
+	void PongLayer::renderMaterialObject(SpriteObject& object)
 	{
 		glm::mat4 modelMatrix = glm::mat4 {1.0f};
 		modelMatrix = glm::translate(modelMatrix, object.Position);
 		modelMatrix = modelMatrix * glm::toMat4(object.Rotation);
+		modelMatrix = glm::scale(modelMatrix, object.Scale);
 
-		auto tex2D = static_cast<Texture2D*>(object.Material->GetTexture("_MainTex"));
-		auto scale = object.Scale * tex2D->GetScaleFromTextureDimensions();
-		modelMatrix = glm::scale(modelMatrix, scale);
-
-		RenderPipelineManager::GetActiveRenderPipeline().Submit(m_VertexArrayObject, object.Material, modelMatrix);
+		RenderPipelineManager::GetTypedActiveRenderPipelinePtr<RenderPipeline2D>()->SubmitSprite(object.Texture, object.Color, modelMatrix);
 	}
 
     void PongLayer::OnEvent(Event& event)
@@ -113,12 +106,7 @@ namespace DYE
 
         if (eventType == EventType::KeyDown)
         {
-
             auto keyEvent = static_cast<KeyDownEvent&>(event);
-			if (keyEvent.GetKeyCode() == KeyCode::W)
-			{
-				m_ProfileObject->Position.y += 1;
-			}
             //DYE_ASSERT(keyEvent.GetKeyCode() != KeyCode::Space);
             //DYE_ASSERT_RELEASE(keyEvent.GetKeyCode() != KeyCode::Right);
             DYE_LOG("Sandbox, KeyDown - %s", GetKeyName(keyEvent.GetKeyCode()).c_str());
@@ -143,6 +131,27 @@ namespace DYE
             m_FramesCounter = 0;
             m_FpsAccumulator = 0;
         }
+
+
+		if (INPUT.GetKey(KeyCode::Up))
+		{
+			m_CameraProperties->Position.y += TIME.DeltaTime() * 1.0f;
+		}
+
+		if (INPUT.GetKey(KeyCode::Down))
+		{
+			m_CameraProperties->Position.y -= TIME.DeltaTime() * 1.0f;
+		}
+
+		if (INPUT.GetKey(KeyCode::Right))
+		{
+			m_CameraProperties->Position.x += TIME.DeltaTime() * 1.0f;
+		}
+
+		if (INPUT.GetKey(KeyCode::Left))
+		{
+			m_CameraProperties->Position.x -= TIME.DeltaTime() * 1.0f;
+		}
 
 		if (INPUT.GetKey(KeyCode::Space))
 		{
@@ -242,7 +251,7 @@ namespace DYE
         ImGui::End();
     }
 
-	void PongLayer::imguiMaterialObject(MaterialObject &object)
+	void PongLayer::imguiMaterialObject(SpriteObject &object)
 	{
 		ImGui::PushID(object.Name.c_str());
 
@@ -258,7 +267,7 @@ namespace DYE
 			object.Rotation = glm::quat {glm::radians(rotationInEulerAnglesDegree)};
 		}
 
-		ImGuiUtil::DrawMaterialControl(object.Material->GetName(), *object.Material);
+		ImGuiUtil::DrawColor4Control("_Color", object.Color);
 
 		ImGui::PopID();
 	}

@@ -1,11 +1,58 @@
 #include "Graphics/RenderPipeline2D.h"
 
 #include "Graphics/RenderCommand.h"
+#include "Graphics/VertexArray.h"
 #include "Graphics/Material.h"
+#include "Graphics/Shader.h"
+#include "Graphics/Texture.h"
+
 #include "Util/Algorithm.h"
 
 namespace DYE
 {
+	RenderPipeline2D::RenderPipeline2D()
+	{
+		// Create vertices [position, color, texCoord]
+		//				   [       3,     4,        2] = 9 elements per vertex
+		float vertices[9 * 4] =
+			{
+				-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+				0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
+
+				0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+				-0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f
+			};
+
+		std::uint32_t indices[] =
+			{
+				0, 1, 2,
+				2, 3, 0,
+			};
+
+		m_DefaultSpriteVAO = VertexArray::Create();
+		{
+			auto vertexBufferObject = VertexBuffer::Create(vertices, sizeof(vertices));
+			VertexLayout const vertexLayout
+				{
+					VertexAttribute(VertexAttributeType::Float3, "position", false),
+					VertexAttribute(VertexAttributeType::Float4, "color", false),
+					VertexAttribute(VertexAttributeType::Float2, "texCoord", false),
+				};
+
+			vertexBufferObject->SetLayout(vertexLayout);
+			m_DefaultSpriteVAO->AddVertexBuffer(vertexBufferObject);
+
+			auto indexBufferObject = IndexBuffer::Create(indices, sizeof(indices));
+			m_DefaultSpriteVAO->SetIndexBuffer(indexBufferObject);
+		}
+
+		auto spriteShader = ShaderProgram::CreateFromFile("Shader_SpritesDefault", "assets/default/SpritesDefault.shader");
+		spriteShader->Use();
+
+		m_DefaultSpriteMaterial = Material::CreateFromShader("Material_Sprite", spriteShader);
+
+	}
+
 	void RenderPipeline2D::render(const std::vector<CameraProperties> &cameras)
 	{
 		// Render with each camera.
@@ -33,7 +80,7 @@ namespace DYE
 			{
 				RenderCommand::GetInstance().DrawIndexedNow
 				(
-					RenderParameters { .Camera = camera, .Material = submission.Material },
+					RenderParameters { .Camera = camera, .Material = submission.Material, .PropertyBlock = submission.MaterialPropertyBlock },
 					*submission.VertexArray,
 					submission.ObjectToWorldMatrix
 				);
@@ -64,5 +111,26 @@ namespace DYE
 				return true;
 			}
 		);*/
+	}
+
+	void RenderPipeline2D::SubmitSprite(const std::shared_ptr<Texture2D> &texture, glm::vec4 color, glm::mat4 objectToWorldMatrix)
+	{
+		// Scale the matrix based on sprite pixels per unit.
+		objectToWorldMatrix = glm::scale(objectToWorldMatrix, texture->GetScaleFromTextureDimensions());
+
+		MaterialPropertyBlock materialPropertyBlock;
+		materialPropertyBlock.SetTexture("_MainTex", texture);
+		materialPropertyBlock.SetFloat4("_Color", color);
+
+		m_Submissions.push_back
+		(
+			RenderSubmission2D
+			{
+				.VertexArray = m_DefaultSpriteVAO,
+				.Material = m_DefaultSpriteMaterial,
+				.ObjectToWorldMatrix = objectToWorldMatrix,
+				.MaterialPropertyBlock = std::move(materialPropertyBlock)
+			}
+		);
 	}
 }

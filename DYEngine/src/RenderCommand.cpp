@@ -114,8 +114,11 @@ namespace DYE
 			glCall(glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, glm::value_ptr(projectionMatrix)));
 		}
 
-		// Bind property uniforms
+		// Bind property uniforms on the material
 		renderParameters.Material->updateUniformValuesToGPU();
+
+		// Bind property values on the property block
+		renderParameters.PropertyBlock.updatePropertyValuesToGPU(shader);
 
 		// Bind mesh (VAO)
 		vertexArray.Bind();

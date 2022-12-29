@@ -98,7 +98,7 @@ namespace DYE
 		auto scale = object.Scale * tex2D->GetScaleFromTextureDimensions();
 		modelMatrix = glm::scale(modelMatrix, scale);
 
-		RenderPipelineManager::GetActiveRenderPipeline()->Submit(m_VertexArrayObject, object.Material, modelMatrix);
+		RenderPipelineManager::GetActiveRenderPipeline().Submit(m_VertexArrayObject, object.Material, modelMatrix);
 	}
 
     void SandboxLayer::OnEvent(Event& event)
