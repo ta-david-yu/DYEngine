@@ -55,8 +55,7 @@ namespace DYE
 		int m_KeyUpCounter = 0;
 		int m_KeyCounter = 0;
 
-		std::shared_ptr<VertexArray> m_VertexArrayObject; // Mesh
-		std::shared_ptr<ShaderProgram> m_ShaderProgram; // Material
+		float m_BallSpeed = 5.0f;
 
 		std::shared_ptr<SpriteObject> m_ProfileObject;
 		std::shared_ptr<SpriteObject> m_WhiteObject;

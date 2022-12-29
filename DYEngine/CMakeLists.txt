@@ -87,8 +87,8 @@ set(HEADER_FILES
         include/Graphics/RenderPipeline2D.h
         include/Util/Algorithm.h include/Input/InputManager.h include/Graphics/MaterialPropertyBlock.h)
 
-message(STATUS "DYEngine Source Files: ${SOURCE_FILES}")
-message(STATUS "DYEngine Header Files: ${HEADER_FILES}")
+message(STATUS "[DYEngine] Source Files: ${SOURCE_FILES}")
+message(STATUS "[DYEngine] Header Files: ${HEADER_FILES}")
 
 # ===========================================================================================
 # External 3rd party library
@@ -163,6 +163,7 @@ foreach(ASSET ${DEFAULT_ASSETS})
         set(ASSET_OUTPUT_PATH ${EXECUTABLE_OUTPUT_PATH}/assets/default/${ASSET_FILENAME})
     endif(WIN32)
 
-    message(STATUS "DYEngine Copy Default Asset: ${ASSET_OUTPUT_PATH}")
-    configure_file(${ASSET} ${ASSET_OUTPUT_PATH})
+    set(ASSET_INPUT_PATH ${PROJECT_SOURCE_DIR}/${ASSET})
+    message(STATUS "[DYEngine] copy asset: '${ASSET_INPUT_PATH}' -> '${ASSET_OUTPUT_PATH}'")
+    configure_file(${ASSET} ${ASSET_OUTPUT_PATH} COPYONLY)
 endforeach()

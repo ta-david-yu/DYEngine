@@ -34,53 +34,21 @@ namespace DYE
 	{
 		RenderCommand::GetInstance().SetClearColor(glm::vec4{0.5f, 0.5f, 0.5f, 0.5f});
 
-		// Create vertices [position, color, texCoord]
-		//				   [       3,     4,        2] = 9 elements per vertex
-		float vertices[9 * 4] =
-			{
-				-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-				0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-
-				0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f,
-				-0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f
-			};
-
-		std::uint32_t indices[] =
-			{
-				0, 1, 2,
-				2, 3, 0,
-			};
-
-		m_VertexArrayObject = VertexArray::Create();
-		{
-			auto vertexBufferObject = VertexBuffer::Create(vertices, sizeof(vertices));
-			VertexLayout const vertexLayout
-				{
-					VertexAttribute(VertexAttributeType::Float3, "position", false),
-					VertexAttribute(VertexAttributeType::Float4, "color", false),
-					VertexAttribute(VertexAttributeType::Float2, "texCoord", false),
-				};
-			vertexBufferObject->SetLayout(vertexLayout);
-			m_VertexArrayObject->AddVertexBuffer(vertexBufferObject);
-
-			auto indexBufferObject = IndexBuffer::Create(indices, sizeof(indices));
-			m_VertexArrayObject->SetIndexBuffer(indexBufferObject);
-		}
-
-		m_ShaderProgram = ShaderProgram::CreateFromFile("Shader_SpritesDefault", "assets/default/SpritesDefault.shader");
-		m_ShaderProgram->Use();
-
 		m_ProfileObject = std::make_shared<SpriteObject>();
 		m_ProfileObject->Name = "Profile";
-		m_ProfileObject->Texture = Texture2D::Create("assets\\textures\\Island.png");
+		m_ProfileObject->Texture = Texture2D::Create("assets\\Sprite_Pong.png");
+		m_ProfileObject->Texture->PixelsPerUnit = 32;
 
 		m_WhiteObject = std::make_shared<SpriteObject>();
 		m_WhiteObject->Name = "White";
-		m_WhiteObject->Texture = Texture2D::Create("assets\\textures\\Island.png");
+		m_WhiteObject->Texture = Texture2D::Create("assets\\Sprite_Pong.png");
+		m_WhiteObject->Texture->PixelsPerUnit = 32;
 
 		m_CameraProperties = std::make_shared<CameraProperties>();
 		m_CameraProperties->AspectRatio = (float) m_pWindow->GetWidth() / (float) m_pWindow->GetHeight();
-		m_CameraProperties->Position = glm::vec3 {0, 0, 3};
+		m_CameraProperties->Position = glm::vec3 {0, 0, 10};
+		m_CameraProperties->IsOrthographic = true;
+		m_CameraProperties->OrthographicSize = 10;
 	}
 
 	void PongLayer::OnRender()
@@ -125,7 +93,7 @@ namespace DYE
         m_FpsAccumulator += TIME.DeltaTime();
         if (m_FpsAccumulator >= 0.25)
         {
-            double fps = m_FramesCounter / m_FpsAccumulator;
+            double const fps = m_FramesCounter / m_FpsAccumulator;
             //SDL_Log("Delta FPS: %f", fps);
 
             m_FramesCounter = 0;
@@ -135,22 +103,22 @@ namespace DYE
 
 		if (INPUT.GetKey(KeyCode::Up))
 		{
-			m_CameraProperties->Position.y += TIME.DeltaTime() * 1.0f;
+			m_WhiteObject->Position.y += TIME.DeltaTime() * 1.0f * m_BallSpeed;
 		}
 
 		if (INPUT.GetKey(KeyCode::Down))
 		{
-			m_CameraProperties->Position.y -= TIME.DeltaTime() * 1.0f;
+			m_WhiteObject->Position.y -= TIME.DeltaTime() * 1.0f * m_BallSpeed;
 		}
 
 		if (INPUT.GetKey(KeyCode::Right))
 		{
-			m_CameraProperties->Position.x += TIME.DeltaTime() * 1.0f;
+			m_WhiteObject->Position.x += TIME.DeltaTime() * 1.0f * m_BallSpeed;
 		}
 
 		if (INPUT.GetKey(KeyCode::Left))
 		{
-			m_CameraProperties->Position.x -= TIME.DeltaTime() * 1.0f;
+			m_WhiteObject->Position.x -= TIME.DeltaTime() * 1.0f * m_BallSpeed;
 		}
 
 		if (INPUT.GetKey(KeyCode::Space))
@@ -240,6 +208,7 @@ namespace DYE
 
 			ImGui::Separator();
 			ImGuiUtil::DrawCameraPropertiesControl("Camera Properties", *m_CameraProperties);
+			ImGuiUtil::DrawFloatControl("Camera Speed", m_BallSpeed, 1.0f);
 
 			ImGui::Separator();
 			imguiMaterialObject(*m_ProfileObject);
