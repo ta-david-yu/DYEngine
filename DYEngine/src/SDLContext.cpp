@@ -50,7 +50,7 @@ namespace DYE
 		bool const success = SDL_GL_SetSwapInterval(count) == 0;
 		if (!success)
 		{
-			DYE_LOG("SetVSyncCount(%d) failed: %s", count, SDL_GetError());
+			DYE_LOG_ERROR("SetVSyncCount(%d) failed: %s", count, SDL_GetError());
 		}
 
 		return success;

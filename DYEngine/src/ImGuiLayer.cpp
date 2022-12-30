@@ -2,6 +2,7 @@
 
 #include "WindowBase.h"
 #include "ContextBase.h"
+#include "Graphics/OpenGL.h"
 
 #include <SDL.h>
 #include <imgui.h>
@@ -59,7 +60,8 @@ namespace DYE
     {
         // start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplSDL2_NewFrame(m_pWindow->GetTypedNativeWindowPtr<SDL_Window>());
+		//ImGui_ImplSDL2_NewFrame();
+		ImGui_ImplSDL2_NewFrame(m_pWindow->GetTypedNativeWindowPtr<SDL_Window>());
         ImGui::NewFrame();
     }
 
@@ -67,10 +69,15 @@ namespace DYE
     {
         // rendering
         ImGui::Render();
+
+		ImGuiIO& io = ImGui::GetIO();
+		//glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+		//glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
+		//glClear(GL_COLOR_BUFFER_BIT);
+
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		// TODO: Move these code to individual window / context class to support different platforms libraries
-		ImGuiIO& io = ImGui::GetIO();
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			ImGui::UpdatePlatformWindows();

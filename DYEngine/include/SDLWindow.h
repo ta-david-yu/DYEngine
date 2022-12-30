@@ -20,7 +20,11 @@ namespace DYE
         uint32_t GetHeight() const override;
 		ContextBase & GetContext() const override;
 
+		bool SetFullScreenMode(FullScreenMode mode) override;
+		void SetWindowSize(uint32_t width, uint32_t height) override;
+
         void *GetNativeWindowPtr() const override { return m_pNativeWindow; }
+		std::uint32_t GetNativeWindowID() const override;
 
     private:
         /// The pointer to the native window object

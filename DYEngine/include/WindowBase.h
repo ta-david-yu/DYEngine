@@ -8,11 +8,20 @@ namespace DYE
 {
 	class ContextBase;
 
+	enum class FullScreenMode
+	{
+		Window,
+		FullScreen,
+		BorderlessWindow,
+	};
+
     struct WindowProperty
     {
         std::string Title;
         uint32_t Width;
         uint32_t Height;
+
+		FullScreenMode FullScreeMode = FullScreenMode::Window;
 
         /// Whether or not the window can be resized by the user
         bool IsUserResizable;
@@ -20,7 +29,7 @@ namespace DYE
         explicit WindowProperty(std::string title,
                                 uint32_t width = 1600,
                                 uint32_t height = 900,
-                                bool isUserResizable = false)
+                                bool isUserResizable = true)
                 : Title(std::move(title)),
                   Width(width),
                   Height(height),
@@ -39,9 +48,14 @@ namespace DYE
         virtual uint32_t GetHeight() const = 0;
 		virtual ContextBase& GetContext() const = 0;
 
+		virtual bool SetFullScreenMode(FullScreenMode mode) = 0;
+		virtual void SetWindowSize(uint32_t width, uint32_t height) = 0;
+
         /// Get the pointer to the native window based on the platform library being used. ex. SDLWindow for Windows platform
         /// \return a pointer to the library native window object
         virtual void *GetNativeWindowPtr() const = 0;
+
+		virtual std::uint32_t GetNativeWindowID() const = 0;
 
         ///  Templated: Get the pointer to the native window based on the platform library being used. ex. SDLWindow for Windows platform
         /// \return a typed pointer to the library native window object

@@ -19,6 +19,7 @@
 #include "Graphics/Texture.h"
 #include "Graphics/CameraProperties.h"
 #include "Graphics/Material.h"
+#include "Event/ApplicationEvent.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -72,7 +73,12 @@ namespace DYE
     {
         auto eventType = event.GetEventType();
 
-        if (eventType == EventType::KeyDown)
+		if (eventType == EventType::WindowSizeChange)
+		{
+			auto windowSizeChangeEvent = static_cast<const WindowManualResizeEvent&>(event);
+			m_CameraProperties->AspectRatio = (float) windowSizeChangeEvent.GetWidth() / (float) windowSizeChangeEvent.GetHeight();
+		}
+        else if (eventType == EventType::KeyDown)
         {
             auto keyEvent = static_cast<KeyDownEvent&>(event);
             //DYE_ASSERT(keyEvent.GetKeyCode() != KeyCode::Space);
@@ -100,7 +106,6 @@ namespace DYE
             m_FpsAccumulator = 0;
         }
 
-
 		if (INPUT.GetKey(KeyCode::Up))
 		{
 			m_WhiteObject->Position.y += TIME.DeltaTime() * 1.0f * m_BallSpeed;
@@ -121,6 +126,26 @@ namespace DYE
 			m_WhiteObject->Position.x -= TIME.DeltaTime() * 1.0f * m_BallSpeed;
 		}
 
+		if (INPUT.GetKey(KeyCode::W))
+		{
+			m_ProfileObject->Position.y += TIME.DeltaTime() * 1.0f * m_BallSpeed;
+		}
+
+		if (INPUT.GetKey(KeyCode::S))
+		{
+			m_ProfileObject->Position.y -= TIME.DeltaTime() * 1.0f * m_BallSpeed;
+		}
+
+		if (INPUT.GetKey(KeyCode::D))
+		{
+			m_ProfileObject->Position.x += TIME.DeltaTime() * 1.0f * m_BallSpeed;
+		}
+
+		if (INPUT.GetKey(KeyCode::A))
+		{
+			m_ProfileObject->Position.x -= TIME.DeltaTime() * 1.0f * m_BallSpeed;
+		}
+
 		if (INPUT.GetKey(KeyCode::Space))
 		{
 			m_KeyCounter++;
@@ -134,6 +159,16 @@ namespace DYE
 		if (INPUT.GetKeyUp(KeyCode::Space))
 		{
 			m_KeyUpCounter++;
+		}
+
+		if (INPUT.GetKeyDown(KeyCode::F1))
+		{
+			m_pWindow->SetWindowSize(640, 480);
+		}
+
+		if (INPUT.GetKeyDown(KeyCode::F2))
+		{
+			m_pWindow->SetWindowSize(1600, 900);
 		}
     }
 
@@ -209,6 +244,14 @@ namespace DYE
 			ImGui::Separator();
 			ImGuiUtil::DrawCameraPropertiesControl("Camera Properties", *m_CameraProperties);
 			ImGuiUtil::DrawFloatControl("Camera Speed", m_BallSpeed, 1.0f);
+
+			ImGui::Separator();
+			ImGuiUtil::DrawUnsignedIntControl("Window Width", m_WindowWidth, 1600);
+			ImGuiUtil::DrawUnsignedIntControl("Window Height", m_WindowHeight, 900);
+			if (ImGui::Button("Set Window Size"))
+			{
+				m_pWindow->SetWindowSize(m_WindowWidth, m_WindowHeight);
+			}
 
 			ImGui::Separator();
 			imguiMaterialObject(*m_ProfileObject);

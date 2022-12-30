@@ -65,6 +65,7 @@ namespace DYE
 
     void RenderCommand::SetViewport(std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height)
     {
+		DYE_LOG_INFO("glViewport: %d, %d, %d, %d", x, y, width, height);
         glViewport(x, y, width, height);
     }
 

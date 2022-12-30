@@ -45,7 +45,7 @@ namespace DYE
 
     private:
         void handleOnWindowClose(const WindowCloseEvent& event);
-        void handleOnWindowResize(const WindowSizeChangeEvent& event);
+        void handleOnWindowSizeChange(const WindowSizeChangeEvent& event);
 
     protected:
         /// The main rendering window

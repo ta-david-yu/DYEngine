@@ -41,15 +41,16 @@ namespace DYE
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-        // Initialize core manager & systems
+        // Initialize core systems: time, input etc
 		Time::InitSingleton(fixedFramePerSecond);
 		InputManager::InitSingleton();
 
-        // Create window and context, and then init renderer
+        // Create window and context
         DYE_LOG("Init Renderer");
         m_Window = WindowBase::Create(WindowProperty(windowName));
 		m_Window->GetContext().SetVSyncCount(0);
 
+		// Initialize render pipeline
 		RenderCommand::InitSingleton();
 		RenderCommand::GetInstance().SetViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
 		RenderCommand::GetInstance().SetClearColor(glm::vec4 {0, 0, 0, 0});
@@ -151,7 +152,7 @@ namespace DYE
         }
         else if (eventType == EventType::WindowSizeChange)
         {
-            handleOnWindowResize(static_cast<const WindowSizeChangeEvent&>(event));
+			handleOnWindowSizeChange(static_cast<const WindowSizeChangeEvent &>(event));
         }
 
         // Event is passed from top to bottom layer
@@ -183,10 +184,17 @@ namespace DYE
         m_IsRunning = false;
     }
 
-    void Application::handleOnWindowResize(const WindowSizeChangeEvent &event)
+    void Application::handleOnWindowSizeChange(const WindowSizeChangeEvent &event)
     {
-		/// TODO: instead of calling set viewport here,
-		/// TODO: set viewport per camera (in RenderPipelineBase/RenderPipelineManager camera loop)
+		// TODO: instead of calling set viewport here,
+		// TODO: set viewport depending on the window ID & whether camera is targeting the window
+		// TODO: We will need something like WindowManager.GetWindowWithID(id).Resize etc
+		// TODO: for now we only set viewport for the first window (windowID == 1 (m_Window.GetWindowID()))
+		if (event.GetWindowID() != m_Window->GetNativeWindowID())
+		{
+			return;
+		}
+
 		RenderCommand::GetInstance().SetViewport(0, 0, event.GetWidth(), event.GetHeight());
     }
 }

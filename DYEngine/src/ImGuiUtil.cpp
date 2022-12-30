@@ -180,6 +180,56 @@ namespace DYE::ImGuiUtil
 
 		return isValueChanged;
 	}
+	bool DrawUnsignedIntControl(const std::string& label, int32_t & value, int32_t resetValue)
+	{
+		bool isValueChanged = false;
+
+		ImGuiIO& io = ImGui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+
+		ImGui::PushID(label.c_str());
+
+		ImGui::Columns(2);
+		ImGui::SetColumnWidth(0, Parameters::ControlLabelWidth);
+		ImGui::Text(label.c_str());
+		ImGui::NextColumn();
+
+		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
+
+		// Drag Float
+		{
+			isValueChanged |= ImGui::DragInt("##UnsignedInt", &value, 1, 0, 0);
+			ImGui::PopItemWidth();
+			ImGui::SameLine();
+		}
+
+		// Reset button
+		{
+			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+			ImVec2 buttonSize = {lineHeight + 3.0f, lineHeight};
+
+			///ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 {0.8f, 0.1f, 0.15f, 1.0f});
+			///ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 {0.9f, 0.2f, 0.2f, 1.0f});
+			///ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 {0.8f, 0.1f, 0.15f, 1.0f});
+			ImGui::PushFont(boldFont);
+			if (ImGui::Button("R", buttonSize))
+			{
+				value = resetValue;
+				isValueChanged |= true;
+			}
+			ImGui::PopFont();
+			///ImGui::PopStyleColor(3);
+		}
+
+		ImGui::PopStyleVar();
+
+		ImGui::Columns(1);
+
+		ImGui::PopID();
+
+		return isValueChanged;
+	}
 
 	bool DrawColor4Control(const std::string& label, glm::vec4& value)
 	{
