@@ -67,6 +67,8 @@ namespace DYE
     {
 		DYE_LOG_INFO("glViewport: %d, %d, %d, %d", x, y, width, height);
         glViewport(x, y, width, height);
+		DYE_LOG_INFO("glScissor: %d, %d, %d, %d", x, y, width, height);
+		glScissor(x, y, width, height);
     }
 
     void RenderCommand::SetClearColor(const glm::vec4 &color)
