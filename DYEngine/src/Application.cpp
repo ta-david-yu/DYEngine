@@ -189,7 +189,7 @@ namespace DYE
 		// TODO: instead of calling set viewport here,
 		// TODO: set viewport depending on the window ID & whether camera is targeting the window
 		// TODO: We will need something like WindowManager.GetWindowWithID(id).Resize etc
-		// TODO: for now we only set viewport for the first window (windowID == 1 (m_Window.GetWindowID()))
+		// TODO: for now we set viewport directly if (windowID == 1 (m_Window.GetWindowID()))
 		if (event.GetWindowID() != m_Window->GetNativeWindowID())
 		{
 			return;
