@@ -280,6 +280,7 @@ namespace DYE::ImGuiUtil
 
 		isValueChanged |= DrawFloatControl("Clip Distance | Near", cameraProperties.NearClipDistance, 0.1f);
 		isValueChanged |= DrawFloatControl("Clip Distance | Far", cameraProperties.FarClipDistance, 100);
+		isValueChanged |= DrawFloatControl("Aspect Ratio", cameraProperties.AspectRatio, 16.0f / 9.0f);
 
 		return false;
 	}
