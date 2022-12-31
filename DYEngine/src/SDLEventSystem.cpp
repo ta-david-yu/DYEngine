@@ -49,13 +49,11 @@ namespace DYE
 
 						eventPtr.reset(new WindowSizeChangeEvent(event.window.windowID, event.window.data1, event.window.data2));
 						caught = true;
-						DYE_LOG_INFO("WINDOWEVENT_SIZE_CHANGED [%d]: %d, %d", event.window.windowID, event.window.data1, event.window.data2);
 					}
                     else if (event.window.event == SDL_WINDOWEVENT_RESIZED)
                     {
                         eventPtr.reset(new WindowManualResizeEvent(event.window.windowID, event.window.data1, event.window.data2));
                         caught = true;
-						DYE_LOG_INFO("WINDOWEVENT_RESIZED [%d]: %d, %d", event.window.windowID, event.window.data1, event.window.data2);
                     }
 					else if (event.window.event == SDL_WINDOWEVENT_CLOSE)
 					{
