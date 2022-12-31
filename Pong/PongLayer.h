@@ -55,8 +55,9 @@ namespace DYE
 		int m_KeyUpCounter = 0;
 		int m_KeyCounter = 0;
 
-		int32_t m_WindowWidth = 1600;
-		int32_t m_WindowHeight = 900;
+		float m_WindowWidth = 1600;
+		float m_WindowHeight = 900;
+		float m_WindowPixelChangePerSecond = 100.0f;
 
 		float m_BallSpeed = 5.0f;
 

@@ -50,6 +50,10 @@ namespace DYE
 		m_CameraProperties->Position = glm::vec3 {0, 0, 10};
 		m_CameraProperties->IsOrthographic = true;
 		m_CameraProperties->OrthographicSize = 10;
+
+
+		m_WindowWidth = m_pWindow->GetWidth();
+		m_WindowHeight = m_pWindow->GetHeight();
 	}
 
 	void PongLayer::OnRender()
@@ -76,7 +80,8 @@ namespace DYE
 		if (eventType == EventType::WindowSizeChange)
 		{
 			auto windowSizeChangeEvent = static_cast<const WindowManualResizeEvent&>(event);
-			m_CameraProperties->AspectRatio = (float) windowSizeChangeEvent.GetWidth() / (float) windowSizeChangeEvent.GetHeight();
+			//m_CameraProperties->OrthographicSize = 10 * (windowSizeChangeEvent.GetWidth() / 1600.0f);
+			//m_CameraProperties->AspectRatio = (float) windowSizeChangeEvent.GetWidth() / (float) windowSizeChangeEvent.GetHeight();
 		}
         else if (eventType == EventType::KeyDown)
         {
@@ -108,43 +113,51 @@ namespace DYE
 
 		if (INPUT.GetKey(KeyCode::Up))
 		{
-			m_WhiteObject->Position.y += TIME.DeltaTime() * 1.0f * m_BallSpeed;
+			m_WhiteObject->Position.y += TIME.DeltaTime() * m_BallSpeed;
 		}
 
 		if (INPUT.GetKey(KeyCode::Down))
 		{
-			m_WhiteObject->Position.y -= TIME.DeltaTime() * 1.0f * m_BallSpeed;
+			m_WhiteObject->Position.y -= TIME.DeltaTime() * m_BallSpeed;
 		}
 
 		if (INPUT.GetKey(KeyCode::Right))
 		{
-			m_WhiteObject->Position.x += TIME.DeltaTime() * 1.0f * m_BallSpeed;
+			m_WhiteObject->Position.x += TIME.DeltaTime() * m_BallSpeed;
 		}
 
 		if (INPUT.GetKey(KeyCode::Left))
 		{
-			m_WhiteObject->Position.x -= TIME.DeltaTime() * 1.0f * m_BallSpeed;
+			m_WhiteObject->Position.x -= TIME.DeltaTime() * m_BallSpeed;
 		}
 
+		bool change = false;
 		if (INPUT.GetKey(KeyCode::W))
 		{
-			m_ProfileObject->Position.y += TIME.DeltaTime() * 1.0f * m_BallSpeed;
+			m_WindowHeight -= TIME.DeltaTime() * m_WindowPixelChangePerSecond;
+			change = true;
 		}
-
 		if (INPUT.GetKey(KeyCode::S))
 		{
-			m_ProfileObject->Position.y -= TIME.DeltaTime() * 1.0f * m_BallSpeed;
+			m_WindowHeight += TIME.DeltaTime() * m_WindowPixelChangePerSecond;
+			change = true;
 		}
-
 		if (INPUT.GetKey(KeyCode::D))
 		{
-			m_ProfileObject->Position.x += TIME.DeltaTime() * 1.0f * m_BallSpeed;
+			m_WindowWidth += TIME.DeltaTime() * m_WindowPixelChangePerSecond;
+			change = true;
 		}
-
 		if (INPUT.GetKey(KeyCode::A))
 		{
-			m_ProfileObject->Position.x -= TIME.DeltaTime() * 1.0f * m_BallSpeed;
+			m_WindowWidth -= TIME.DeltaTime() * m_WindowPixelChangePerSecond;
+			change = true;
 		}
+
+		if (change)
+		{
+			m_pWindow->SetWindowSize(m_WindowWidth, m_WindowHeight);
+		}
+
 
 		if (INPUT.GetKey(KeyCode::Space))
 		{
@@ -163,7 +176,7 @@ namespace DYE
 
 		if (INPUT.GetKeyDown(KeyCode::F1))
 		{
-			m_pWindow->SetWindowSize(640, 480);
+			m_pWindow->SetWindowSize(1920, 1080);
 		}
 
 		if (INPUT.GetKeyDown(KeyCode::F2))
@@ -244,14 +257,6 @@ namespace DYE
 			ImGui::Separator();
 			ImGuiUtil::DrawCameraPropertiesControl("Camera Properties", *m_CameraProperties);
 			ImGuiUtil::DrawFloatControl("Camera Speed", m_BallSpeed, 1.0f);
-
-			ImGui::Separator();
-			ImGuiUtil::DrawUnsignedIntControl("Window Width", m_WindowWidth, 1600);
-			ImGuiUtil::DrawUnsignedIntControl("Window Height", m_WindowHeight, 900);
-			if (ImGui::Button("Set Window Size"))
-			{
-				m_pWindow->SetWindowSize(m_WindowWidth, m_WindowHeight);
-			}
 
 			ImGui::Separator();
 			imguiMaterialObject(*m_ProfileObject);
