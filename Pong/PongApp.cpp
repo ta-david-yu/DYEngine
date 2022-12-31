@@ -28,7 +28,7 @@ namespace DYE
         explicit PongApp(const std::string &windowName, int fixedFramePerSecond = 60)
             : Application(windowName, fixedFramePerSecond)
         {
-			pushLayer(std::make_shared<PongLayer>(m_Window.get()));
+			pushLayer(std::make_shared<PongLayer>());
         }
 
         ~PongApp() final = default;

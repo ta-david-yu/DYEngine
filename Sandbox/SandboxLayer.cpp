@@ -2,6 +2,7 @@
 
 #include "SandboxLayer.h"
 #include "WindowBase.h"
+#include "WindowManager.h"
 #include "Logger.h"
 
 #include "Util/Time.h"
@@ -23,7 +24,7 @@
 
 namespace DYE
 {
-    SandboxLayer::SandboxLayer(WindowBase *pWindow) : m_pWindow(pWindow)
+    SandboxLayer::SandboxLayer()
     {
 		RenderCommand::GetInstance().SetClearColor(glm::vec4{0.5f, 0.5f, 0.5f, 0.5f});
 
@@ -76,8 +77,10 @@ namespace DYE
 		m_WhiteObject->Material->SetTexture("_MainTex", Texture2D::Create("assets\\textures\\Island.png"));
 		// Texture2D::Create(glm::vec4{1, 1, 1, 1}, 200, 100)
 
+		auto mainWindowPtr = WindowManager::GetMainWindow();
+
 		m_CameraProperties = std::make_shared<CameraProperties>();
-		m_CameraProperties->AspectRatio = (float) m_pWindow->GetWidth() / (float) m_pWindow->GetHeight();
+		m_CameraProperties->AspectRatio = (float) mainWindowPtr->GetWidth() / (float) mainWindowPtr->GetHeight();
 		m_CameraProperties->Position = glm::vec3 {0, 0, 3};
     }
 
@@ -148,7 +151,8 @@ namespace DYE
         static int counter = 0;
         // get the window size as a base for calculating widgets geometry
         int sdl_width = 0, sdl_height = 0, controls_width = 0;
-        SDL_GetWindowSize(m_pWindow->GetTypedNativeWindowPtr<SDL_Window>(), &sdl_width, &sdl_height);
+		auto mainWindowPtr = WindowManager::GetMainWindow();
+        SDL_GetWindowSize(mainWindowPtr->GetTypedNativeWindowPtr<SDL_Window>(), &sdl_width, &sdl_height);
         controls_width = sdl_width;
         // make controls widget width to be 1/3 of the main window width
         if ((controls_width /= 3) < 300) { controls_width = 300; }

@@ -9,7 +9,8 @@ namespace DYE
     class ImGuiLayer : public LayerBase
     {
     public:
-        ImGuiLayer(WindowBase* pWindow);
+        explicit ImGuiLayer(WindowBase* pWindow);
+		ImGuiLayer() = delete;
         ~ImGuiLayer() override = default;
 
         void OnAttach() override;

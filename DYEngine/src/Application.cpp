@@ -47,12 +47,19 @@ namespace DYE
 
         // Create window and context
         DYE_LOG("Init Renderer");
-        m_Window = WindowBase::Create(WindowProperty(windowName));
-		m_Window->GetContext().SetVSyncCount(0);
+
+		if (WindowManager::GetNumberOfWindows() == 0)
+		{
+			// If there is not yet a window, we create one first!
+			WindowManager::CreateWindow(WindowProperty(windowName));
+		}
+
+		auto mainWindow = WindowManager::GetMainWindow();
+		mainWindow->GetContext().SetVSyncCount(0);
 
 		// Initialize render pipeline
 		RenderCommand::InitSingleton();
-		RenderCommand::GetInstance().SetViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
+		RenderCommand::GetInstance().SetViewport(0, 0, mainWindow->GetWidth(), mainWindow->GetHeight());
 		RenderCommand::GetInstance().SetClearColor(glm::vec4 {0, 0, 0, 0});
 		RenderPipelineManager::SetActiveRenderPipeline(std::make_shared<RenderPipeline2D>());	// Use 2D RenderPipeline by default
 
@@ -61,7 +68,7 @@ namespace DYE
         m_EventSystem->Register(this);
 
         // Push ImGuiLayer as overlay
-        m_ImGuiLayer = std::make_shared<ImGuiLayer>(m_Window.get());
+        m_ImGuiLayer = std::make_shared<ImGuiLayer>(mainWindow);
         pushOverlay(m_ImGuiLayer);
     }
 
@@ -130,8 +137,8 @@ namespace DYE
             }
             m_ImGuiLayer->EndImGui();
 
-            // Swap Buffers
-            m_Window->OnUpdate();
+            // Update all registered Windows: Swap Buffers
+			WindowManager::UpdateWindows();
 
 			TIME.tickUpdate();
         }
@@ -189,12 +196,6 @@ namespace DYE
 		// TODO: instead of calling set viewport here,
 		// TODO: set viewport depending on the window ID & whether camera is targeting the window
 		// TODO: We will need something like WindowManager.GetWindowWithID(id).Resize etc
-		// TODO: for now we set viewport directly if (windowID == 1 (m_Window.GetWindowID()))
-		if (event.GetWindowID() != m_Window->GetNativeWindowID())
-		{
-			return;
-		}
-
 		RenderCommand::GetInstance().SetViewport(0, 0, event.GetWidth(), event.GetHeight());
     }
 }

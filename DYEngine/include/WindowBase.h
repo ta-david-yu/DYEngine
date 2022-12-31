@@ -8,6 +8,8 @@ namespace DYE
 {
 	class ContextBase;
 
+	using WindowID = std::uint32_t;
+
 	enum class FullScreenMode
 	{
 		Window,
@@ -55,7 +57,10 @@ namespace DYE
         /// \return a pointer to the library native window object
         virtual void *GetNativeWindowPtr() const = 0;
 
-		virtual std::uint32_t GetNativeWindowID() const = 0;
+		/// Get the id of the window. The id implementation depends on the underlying platform library but it should always be unique across different windows.
+		/// For instance, a SDLWindow uses SDL_GetWindowID as the value.
+		/// \return the id of the window
+		virtual WindowID GetWindowID() const = 0;
 
         ///  Templated: Get the pointer to the native window based on the platform library being used. ex. SDLWindow for Windows platform
         /// \return a typed pointer to the library native window object
@@ -66,7 +71,8 @@ namespace DYE
         }
 
 
-        /// A factory function that creates a window based on the platform with the given property setup
+        /// A factory function that creates a window based on the platform with the given property setup.
+        /// Normally you should avoid calling this directly, it's only for engine internal use. Call WindowManager::CreateWindow instead.
         /// \param windowProperty the settings property for the created window (name, width, height)
         /// \return a unique pointer to the created window
         static std::unique_ptr<WindowBase> Create(const WindowProperty &windowProperty);

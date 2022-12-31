@@ -24,7 +24,7 @@ namespace DYE
 		void SetWindowSize(uint32_t width, uint32_t height) override;
 
         void *GetNativeWindowPtr() const override { return m_pNativeWindow; }
-		std::uint32_t GetNativeWindowID() const override;
+		std::uint32_t GetWindowID() const override;
 
     private:
         /// The pointer to the native window object

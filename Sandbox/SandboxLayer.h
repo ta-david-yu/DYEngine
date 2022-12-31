@@ -29,8 +29,8 @@ namespace DYE
     class SandboxLayer : public LayerBase
     {
     public:
-        explicit SandboxLayer(WindowBase* pWindow);
-        SandboxLayer() = delete;
+        SandboxLayer();
+        SandboxLayer(SandboxLayer const& other) = delete;
 
         void OnEvent(Event& event) override;
         void OnUpdate() override;
@@ -43,7 +43,6 @@ namespace DYE
 		void imguiMaterialObject(MaterialObject& object);
 
     private:
-        WindowBase* m_pWindow;
 		bool m_IsControlWindowOpen = false;
         double m_FpsAccumulator = 0;
         int m_FramesCounter = 0;

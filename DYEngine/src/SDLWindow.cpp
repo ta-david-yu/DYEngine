@@ -100,9 +100,10 @@ namespace DYE
 	void SDLWindow::SetWindowSize(uint32_t width, uint32_t height)
 	{
 		SDL_SetWindowSize(m_pNativeWindow, width, height);
+		DYE_LOG_INFO("WindowSize: %d, %d", width, height);
 	}
 
-	std::uint32_t SDLWindow::GetNativeWindowID() const
+	std::uint32_t SDLWindow::GetWindowID() const
 	{
 		return SDL_GetWindowID(m_pNativeWindow);
 	}

@@ -2,6 +2,7 @@
 
 #include "PongLayer.h"
 #include "WindowBase.h"
+#include "WindowManager.h"
 #include "Logger.h"
 
 #include "Util/Time.h"
@@ -27,7 +28,7 @@
 
 namespace DYE
 {
-	PongLayer::PongLayer(WindowBase *pWindow) : m_pWindow(pWindow)
+	PongLayer::PongLayer()
     {
     }
 
@@ -45,15 +46,16 @@ namespace DYE
 		m_WhiteObject->Texture = Texture2D::Create("assets\\Sprite_Pong.png");
 		m_WhiteObject->Texture->PixelsPerUnit = 32;
 
+		auto mainWindowPtr = WindowManager::GetMainWindow();
+
 		m_CameraProperties = std::make_shared<CameraProperties>();
-		m_CameraProperties->AspectRatio = (float) m_pWindow->GetWidth() / (float) m_pWindow->GetHeight();
+		m_CameraProperties->AspectRatio = (float) mainWindowPtr->GetWidth() / (float) mainWindowPtr->GetHeight();
 		m_CameraProperties->Position = glm::vec3 {0, 0, 10};
 		m_CameraProperties->IsOrthographic = true;
 		m_CameraProperties->OrthographicSize = 10;
 
-
-		m_WindowWidth = m_pWindow->GetWidth();
-		m_WindowHeight = m_pWindow->GetHeight();
+		m_WindowWidth = mainWindowPtr->GetWidth();
+		m_WindowHeight = mainWindowPtr->GetHeight();
 	}
 
 	void PongLayer::OnRender()
@@ -153,9 +155,10 @@ namespace DYE
 			change = true;
 		}
 
+		auto mainWindowPtr = WindowManager::GetMainWindow();
 		if (change)
 		{
-			m_pWindow->SetWindowSize(m_WindowWidth, m_WindowHeight);
+			mainWindowPtr->SetWindowSize(m_WindowWidth, m_WindowHeight);
 		}
 
 
@@ -176,12 +179,12 @@ namespace DYE
 
 		if (INPUT.GetKeyDown(KeyCode::F1))
 		{
-			m_pWindow->SetWindowSize(1920, 1080);
+			mainWindowPtr->SetWindowSize(1920, 1080);
 		}
 
 		if (INPUT.GetKeyDown(KeyCode::F2))
 		{
-			m_pWindow->SetWindowSize(1600, 900);
+			mainWindowPtr->SetWindowSize(1600, 900);
 		}
     }
 
@@ -198,7 +201,8 @@ namespace DYE
         static int counter = 0;
         // get the window size as a base for calculating widgets geometry
         int sdl_width = 0, sdl_height = 0, controls_width = 0;
-        SDL_GetWindowSize(m_pWindow->GetTypedNativeWindowPtr<SDL_Window>(), &sdl_width, &sdl_height);
+		auto mainWindowPtr = WindowManager::GetMainWindow();
+        SDL_GetWindowSize(mainWindowPtr->GetTypedNativeWindowPtr<SDL_Window>(), &sdl_width, &sdl_height);
         controls_width = sdl_width;
         // make controls widget width to be 1/3 of the main window width
         if ((controls_width /= 3) < 300) { controls_width = 300; }

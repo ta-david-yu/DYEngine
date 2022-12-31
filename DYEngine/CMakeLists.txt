@@ -39,7 +39,7 @@ set(SOURCE_FILES
         src/RenderPipelineManager.cpp
         src/RenderPipelineBase.cpp
         src/RenderPipeline2D.cpp
-        src/KeyCode.cpp src/InputManager.cpp src/MaterialPropertyBlock.cpp)
+        src/KeyCode.cpp src/InputManager.cpp src/MaterialPropertyBlock.cpp src/WindowManager.cpp)
 set(HEADER_FILES
         include/Application.h
         include/WindowBase.h
@@ -85,7 +85,7 @@ set(HEADER_FILES
         include/Graphics/RenderPipelineManager.h
         include/Graphics/RenderPipelineBase.h
         include/Graphics/RenderPipeline2D.h
-        include/Util/Algorithm.h include/Input/InputManager.h include/Graphics/MaterialPropertyBlock.h)
+        include/Util/Algorithm.h include/Input/InputManager.h include/Graphics/MaterialPropertyBlock.h include/WindowManager.h)
 
 message(STATUS "[DYEngine] Source Files: ${SOURCE_FILES}")
 message(STATUS "[DYEngine] Header Files: ${HEADER_FILES}")

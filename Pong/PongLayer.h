@@ -30,8 +30,8 @@ namespace DYE
     class PongLayer : public LayerBase
     {
     public:
-        explicit PongLayer(WindowBase* pWindow);
-		PongLayer() = delete;
+        PongLayer();
+		PongLayer(PongLayer const& other) = delete;
 
 		void OnInit() override;
         void OnEvent(Event& event) override;
@@ -45,7 +45,6 @@ namespace DYE
 		void imguiMaterialObject(SpriteObject& object);
 
     private:
-        WindowBase* m_pWindow;
 		bool m_IsControlWindowOpen = false;
         double m_FpsAccumulator = 0;
         int m_FramesCounter = 0;

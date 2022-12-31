@@ -1,6 +1,7 @@
 #pragma once
 
 #include "WindowBase.h"
+#include "WindowManager.h"
 #include "Event/EventSystemBase.h"
 #include "Event/ApplicationEvent.h"
 #include "Util/Time.h"
@@ -30,10 +31,6 @@ namespace DYE
 
         void Handle(Event& event) override;
 
-        /// Get the main window base instance in the application
-        /// \return a raw pointer to the main window
-        WindowBase* GetMainWindow() const { return m_Window.get(); }
-
     protected:
         void pushLayer(std::shared_ptr<LayerBase> layer);
         void pushOverlay(std::shared_ptr<LayerBase> overlay);
@@ -48,9 +45,6 @@ namespace DYE
         void handleOnWindowSizeChange(const WindowSizeChangeEvent& event);
 
     protected:
-        /// The main rendering window
-        std::unique_ptr<WindowBase> m_Window;
-
         /// The main event system that poll events from the framework (SDL/GLFW for instance)
         std::unique_ptr<EventSystemBase> m_EventSystem;
 
