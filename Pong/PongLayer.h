@@ -41,7 +41,7 @@ namespace DYE
         void OnImGui() override;
 
 	private:
-		void renderMaterialObject(SpriteObject& object);
+		static void renderMaterialObject(SpriteObject& object);
 		void imguiMaterialObject(SpriteObject& object);
 
     private:
