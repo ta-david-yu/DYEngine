@@ -49,10 +49,22 @@ namespace DYE
 		auto mainWindowPtr = WindowManager::GetMainWindow();
 
 		m_CameraProperties = std::make_shared<CameraProperties>();
-		m_CameraProperties->AspectRatio = (float) mainWindowPtr->GetWidth() / (float) mainWindowPtr->GetHeight();
 		m_CameraProperties->Position = glm::vec3 {0, 0, 10};
 		m_CameraProperties->IsOrthographic = true;
 		m_CameraProperties->OrthographicSize = 10;
+
+		m_CameraProperties->TargetType = RenderTargetType::Window;
+		m_CameraProperties->TargetWindowID = mainWindowPtr->GetWindowID();
+
+		m_CameraProperties->UseManualAspectRatio = true;
+		m_CameraProperties->ManualAspectRatio = (float) mainWindowPtr->GetWidth() / (float) mainWindowPtr->GetHeight();
+
+		/*
+		m_CameraProperties->ViewportValueType = ViewportValueType::AbsoluteDimension;
+		m_CameraProperties->Viewport = { 0, 0, (float) mainWindowPtr->GetWidth(), (float) mainWindowPtr->GetHeight() };*/
+
+		m_CameraProperties->ViewportValueType = ViewportValueType::RelativeDimension;
+		m_CameraProperties->Viewport = { 0, 0, 1, 1 };
 
 		m_WindowWidth = mainWindowPtr->GetWidth();
 		m_WindowHeight = mainWindowPtr->GetHeight();
@@ -83,7 +95,7 @@ namespace DYE
 		{
 			auto windowSizeChangeEvent = static_cast<const WindowManualResizeEvent&>(event);
 			//m_CameraProperties->OrthographicSize = 10 * (windowSizeChangeEvent.GetWidth() / 1600.0f);
-			//m_CameraProperties->AspectRatio = (float) windowSizeChangeEvent.GetWidth() / (float) windowSizeChangeEvent.GetHeight();
+			//m_CameraProperties->ManualAspectRatio = (float) windowSizeChangeEvent.GetWidth() / (float) windowSizeChangeEvent.GetHeight();
 		}
         else if (eventType == EventType::KeyDown)
         {
@@ -260,6 +272,8 @@ namespace DYE
 
 			ImGui::Separator();
 			ImGuiUtil::DrawCameraPropertiesControl("Camera Properties", *m_CameraProperties);
+
+			ImGui::Separator();
 			ImGuiUtil::DrawFloatControl("Camera Speed", m_BallSpeed, 1.0f);
 
 			ImGui::Separator();
@@ -270,6 +284,8 @@ namespace DYE
 		}
 
         ImGui::End();
+
+		ImGui::ShowDemoWindow();
     }
 
 	void PongLayer::imguiMaterialObject(SpriteObject &object)

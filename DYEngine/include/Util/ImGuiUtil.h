@@ -2,6 +2,12 @@
 
 #include <glm/glm.hpp>
 #include <string>
+#include <vector>
+
+namespace DYE::Math
+{
+	struct Rect;
+}
 
 namespace DYE
 {
@@ -30,6 +36,10 @@ namespace DYE::ImGuiUtil
 	bool DrawFloatControl(const std::string& label, float& value, float resetValue);
 	bool DrawUnsignedIntControl(const std::string& label, int32_t & value, int32_t resultValue);
 	bool DrawColor4Control(const std::string& label, glm::vec4& value);
+	bool DrawRectControl(const std::string& label, Math::Rect& value, Math::Rect const& resetValue);
+
+	void DrawReadOnlyLabelText(std::string const& label, std::string const& text);
+	bool DrawToolbar(const std::string& label, int32_t& value, std::vector<std::string> const& texts);
 
 	bool DrawCameraPropertiesControl(const std::string& label, CameraProperties& cameraProperties);
 	bool DrawMaterialControl(const std::string& label, Material& material);

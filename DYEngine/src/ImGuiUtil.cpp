@@ -261,6 +261,155 @@ namespace DYE::ImGuiUtil
 		return isValueChanged;
 	}
 
+	bool DrawRectControl(const std::string& label, Math::Rect& value, Math::Rect const& resetValue)
+	{
+		bool isValueChanged = false;
+
+		ImGuiIO& io = ImGui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+
+		ImGui::PushID(label.c_str());
+
+		ImGui::Columns(2);
+		ImGui::SetColumnWidth(0, Parameters::ControlLabelWidth);
+		ImGui::Text(label.c_str());
+		ImGui::NextColumn();
+
+		ImGui::PushMultiItemsWidths(4, ImGui::CalcItemWidth());
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
+
+		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+		ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
+
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("X", buttonSize))
+		{
+			value.X = resetValue.X;
+			isValueChanged |= true;
+		}
+		ImGui::PopFont();
+		ImGui::PopStyleColor(3);
+
+		ImGui::SameLine();
+		isValueChanged |= ImGui::DragFloat("##X", &value.X, 0.1f, 0.0f, 0.0f, "%.2f");
+		ImGui::PopItemWidth();
+
+		ImGui::SameLine();
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.3f, 0.8f, 0.3f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("Y", buttonSize))
+		{
+			value.Y = resetValue.Y;
+			isValueChanged |= true;
+		}
+		ImGui::PopFont();
+		ImGui::PopStyleColor(3);
+
+		ImGui::SameLine();
+		isValueChanged |= ImGui::DragFloat("##Y", &value.Y, 0.1f, 0.0f, 0.0f, "%.2f");
+		ImGui::PopItemWidth();
+
+		ImGui::SameLine();
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.2f, 0.35f, 0.9f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("W", buttonSize))
+		{
+			value.Width = resetValue.Width;
+			isValueChanged |= true;
+		}
+		ImGui::PopFont();
+		ImGui::PopStyleColor(3);
+
+		ImGui::SameLine();
+		isValueChanged |= ImGui::DragFloat("##W", &value.Width, 0.1f, 0.0f, 0.0f, "%.2f");
+		ImGui::PopItemWidth();
+
+		ImGui::SameLine();
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.2f, 0.35f, 0.9f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("H", buttonSize))
+		{
+			value.Height = resetValue.Height;
+			isValueChanged |= true;
+		}
+		ImGui::PopFont();
+		ImGui::PopStyleColor(3);
+
+		ImGui::SameLine();
+		isValueChanged |= ImGui::DragFloat("##H", &value.Height, 0.1f, 0.0f, 0.0f, "%.2f");
+		ImGui::PopItemWidth();
+
+		ImGui::PopStyleVar();
+
+		ImGui::Columns(1);
+
+		ImGui::PopID();
+
+		return isValueChanged;
+	}
+
+	void DrawReadOnlyTextWithLabel(const std::string &label, const std::string &text)
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+
+		ImGui::PushID(label.c_str());
+
+		ImGui::Columns(2);
+		ImGui::SetColumnWidth(0, Parameters::ControlLabelWidth);
+		ImGui::Text(label.c_str());
+		ImGui::NextColumn();
+
+		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
+		{
+			ImGui::Text(text.c_str());
+			ImGui::PopItemWidth();
+		}
+		ImGui::PopID();
+	}
+
+	bool DrawToolbar(const std::string& label, int32_t & value, std::vector<std::string> const& texts)
+	{
+		bool isValueChanged = false;
+
+		ImGuiIO& io = ImGui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+
+		ImGui::PushID(label.c_str());
+		ImGui::Columns(2);
+		ImGui::SetColumnWidth(0, Parameters::ControlLabelWidth);
+		ImGui::Text(label.c_str());
+		ImGui::NextColumn();
+
+		ImGui::PushMultiItemsWidths(texts.size(), ImGui::CalcItemWidth());
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
+		{
+			for (int i = 0; i < texts.size(); ++i)
+			{
+				isValueChanged |= ImGui::RadioButton(texts[i].c_str(), &value, i);
+				if (i != texts.size() - 1)
+				{
+					ImGui::SameLine();
+				}
+			}
+		}
+		ImGui::PopStyleVar();
+		ImGui::Columns(1);
+		ImGui::PopID();
+
+		return isValueChanged;
+	}
+
 	bool DrawCameraPropertiesControl(const std::string& label, CameraProperties& cameraProperties)
 	{
 		bool isValueChanged = false;
@@ -280,7 +429,34 @@ namespace DYE::ImGuiUtil
 
 		isValueChanged |= DrawFloatControl("Clip Distance | Near", cameraProperties.NearClipDistance, 0.1f);
 		isValueChanged |= DrawFloatControl("Clip Distance | Far", cameraProperties.FarClipDistance, 100);
-		isValueChanged |= DrawFloatControl("Aspect Ratio", cameraProperties.AspectRatio, 16.0f / 9.0f);
+
+		isValueChanged |= DrawBooleanControl("Use Manual Aspect Ratio", cameraProperties.UseManualAspectRatio);
+		if (cameraProperties.UseManualAspectRatio)
+		{
+			isValueChanged |= DrawFloatControl("Manual Aspect Ratio", cameraProperties.ManualAspectRatio, 16.0f / 9.0f);
+		}
+		else
+		{
+			auto dimension = cameraProperties.GetTargetDimension();
+			DrawReadOnlyTextWithLabel("Aspect Ratio", std::to_string(
+				cameraProperties.GetAutomaticAspectRatioOfDimension(dimension)));
+		}
+
+		int32_t viewportType = static_cast<int32_t>(cameraProperties.ViewportValueType);
+		bool viewportTypeChanged = DrawToolbar("Viewport Type", viewportType, { "Relative", "Absolute" });
+		if (viewportTypeChanged)
+		{
+			cameraProperties.ViewportValueType = static_cast<ViewportValueType>(viewportType);
+		}
+		isValueChanged |= viewportTypeChanged;
+
+		auto targetDimension = cameraProperties.GetTargetDimension();
+		Math::Rect resetRect = {0, 0, 1, 1};
+		if (cameraProperties.ViewportValueType == ViewportValueType::AbsoluteDimension)
+		{
+			resetRect = {0, 0, (float) targetDimension.x, (float) targetDimension.y};
+		}
+		isValueChanged |= DrawRectControl("Viewport", cameraProperties.Viewport, resetRect);
 
 		return false;
 	}

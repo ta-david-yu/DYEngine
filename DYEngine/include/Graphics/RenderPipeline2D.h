@@ -22,14 +22,13 @@ namespace DYE
 
 		RenderPipeline2D();
 		RenderPipeline2D(RenderPipeline2D const& other) = delete;
-
 		void Submit(std::shared_ptr<VertexArray> &vertexArray, std::shared_ptr<Material> &material, glm::mat4 objectToWorldMatrix) override;
-
 		void SubmitSprite(const std::shared_ptr<Texture2D>& texture, glm::vec4 color, glm::mat4 objectToWorldMatrix);
 
 	protected:
-		void render(const std::vector<CameraProperties> &cameras) override;
-
+		void onPreRender() override;
+		void renderCamera(CameraProperties const& camera) override;
+		void onPostRender() override;
 	private:
 		std::vector<RenderSubmission2D> m_Submissions;
 

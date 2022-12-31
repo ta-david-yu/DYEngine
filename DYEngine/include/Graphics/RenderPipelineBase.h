@@ -24,7 +24,9 @@ namespace DYE
 		virtual void Submit(std::shared_ptr<VertexArray>& vertexArray, std::shared_ptr<Material>& material, glm::mat4 objectToWorldMatrix) = 0;
 
 	protected:
-		// Execute rendering process.
-		virtual void render(std::vector<CameraProperties> const& cameras) = 0;
+		virtual void onPreRender() = 0;
+		void bindCameraSettings(CameraProperties& camera);
+		virtual void renderCamera(CameraProperties const& camera) = 0;
+		virtual void onPostRender() = 0;
 	};
 }

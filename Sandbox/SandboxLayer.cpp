@@ -80,7 +80,7 @@ namespace DYE
 		auto mainWindowPtr = WindowManager::GetMainWindow();
 
 		m_CameraProperties = std::make_shared<CameraProperties>();
-		m_CameraProperties->AspectRatio = (float) mainWindowPtr->GetWidth() / (float) mainWindowPtr->GetHeight();
+		m_CameraProperties->ManualAspectRatio = (float) mainWindowPtr->GetWidth() / (float) mainWindowPtr->GetHeight();
 		m_CameraProperties->Position = glm::vec3 {0, 0, 3};
     }
 

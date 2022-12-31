@@ -69,6 +69,12 @@ namespace DYE
 		glScissor(x, y, width, height);
     }
 
+	void RenderCommand::SetViewport(Math::Rect viewportRect)
+	{
+		glViewport(viewportRect.X, viewportRect.Y, viewportRect.Width, viewportRect.Height);
+		glScissor(viewportRect.X, viewportRect.Y, viewportRect.Width, viewportRect.Height);
+	}
+
     void RenderCommand::SetClearColor(const glm::vec4 &color)
     {
         glClearColor(color.r, color.g, color.b, color.a);
@@ -92,6 +98,7 @@ namespace DYE
 	void RenderCommand::DrawIndexedNow(RenderParameters const& renderParameters, VertexArray const& vertexArray, glm::mat4 objectToWorldMatrix)
 	{
 		auto& shader = renderParameters.Material->GetShaderProgram();
+		auto& camera = renderParameters.Camera;
 
 		// Set render state
 		shader.GetDefaultRenderState().Apply();
@@ -106,13 +113,13 @@ namespace DYE
 			glCall(glUniformMatrix4fv(modelMatrixLoc, 1, GL_FALSE, glm::value_ptr(objectToWorldMatrix)));
 
 			// World space to camera space
-			glm::mat4 viewMatrix = renderParameters.Camera.GetViewMatrix();
+			glm::mat4 viewMatrix = camera.GetViewMatrix();
 			auto viewMatrixLoc = glGetUniformLocation(shader.GetID(), DefaultUniformNames::ViewMatrix);
 			glCall(glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix)));
 
 			// Camera space to clip space
-			float const aspectRatio = renderParameters.Camera.AspectRatio;
-			glm::mat4 projectionMatrix = renderParameters.Camera.GetProjectionMatrix(aspectRatio);
+			float const aspectRatio = camera.GetAspectRatio();
+			glm::mat4 projectionMatrix = camera.GetProjectionMatrix(aspectRatio);
 			auto projectionMatrixLoc = glGetUniformLocation(shader.GetID(), DefaultUniformNames::ProjectionMatrix);
 			glCall(glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, glm::value_ptr(projectionMatrix)));
 		}

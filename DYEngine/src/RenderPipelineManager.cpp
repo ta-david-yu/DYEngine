@@ -20,7 +20,15 @@ namespace DYE
 			DYE_LOG("RenderPipelineManager::RenderWithActivePipeline is called, but no camera has been registered.");
 		}
 
-		s_ActiveRenderPipeline->render(s_CameraProperties);
+		s_ActiveRenderPipeline->onPreRender();
+
+		for (auto& camera : s_CameraProperties)
+		{
+			s_ActiveRenderPipeline->bindCameraSettings(camera);
+			s_ActiveRenderPipeline->renderCamera(camera);
+		}
+
+		s_ActiveRenderPipeline->onPostRender();
 
 		s_CameraProperties.clear();
 	}

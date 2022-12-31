@@ -194,8 +194,7 @@ namespace DYE
     void Application::handleOnWindowSizeChange(const WindowSizeChangeEvent &event)
     {
 		// TODO: instead of calling set viewport here,
-		// TODO: set viewport depending on the window ID & whether camera is targeting the window
+		// TODO: set viewport depending on the window ID & whether camera is targeting the window IF the camera is marked as auto-update aspect ratio
 		// TODO: We will need something like WindowManager.GetWindowWithID(id).Resize etc
-		RenderCommand::GetInstance().SetViewport(0, 0, event.GetWidth(), event.GetHeight());
     }
 }
