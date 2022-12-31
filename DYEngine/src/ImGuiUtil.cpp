@@ -357,27 +357,6 @@ namespace DYE::ImGuiUtil
 		return isValueChanged;
 	}
 
-	void DrawReadOnlyTextWithLabel(const std::string &label, const std::string &text)
-	{
-		ImGuiIO& io = ImGui::GetIO();
-		auto boldFont = io.Fonts->Fonts[0];
-
-		ImGui::PushID(label.c_str());
-
-		ImGui::Columns(2);
-		ImGui::SetColumnWidth(0, Parameters::ControlLabelWidth);
-		ImGui::Text(label.c_str());
-		ImGui::NextColumn();
-
-		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
-		{
-			ImGui::Text(text.c_str());
-			ImGui::PopItemWidth();
-		}
-		ImGui::PopID();
-	}
-
 	bool DrawToolbar(const std::string& label, int32_t & value, std::vector<std::string> const& texts)
 	{
 		bool isValueChanged = false;
@@ -408,6 +387,57 @@ namespace DYE::ImGuiUtil
 		ImGui::PopID();
 
 		return isValueChanged;
+	}
+
+	bool DrawDropdown(const std::string& label, int32_t& value, std::vector<char const*> const& texts)
+	{
+		bool isValueChanged = false;
+
+		ImGuiIO& io = ImGui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+
+		ImGui::PushID(label.c_str());
+
+		ImGui::Columns(2);
+		ImGui::SetColumnWidth(0, Parameters::ControlLabelWidth);
+		ImGui::Text(label.c_str());
+		ImGui::NextColumn();
+
+		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
+		{
+			texts.data();
+			isValueChanged |= ImGui::Combo("##combo", &value, texts.data(), texts.size());
+
+			ImGui::PopItemWidth();
+		}
+		ImGui::PopStyleVar();
+		ImGui::Columns(1);
+		ImGui::PopID();
+		return isValueChanged;
+	}
+
+	void DrawReadOnlyTextWithLabel(const std::string &label, const std::string &text)
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+
+		ImGui::PushID(label.c_str());
+
+		ImGui::Columns(2);
+		ImGui::SetColumnWidth(0, Parameters::ControlLabelWidth);
+		ImGui::Text(label.c_str());
+		ImGui::NextColumn();
+
+		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
+		{
+			ImGui::Text(text.c_str());
+			ImGui::PopItemWidth();
+		}
+		ImGui::PopStyleVar();
+		ImGui::Columns(1);
+		ImGui::PopID();
 	}
 
 	bool DrawCameraPropertiesControl(const std::string& label, CameraProperties& cameraProperties)
@@ -443,7 +473,7 @@ namespace DYE::ImGuiUtil
 		}
 
 		int32_t viewportType = static_cast<int32_t>(cameraProperties.ViewportValueType);
-		bool viewportTypeChanged = DrawToolbar("Viewport Type", viewportType, { "Relative", "Absolute" });
+		bool viewportTypeChanged = DrawDropdown("Viewport Type", viewportType, { "Relative", "Absolute" });
 		if (viewportTypeChanged)
 		{
 			cameraProperties.ViewportValueType = static_cast<ViewportValueType>(viewportType);
