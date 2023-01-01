@@ -48,18 +48,25 @@ namespace DYE
         // Create window and context
         DYE_LOG("Init Renderer");
 
+		WindowBase* mainWindowPtr = nullptr;
 		if (WindowManager::GetNumberOfWindows() == 0)
 		{
-			// If there is not yet a window, we create one first!
-			WindowManager::CreateWindow(WindowProperty(windowName));
-		}
+			// If there is no window, we create one first as the main window!
+			mainWindowPtr = WindowManager::CreateWindow(WindowProperty(windowName));
+			auto context = ContextBase::Create(mainWindowPtr);
+			mainWindowPtr->SetContext(context);
 
-		auto mainWindow = WindowManager::GetMainWindow();
-		mainWindow->GetContext().SetVSyncCount(0);
+			context->MakeCurrentForWindow(mainWindowPtr);
+			ContextBase::SetVSyncCountForCurrentContext(0);
+		}
+		else
+		{
+			mainWindowPtr = WindowManager::GetMainWindow();
+		}
 
 		// Initialize render pipeline
 		RenderCommand::InitSingleton();
-		RenderCommand::GetInstance().SetViewport(0, 0, mainWindow->GetWidth(), mainWindow->GetHeight());
+		RenderCommand::GetInstance().SetViewport(0, 0, mainWindowPtr->GetWidth(), mainWindowPtr->GetHeight());
 		RenderCommand::GetInstance().SetClearColor(glm::vec4 {0, 0, 0, 0});
 		RenderPipelineManager::SetActiveRenderPipeline(std::make_shared<RenderPipeline2D>());	// Use 2D RenderPipeline by default
 
@@ -67,8 +74,8 @@ namespace DYE
         m_EventSystem = EventSystemBase::Create();
         m_EventSystem->Register(this);
 
-        // Push ImGuiLayer as overlay
-        m_ImGuiLayer = std::make_shared<ImGuiLayer>(mainWindow);
+        // Push ImGuiLayer as overlay, initialzied with the main window
+        m_ImGuiLayer = std::make_shared<ImGuiLayer>(mainWindowPtr);
         pushOverlay(m_ImGuiLayer);
     }
 

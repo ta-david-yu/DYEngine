@@ -41,17 +41,20 @@ namespace DYE
     class WindowBase
     {
     public:
-        // ctor and dtor
+		/// A factory function that creates a window based on the platform with the given property setup.
+		/// Normally you should avoid calling this directly, it's only for engine internal use. Call WindowManager::CreateWindow instead.
+		/// \param windowProperty the settings property for the created window (name, width, height)
+		/// \return a unique pointer to the created window
+		static std::unique_ptr<WindowBase> Create(const WindowProperty &windowProperty);
+
+		// ctor and dtor
         virtual ~WindowBase() = default;
 
         virtual void OnUpdate() = 0;
 
         virtual uint32_t GetWidth() const = 0;
         virtual uint32_t GetHeight() const = 0;
-		virtual ContextBase& GetContext() const = 0;
-
-		virtual bool SetFullScreenMode(FullScreenMode mode) = 0;
-		virtual void SetWindowSize(uint32_t width, uint32_t height) = 0;
+		std::shared_ptr<ContextBase> GetContext() const;
 
         /// Get the pointer to the native window based on the platform library being used. ex. SDLWindow for Windows platform
         /// \return a pointer to the library native window object
@@ -70,13 +73,12 @@ namespace DYE
             return static_cast<T*>(GetNativeWindowPtr());
         }
 
+		void SetContext(std::shared_ptr<ContextBase> context);
+		virtual bool SetFullScreenMode(FullScreenMode mode) = 0;
+		virtual void SetWindowSize(uint32_t width, uint32_t height) = 0;
 
-        /// A factory function that creates a window based on the platform with the given property setup.
-        /// Normally you should avoid calling this directly, it's only for engine internal use. Call WindowManager::CreateWindow instead.
-        /// \param windowProperty the settings property for the created window (name, width, height)
-        /// \return a unique pointer to the created window
-        static std::unique_ptr<WindowBase> Create(const WindowProperty &windowProperty);
-
-
-    };
+	protected:
+		/// The underlying GraphicsContext
+		std::shared_ptr<ContextBase> m_Context;
+	};
 }

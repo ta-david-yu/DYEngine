@@ -54,6 +54,8 @@ namespace DYE
 		int m_KeyUpCounter = 0;
 		int m_KeyCounter = 0;
 
+		WindowBase* m_SecondWindow = nullptr;
+
 		float m_WindowWidth = 1600;
 		float m_WindowHeight = 900;
 		float m_WindowPixelChangePerSecond = 100.0f;

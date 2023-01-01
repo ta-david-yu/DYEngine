@@ -23,6 +23,11 @@ namespace DYE
 		return cachePtr;
 	}
 
+	void WindowManager::SetMainWindow(WindowID id)
+	{
+		s_MainWindowID = id;
+	}
+
 	WindowBase *WindowManager::GetWindowFromID(WindowID id)
 	{
 		for (auto const &windowPair: s_Windows)

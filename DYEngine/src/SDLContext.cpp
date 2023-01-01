@@ -8,56 +8,35 @@
 
 namespace DYE
 {
-    SDLContext::SDLContext(SDLWindow *pSdlWindow) : m_pWindow(pSdlWindow), m_pNativeContext(nullptr)
-    {
-        // TODO: add code to check if pSdlWindow is valid
-    }
-
     SDLContext::~SDLContext()
     {
         SDL_GL_DeleteContext(m_pNativeContext);
     }
 
-    void SDLContext::Init()
+    void SDLContext::init(WindowBase* pWindow)
     {
-        m_pNativeContext = SDL_GL_CreateContext(m_pWindow->GetTypedNativeWindowPtr<SDL_Window>());
-
-        // bind the context as the current rendering state to the window
-        int status = SDL_GL_MakeCurrent(m_pWindow->GetTypedNativeWindowPtr<SDL_Window>(), m_pNativeContext);
-        if (status < 0)
-        {
-            // MakeCurrent failed
-            DYE_LOG_ERROR("SDLContext: SDL_GL_MakeCurrent failed: %s\n", SDL_GetError());
-        }
-
-        if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
-        {
-            DYE_LOG_ERROR("SDLContext: Couldn't initialize glad");
-        }
-        else
-        {
-            DYE_LOG("SDLContext: glad initialized");
-        }
+        m_pNativeContext = SDL_GL_CreateContext(pWindow->GetTypedNativeWindowPtr<SDL_Window>());
     }
-
-    void SDLContext::SwapBuffers()
-    {
-        SDL_GL_SwapWindow(m_pWindow->GetTypedNativeWindowPtr<SDL_Window>());
-    }
-
-	bool SDLContext::SetVSyncCount(int count)
-	{
-		bool const success = SDL_GL_SetSwapInterval(count) == 0;
-		if (!success)
-		{
-			DYE_LOG_ERROR("SetVSyncCount(%d) failed: %s", count, SDL_GetError());
-		}
-
-		return success;
-	}
 
 	void *SDLContext::GetNativeContextPtr() const
 	{
 		return m_pNativeContext;
+	}
+
+	void SDLContext::MakeCurrentForWindow(WindowBase const* pWindow)
+	{
+		// bind the context as the current rendering state to the window
+		int const status = SDL_GL_MakeCurrent(pWindow->GetTypedNativeWindowPtr<SDL_Window>(), GetNativeContextPtr());
+		if (status < 0)
+		{
+			// MakeCurrent failed
+			DYE_LOG("SDLContext: SDL_GL_MakeCurrent failed: %s\n", SDL_GetError());
+		}
+
+		// Load OpenGL function pointers
+		if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
+		{
+			DYE_LOG_ERROR("SDLContext: Couldn't initialize glad");
+		}
 	}
 }

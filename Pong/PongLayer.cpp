@@ -3,6 +3,7 @@
 #include "PongLayer.h"
 #include "WindowBase.h"
 #include "WindowManager.h"
+#include "ContextBase.h"
 #include "Logger.h"
 
 #include "Util/Time.h"
@@ -68,11 +69,23 @@ namespace DYE
 
 		m_WindowWidth = mainWindowPtr->GetWidth();
 		m_WindowHeight = mainWindowPtr->GetHeight();
+
+		m_SecondWindow = WindowManager::CreateWindow(WindowProperty("Second Window"));
+		auto mainContext = mainWindowPtr->GetContext();
+		m_SecondWindow->SetContext(mainContext);
+
+		// Set the current context back to the main window.
+		mainContext->MakeCurrentForWindow(mainWindowPtr);
 	}
 
 	void PongLayer::OnRender()
 	{
 		RenderPipelineManager::RegisterCameraForNextRender(*m_CameraProperties);
+
+		CameraProperties cameraRenderToSecondWindow = *m_CameraProperties;
+		cameraRenderToSecondWindow.TargetWindowID = m_SecondWindow->GetWindowID();
+		RenderPipelineManager::RegisterCameraForNextRender(cameraRenderToSecondWindow);
+
 		renderMaterialObject(*m_ProfileObject);
 		renderMaterialObject(*m_WhiteObject);
 	}

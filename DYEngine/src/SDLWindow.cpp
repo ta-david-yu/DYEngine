@@ -36,10 +36,6 @@ namespace DYE
 
 		SDL_SetWindowFullscreen(m_pNativeWindow, fullScreenFlag);
         SDL_SetWindowResizable(m_pNativeWindow, (windowProperty.IsUserResizable ? SDL_TRUE : SDL_FALSE));
-
-        // create context
-        m_Context = ContextBase::Create(this);
-        m_Context->Init();
     }
 
     SDLWindow::~SDLWindow()
@@ -49,7 +45,7 @@ namespace DYE
 
     void SDLWindow::OnUpdate()
     {
-        m_Context->SwapBuffers();
+		SDL_GL_SwapWindow(this->GetTypedNativeWindowPtr<SDL_Window>());
     }
 
     uint32_t SDLWindow::GetWidth() const
@@ -66,9 +62,9 @@ namespace DYE
         return height;
     }
 
-	ContextBase &SDLWindow::GetContext() const
+	std::uint32_t SDLWindow::GetWindowID() const
 	{
-		return *m_Context;
+		return SDL_GetWindowID(m_pNativeWindow);
 	}
 
 	bool SDLWindow::SetFullScreenMode(FullScreenMode mode)
@@ -101,10 +97,5 @@ namespace DYE
 	{
 		SDL_SetWindowSize(m_pNativeWindow, width, height);
 		DYE_LOG_INFO("WindowSize: %d, %d", width, height);
-	}
-
-	std::uint32_t SDLWindow::GetWindowID() const
-	{
-		return SDL_GetWindowID(m_pNativeWindow);
 	}
 }

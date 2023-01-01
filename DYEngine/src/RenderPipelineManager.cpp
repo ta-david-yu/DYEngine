@@ -1,6 +1,10 @@
 #include "Graphics/RenderPipelineManager.h"
 
 #include "Base.h"
+#include "WindowManager.h"
+#include "ContextBase.h"
+
+#include <optional>
 
 namespace DYE
 {
@@ -20,10 +24,47 @@ namespace DYE
 			DYE_LOG("RenderPipelineManager::RenderWithActivePipeline is called, but no camera has been registered.");
 		}
 
+
+
+		// Sort the cameras based on their render target ID (for now only Window),
+		// to reduce the number of calls to window context swap.
+		std::stable_sort
+			(
+				s_CameraProperties.begin(),
+				s_CameraProperties.end(),
+				[](CameraProperties const &cameraA, CameraProperties const &cameraB)
+				{
+					if (cameraA.TargetType == RenderTargetType::Window && cameraB.TargetType == RenderTargetType::Window)
+					{
+						return cameraA.TargetWindowID < cameraB.TargetWindowID;
+					}
+
+					// If only camera A is rendering to window, we render camera A first!
+					return cameraA.TargetType == RenderTargetType::Window;
+				}
+			);
+
 		s_ActiveRenderPipeline->onPreRender();
 
+		std::optional<WindowID> currentWindowID = {};
 		for (auto& camera : s_CameraProperties)
 		{
+			if (camera.TargetType == RenderTargetType::RenderTexture)
+			{
+				// TODO: we skip render texture camera cuz we haven't implemented it yet!
+				continue;
+			}
+
+			// Render to a window
+			if (!currentWindowID.has_value() || camera.TargetWindowID != currentWindowID.value())
+			{
+				// If the camera is rendering to a window other than the current one,
+				// Swap to the render target window and make the context current.
+				currentWindowID = camera.TargetWindowID;
+				auto pWindow = WindowManager::GetWindowFromID(currentWindowID.value());
+				pWindow->GetContext()->MakeCurrentForWindow(pWindow);
+			}
+
 			s_ActiveRenderPipeline->bindCameraSettings(camera);
 			s_ActiveRenderPipeline->renderCamera(camera);
 		}

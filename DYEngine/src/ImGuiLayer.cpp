@@ -3,6 +3,7 @@
 #include "WindowBase.h"
 #include "ContextBase.h"
 #include "Graphics/OpenGL.h"
+#include "WindowManager.h"
 
 #include <SDL.h>
 #include <imgui.h>
@@ -33,7 +34,9 @@ namespace DYE
         ImGui::StyleColorsDark();
 
         auto glsl_version = "#version 130";
-        ImGui_ImplSDL2_InitForOpenGL(m_pWindow->GetTypedNativeWindowPtr<SDL_Window>(), SDL_GL_GetCurrentContext());
+		// TODO: Maybe move these code to somewhere else to support different platforms libraries
+		// 	Or just use preprocessor to detect different platforms or GPU API :P
+        ImGui_ImplSDL2_InitForOpenGL(m_pWindow->GetTypedNativeWindowPtr<SDL_Window>(), m_pWindow->GetContext()->GetNativeContextPtr());
         ImGui_ImplOpenGL3_Init(glsl_version);
     }
 
@@ -58,10 +61,12 @@ namespace DYE
 
     void ImGuiLayer::BeginImGui()
     {
+		m_pWindow->GetContext()->MakeCurrentForWindow(m_pWindow);
+
         // start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
-		//ImGui_ImplSDL2_NewFrame();
-		ImGui_ImplSDL2_NewFrame(m_pWindow->GetTypedNativeWindowPtr<SDL_Window>());
+		ImGui_ImplSDL2_NewFrame();
+		//ImGui_ImplSDL2_NewFrame(m_pWindow->GetTypedNativeWindowPtr<SDL_Window>());
         ImGui::NewFrame();
     }
 
@@ -77,12 +82,12 @@ namespace DYE
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-		// TODO: Move these code to individual window / context class to support different platforms libraries
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
-			SDL_GL_MakeCurrent(m_pWindow->GetTypedNativeWindowPtr<SDL_Window>(), m_pWindow->GetContext().GetNativeContextPtr());
+
+			m_pWindow->GetContext()->MakeCurrentForWindow(m_pWindow);
 		}
     }
 }
