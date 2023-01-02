@@ -45,6 +45,11 @@ namespace DYE
 
 	}
 
+	std::optional<WindowID> WindowManager::GetMainWindowID()
+	{
+		return s_MainWindowID;
+	}
+
 	WindowBase *WindowManager::GetMainWindow()
 	{
 		if (!s_MainWindowID.has_value())

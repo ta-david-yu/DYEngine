@@ -6,6 +6,19 @@
 
 namespace DYE
 {
+	class ApplicationQuitEvent : public Event
+	{
+	public:
+		explicit ApplicationQuitEvent(std::uint32_t timeStamp) : m_TimeStamp(timeStamp) { }
+		std::uint32_t GetTimeStamp() const { return m_TimeStamp; }
+
+		EVENT_CLASS_TYPE(ApplicationQuit)
+		EVENT_CLASS_CATEGORY(EventCategory::Application)
+
+	private:
+		std::uint32_t m_TimeStamp;
+	};
+
 	class WindowEvent : public Event
 	{
 	public:
@@ -20,8 +33,8 @@ namespace DYE
     public:
         WindowCloseEvent(std::uint32_t windowID) : WindowEvent(windowID) { }
 
+		EVENT_CLASS_TYPE(WindowClose)
         EVENT_CLASS_CATEGORY(EventCategory::Application)
-        EVENT_CLASS_TYPE(WindowClose)
     };
 
 	class WindowSizeChangeEvent : public WindowEvent

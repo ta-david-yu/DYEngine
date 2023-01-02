@@ -80,6 +80,8 @@ namespace DYE
 		// Use the same context of the main window for the second window
 		auto context = mainWindowPtr->GetContext();
 		m_SecondWindow->SetContext(context);
+		m_SecondWindow->MakeCurrent();
+		ContextBase::SetVSyncCountForCurrentContext(0);
 
 		// Set the current context back to the main window.
 		mainWindowPtr->MakeCurrent();
