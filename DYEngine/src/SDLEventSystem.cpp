@@ -4,6 +4,7 @@
 #include "Event/ApplicationEvent.h"
 #include "Event/KeyEvent.h"
 #include "Event/MouseEvent.h"
+#include "WindowManager.h"
 
 #include <SDL.h>
 #include <imgui_impl_sdl.h>
@@ -41,7 +42,8 @@ namespace DYE
 						//  'isOSWindow = WindowManager.GetWindowFromID(event.window.windowID) != nullptr'
 						//  for now we will just call
 						//  'isOSWindow = event.window.windowID == 1' (the main OS Window always has the ID of 1)
-						bool const isOSWindow = event.window.windowID == 1;
+						auto pEventWindow = WindowManager::GetWindowFromID(event.window.windowID);
+						bool const isOSWindow = pEventWindow != nullptr;
 						if (!isOSWindow)
 						{
 							break;
@@ -59,6 +61,13 @@ namespace DYE
 					{
 						// TODO: implement window close event
 						DYE_LOG_INFO("WINDOW_CLOSE (main window) to be handled!");
+
+						if (event.window.windowID == 1)
+						{
+							// TODO: remove this
+							eventPtr.reset(new WindowCloseEvent(event.window.windowID));
+							caught = true;
+						}
 					}
 
                     /// MORE
