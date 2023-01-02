@@ -77,6 +77,8 @@ namespace DYE
 		virtual bool SetFullScreenMode(FullScreenMode mode) = 0;
 		virtual void SetWindowSize(uint32_t width, uint32_t height) = 0;
 
+		void MakeCurrent();
+
 	protected:
 		/// The underlying GraphicsContext
 		std::shared_ptr<ContextBase> m_Context;

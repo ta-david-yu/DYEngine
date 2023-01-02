@@ -18,4 +18,9 @@ namespace DYE
 	{
 		m_Context = std::move(context);
 	}
+
+	void WindowBase::MakeCurrent()
+	{
+		m_Context->MakeCurrentForWindow(*this);
+	}
 }

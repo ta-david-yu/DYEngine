@@ -82,7 +82,7 @@ namespace DYE
 		m_SecondWindow->SetContext(context);
 
 		// Set the current context back to the main window.
-		context->MakeCurrentForWindow(*mainWindowPtr);
+		mainWindowPtr->MakeCurrent();
 	}
 
 	void PongLayer::OnRender()

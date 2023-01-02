@@ -63,7 +63,7 @@ namespace DYE
     {
 		// It's important to make the attaching window current first,
 		// So ImGUI viewports/frame are properly rendered on the attaching window.
-		m_pWindow->GetContext()->MakeCurrentForWindow(*m_pWindow);
+		m_pWindow->MakeCurrent();
 
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
@@ -87,7 +87,7 @@ namespace DYE
 
 			// Make the window context current again
 			// in case there are imgui viewports which are separate windows from the main window.
-			m_pWindow->GetContext()->MakeCurrentForWindow(*m_pWindow);
+			m_pWindow->MakeCurrent();
 		}
     }
 }

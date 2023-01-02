@@ -55,8 +55,7 @@ namespace DYE
 			mainWindowPtr = WindowManager::CreateWindow(WindowProperty(windowName));
 			auto context = ContextBase::Create(mainWindowPtr);
 			mainWindowPtr->SetContext(context);
-
-			context->MakeCurrentForWindow(*mainWindowPtr);
+			mainWindowPtr->MakeCurrent();
 			ContextBase::SetVSyncCountForCurrentContext(0);
 		}
 		else

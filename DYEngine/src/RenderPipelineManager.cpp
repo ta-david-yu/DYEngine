@@ -48,7 +48,7 @@ namespace DYE
 		// We always render the main window first.
 		// Make the main window's context current!
 		WindowBase* pCurrentWindow = WindowManager::GetMainWindow();
-		pCurrentWindow->GetContext()->MakeCurrentForWindow(*pCurrentWindow);
+		pCurrentWindow->MakeCurrent();
 		RenderCommand::GetInstance().Clear();
 
 		for (auto& camera : s_CameraProperties)
@@ -78,7 +78,7 @@ namespace DYE
 				// If the camera is rendering to a window other than the current one,
 				// Swap to the render target window and make the context current.
 				pCurrentWindow = WindowManager::GetWindowFromID(camera.TargetWindowID);
-				pCurrentWindow->GetContext()->MakeCurrentForWindow(*pCurrentWindow);
+				pCurrentWindow->MakeCurrent();
 
 				// Clear the buffer of the new window.
 				RenderCommand::GetInstance().Clear();
