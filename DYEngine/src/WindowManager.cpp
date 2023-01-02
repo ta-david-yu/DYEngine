@@ -56,6 +56,20 @@ namespace DYE
 		return GetWindowFromID(s_MainWindowID.value());
 	}
 
+	bool WindowManager::HasWindowWithID(WindowID id)
+	{
+		for (auto const &windowPair: s_Windows)
+		{
+			if (windowPair.first != id)
+			{
+				continue;
+			}
+
+			return true;
+		}
+		return false;
+	}
+
 	void WindowManager::UpdateWindows()
 	{
 		for (auto const &windowPair: s_Windows)
