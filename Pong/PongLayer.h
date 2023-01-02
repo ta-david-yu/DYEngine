@@ -58,6 +58,9 @@ namespace DYE
 
 		float m_WindowWidth = 1600;
 		float m_WindowHeight = 900;
+
+		glm::vec2 m_WindowPosition;
+
 		float m_WindowPixelChangePerSecond = 100.0f;
 
 		float m_BallSpeed = 5.0f;

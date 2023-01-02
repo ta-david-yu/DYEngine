@@ -41,13 +41,13 @@ namespace DYE
         virtual void onPostRenderLayers() { }
 
     private:
+		void handleOnApplicationQuit(ApplicationQuitEvent const& event);
         void handleOnWindowClose(const WindowCloseEvent& event);
         void handleOnWindowSizeChange(const WindowSizeChangeEvent& event);
 
     protected:
         /// The main event system that poll events from the framework (SDL/GLFW for instance)
         std::unique_ptr<EventSystemBase> m_EventSystem;
-
         std::shared_ptr<ImGuiLayer> m_ImGuiLayer;
 
     private:

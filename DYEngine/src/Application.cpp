@@ -9,6 +9,8 @@
 
 #include <SDL.h>
 
+#include <ranges>
+
 namespace DYE
 {
     Application::Application(const std::string &windowName, int fixedFramePerSecond)
@@ -169,18 +171,23 @@ namespace DYE
 		auto const& eventCategory = event.GetCategoryFlags();
 
         // Handle WindowEvent on application level
-        if (eventType == EventType::WindowClose)
-        {
-            handleOnWindowClose(static_cast<const WindowCloseEvent&>(event));
-            event.IsUsed = true;
-        }
-        else if (eventType == EventType::WindowSizeChange)
-        {
+		if (eventType == EventType::ApplicationQuit)
+		{
+			handleOnApplicationQuit(static_cast<const ApplicationQuitEvent&>(event));
+			event.IsUsed = true;
+		}
+		else if (eventType == EventType::WindowClose)
+		{
+			handleOnWindowClose(static_cast<const WindowCloseEvent&>(event));
+			event.IsUsed = true;
+		}
+		else if (eventType == EventType::WindowSizeChange)
+		{
 			handleOnWindowSizeChange(static_cast<const WindowSizeChangeEvent &>(event));
-        }
+		}
 
         // Event is passed from top to bottom layer
-        for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); it++)
+        for (auto & it : std::ranges::reverse_view(m_LayerStack))
         {
             // Has been handled, break the loop
             if (event.IsUsed)
@@ -188,7 +195,7 @@ namespace DYE
 				break;
 			}
 
-            (*it)->OnEvent(event);
+            it->OnEvent(event);
         }
 
     }
@@ -203,10 +210,20 @@ namespace DYE
         m_LayerStack.PushOverlay(std::move(overlay));
     }
 
+	void Application::handleOnApplicationQuit(ApplicationQuitEvent const& event)
+	{
+		m_IsRunning = false;
+	}
+
     void Application::handleOnWindowClose(const WindowCloseEvent &event)
     {
-        m_IsRunning = false;
-    }
+		auto const mainWindowID = WindowManager::GetMainWindowID();
+		if (mainWindowID.has_value() && event.GetWindowID() == mainWindowID.value())
+		{
+			// If the close event comes from the main window, shutdown the application.
+			m_IsRunning = false;
+		}
+	}
 
     void Application::handleOnWindowSizeChange(const WindowSizeChangeEvent &event)
     {

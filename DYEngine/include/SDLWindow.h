@@ -18,12 +18,15 @@ namespace DYE
 
         uint32_t GetWidth() const override;
         uint32_t GetHeight() const override;
+		glm::vec<2, std::int32_t> GetPosition() const override;
 
 		void *GetNativeWindowPtr() const override { return m_pNativeWindow; }
 		std::uint32_t GetWindowID() const override;
 
 		bool SetFullScreenMode(FullScreenMode mode) override;
-		void SetWindowSize(uint32_t width, uint32_t height) override;
+		void SetWindowSize(std::uint32_t width, std::uint32_t height) override;
+		void SetWindowPosition(std::int32_t x, std::int32_t y) override;
+		void CenterWindow() override;
 
     private:
         /// The pointer to the native window object

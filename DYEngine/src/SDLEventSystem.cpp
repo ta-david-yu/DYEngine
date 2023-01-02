@@ -31,17 +31,13 @@ namespace DYE
             switch (event.type)
             {
                 case SDL_QUIT:
-                    eventPtr.reset(new WindowCloseEvent(event.window.windowID));
+					eventPtr.reset(new ApplicationQuitEvent(event.quit.timestamp));
                     caught = true;
                     break;
                 case SDL_WINDOWEVENT:
 					if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
 					{
 						// We only broadcast window size changed event if it's not an imgui window.
-						// TODO: call
-						//  'isOSWindow = WindowManager.GetWindowFromID(event.window.windowID) != nullptr'
-						//  for now we will just call
-						//  'isOSWindow = event.window.windowID == 1' (the main OS Window always has the ID of 1)
 						bool const isOSWindow = WindowManager::HasWindowWithID(event.window.windowID);
 						if (!isOSWindow)
 						{
@@ -51,22 +47,20 @@ namespace DYE
 						eventPtr.reset(new WindowSizeChangeEvent(event.window.windowID, event.window.data1, event.window.data2));
 						caught = true;
 					}
-                    else if (event.window.event == SDL_WINDOWEVENT_RESIZED)
+					else if (event.window.event == SDL_WINDOWEVENT_RESIZED)
                     {
                         eventPtr.reset(new WindowManualResizeEvent(event.window.windowID, event.window.data1, event.window.data2));
                         caught = true;
                     }
 					else if (event.window.event == SDL_WINDOWEVENT_CLOSE)
 					{
-						// TODO: implement window close event
-						DYE_LOG_INFO("WINDOW_CLOSE (main window) to be handled!");
-
-						if (event.window.windowID == 1)
-						{
-							// TODO: remove this
-							eventPtr.reset(new WindowCloseEvent(event.window.windowID));
-							caught = true;
-						}
+						eventPtr.reset(new WindowCloseEvent(event.window.windowID));
+						caught = true;
+					}
+					else if (event.window.event == SDL_WINDOWEVENT_MOVED)
+					{
+						eventPtr.reset(new WindowMoveEvent(event.window.windowID, event.window.data1, event.window.data2));
+						caught = true;
 					}
 
                     /// MORE
