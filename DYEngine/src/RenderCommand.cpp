@@ -4,6 +4,7 @@
 #include "Graphics/VertexArray.h"
 #include "Graphics/Shader.h"
 #include "Graphics/Material.h"
+#include "WindowBase.h"
 
 #include <SDL.h>
 #include <glad/glad.h>
@@ -62,6 +63,11 @@ namespace DYE
 #endif
 		s_Instance = std::make_unique<RenderCommand>();
     }
+
+	void RenderCommand::SwapWindowBuffer(WindowBase const& windowBase)
+	{
+		SDL_GL_SwapWindow(windowBase.GetTypedNativeWindowPtr<SDL_Window>());
+	}
 
     void RenderCommand::SetViewport(std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height)
     {

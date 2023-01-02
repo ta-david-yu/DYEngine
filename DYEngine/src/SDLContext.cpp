@@ -23,10 +23,10 @@ namespace DYE
 		return m_pNativeContext;
 	}
 
-	void SDLContext::MakeCurrentForWindow(WindowBase const* pWindow)
+	void SDLContext::MakeCurrentForWindow(WindowBase const& window)
 	{
 		// bind the context as the current rendering state to the window
-		int const status = SDL_GL_MakeCurrent(pWindow->GetTypedNativeWindowPtr<SDL_Window>(), GetNativeContextPtr());
+		int const status = SDL_GL_MakeCurrent(window.GetTypedNativeWindowPtr<SDL_Window>(), GetNativeContextPtr());
 		if (status < 0)
 		{
 			// MakeCurrent failed

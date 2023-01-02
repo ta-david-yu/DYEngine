@@ -45,8 +45,12 @@ namespace DYE
 
 		s_ActiveRenderPipeline->onPreRender();
 
-		WindowBase* pCurrentWindow = nullptr;
-		std::optional<WindowID> currentWindowID = {};
+		// We always render the main window first.
+		// Make the main window's context current!
+		WindowBase* pCurrentWindow = WindowManager::GetMainWindow();
+		pCurrentWindow->GetContext()->MakeCurrentForWindow(*pCurrentWindow);
+		RenderCommand::GetInstance().Clear();
+
 		for (auto& camera : s_CameraProperties)
 		{
 			if (camera.TargetType == RenderTargetType::RenderTexture)
@@ -56,24 +60,45 @@ namespace DYE
 			}
 
 			// Render to a window
-			if (pCurrentWindow == nullptr || camera.TargetWindowID != pCurrentWindow->GetWindowID())
+
+			// Configure the new window
+			if (camera.TargetWindowID != pCurrentWindow->GetWindowID())
 			{
-				//if (pCurrentWindow != nullptr)
+				// We are done rendering the previous window.
+				// Swap the buffer of the previous window so the buffer is actually drawn on the screen.
+
+				// Note that we only swap buffers of non-main windows because we want to render
+				// imgui contexts to the main window later. Therefore, main window will be flushed/swapped
+				// after imgui rendering.
+				if (!WindowManager::IsMainWindow(*pCurrentWindow))
 				{
-					//pCurrentWindow->OnUpdate();
+					RenderCommand::GetInstance().SwapWindowBuffer(*pCurrentWindow);
 				}
 
 				// If the camera is rendering to a window other than the current one,
 				// Swap to the render target window and make the context current.
-				currentWindowID = camera.TargetWindowID;
-				pCurrentWindow = WindowManager::GetWindowFromID(currentWindowID.value());
-				pCurrentWindow->GetContext()->MakeCurrentForWindow(pCurrentWindow);
+				pCurrentWindow = WindowManager::GetWindowFromID(camera.TargetWindowID);
+				pCurrentWindow->GetContext()->MakeCurrentForWindow(*pCurrentWindow);
 
+				// Clear the buffer of the new window.
 				RenderCommand::GetInstance().Clear();
 			}
 
-			s_ActiveRenderPipeline->bindCameraSettings(camera);
+			// Update camera's aspect ratio and set viewport.
+			auto targetDimension = camera.GetTargetDimension();
+			camera.CachedAutomaticAspectRatio = camera.GetAutomaticAspectRatioOfDimension(targetDimension);
+			Math::Rect const viewportDimension = camera.GetAbsoluteViewportOfDimension(targetDimension);
+
+			RenderCommand::GetInstance().SetViewport(viewportDimension);
+
+			// Actually run the object rendering process.
 			s_ActiveRenderPipeline->renderCamera(camera);
+		}
+
+		if (!WindowManager::IsMainWindow(*pCurrentWindow))
+		{
+			// Flush/swap the buffer of the last rendered window if it's not the main window.
+			RenderCommand::GetInstance().SwapWindowBuffer(*pCurrentWindow);
 		}
 
 		s_ActiveRenderPipeline->onPostRender();

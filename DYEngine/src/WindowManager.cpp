@@ -70,6 +70,16 @@ namespace DYE
 		return false;
 	}
 
+	bool WindowManager::IsMainWindow(const WindowBase &window)
+	{
+		if (!s_MainWindowID.has_value())
+		{
+			return false;
+		}
+
+		return window.GetWindowID() == s_MainWindowID.value();
+	}
+
 	void WindowManager::UpdateWindows()
 	{
 		for (auto const &windowPair: s_Windows)

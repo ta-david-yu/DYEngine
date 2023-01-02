@@ -56,7 +56,7 @@ namespace DYE
 			auto context = ContextBase::Create(mainWindowPtr);
 			mainWindowPtr->SetContext(context);
 
-			context->MakeCurrentForWindow(mainWindowPtr);
+			context->MakeCurrentForWindow(*mainWindowPtr);
 			ContextBase::SetVSyncCountForCurrentContext(0);
 		}
 		else
@@ -100,13 +100,13 @@ namespace DYE
 
         while (m_IsRunning)
         {
-            // Poll Event
+            // Poll system events
             m_EventSystem->PollEvent();
 
-			// Update Input States
+			// Update input states
 			INPUT.UpdateInputState();
 
-            // Fixed Update
+            // Game logic fixed update
             deltaTimeAccumulator += TIME.DeltaTime();
             while (deltaTimeAccumulator >= TIME.FixedDeltaTime())
             {
@@ -118,13 +118,14 @@ namespace DYE
                 deltaTimeAccumulator -= TIME.FixedDeltaTime();
             }
 
-            // Update
+            // Game logic update
             for (auto& layer : m_LayerStack)
             {
                 layer->OnUpdate();
             }
 
-            // Render phase: populate render data to render pipeline
+            // Game logic render
+			// Normally you would populate render data to the render pipeline in this phase
             onPreRenderLayers();
             for (auto& layer : m_LayerStack)
             {
@@ -143,7 +144,18 @@ namespace DYE
             }
             m_ImGuiLayer->EndImGui();
 
-            // Update all registered Windows: Swap Buffers
+			// Swap the buffer of the main application window
+			// We swap the main window here instead of in the render pipeline manager
+			// because some imgui viewports are rendered inside main window, and we want to do those first before the swap.
+			// TODO: right now we call swap buffer directly because EndImGui() call already set
+			//  the main window context as current. Otherwise we will have to call
+			// 	mainWindow->GetContext()->MakeCurrentForWindow(mainWindow) first.
+			//  At some point we want to fix this cuz it's kinda awkward and non-explicit enough
+			//  and might lead to complex bugs in the future.
+			RenderCommand::GetInstance().SwapWindowBuffer(*WindowManager::GetMainWindow());
+
+            // Update all registered Windows
+			// For now, it does nothing.
 			WindowManager::UpdateWindows();
 
 			TIME.tickUpdate();

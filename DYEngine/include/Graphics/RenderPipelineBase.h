@@ -25,7 +25,6 @@ namespace DYE
 
 	protected:
 		virtual void onPreRender() = 0;
-		void bindCameraSettings(CameraProperties& camera);
 		virtual void renderCamera(CameraProperties const& camera) = 0;
 		virtual void onPostRender() = 0;
 	};

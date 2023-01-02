@@ -61,12 +61,13 @@ namespace DYE
 
     void ImGuiLayer::BeginImGui()
     {
-		m_pWindow->GetContext()->MakeCurrentForWindow(m_pWindow);
+		// It's important to make the attaching window current first,
+		// So ImGUI viewports/frame are properly rendered on the attaching window.
+		m_pWindow->GetContext()->MakeCurrentForWindow(*m_pWindow);
 
-        // start the Dear ImGui frame
+        // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplSDL2_NewFrame();
-		//ImGui_ImplSDL2_NewFrame(m_pWindow->GetTypedNativeWindowPtr<SDL_Window>());
         ImGui::NewFrame();
     }
 
@@ -76,9 +77,6 @@ namespace DYE
         ImGui::Render();
 
 		ImGuiIO& io = ImGui::GetIO();
-		//glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
-		//glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
-		//glClear(GL_COLOR_BUFFER_BIT);
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -86,6 +84,10 @@ namespace DYE
 		{
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
+
+			// Make the window context current again
+			// in case there are imgui viewports which are separate windows from the main window.
+			m_pWindow->GetContext()->MakeCurrentForWindow(*m_pWindow);
 		}
     }
 }

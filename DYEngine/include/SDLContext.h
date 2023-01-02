@@ -13,7 +13,7 @@ namespace DYE
         ~SDLContext() override;
 
 		void * GetNativeContextPtr() const override;
-		void MakeCurrentForWindow(WindowBase const* pWindow) override;
+		void MakeCurrentForWindow(WindowBase const& window) override;
 
 	protected:
 		void init(WindowBase* pWindow) override;

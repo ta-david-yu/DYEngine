@@ -45,8 +45,7 @@ namespace DYE
 
     void SDLWindow::OnUpdate()
     {
-		m_Context->MakeCurrentForWindow(this);
-		SDL_GL_SwapWindow(this->GetTypedNativeWindowPtr<SDL_Window>());
+		// Do nothing.
     }
 
     uint32_t SDLWindow::GetWidth() const

@@ -29,7 +29,7 @@ namespace DYE
 		virtual void *GetNativeContextPtr() const = 0;
 
 		/// Make the context as the current context for rendering on the given window.
-		virtual void MakeCurrentForWindow(WindowBase const* pWindow) = 0;
+		virtual void MakeCurrentForWindow(WindowBase const& window) = 0;
 
 	protected:
 		/// Since we need to make the default ctor trivial (to avoid throwing exceptions),
