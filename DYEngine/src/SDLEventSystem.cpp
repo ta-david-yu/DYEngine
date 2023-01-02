@@ -42,8 +42,7 @@ namespace DYE
 						//  'isOSWindow = WindowManager.GetWindowFromID(event.window.windowID) != nullptr'
 						//  for now we will just call
 						//  'isOSWindow = event.window.windowID == 1' (the main OS Window always has the ID of 1)
-						auto pEventWindow = WindowManager::GetWindowFromID(event.window.windowID);
-						bool const isOSWindow = pEventWindow != nullptr;
+						bool const isOSWindow = WindowManager::HasWindowWithID(event.window.windowID);
 						if (!isOSWindow)
 						{
 							break;
