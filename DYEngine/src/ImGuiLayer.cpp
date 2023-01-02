@@ -86,8 +86,6 @@ namespace DYE
 		{
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
-
-			m_pWindow->GetContext()->MakeCurrentForWindow(m_pWindow);
 		}
     }
 }

@@ -71,11 +71,18 @@ namespace DYE
 		m_WindowHeight = mainWindowPtr->GetHeight();
 
 		m_SecondWindow = WindowManager::CreateWindow(WindowProperty("Second Window"));
-		auto mainContext = mainWindowPtr->GetContext();
-		m_SecondWindow->SetContext(mainContext);
+
+		// Share the context with the main window
+		//SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+		//auto context = ContextBase::Create(m_SecondWindow);
+		//m_SecondWindow->SetContext(context);
+
+		// Use the same context of the main window for the second window
+		auto context = mainWindowPtr->GetContext();
+		m_SecondWindow->SetContext(context);
 
 		// Set the current context back to the main window.
-		mainContext->MakeCurrentForWindow(mainWindowPtr);
+		context->MakeCurrentForWindow(mainWindowPtr);
 	}
 
 	void PongLayer::OnRender()
@@ -83,6 +90,8 @@ namespace DYE
 		RenderPipelineManager::RegisterCameraForNextRender(*m_CameraProperties);
 
 		CameraProperties cameraRenderToSecondWindow = *m_CameraProperties;
+		cameraRenderToSecondWindow.UseManualAspectRatio = false;
+		cameraRenderToSecondWindow.Viewport = {0.5f, 0.5f, 0.5f, 0.5f};
 		cameraRenderToSecondWindow.TargetWindowID = m_SecondWindow->GetWindowID();
 		RenderPipelineManager::RegisterCameraForNextRender(cameraRenderToSecondWindow);
 

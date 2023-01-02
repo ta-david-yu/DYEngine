@@ -35,7 +35,7 @@ namespace DYE
         void pushLayer(std::shared_ptr<LayerBase> layer);
         void pushOverlay(std::shared_ptr<LayerBase> overlay);
 
-        /// Called after glClear(), before ForEach.layer.OnRender()
+        /// Called after ForEach.layer.OnUpdate(), before ForEach.layer.OnRender()
         virtual void onPreRenderLayers() { }
         /// Called after ForEach.layer.OnRender(), before BeginImGui()
         virtual void onPostRenderLayers() { }
