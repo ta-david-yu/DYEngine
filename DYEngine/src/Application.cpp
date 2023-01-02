@@ -124,9 +124,7 @@ namespace DYE
                 layer->OnUpdate();
             }
 
-            // Render
-			RenderCommand::GetInstance().Clear();
-
+            // Render phase: populate render data to render pipeline
             onPreRenderLayers();
             for (auto& layer : m_LayerStack)
             {
@@ -134,6 +132,7 @@ namespace DYE
             }
             onPostRenderLayers();
 
+			// Execute draw-calls on GPU
 			RenderPipelineManager::RenderWithActivePipeline();
 
             // ImGui
