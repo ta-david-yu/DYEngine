@@ -62,6 +62,13 @@ namespace DYE
         return height;
     }
 
+	glm::vec<2, std::int32_t> SDLWindow::GetPosition() const
+	{
+		int x, y;
+		SDL_GetWindowPosition(m_pNativeWindow, &x, &y);
+		return glm::vec<2, std::int32_t>(x, y);
+	}
+
 	std::uint32_t SDLWindow::GetWindowID() const
 	{
 		return SDL_GetWindowID(m_pNativeWindow);
@@ -93,9 +100,18 @@ namespace DYE
 		return success;
 	}
 
-	void SDLWindow::SetWindowSize(uint32_t width, uint32_t height)
+	void SDLWindow::SetWindowSize(std::uint32_t width, std::uint32_t height)
 	{
 		SDL_SetWindowSize(m_pNativeWindow, width, height);
-		DYE_LOG_INFO("WindowSize: %d, %d", width, height);
+	}
+
+	void SDLWindow::SetWindowPosition(std::int32_t x, std::int32_t y)
+	{
+		SDL_SetWindowPosition(m_pNativeWindow, x, y);
+	}
+
+	void SDLWindow::CenterWindow()
+	{
+		SDL_SetWindowPosition(m_pNativeWindow, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 	}
 }

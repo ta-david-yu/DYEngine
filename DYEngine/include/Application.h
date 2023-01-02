@@ -48,7 +48,6 @@ namespace DYE
     protected:
         /// The main event system that poll events from the framework (SDL/GLFW for instance)
         std::unique_ptr<EventSystemBase> m_EventSystem;
-
         std::shared_ptr<ImGuiLayer> m_ImGuiLayer;
 
     private:

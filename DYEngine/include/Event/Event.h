@@ -14,7 +14,7 @@ namespace DYE
     {
         None = 0,
         ApplicationQuit,
-        WindowClose, WindowSizeChange, WindowManualResize,
+        WindowClose, WindowSizeChange, WindowManualResize, WindowMove,
         KeyDown, KeyUp,
         MouseButtonDown, MouseButtonUp, MouseMove, MouseDrag
     };

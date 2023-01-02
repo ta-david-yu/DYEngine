@@ -3,6 +3,8 @@
 #include "Event.h"
 #include "Input/KeyCode.h"
 
+#include <sstream>
+
 namespace DYE
 {
     class KeyEvent : public Event
@@ -21,6 +23,13 @@ namespace DYE
     public:
         explicit KeyDownEvent(const KeyCode keyCode) : KeyEvent(keyCode) { }
 
+		std::string ToString() const override
+		{
+			std::stringstream ss;
+			ss << "KeyDownEvent: "<< "[" << GetKeyName(m_KeyCode) << "]";
+			return ss.str();
+		}
+
         EVENT_CLASS_TYPE(KeyDown)
     };
 
@@ -28,6 +37,13 @@ namespace DYE
     {
     public:
         explicit KeyUpEvent(const KeyCode keyCode) : KeyEvent(keyCode) { }
+
+		std::string ToString() const override
+		{
+			std::stringstream ss;
+			ss << "KeyUpEvent: "<< "[" << GetKeyName(m_KeyCode) << "]";
+			return ss.str();
+		}
 
         EVENT_CLASS_TYPE(KeyUp)
     };

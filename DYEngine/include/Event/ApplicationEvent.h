@@ -1,8 +1,10 @@
 #pragma once
 
 #include "Event.h"
+#include "WindowManager.h"
 
 #include <sstream>
+#include <glm/glm.hpp>
 
 namespace DYE
 {
@@ -22,25 +24,34 @@ namespace DYE
 	class WindowEvent : public Event
 	{
 	public:
-		std::uint32_t GetWindowID() const { return m_WindowID; }
+		WindowID GetWindowID() const { return m_WindowID; }
+
+		EVENT_CLASS_CATEGORY(EventCategory::Application)
+
 	protected:
-		explicit WindowEvent(uint32_t windowID) : m_WindowID(windowID) { }
-		std::uint32_t m_WindowID = 0;
+		explicit WindowEvent(WindowID windowID) : m_WindowID(windowID) { }
+		WindowID m_WindowID = 0;
 	};
 
     class WindowCloseEvent : public WindowEvent
     {
     public:
-        WindowCloseEvent(std::uint32_t windowID) : WindowEvent(windowID) { }
+        explicit WindowCloseEvent(WindowID windowID) : WindowEvent(windowID) { }
+
+		std::string ToString() const override
+		{
+			std::stringstream ss;
+			ss << "WindowCloseEvent: "<< "[" << m_WindowID << "]";
+			return ss.str();
+		}
 
 		EVENT_CLASS_TYPE(WindowClose)
-        EVENT_CLASS_CATEGORY(EventCategory::Application)
     };
 
 	class WindowSizeChangeEvent : public WindowEvent
 	{
 	public:
-		WindowSizeChangeEvent(uint32_t windowID, uint32_t width, uint32_t height) : WindowEvent(windowID), m_Width(width), m_Height(height) {}
+		WindowSizeChangeEvent(WindowID windowID, uint32_t width, uint32_t height) : WindowEvent(windowID), m_Width(width), m_Height(height) {}
 
 		uint32_t GetWidth() const { return m_Width; }
 		uint32_t GetHeight() const { return m_Height; }
@@ -48,12 +59,11 @@ namespace DYE
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "WindowManualResizeEvent: "<< "[" << m_WindowID << "]" << m_Width << ", " << m_Height;
+			ss << "WindowManualResizeEvent: "<< "[" << m_WindowID << "] " << m_Width << ", " << m_Height;
 			return ss.str();
 		}
 
 		EVENT_CLASS_TYPE(WindowSizeChange)
-		EVENT_CLASS_CATEGORY(EventCategory::Application)
 
 	private:
 		uint32_t m_Width {0}, m_Height {0};
@@ -63,22 +73,42 @@ namespace DYE
     class WindowManualResizeEvent : public WindowEvent
     {
     public:
-        WindowManualResizeEvent(uint32_t windowID, uint32_t width, uint32_t height) : WindowEvent(windowID), m_Width(width), m_Height(height) {}
+        WindowManualResizeEvent(WindowID windowID, std::uint32_t width, std::uint32_t height) : WindowEvent(windowID), m_Width(width), m_Height(height) {}
 
-        uint32_t GetWidth() const { return m_Width; }
-        uint32_t GetHeight() const { return m_Height; }
+		std::uint32_t GetWidth() const { return m_Width; }
+		std::uint32_t GetHeight() const { return m_Height; }
 
         std::string ToString() const override
         {
             std::stringstream ss;
-            ss << "WindowManualResizeEvent: "<< "[" << m_WindowID << "]" << m_Width << ", " << m_Height;
+            ss << "WindowManualResizeEvent: "<< "[" << m_WindowID << "] " << m_Width << ", " << m_Height;
             return ss.str();
         }
 
         EVENT_CLASS_TYPE(WindowManualResize)
-        EVENT_CLASS_CATEGORY(EventCategory::Application)
 
     private:
-        uint32_t m_Width {0}, m_Height {0};
+		std::uint32_t m_Width {0}, m_Height {0};
     };
+
+	class WindowMoveEvent : public WindowEvent
+	{
+	public:
+		WindowMoveEvent(WindowID windowID, std::int32_t x, std::int32_t y) : WindowEvent(windowID), m_X(x), m_Y(y) {}
+
+		float GetX() const { return m_X; }
+		float GetY() const { return m_Y; }
+
+		std::string ToString() const override
+		{
+			std::stringstream ss;
+			ss << "WindowMoveEvent: "<< "[" << m_WindowID << "] " << m_X << ", " << m_Y;
+			return ss.str();
+		}
+
+		EVENT_CLASS_TYPE(WindowMove)
+
+	private:
+		std::int32_t m_X {0}, m_Y {0};
+	};
 }

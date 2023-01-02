@@ -1,5 +1,7 @@
 #pragma once
 
+#include <glm/glm.hpp>
+
 #include <string>
 #include <utility>
 #include <memory>
@@ -54,6 +56,7 @@ namespace DYE
 
         virtual uint32_t GetWidth() const = 0;
         virtual uint32_t GetHeight() const = 0;
+		virtual glm::vec<2, std::int32_t> GetPosition() const = 0;
 		std::shared_ptr<ContextBase> GetContext() const;
 
         /// Get the pointer to the native window based on the platform library being used. ex. SDLWindow for Windows platform
@@ -75,7 +78,11 @@ namespace DYE
 
 		void SetContext(std::shared_ptr<ContextBase> context);
 		virtual bool SetFullScreenMode(FullScreenMode mode) = 0;
-		virtual void SetWindowSize(uint32_t width, uint32_t height) = 0;
+		virtual void SetWindowSize(std::uint32_t width, std::uint32_t height) = 0;
+		virtual void SetWindowPosition(std::int32_t x, std::int32_t y) = 0;
+
+		/// Set the window position to the center of the screen.
+		virtual void CenterWindow() = 0;
 
 		void MakeCurrent();
 

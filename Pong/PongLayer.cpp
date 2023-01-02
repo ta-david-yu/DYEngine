@@ -70,18 +70,16 @@ namespace DYE
 		m_WindowWidth = mainWindowPtr->GetWidth();
 		m_WindowHeight = mainWindowPtr->GetHeight();
 
-		m_SecondWindow = WindowManager::CreateWindow(WindowProperty("Second Window"));
+		m_WindowPosition = mainWindowPtr->GetPosition();
 
-		// Share the context with the main window
-		//SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
-		//auto context = ContextBase::Create(m_SecondWindow);
-		//m_SecondWindow->SetContext(context);
+		/*
+		m_SecondWindow = WindowManager::CreateWindow(WindowProperty("Second Window"));
 
 		// Use the same context of the main window for the second window
 		auto context = mainWindowPtr->GetContext();
 		m_SecondWindow->SetContext(context);
 		m_SecondWindow->MakeCurrent();
-		ContextBase::SetVSyncCountForCurrentContext(0);
+		ContextBase::SetVSyncCountForCurrentContext(0);*/
 
 		// Set the current context back to the main window.
 		mainWindowPtr->MakeCurrent();
@@ -91,11 +89,12 @@ namespace DYE
 	{
 		RenderPipelineManager::RegisterCameraForNextRender(*m_CameraProperties);
 
+		/*
 		CameraProperties cameraRenderToSecondWindow = *m_CameraProperties;
 		cameraRenderToSecondWindow.UseManualAspectRatio = false;
 		cameraRenderToSecondWindow.Viewport = {0.5f, 0.5f, 0.5f, 0.5f};
 		cameraRenderToSecondWindow.TargetWindowID = m_SecondWindow->GetWindowID();
-		RenderPipelineManager::RegisterCameraForNextRender(cameraRenderToSecondWindow);
+		RenderPipelineManager::RegisterCameraForNextRender(cameraRenderToSecondWindow);*/
 
 		renderMaterialObject(*m_ProfileObject);
 		renderMaterialObject(*m_WhiteObject);
@@ -115,24 +114,29 @@ namespace DYE
     {
         auto eventType = event.GetEventType();
 
+		DYE_LOG("%s", event.ToString().c_str());
 		if (eventType == EventType::WindowSizeChange)
 		{
 			auto windowSizeChangeEvent = static_cast<const WindowManualResizeEvent&>(event);
 			//m_CameraProperties->OrthographicSize = 10 * (windowSizeChangeEvent.GetWidth() / 1600.0f);
 			//m_CameraProperties->ManualAspectRatio = (float) windowSizeChangeEvent.GetWidth() / (float) windowSizeChangeEvent.GetHeight();
 		}
-        else if (eventType == EventType::KeyDown)
-        {
-            auto keyEvent = static_cast<KeyDownEvent&>(event);
-            //DYE_ASSERT(keyEvent.GetKeyCode() != KeyCode::Space);
-            //DYE_ASSERT_RELEASE(keyEvent.GetKeyCode() != KeyCode::Right);
-            DYE_LOG("Sandbox, KeyDown - %s", GetKeyName(keyEvent.GetKeyCode()).c_str());
-        }
-        else if (eventType == EventType::KeyUp)
-        {
-            auto keyEvent = static_cast<KeyUpEvent&>(event);
-            //DYE_LOG("Sandbox, KeyUp - %d", keyEvent.GetKeyCode());
-        }
+		else if (eventType == EventType::WindowMove)
+		{
+			auto windowMoveEvent = static_cast<const WindowMoveEvent&>(event);
+		}
+		else if (eventType == EventType::KeyDown)
+		{
+			auto keyEvent = static_cast<KeyDownEvent&>(event);
+			//DYE_ASSERT(keyEvent.GetKeyCode() != KeyCode::Space);
+			//DYE_ASSERT_RELEASE(keyEvent.GetKeyCode() != KeyCode::Right);
+			//DYE_LOG("Sandbox, KeyDown - %s", GetKeyName(keyEvent.GetKeyCode()).c_str());
+		}
+		else if (eventType == EventType::KeyUp)
+		{
+			auto keyEvent = static_cast<KeyUpEvent&>(event);
+			//DYE_LOG("Sandbox, KeyUp - %d", keyEvent.GetKeyCode());
+		}
     }
 
     void PongLayer::OnUpdate()
@@ -172,29 +176,30 @@ namespace DYE
 		bool change = false;
 		if (INPUT.GetKey(KeyCode::W))
 		{
-			m_WindowHeight -= TIME.DeltaTime() * m_WindowPixelChangePerSecond;
+			m_WindowPosition.y -= TIME.DeltaTime() * m_WindowPixelChangePerSecond;
 			change = true;
 		}
 		if (INPUT.GetKey(KeyCode::S))
 		{
-			m_WindowHeight += TIME.DeltaTime() * m_WindowPixelChangePerSecond;
+			m_WindowPosition.y += TIME.DeltaTime() * m_WindowPixelChangePerSecond;
 			change = true;
 		}
 		if (INPUT.GetKey(KeyCode::D))
 		{
-			m_WindowWidth += TIME.DeltaTime() * m_WindowPixelChangePerSecond;
+			m_WindowPosition.x += TIME.DeltaTime() * m_WindowPixelChangePerSecond;
 			change = true;
 		}
 		if (INPUT.GetKey(KeyCode::A))
 		{
-			m_WindowWidth -= TIME.DeltaTime() * m_WindowPixelChangePerSecond;
+			m_WindowPosition.x -= TIME.DeltaTime() * m_WindowPixelChangePerSecond;
 			change = true;
 		}
 
 		auto mainWindowPtr = WindowManager::GetMainWindow();
 		if (change)
 		{
-			mainWindowPtr->SetWindowSize(m_WindowWidth, m_WindowHeight);
+			mainWindowPtr->SetWindowPosition(m_WindowPosition.x, m_WindowPosition.y);
+			//mainWindowPtr->SetWindowSize(m_WindowWidth, m_WindowHeight);
 		}
 
 
