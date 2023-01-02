@@ -1,6 +1,9 @@
 #include "ImGuiLayer.h"
 
 #include "WindowBase.h"
+#include "ContextBase.h"
+#include "Graphics/OpenGL.h"
+#include "WindowManager.h"
 
 #include <SDL.h>
 #include <imgui.h>
@@ -19,13 +22,21 @@ namespace DYE
     {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
+
         ImGuiIO& io = ImGui::GetIO(); (void)io;
+		// TODO: we want to move these somewhere the users can modify them.
+		io.ConfigWindowsMoveFromTitleBarOnly = true;
+
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
         ImGui::StyleColorsDark();
 
         auto glsl_version = "#version 130";
-        ImGui_ImplSDL2_InitForOpenGL(m_pWindow->GetTypedNativeWindowPtr<SDL_Window>(), SDL_GL_GetCurrentContext());
+		// TODO: Maybe move these code to somewhere else to support different platforms libraries
+		// 	Or just use preprocessor to detect different platforms or GPU API :P
+        ImGui_ImplSDL2_InitForOpenGL(m_pWindow->GetTypedNativeWindowPtr<SDL_Window>(), m_pWindow->GetContext()->GetNativeContextPtr());
         ImGui_ImplOpenGL3_Init(glsl_version);
     }
 
@@ -50,9 +61,13 @@ namespace DYE
 
     void ImGuiLayer::BeginImGui()
     {
-        // start the Dear ImGui frame
+		// It's important to make the attaching window current first,
+		// So ImGUI viewports/frame are properly rendered on the attaching window.
+		m_pWindow->MakeCurrent();
+
+        // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplSDL2_NewFrame(m_pWindow->GetTypedNativeWindowPtr<SDL_Window>());
+		ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
     }
 
@@ -60,6 +75,19 @@ namespace DYE
     {
         // rendering
         ImGui::Render();
+
+		ImGuiIO& io = ImGui::GetIO();
+
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault();
+
+			// Make the window context current again
+			// in case there are imgui viewports which are separate windows from the main window.
+			m_pWindow->MakeCurrent();
+		}
     }
 }

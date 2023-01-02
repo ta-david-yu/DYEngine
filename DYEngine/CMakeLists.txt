@@ -18,21 +18,36 @@ set(SOURCE_FILES
         src/SceneLayer.cpp
         src/Entity.cpp
         src/ComponentBase.cpp
-        src/Type.cpp
+        src/TypeUtil.cpp
         src/Transform.cpp
+        src/UniformType.cpp
         src/Shader.cpp
         src/OpenGL.cpp
         src/Buffer.cpp
-        src/Renderer.cpp
         src/VertexArray.cpp
         src/RenderCommand.cpp
         src/ImageRenderer.cpp
-        src/Texture.cpp)
+        src/Texture.cpp
+        src/CameraProperties.cpp
+        src/ImGuiUtil.cpp
+        src/ShaderProcessorBase.cpp
+        src/Material.cpp
+        src/RenderState.cpp
+        src/UniformPropertyProcessor.cpp
+        src/BlendStateCommandProcessor.cpp
+        src/DepthStateCommandProcessor.cpp
+        src/RenderPipelineManager.cpp
+        src/RenderPipelineBase.cpp
+        src/RenderPipeline2D.cpp
+        src/KeyCode.cpp
+        src/InputManager.cpp
+        src/MaterialPropertyBlock.cpp
+        src/WindowManager.cpp)
 set(HEADER_FILES
         include/Application.h
         include/WindowBase.h
         include/SDLWindow.h
-        include/Time.h
+        include/Util/Time.h
         include/Event/Event.h
         include/Event/ApplicationEvent.h
         include/Input/KeyCode.h
@@ -49,22 +64,38 @@ set(HEADER_FILES
         include/Scene/SceneLayer.h
         include/Scene/Entity.h
         include/Scene/ComponentBase.h
-        include/Util/Type.h
+        include/Util/TypeUtil.h
         include/Scene/Transform.h
+        include/Graphics/UniformType.h
         include/Graphics/Shader.h
         include/Graphics/OpenGL.h
         include/Graphics/Buffer.h
-        include/Graphics/Renderer.h
         include/Graphics/VertexArray.h
         include/Graphics/RenderCommand.h
         include/Scene/ImageRenderer.h
         include/Graphics/Texture.h
         include/Event/MouseEvent.h
         include/Input/MouseCode.h
-        include/Message/Messaging.h)
+        include/Message/Messaging.h
+        include/Graphics/CameraProperties.h
+        include/Util/ImGuiUtil.h
+        include/Graphics/ShaderProcessorBase.h
+        include/Graphics/Material.h
+        include/Graphics/RenderState.h
+        include/Graphics/Processor/UniformPropertyProcessor.h
+        include/Graphics/Processor/BlendStateCommandProcessor.h
+        include/Graphics/Processor/DepthStateCommandProcessor.h
+        include/Graphics/RenderPipelineManager.h
+        include/Graphics/RenderPipelineBase.h
+        include/Graphics/RenderPipeline2D.h
+        include/Util/Algorithm.h
+        include/Input/InputManager.h
+        include/Graphics/MaterialPropertyBlock.h
+        include/WindowManager.h
+        include/Math/Rect.h)
 
-message(STATUS "DYEngine Source Files: ${SOURCE_FILES}")
-message(STATUS "DYEngine Header Files: ${HEADER_FILES}")
+message(STATUS "[DYEngine] Source Files: ${SOURCE_FILES}")
+message(STATUS "[DYEngine] Header Files: ${HEADER_FILES}")
 
 # ===========================================================================================
 # External 3rd party library
@@ -76,22 +107,23 @@ find_package(SDL2 REQUIRED)
 set(SDL2_IMAGE_PATH "extern/SDL2_image")
 find_package(SDL2_image REQUIRED)
 
+# Define RTTR_DIR here that will be used in FindRTTR module
+#set(RTTR_DIR "extern/rttr/rttr")
+#find_package(RTTR CONFIG REQUIRED Core)
+
 # Build External Static Library
 add_subdirectory(extern/glad)
 add_subdirectory(extern/imgui)
 add_subdirectory(extern/glm)
 add_subdirectory(extern/stb)
 add_subdirectory(extern/yaml-cpp)
+#add_subdirectory(extern/rttr)
 
 # ===========================================================================================
 # Build DYEngine library
 add_library(DYEngine STATIC
         ${SOURCE_FILES}
         ${HEADER_FILES})
-
-# ===========================================================================================
-# Precompiled Header
-target_precompile_headers(DYEngine PRIVATE Precompiled.h)
 
 # ===========================================================================================
 # Include Headers to DYEngine
@@ -101,10 +133,11 @@ target_include_directories(DYEngine PUBLIC ${SDL2_INCLUDE_DIR})     # This shoul
 target_include_directories(DYEngine PUBLIC ${SDL2_IMAGE_INCLUDE_DIRS})     # This should be a private inclusion though, because of KeyCode.h implementation, this needs to be PUBLIC
 target_include_directories(DYEngine PRIVATE extern/glad/include)
 target_include_directories(DYEngine PUBLIC extern/imgui)
-target_include_directories(DYEngine PRIVATE extern/imgui/examples)
+target_include_directories(DYEngine PRIVATE extern/imgui/backends)
 target_include_directories(DYEngine PUBLIC extern/glm)
 target_include_directories(DYEngine PUBLIC extern/stb/include)
 target_include_directories(DYEngine PUBLIC extern/yaml-cpp/include)
+#target_include_directories(DYEngine PUBLIC extern/rttr/rttr/src)
 
 # ===========================================================================================
 # Link External Libraries with DYEngine lib
@@ -116,12 +149,15 @@ target_link_libraries(DYEngine
         imgui
         glm
         stb
-        yaml-cpp)
+        yaml-cpp
+        #RTTR::Core_Lib
+    )
 
 # ===========================================================================================
 # Copy default assets to the output directory
 set(DEFAULT_ASSETS
-        assets/Image.shader)
+        assets/Image.shader
+        assets/SpritesDefault.shader)
 
 foreach(ASSET ${DEFAULT_ASSETS})
     # extract filename
@@ -134,6 +170,7 @@ foreach(ASSET ${DEFAULT_ASSETS})
         set(ASSET_OUTPUT_PATH ${EXECUTABLE_OUTPUT_PATH}/assets/default/${ASSET_FILENAME})
     endif(WIN32)
 
-    message(STATUS "DYEngine Copy Default Asset: ${ASSET_OUTPUT_PATH}")
-    configure_file(${ASSET} ${ASSET_OUTPUT_PATH})
+    set(ASSET_INPUT_PATH ${PROJECT_SOURCE_DIR}/${ASSET})
+    message(STATUS "[DYEngine] copy asset: '${ASSET_INPUT_PATH}' -> '${ASSET_OUTPUT_PATH}'")
+    configure_file(${ASSET} ${ASSET_OUTPUT_PATH} COPYONLY)
 endforeach()

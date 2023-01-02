@@ -4,6 +4,7 @@
 #include "Event/ApplicationEvent.h"
 #include "Event/KeyEvent.h"
 #include "Event/MouseEvent.h"
+#include "WindowManager.h"
 
 #include <SDL.h>
 #include <imgui_impl_sdl.h>
@@ -15,26 +16,59 @@ namespace DYE
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
+			// TODO: move this to some place in ImGuiLayer,
+			// TODO: so we don't have to know about imgui here.
             // Pass SDL_Event to ImGui
+			bool isPreprocessedByImGui = false;
             if (m_PreProcessImGuiEvent)
             {
-                ImGui_ImplSDL2_ProcessEvent(&event);
+				isPreprocessedByImGui = ImGui_ImplSDL2_ProcessEvent(&event);
             }
+
             std::shared_ptr<Event> eventPtr;
             bool caught = false;
 
             switch (event.type)
             {
                 case SDL_QUIT:
-                    eventPtr.reset(new WindowCloseEvent());
+                    eventPtr.reset(new WindowCloseEvent(event.window.windowID));
                     caught = true;
                     break;
                 case SDL_WINDOWEVENT:
-                    if (event.window.event == SDL_WINDOWEVENT_RESIZED)
+					if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+					{
+						// We only broadcast window size changed event if it's not an imgui window.
+						// TODO: call
+						//  'isOSWindow = WindowManager.GetWindowFromID(event.window.windowID) != nullptr'
+						//  for now we will just call
+						//  'isOSWindow = event.window.windowID == 1' (the main OS Window always has the ID of 1)
+						bool const isOSWindow = WindowManager::HasWindowWithID(event.window.windowID);
+						if (!isOSWindow)
+						{
+							break;
+						}
+
+						eventPtr.reset(new WindowSizeChangeEvent(event.window.windowID, event.window.data1, event.window.data2));
+						caught = true;
+					}
+                    else if (event.window.event == SDL_WINDOWEVENT_RESIZED)
                     {
-                        eventPtr.reset(new WindowSizeChangeEvent(event.window.data1, event.window.data2));
+                        eventPtr.reset(new WindowManualResizeEvent(event.window.windowID, event.window.data1, event.window.data2));
                         caught = true;
                     }
+					else if (event.window.event == SDL_WINDOWEVENT_CLOSE)
+					{
+						// TODO: implement window close event
+						DYE_LOG_INFO("WINDOW_CLOSE (main window) to be handled!");
+
+						if (event.window.windowID == 1)
+						{
+							// TODO: remove this
+							eventPtr.reset(new WindowCloseEvent(event.window.windowID));
+							caught = true;
+						}
+					}
+
                     /// MORE
                     break;
                 case SDL_KEYDOWN:

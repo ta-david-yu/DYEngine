@@ -5,27 +5,27 @@
 
 namespace DYE
 {
-    static GLenum ShaderDataTypeToOpenGLBaseType(ShaderDataType type)
+    static GLenum ShaderDataTypeToOpenGLBaseType(VertexAttributeType type)
     {
         switch (type)
         {
-            case ShaderDataType::Float:    return GL_FLOAT;
-            case ShaderDataType::Float2:   return GL_FLOAT;
-            case ShaderDataType::Float3:   return GL_FLOAT;
-            case ShaderDataType::Float4:   return GL_FLOAT;
-            case ShaderDataType::Mat3:     return GL_FLOAT;
-            case ShaderDataType::Mat4:     return GL_FLOAT;
-            case ShaderDataType::Int:      return GL_INT;
-            case ShaderDataType::Int2:     return GL_INT;
-            case ShaderDataType::Int3:     return GL_INT;
-            case ShaderDataType::Int4:     return GL_INT;
-            case ShaderDataType::Bool:     return GL_BOOL;
+            case VertexAttributeType::Float:    return GL_FLOAT;
+            case VertexAttributeType::Float2:   return GL_FLOAT;
+            case VertexAttributeType::Float3:   return GL_FLOAT;
+            case VertexAttributeType::Float4:   return GL_FLOAT;
+            case VertexAttributeType::Mat3:     return GL_FLOAT;
+            case VertexAttributeType::Mat4:     return GL_FLOAT;
+            case VertexAttributeType::Int:      return GL_INT;
+            case VertexAttributeType::Int2:     return GL_INT;
+            case VertexAttributeType::Int3:     return GL_INT;
+            case VertexAttributeType::Int4:     return GL_INT;
+            case VertexAttributeType::Bool:     return GL_BOOL;
 
-            case ShaderDataType::None:
+            case VertexAttributeType::None:
                 break;
         }
 
-        DYE_LOG_ERROR("Unknown ShaderDataType!");
+        DYE_LOG_ERROR("Unknown VertexAttributeType!");
         DYE_ASSERT(false);
         return 0;
     }
@@ -72,10 +72,10 @@ namespace DYE
             switch (element.Type)
             {
                 /// Cast to float type (glVertexAttribPointer)
-                case ShaderDataType::Float:
-                case ShaderDataType::Float2:
-                case ShaderDataType::Float3:
-                case ShaderDataType::Float4:
+                case VertexAttributeType::Float:
+                case VertexAttributeType::Float2:
+                case VertexAttributeType::Float3:
+                case VertexAttributeType::Float4:
                 {
                     glCall(glEnableVertexAttribArray(m_VertexBufferAttributeIndex));
                     glVertexAttribPointer(m_VertexBufferAttributeIndex,
@@ -88,13 +88,13 @@ namespace DYE
                     break;
                 }
                 /// Cast to integer type (glVertexAttribIPointer)
-                case ShaderDataType::Int:
-                case ShaderDataType::Int2:
-                case ShaderDataType::Int3:
-                case ShaderDataType::Int4:
-                case ShaderDataType::Bool:
+                case VertexAttributeType::Int:
+                case VertexAttributeType::Int2:
+                case VertexAttributeType::Int3:
+                case VertexAttributeType::Int4:
+                case VertexAttributeType::Bool:
                 {
-                    glEnableVertexAttribArray(m_VertexBufferAttributeIndex);
+					glCall(glEnableVertexAttribArray(m_VertexBufferAttributeIndex));
                     glVertexAttribIPointer(m_VertexBufferAttributeIndex,
                                            element.GetComponentCount(),
                                            ShaderDataTypeToOpenGLBaseType(element.Type),
@@ -104,13 +104,13 @@ namespace DYE
                     break;
                 }
                 /// Cast to float type matrix,  (glVertexAttribPointer)
-                case ShaderDataType::Mat3:
-                case ShaderDataType::Mat4:
+                case VertexAttributeType::Mat3:
+                case VertexAttributeType::Mat4:
                 {
                     uint8_t count = element.GetComponentCount();
                     for (uint8_t i = 0; i < count; i++)
                     {
-                        glEnableVertexAttribArray(m_VertexBufferAttributeIndex);
+						glCall(glEnableVertexAttribArray(m_VertexBufferAttributeIndex));
                         glVertexAttribPointer(m_VertexBufferAttributeIndex,
                                               count,
                                               ShaderDataTypeToOpenGLBaseType(element.Type),
@@ -123,7 +123,7 @@ namespace DYE
                     break;
                 }
                 default:
-                    DYE_LOG("Unknown ShaderDataType!");
+                    DYE_LOG("Unknown VertexAttributeType!");
                     DYE_ASSERT(false);
                     break;
             }

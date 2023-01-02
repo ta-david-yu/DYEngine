@@ -10,15 +10,15 @@ namespace DYE
     class SDLContext : public ContextBase
     {
     public:
-        explicit SDLContext(SDLWindow* pSdlWindow);
         ~SDLContext() override;
 
-        void Init() override;
-        void SwapBuffers() override;
-    private:
-        /// The owner of this Context
-        SDLWindow* m_pWindow;
+		void * GetNativeContextPtr() const override;
+		void MakeCurrentForWindow(WindowBase const& window) override;
 
+	protected:
+		void init(WindowBase* pWindow) override;
+
+    private:
         /// The pointer to the native Context object (SDL)
         void* m_pNativeContext;
     };

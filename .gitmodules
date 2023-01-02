@@ -4,3 +4,9 @@
 [submodule "DYEngine/extern/yaml-cpp"]
 	path = DYEngine/extern/yaml-cpp
 	url = https://github.com/ta-david-yu/yaml-cpp.git
+[submodule "DYEngine/extern/imgui"]
+	path = DYEngine/extern/imgui
+	url = git@github.com:ta-david-yu/imgui.git
+[submodule "DYEngine/extern/rttr/rttr"]
+	path = DYEngine/extern/rttr/rttr
+	url = git@github.com:ta-david-yu/rttr.git

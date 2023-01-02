@@ -3,6 +3,8 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/DYEngine/extern/glm" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/DYEngine/extern/imgui" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/DYEngine/extern/rttr/rttr" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/DYEngine/extern/yaml-cpp" vcs="Git" />
   </component>
 </project>

@@ -17,16 +17,16 @@ namespace DYE
         void OnUpdate() override;
 
         uint32_t GetWidth() const override;
-
         uint32_t GetHeight() const override;
 
-        void *GetNativeWindowPtr() const override { return m_pNativeWindow; }
+		void *GetNativeWindowPtr() const override { return m_pNativeWindow; }
+		std::uint32_t GetWindowID() const override;
+
+		bool SetFullScreenMode(FullScreenMode mode) override;
+		void SetWindowSize(uint32_t width, uint32_t height) override;
 
     private:
         /// The pointer to the native window object
         SDL_Window *m_pNativeWindow;
-
-        /// The underlying GraphicsContext
-        std::unique_ptr<ContextBase> m_Context;
     };
 }

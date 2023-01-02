@@ -1,12 +1,18 @@
+#include "Base.h"
 #include "Graphics/Shader.h"
 #include "Graphics/OpenGL.h"
-#include "Base.h"
+
+#include "Graphics/ShaderProcessorBase.h"
+#include "Graphics/Processor/UniformPropertyProcessor.h"
+#include "Graphics/Processor/BlendStateCommandProcessor.h"
+#include "Graphics/Processor/DepthStateCommandProcessor.h"
 
 #include <utility>
 #include <iostream>
 #include <sstream>
 #include <fstream>
 #include <vector>
+#include <algorithm>
 
 #include <glad/glad.h>
 
@@ -15,53 +21,96 @@ namespace DYE
     /// Map the ShaderType enum to GL_(TYPE)_SHADER
     /// \param type enum ShaderType
     /// \return unsigned int (GL Shader Type)
-    static unsigned int shaderTypeEnumToGLShaderType(ShaderType type)
+    static unsigned int ShaderTypeEnumToGLShaderType(ShaderType type)
     {
         switch (type)
         {
             case ShaderType::Vertex:
                 return GL_VERTEX_SHADER;
-                break;
             case ShaderType::Geometry:
                 return GL_GEOMETRY_SHADER;
-                break;
             case ShaderType::Fragment:
                 return GL_FRAGMENT_SHADER;
-                break;
-            case ShaderType::NumOfType:
-                break;
-            case ShaderType::Invalid:
-                break;
         }
         return 0;
     }
 
-    //ShaderProgram* ShaderProgram::s_pCurrentShaderProgramInUse = nullptr;
+	static std::string ShaderTypeEnumToShaderTypeKeyword(ShaderType type)
+	{
+		switch (type)
+		{
+			case ShaderType::Vertex:
+				return "vertex";
+			case ShaderType::Geometry:
+				return "geometry";
+			case ShaderType::Fragment:
+				return "fragment";
+		}
+		return "invalid-type";
+	}
 
-    std::shared_ptr<ShaderProgram> ShaderProgram::CreateFromFile(const std::string& name, const std::string &filepath)
-    {
-        DYE_LOG("-- Start creating shader \"%s\" from %s --", name.c_str(), filepath.c_str());
+	/// Check if the given line contains a valid shader type keyword. The contained shader type will be return through outShaderType parameter.
+	/// \param shaderSourceLine
+	/// \param outShaderType The output shader type if the return value is true.
+	/// \return true if the line includes a shader type keyword.
+	static bool HasValidShaderTypeKeywordInLine(const std::string& shaderSourceLine, ShaderType& outShaderType)
+	{
+		if (shaderSourceLine.find("Vertex") != std::string::npos)
+		{
+			outShaderType = ShaderType::Vertex;
+			return true;
+		}
 
-        auto program = std::make_shared<ShaderProgram>(name);
-        bool success = program->createProgramFromSourceFile(filepath);
+		if (shaderSourceLine.find("Geometry") != std::string::npos)
+		{
+			outShaderType = ShaderType::Geometry;
+			return true;
+		}
 
-        if (program->HasCompileError())
-        {
-            DYE_LOG("There are compile errors in the shader!");
-        }
+		if (shaderSourceLine.find("Fragment") != std::string::npos)
+		{
+			outShaderType = ShaderType::Fragment;
+			return true;
+		}
 
-        if (success)
-        {
-            DYE_LOG("-- Successfully create shader [%d] \"%s\" from %s --", program->m_ID, name.c_str(), filepath.c_str());
-            return program;
-        }
-        else
-        {
-            DYE_LOG("-- Failed to create shader [%d] \"%s\" from %s --", program->m_ID, name.c_str(), filepath.c_str());
-            DYE_ASSERT(false);
-            return std::shared_ptr<ShaderProgram>();
-        }
-    }
+		return false;
+	}
+
+    std::shared_ptr<ShaderProgram> ShaderProgram::CreateFromFile(const std::string& name, const std::filesystem::path &filepath)
+	{
+		DYE_LOG("<< Start creating shader \"%s\" from %s -", name.c_str(), filepath.string().c_str());
+
+		auto program = std::make_shared<ShaderProgram>(name);
+
+		std::ifstream fs(filepath);
+		std::string shaderProgramSource((std::istreambuf_iterator<char>(fs)),
+										(std::istreambuf_iterator<char>()));
+
+		// Populate shader processors!
+		std::vector<std::unique_ptr<ShaderProcessor::ShaderProcessorBase>> shaderProcessors {};
+		shaderProcessors.emplace_back(std::make_unique<ShaderProcessor::UniformPropertyProcessor>());
+		shaderProcessors.emplace_back(std::make_unique<ShaderProcessor::BlendStateCommandProcessor>());
+		shaderProcessors.emplace_back(std::make_unique<ShaderProcessor::DepthStateCommandProcessor>());
+
+		bool const success = program->initializeProgramFromSource(shaderProgramSource, shaderProcessors);
+
+		if (program->HasCompileError())
+		{
+			DYE_LOG("There are compile errors in the shader!");
+		}
+
+		if (!success)
+		{
+			DYE_LOG("- Failed to create shader [%d] \"%s\" from %s >>", program->m_ID, name.c_str(), filepath.string().c_str());
+			DYE_ASSERT(false);
+
+			// We still return the program. In the future we might want to return a purple shader program.
+			return program;
+		}
+
+		DYE_LOG("- Successfully create shader [%d] \"%s\" from %s >>", program->m_ID, name.c_str(), filepath.string().c_str());
+		return program;
+	}
 
     DYE::ShaderProgram::ShaderProgram(std::string name) : m_ID(0), m_Name(std::move(name))
     {
@@ -76,159 +125,257 @@ namespace DYE
         glCall(glDeleteProgram(m_ID));
     }
 
-    void ShaderProgram::Bind()
+    void ShaderProgram::Use() const
     {
         glCall(glUseProgram(m_ID));
 
-        //s_pCurrentShaderProgramInUse = this;
     }
 
-    void ShaderProgram::Unbind()
+    void ShaderProgram::Unbind() const
     {
-        //if (s_pCurrentShaderProgramInUse == this)
-        {
-            glCall(glUseProgram(0));
-            //s_pCurrentShaderProgramInUse = nullptr;
-        }
+        glCall(glUseProgram(0));
     }
 
-    bool ShaderProgram::createProgramFromSourceFile(const std::string &filepath)
+	std::optional<UniformInfo> ShaderProgram::TryGetUniformInfo(const std::string &name) const
+	{
+		for (const auto& info : m_Uniforms)
+		{
+			if (info.Name == name)
+			{
+				return info;
+			}
+		}
+		return std::nullopt;
+	}
+
+	std::optional<UniformInfo> ShaderProgram::TryGetUniformInfoFromLocation(UniformLocation location) const
+	{
+		for (const auto& info : m_Uniforms)
+		{
+			if (info.Location == location)
+			{
+				return info;
+			}
+		}
+		return std::nullopt;
+	}
+
+	bool ShaderProgram::HasUniform(const std::string &name) const
+	{
+		return std::ranges::any_of
+					(
+						m_Uniforms,
+						[&](UniformInfo const &uniformInfo) { return uniformInfo.Name == name; }
+					);
+	}
+
+    bool ShaderProgram::initializeProgramFromSource(std::string &source, const std::vector<std::unique_ptr<ShaderProcessor::ShaderProcessorBase>>& shaderProcessors)
     {
-        std::ifstream fs(filepath);
-        std::string content((std::istreambuf_iterator<char>(fs)),
-                             (std::istreambuf_iterator<char>()));
+		bool hasCompileError = false;
 
-        return createProgramFromSource(content);
-    }
+		// Processors.OnBegin
+		for (auto& processor : shaderProcessors)
+		{
+			processor->OnBegin(*this);
+		}
 
-    bool ShaderProgram::createProgramFromSource(const std::string &source)
-    {
-        /// Parse source
-        /// if the program has certain types of shader
-        bool hasShadersOfType[(int) ShaderType::NumOfType];
-        for (int i = 0; i < (int)ShaderType::NumOfType; i++)
-        {
-            hasShadersOfType[i] = false;
-        }
+		// Processors.OnPreShaderTypeParse
+		for (auto& processor : shaderProcessors)
+		{
+			processor->OnPreShaderTypeParse(source);
+		}
 
-        /// source string stream for each currScopeType of shader
-        std::stringstream shaderSS[(int) ShaderType::NumOfType];
+		std::vector<std::string> processorDirectivesToIgnore {};
+		for (auto& processor : shaderProcessors)
+		{
+			// Collect all the directives to ignore into one list.
+			auto directives = processor->GetDirectivesToIgnoreInShaderTypeParsePhase();
+			processorDirectivesToIgnore.insert(processorDirectivesToIgnore.end(), directives.begin(), directives.end());
+		}
 
-        /// open the file and read the source from it
-        std::stringstream stream(source);
+		// Parse ShaderProgram into Shader Sources of different types
+		ShaderTypeParseResult shaderTypeParseResult = parseShaderProgramSourceIntoShaderSources(source, processorDirectivesToIgnore);
+		if (!shaderTypeParseResult.Success)
+		{
+			hasCompileError = true;
+		}
 
-        /// the type of the current shader that is being parsed
-        ShaderType currScopeType = ShaderType::Invalid;
+		// Processors.OnPostShaderTypeParse
+		for (auto& processor : shaderProcessors)
+		{
+			processor->OnPostShaderTypeParse(shaderTypeParseResult);
+		}
 
-        std::string line;
-        while (std::getline(stream, line))
-        {
-            if (line.find("#shader") != std::string::npos)
-            {
-                if (line.find("vertex") != std::string::npos)
-                {
-                    /// TO Vertex
-                    currScopeType = ShaderType::Vertex;
-                }
-                else if (line.find("geometry") != std::string::npos)
-                {
-                    /// To Geometry
-                    currScopeType = ShaderType::Geometry;
-                }
-                else if (line.find("fragment") != std::string::npos)
-                {
-                    /// To Fragment
-                    currScopeType = ShaderType::Fragment;
-                }
-                else
-                {
-                    DYE_LOG("Unknown shader type - %s", line.c_str());
-                    m_HasCompileError = true;
-                }
-
-                /// The shader of the type has already existed!
-                if (hasShadersOfType[(int) currScopeType])
-                {
-                    DYE_LOG("Duplicate shader type - %s", line.c_str());
-                    m_HasCompileError = true;
-                }
-                else
-                {
-                    hasShadersOfType[(int) currScopeType] = true;
-                }
-            }
-            else
-            {
-                if (currScopeType != ShaderType::Invalid)
-                {
-                    shaderSS[(int) currScopeType] << line << '\n';
-                }
-            }
-        }
-
-        /// Compile source
+        // Create shader program on GPU
         m_ID = glCreateProgram();
         glCheckAfterCall(glCreateProgram());
 
+		// Actually compile shader(s)
         std::vector<ShaderID> createdShaderIDs;
+		for (auto& shaderSourcePair : shaderTypeParseResult.ShaderSources)
+		{
+			auto shaderType = shaderSourcePair.first;
+			auto shaderSource = shaderSourcePair.second;
 
-        for (int typeIndex = 0; typeIndex < (int) ShaderType::NumOfType; typeIndex++)
-        {
-            bool hasShaderType = hasShadersOfType[typeIndex];
-            if (hasShaderType)
-            {
-                auto shaderSource = shaderSS[typeIndex].str();
-                auto type = (ShaderType) typeIndex;
-                ShaderID shaderID = 0;
-                {
-                    const char* src = shaderSource.c_str();
+			// Processors.OnPreShaderCompilation
+			for (auto& processor : shaderProcessors)
+			{
+				processor->OnPreShaderCompilation(shaderType, shaderSource);
+			}
 
-                    unsigned int glShaderType = shaderTypeEnumToGLShaderType(type);
+			ShaderCompilationResult compileShaderResult = compileShaderForProgram(m_ID, shaderType, shaderSource);
+			if (compileShaderResult.Success)
+			{
+				glCall(glAttachShader(m_ID, compileShaderResult.CompiledShaderID));
+				createdShaderIDs.push_back(compileShaderResult.CompiledShaderID);
+			}
+			else
+			{
+				/// Compile error!
+				hasCompileError = true;
+			}
 
-                    shaderID = glCreateShader(glShaderType);
-                    glCall(glShaderSource(shaderID, 1, &src, nullptr));
-                    glCall(glCompileShader(shaderID));
+			// Processors.OnPostShaderCompilation
+			for (auto& processor : shaderProcessors)
+			{
+				processor->OnPostShaderCompilation(shaderType, compileShaderResult);
+			}
+		}
 
-                    int compileResult;
-                    glCall(glGetShaderiv(shaderID, GL_COMPILE_STATUS, &compileResult));
-                    if (compileResult == GL_FALSE)
-                    {
-                        int length;
-                        glCall(glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &length));
-
-                        char *msg = (char *) alloca(length * sizeof(char));
-                        glCall(glGetShaderInfoLog(shaderID, length, &length, msg));
-
-                        DYE_LOG("Shader[%d] Compilation Error - %s", (int)type, msg);
-
-                        /// reset ID to zero, which represents error
-                        shaderID = 0;
-                    }
-                }
-
-                if (shaderID != 0)
-                {
-                    glCall(glAttachShader(m_ID, shaderID));
-                    createdShaderIDs.push_back(shaderID);
-                }
-                /// Compile error!
-                else
-                {
-                    m_HasCompileError = true;
-                }
-            }
-        }
-
-        /// Link the shaders specified by m_ID with the corresponding GPU processors
+        // Link the shaders specified by m_ID with the corresponding GPU processors
         glCall(glLinkProgram(m_ID));
         glCall(glValidateProgram(m_ID));
 
-        /// Clean up shaders
+        // Clean up shaders
         for (auto shaderID : createdShaderIDs)
         {
             glCall(glDeleteShader(shaderID));
         }
 
-        return true;
+		// Processors.OnEnd
+		for (auto& processor : shaderProcessors)
+		{
+			processor->OnEnd(*this);
+		}
+
+		m_HasCompileError = hasCompileError;
+        return !hasCompileError;
     }
+
+	ShaderProgram::ShaderTypeParseResult ShaderProgram::parseShaderProgramSourceIntoShaderSources(const std::string &programSource, const std::vector<std::string>& directivesToIgnore)
+	{
+		bool hasParseError = false;
+
+		std::vector<std::pair<ShaderType, std::string>> shaderSources {};
+
+		/// Parse source into multiple shader sources,
+		/// if the program has certain types of shader.
+		bool hasShadersOfType[ShaderConstants::NumberOfShaderTypes];
+		for (bool& hasShaderOfType : hasShadersOfType)
+		{
+			hasShaderOfType = false;
+		}
+
+		/// source string stream for each currScopeType of shader
+		std::stringstream shaderSS[ShaderConstants::NumberOfShaderTypes];
+
+		/// open the file and read the source from it
+		std::stringstream stream(programSource);
+
+		/// the type of the current shader that is being parsed
+		bool isInValidTypeScope = false;
+		ShaderType currScopeType = ShaderType::Vertex;
+
+		std::string line;
+		while (std::getline(stream, line))
+		{
+			if (line.find(ShaderConstants::ShaderTypeSpecifier) != std::string::npos)
+			{
+				// Found #shader preprocessor directive! Parse the shader type.
+				bool const hasShaderTypeKeyword = HasValidShaderTypeKeywordInLine(line, currScopeType);
+				if (hasShaderTypeKeyword)
+				{
+					isInValidTypeScope = true;
+				}
+				else
+				{
+					DYE_LOG("Unknown shader type - %s", line.c_str());
+					hasParseError = true;
+					isInValidTypeScope = false;
+				}
+
+				/// The shader of the type has already existed!
+				int const currScopeTypeIndex = (int) currScopeType;
+				if (hasShadersOfType[currScopeTypeIndex])
+				{
+					DYE_LOG("Duplicate shader type - %s", line.c_str());
+					hasParseError = true;
+					continue;
+				}
+
+				hasShadersOfType[currScopeTypeIndex] = true;
+				continue;
+			}
+
+			auto firstToken = line.substr(0, line.find(' '));
+			if (std::find(directivesToIgnore.begin(), directivesToIgnore.end(), firstToken) != std::end(directivesToIgnore))
+			{
+				// This line is marked as ignored by one of the processors' directives. Skip it!
+				continue;
+			}
+
+			if (!isInValidTypeScope)
+			{
+				// The current line is not under a specific shader type scope. Skip it!
+				continue;
+			}
+
+			// Add the line to the corresponding shader string stream if the type is valid.
+			shaderSS[(int) currScopeType] << line << '\n';
+		}
+
+		for (int typeIndex = 0; typeIndex < ShaderConstants::NumberOfShaderTypes; typeIndex++)
+		{
+			bool const hasShaderType = hasShadersOfType[typeIndex];
+			if (!hasShaderType)
+			{
+				continue;
+			}
+
+			auto shaderType = (ShaderType) typeIndex;
+			shaderSources.emplace_back(shaderType, shaderSS[typeIndex].str());
+		}
+
+		return ShaderTypeParseResult { .Success = !hasParseError, .ShaderSources = std::move(shaderSources) };
+	}
+
+	ShaderProgram::ShaderCompilationResult ShaderProgram::compileShaderForProgram(DYE::ShaderProgramID programId, DYE::ShaderType type, const std::string &source)
+	{
+		ShaderID shaderID = 0;
+
+		const char *shaderSource = source.c_str();
+
+		unsigned int const glShaderType = ShaderTypeEnumToGLShaderType(type);
+
+		shaderID = glCreateShader(glShaderType);
+		glCall(glShaderSource(shaderID, 1, &shaderSource, nullptr));
+		glCall(glCompileShader(shaderID));
+
+		int compileResult;
+		glCall(glGetShaderiv(shaderID, GL_COMPILE_STATUS, &compileResult));
+		if (compileResult == GL_FALSE)
+		{
+			int length;
+			glCall(glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &length));
+
+			char *msg = (char *) alloca(length * sizeof(char));
+			glCall(glGetShaderInfoLog(shaderID, length, &length, msg));
+
+			DYE_LOG("Shader[%d] Compilation Error - %s", (int) type, msg);
+
+			return ShaderCompilationResult { .Success = false, .CompiledShaderID = 0 };
+		}
+
+		return ShaderCompilationResult { .Success = true, .CompiledShaderID = shaderID };
+	}
 }

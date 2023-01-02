@@ -13,7 +13,7 @@ namespace DYE
     enum class EventType
     {
         None = 0,
-        WindowClose, WindowSizeChange,
+        WindowClose, WindowSizeChange, WindowManualResize,
         KeyDown, KeyUp,
         MouseButtonDown, MouseButtonUp, MouseMove, MouseDrag
     };

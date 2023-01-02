@@ -1,19 +1,22 @@
 #include "Application.h"
 #include "Base.h"
 #include "Logger.h"
-#include "Graphics/Renderer.h"
+#include "Input/InputManager.h"
+#include "ContextBase.h"
+#include "Graphics/RenderCommand.h"
+#include "Graphics/RenderPipelineManager.h"
+#include "Graphics/RenderPipeline2D.h"
 
 #include <SDL.h>
-#include <SDL_image.h>
 
 namespace DYE
 {
-    Application::Application(const std::string &windowName, int fixedFramePerSecond) : m_Time(fixedFramePerSecond)
+    Application::Application(const std::string &windowName, int fixedFramePerSecond)
     {
         SDL_Init(0);
         SDL_InitSubSystem(SDL_INIT_AUDIO);
         SDL_InitSubSystem(SDL_INIT_VIDEO);
-        DYE_LOG("--------------- Init SDL");
+        DYE_LOG("Init SDL");
         DYE_LOG("OS: %s", SDL_GetPlatform());
         DYE_LOG("CPU cores: %d", SDL_GetCPUCount());
         DYE_LOG("RAM: %.2f GB", (float) SDL_GetSystemRAM() / 1024.0f);
@@ -38,24 +41,40 @@ namespace DYE
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-        /// Initialize system and system instances
-        DYE_LOG("---------------");
+        // Initialize core systems: time, input etc
+		Time::InitSingleton(fixedFramePerSecond);
+		InputManager::InitSingleton();
 
-        // Create window and context, and then init renderer
-        DYE_LOG("--------------- Init Renderer");
-        m_Window = WindowBase::Create(WindowProperty(windowName));
-        Renderer::Init();
-        RenderCommand::SetViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
-        RenderCommand::SetClearColor(glm::vec4 {0, 0, 0, 0});
-        DYE_LOG("---------------");
+        // Create window and context
+        DYE_LOG("Init Renderer");
+
+		WindowBase* mainWindowPtr = nullptr;
+		if (WindowManager::GetNumberOfWindows() == 0)
+		{
+			// If there is no window, we create one first as the main window!
+			mainWindowPtr = WindowManager::CreateWindow(WindowProperty(windowName));
+			auto context = ContextBase::Create(mainWindowPtr);
+			mainWindowPtr->SetContext(context);
+			mainWindowPtr->MakeCurrent();
+			ContextBase::SetVSyncCountForCurrentContext(0);
+		}
+		else
+		{
+			mainWindowPtr = WindowManager::GetMainWindow();
+		}
+
+		// Initialize render pipeline
+		RenderCommand::InitSingleton();
+		RenderCommand::GetInstance().SetViewport(0, 0, mainWindowPtr->GetWidth(), mainWindowPtr->GetHeight());
+		RenderCommand::GetInstance().SetClearColor(glm::vec4 {0, 0, 0, 0});
+		RenderPipelineManager::SetActiveRenderPipeline(std::make_shared<RenderPipeline2D>());	// Use 2D RenderPipeline by default
 
         // Register handleOnEvent member function to the EventSystem
         m_EventSystem = EventSystemBase::Create();
         m_EventSystem->Register(this);
-        //m_EventSystem->SetEventHandler(DYE_BIND_EVENT_FUNCTION(Application::handleOnEvent));
 
-        // Push ImGuiLayer as overlay
-        m_ImGuiLayer = std::make_shared<ImGuiLayer>(m_Window.get());
+        // Push ImGuiLayer as overlay, initialzied with the main window
+        m_ImGuiLayer = std::make_shared<ImGuiLayer>(mainWindowPtr);
         pushOverlay(m_ImGuiLayer);
     }
 
@@ -68,44 +87,44 @@ namespace DYE
     void Application::Run()
     {
         m_IsRunning = true;
-        m_Time.tickInit();
+        TIME.tickInit();
 
         double deltaTimeAccumulator = 0;
 
-        /// Init layers
+        // Init layers
         for (auto& layer : m_LayerStack)
         {
-            DYE_LOG("--------------- Init Layer - %s", layer->GetName().c_str());
             layer->OnInit();
-            DYE_LOG("---------------");
         }
 
         while (m_IsRunning)
         {
-            /// Poll Event
+            // Poll system events
             m_EventSystem->PollEvent();
 
-            /// Fixed Update
-            deltaTimeAccumulator += m_Time.DeltaTime();
-            while (deltaTimeAccumulator >= m_Time.FixedDeltaTime())
+			// Update input states
+			INPUT.UpdateInputState();
+
+            // Game logic fixed update
+            deltaTimeAccumulator += TIME.DeltaTime();
+            while (deltaTimeAccumulator >= TIME.FixedDeltaTime())
             {
                 for (auto& layer : m_LayerStack)
                 {
                     layer->OnFixedUpdate();
                 }
 
-                deltaTimeAccumulator -= m_Time.FixedDeltaTime();
+                deltaTimeAccumulator -= TIME.FixedDeltaTime();
             }
 
-            /// Update
+            // Game logic update
             for (auto& layer : m_LayerStack)
             {
                 layer->OnUpdate();
             }
 
-            /// Render
-            RenderCommand::Clear();
-
+            // Game logic render
+			// Normally you would populate render data to the render pipeline in this phase
             onPreRenderLayers();
             for (auto& layer : m_LayerStack)
             {
@@ -113,7 +132,10 @@ namespace DYE
             }
             onPostRenderLayers();
 
-            /// ImGui
+			// Execute draw-calls on GPU
+			RenderPipelineManager::RenderWithActivePipeline();
+
+            // ImGui
             m_ImGuiLayer->BeginImGui();
             for (auto& layer : m_LayerStack)
             {
@@ -121,18 +143,30 @@ namespace DYE
             }
             m_ImGuiLayer->EndImGui();
 
-            /// Swap Buffers
-            m_Window->OnUpdate();
+			// Swap the buffer of the main application window
+			// We swap the main window here instead of in the render pipeline manager
+			// because some imgui viewports are rendered inside main window, and we want to do those first before the swap.
+			// TODO: right now we call swap buffer directly because EndImGui() call already set
+			//  the main window context as current. Otherwise we will have to call
+			// 	mainWindow->GetContext()->MakeCurrentForWindow(mainWindow) first.
+			//  At some point we want to fix this cuz it's kinda awkward and non-explicit enough
+			//  and might lead to complex bugs in the future.
+			RenderCommand::GetInstance().SwapWindowBuffer(*WindowManager::GetMainWindow());
 
-            m_Time.tickUpdate();
+            // Update all registered Windows
+			// For now, it does nothing.
+			WindowManager::UpdateWindows();
+
+			TIME.tickUpdate();
         }
 
-        DYE_LOG("--------------- Exit Game Loop");
+        DYE_LOG("Exit Game Loop");
     }
 
     void Application::Handle(Event& event)
     {
-        auto eventType = event.GetEventType();
+        auto const& eventType = event.GetEventType();
+		auto const& eventCategory = event.GetCategoryFlags();
 
         // Handle WindowEvent on application level
         if (eventType == EventType::WindowClose)
@@ -142,7 +176,7 @@ namespace DYE
         }
         else if (eventType == EventType::WindowSizeChange)
         {
-            handleOnWindowResize(static_cast<const WindowSizeChangeEvent&>(event));
+			handleOnWindowSizeChange(static_cast<const WindowSizeChangeEvent &>(event));
         }
 
         // Event is passed from top to bottom layer
@@ -150,7 +184,10 @@ namespace DYE
         {
             // Has been handled, break the loop
             if (event.IsUsed)
-                break;
+			{
+				break;
+			}
+
             (*it)->OnEvent(event);
         }
 
@@ -171,8 +208,10 @@ namespace DYE
         m_IsRunning = false;
     }
 
-    void Application::handleOnWindowResize(const WindowSizeChangeEvent &event)
+    void Application::handleOnWindowSizeChange(const WindowSizeChangeEvent &event)
     {
-        Renderer::OnWindowResize(event.GetWidth(), event.GetHeight());
+		// TODO: instead of calling set viewport here,
+		// TODO: set viewport depending on the window ID & whether camera is targeting the window IF the camera is marked as auto-update aspect ratio
+		// TODO: We will need something like WindowManager.GetWindowWithID(id).Resize etc
     }
 }

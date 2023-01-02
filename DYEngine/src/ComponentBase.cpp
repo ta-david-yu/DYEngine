@@ -1,6 +1,6 @@
 #include "Scene/ComponentBase.h"
 #include "Scene/Entity.h"
-#include "Util/Type.h"
+#include "Util/TypeUtil.h"
 #include "Scene/Transform.h"
 
 #include <algorithm>
@@ -27,7 +27,7 @@ namespace DYE
 
     std::string ComponentBase::GetComponentName() const
     {
-        return std::move(getTypeName(*this));
+        return std::move(TypeUtil::GetTypeName(*this));
     }
 
     ComponentUpdaterBase::ComponentUpdaterBase(ComponentTypeID typeID) : m_TypeID(typeID)

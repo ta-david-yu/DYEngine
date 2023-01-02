@@ -9,7 +9,8 @@
 
 namespace DYE
 {
-    /// EventSystemBase is the interface for polling events from the underlying frameworks (such as SDL or GLFW), it is designed to be run by an Application object and handled by Application (EventHandler).
+    /// EventSystemBase is the interface for polling system events from the underlying frameworks (such as SDL or GLFW).
+    /// It is designed to be run by an Application object and handled by Application (EventHandler).
     class EventSystemBase : public MessageDispatcherBase<Event>
     {
     public:

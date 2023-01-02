@@ -1,6 +1,6 @@
 #include "FrameCounterComponent.h"
 
-#include "Time.h"
+#include "Util/Time.h"
 
 #if DYE_DEBUG
 #include <imgui.h>

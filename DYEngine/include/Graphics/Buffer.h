@@ -6,54 +6,67 @@
 
 #include <memory>
 #include <vector>
+#include <cstdint>
+#include <string>
 
 namespace DYE
 {
     using BufferID = std::uint32_t;
 
-    enum class ShaderDataType
+    enum class VertexAttributeType
     {
-        None = 0, Float, Float2, Float3, Float4, Mat3, Mat4, Int, Int2, Int3, Int4, Bool
+        None = -1,
+		Float,
+		Float2,
+		Float3,
+		Float4,
+		Mat3,
+		Mat4,
+		Int,
+		Int2,
+		Int3,
+		Int4,
+		Bool
     };
 
-    static std::uint32_t ShaderDataTypeSize(ShaderDataType type)
+    static std::uint32_t VertexAttributeTypeSize(VertexAttributeType type)
     {
         switch (type)
         {
-            case ShaderDataType::Float:    return 4;
-            case ShaderDataType::Float2:   return 4 * 2;
-            case ShaderDataType::Float3:   return 4 * 3;
-            case ShaderDataType::Float4:   return 4 * 4;
-            case ShaderDataType::Mat3:     return 4 * 3 * 3;
-            case ShaderDataType::Mat4:     return 4 * 4 * 4;
-            case ShaderDataType::Int:      return 4;
-            case ShaderDataType::Int2:     return 4 * 2;
-            case ShaderDataType::Int3:     return 4 * 3;
-            case ShaderDataType::Int4:     return 4 * 4;
-            case ShaderDataType::Bool:     return 1;
+            case VertexAttributeType::Float:    return 4;
+            case VertexAttributeType::Float2:   return 4 * 2;
+            case VertexAttributeType::Float3:   return 4 * 3;
+            case VertexAttributeType::Float4:   return 4 * 4;
+            case VertexAttributeType::Mat3:     return 4 * 3 * 3;
+            case VertexAttributeType::Mat4:     return 4 * 4 * 4;
+            case VertexAttributeType::Int:      return 4;
+            case VertexAttributeType::Int2:     return 4 * 2;
+            case VertexAttributeType::Int3:     return 4 * 3;
+            case VertexAttributeType::Int4:     return 4 * 4;
+            case VertexAttributeType::Bool:     return 1;
 
-            case ShaderDataType::None:
+            case VertexAttributeType::None:
                 break;
         }
 
-        DYE_LOG_ERROR("Unknown ShaderDataType!");
+        DYE_LOG_ERROR("Unknown VertexAttributeType!");
         DYE_ASSERT(false);
         return 0;
     }
 
-    /// Vertex Element: an element/attribute of vertices
-    struct BufferElement
+    /// Vertex Attribute: an element/attribute of vertices
+    struct VertexAttribute
     {
         std::string Name;
-        ShaderDataType Type;
+        VertexAttributeType Type;
         uint32_t Size;
         size_t Offset;
         bool Normalized;
 
-        BufferElement() = default;
+        VertexAttribute() = default;
 
-        BufferElement(ShaderDataType type, const std::string& name, bool normalized = false)
-                : Name(name), Type(type), Size(ShaderDataTypeSize(type)), Offset(0), Normalized(normalized)
+        VertexAttribute(VertexAttributeType type, const std::string& name, bool normalized = false)
+                : Name(name), Type(type), Size(VertexAttributeTypeSize(type)), Offset(0), Normalized(normalized)
         {
         }
 
@@ -61,47 +74,47 @@ namespace DYE
         {
             switch (Type)
             {
-                case ShaderDataType::Float:   return 1;
-                case ShaderDataType::Float2:  return 2;
-                case ShaderDataType::Float3:  return 3;
-                case ShaderDataType::Float4:  return 4;
-                case ShaderDataType::Mat3:    return 3; // 3 * float3
-                case ShaderDataType::Mat4:    return 4; // 4 * float4
-                case ShaderDataType::Int:     return 1;
-                case ShaderDataType::Int2:    return 2;
-                case ShaderDataType::Int3:    return 3;
-                case ShaderDataType::Int4:    return 4;
-                case ShaderDataType::Bool:    return 1;
+                case VertexAttributeType::Float:   return 1;
+                case VertexAttributeType::Float2:  return 2;
+                case VertexAttributeType::Float3:  return 3;
+                case VertexAttributeType::Float4:  return 4;
+                case VertexAttributeType::Mat3:    return 3; // 3 * float3
+                case VertexAttributeType::Mat4:    return 4; // 4 * float4
+                case VertexAttributeType::Int:     return 1;
+                case VertexAttributeType::Int2:    return 2;
+                case VertexAttributeType::Int3:    return 3;
+                case VertexAttributeType::Int4:    return 4;
+                case VertexAttributeType::Bool:    return 1;
 
-                case ShaderDataType::None:
+                case VertexAttributeType::None:
                     break;
             }
 
-            DYE_LOG_ERROR("Unknown ShaderDataType!");
+            DYE_LOG_ERROR("Unknown VertexAttributeType!");
             DYE_ASSERT(false);
             return 0;
         }
     };
 
-    /// Vertex Buffer Layout: contains a layout of elements per vertex
-    class BufferLayout
+    /// Vertex Buffer Layout: contains a layout of attributes per vertex
+    class VertexLayout
     {
     public:
-        BufferLayout() {}
+        VertexLayout() {}
         ///
         /// \param elements a list of elements
-        BufferLayout(std::initializer_list<BufferElement> elements) : m_Elements(elements)
+        VertexLayout(std::initializer_list<VertexAttribute> elements) : m_Elements(elements)
         {
             calculateOffsetsAndStride();
         }
 
         std::uint32_t GetStride() const { return m_Stride; }
-        const std::vector<BufferElement>& GetElements() const { return m_Elements; }
+        const std::vector<VertexAttribute>& GetElements() const { return m_Elements; }
 
-        std::vector<BufferElement>::iterator begin() { return m_Elements.begin(); }
-        std::vector<BufferElement>::iterator end() { return m_Elements.end(); }
-        std::vector<BufferElement>::const_iterator begin() const { return m_Elements.begin(); }
-        std::vector<BufferElement>::const_iterator end() const { return m_Elements.end(); }
+        std::vector<VertexAttribute>::iterator begin() { return m_Elements.begin(); }
+        std::vector<VertexAttribute>::iterator end() { return m_Elements.end(); }
+        std::vector<VertexAttribute>::const_iterator begin() const { return m_Elements.begin(); }
+        std::vector<VertexAttribute>::const_iterator end() const { return m_Elements.end(); }
     private:
         void calculateOffsetsAndStride()
         {
@@ -115,7 +128,7 @@ namespace DYE
             }
         }
     private:
-        std::vector<BufferElement> m_Elements;
+        std::vector<VertexAttribute> m_Elements;
         std::uint32_t m_Stride = 0;
     };
 
@@ -141,11 +154,11 @@ namespace DYE
 
         /// Get the vertex attribute/element layout
         /// \return
-        virtual const BufferLayout& GetLayout() const { return m_Layout; }
+        virtual const VertexLayout& GetLayout() const { return m_Layout; }
 
         /// Set the vertex attribute/element layout
         /// \param layout
-        virtual void SetLayout(const BufferLayout& layout) { m_Layout = layout; }
+        virtual void SetLayout(const VertexLayout& layout) { m_Layout = layout; }
 
         ///
         /// \param size the size of the buffer (in byte)
@@ -158,7 +171,7 @@ namespace DYE
         static std::shared_ptr<VertexBuffer> Create(void* vertices, std::uint32_t size);
     private:
         BufferID m_ID {};
-        BufferLayout m_Layout;
+        VertexLayout m_Layout;
     };
 
     /// Index Buffer class wrapper.

@@ -64,10 +64,11 @@ namespace DYE
         m_QuadVertexArray = VertexArray::Create();
 
         auto vB = VertexBuffer::Create(positions, sizeof(positions));
-        BufferLayout layout {
-                BufferElement(ShaderDataType::Float2, "position", false),
-                BufferElement(ShaderDataType::Float2, "texCoord", false),
-        };
+        VertexLayout layout
+		{
+			VertexAttribute(VertexAttributeType::Float2, "position", false),
+			VertexAttribute(VertexAttributeType::Float2, "texCoord", false),
+		};
         vB->SetLayout(layout);
         m_QuadVertexArray->AddVertexBuffer(vB);
 
@@ -76,11 +77,6 @@ namespace DYE
 
         /// Create default shader program
         m_DefaultShaderProgram = ShaderProgram::CreateFromFile("Image", "assets/default/Image.shader");
-
-        /// Bind the main texture slot
-        m_DefaultShaderProgram->Bind();
-        auto textureUniformLocation = glGetUniformLocation(m_DefaultShaderProgram->GetID(), "_MainTex");
-        glCall(glUniform1i(textureUniformLocation, 0));
 
         /// Create default white texture
         m_DefaultTexture2D = Texture2D::Create(glm::vec4 {1, 1, 1, 1});
@@ -130,8 +126,6 @@ namespace DYE
         }
 
         /// Draw
-        glCall(glDisable(GL_DEPTH_TEST));
-
         for (const auto& image : m_CachedImageRenderers)
         {
             if (!image->GetEntityPtr()->IsActive())
@@ -167,29 +161,30 @@ namespace DYE
                     glm::translate(glm::vec3(position.x, position.y, 0)) *
                     glm::scale(glm::vec3(scale.x, scale.y, 1));
 
-            m_DefaultShaderProgram->Bind();
-            {
-                if (image->m_Texture) {
-                    image->m_Texture->Bind(0);
-                } else {
-                    m_DefaultTexture2D->Bind(0);
-                }
+            m_DefaultShaderProgram->Use();
+			{
+				if (image->m_Texture)
+				{
+					// Bind the texture to the first texture slot.
+					image->m_Texture->Bind(0);
+				}
+				else
+				{
+					// Bind the texture to the first texture slot.
+					m_DefaultTexture2D->Bind(0);
+				}
 
-                auto colorUniformLocation = glGetUniformLocation(m_DefaultShaderProgram->GetID(), "_Color");
-                glCall(glUniform4f(colorUniformLocation, image->m_Color.r, image->m_Color.g, image->m_Color.b,
-                                   image->m_Color.a));
+				auto colorUniformLocation = glGetUniformLocation(m_DefaultShaderProgram->GetID(), "_Color");
+				glCall(glUniform4f(colorUniformLocation, image->m_Color.r, image->m_Color.g, image->m_Color.b, image->m_Color.a));
 
-                auto transformMatUniformLocation = glGetUniformLocation(m_DefaultShaderProgram->GetID(),
-                                                                        "_TransformMatrix");
-                glCall(glUniformMatrix4fv(transformMatUniformLocation, 1, GL_FALSE, glm::value_ptr(transformMatrix)););
-            }
+				auto transformMatUniformLocation = glGetUniformLocation(m_DefaultShaderProgram->GetID(), "_TransformMatrix");
+				glCall(glUniformMatrix4fv(transformMatUniformLocation, 1, GL_FALSE, glm::value_ptr(transformMatrix)););
+			}
 
             ///
-            m_QuadVertexArray->Bind();
-            RenderCommand::DrawIndexed(m_QuadVertexArray);
+			RenderCommand::GetInstance().DrawIndexedNow(*m_QuadVertexArray.get());
 
             m_DefaultShaderProgram->Unbind();
-            m_QuadVertexArray->Unbind();
         }
     }
 

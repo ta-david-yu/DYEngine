@@ -3,6 +3,9 @@
 #include "Base.h"
 
 #include <stb_image.h>
+#include <glm/gtx/transform.hpp>
+#include <vector>
+#include <array>
 
 namespace DYE
 {
@@ -23,10 +26,40 @@ namespace DYE
         return std::move(texture);
     }
 
-    std::shared_ptr<Texture2D> Texture2D::Create(const std::string& path)
+	std::shared_ptr<Texture2D> Texture2D::Create(glm::vec4 color, std::uint32_t width, std::uint32_t height)
+	{
+		// Create texture data dynamically.
+		std::uint32_t const numberOfPixels = width * height;
+		std::vector data
+		{
+			numberOfPixels,
+
+			// array of color components (R, G, B, A)
+			std::array<unsigned char, 4>
+			    {
+					static_cast<unsigned char>(color.r * 255),
+					static_cast<unsigned char>(color.g * 255),
+					static_cast<unsigned char>(color.b * 255),
+					static_cast<unsigned char>(color.a * 255)
+				}
+		};
+
+  		auto texture = std::make_shared<Texture2D>(width, height);
+		texture->SetData(data.data(), numberOfPixels);
+
+		return std::move(texture);
+	}
+
+    std::shared_ptr<Texture2D> Texture2D::Create(const std::filesystem::path& path)
     {
         return std::make_shared<Texture2D>(path);
     }
+
+	std::shared_ptr<Texture2D> Texture2D::GetWhiteTexture()
+	{
+		static std::shared_ptr<Texture2D> const whiteTexture = Create(glm::vec4{1, 1, 1, 1});
+		return whiteTexture;
+	}
 
     Texture2D::Texture2D(std::uint32_t width, std::uint32_t height)
         : m_Width(width), m_Height(height)
@@ -49,12 +82,12 @@ namespace DYE
 #endif
     }
 
-    Texture2D::Texture2D(const std::string &path) : m_Path(path)
+    Texture2D::Texture2D(const std::filesystem::path& path) : m_Path(path)
     {
         int width, height, channels;
 
         stbi_set_flip_vertically_on_load(1);
-        stbi_uc* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+        stbi_uc* data = stbi_load(path.string().c_str(), &width, &height, &channels, 4);
 
         if (data != nullptr)
         {
@@ -63,20 +96,25 @@ namespace DYE
         }
         else
         {
-            DYE_LOG("Failed to load texture %s!", path.c_str());
+            DYE_LOG("Failed to load texture %s!", path.string().c_str());
             DYE_ASSERT(false);
         }
 
-        if (channels == 4)
-        {
+		if (channels == 4)
+		{
             m_InternalFormat = GL_RGBA8;
             m_DataFormat = GL_RGBA;
         }
-        else if (channels == 3)
+		else if (channels == 3)
         {
             m_InternalFormat = GL_RGB8;
             m_DataFormat = GL_RGB;
         }
+		else if (channels == 2)
+		{
+			m_InternalFormat = GL_RGBA8;
+			m_DataFormat = GL_RGBA;
+		}
 
         glCreateTextures(GL_TEXTURE_2D, 1, &m_ID);
         glTextureStorage2D(m_ID, 1, m_InternalFormat, m_Width, m_Height);
@@ -95,7 +133,7 @@ namespace DYE
 
 #ifdef DYE_DEBUG
         // apply the name, -1 means NULL terminated
-        glObjectLabel(GL_TEXTURE, m_ID, -1, m_Path.c_str());
+        glObjectLabel(GL_TEXTURE, m_ID, -1, m_Path.string().c_str());
 #endif
 
         stbi_image_free(data);
@@ -106,13 +144,21 @@ namespace DYE
         glDeleteTextures(1, &m_ID);
     }
 
+	glm::mat4 Texture2D::GetScaleMatrixFromTextureDimensions() const
+	{
+		glm::vec3 scale { (float) m_Width / PixelsPerUnit, (float) m_Height / PixelsPerUnit, 1 };
+		return glm::scale(glm::mat4{1}, scale);
+	}
+
     void Texture2D::SetData(void *data, std::uint32_t size)
     {
         glTextureSubImage2D(m_ID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
     }
 
-    void Texture2D::Bind(std::uint32_t texSlot)
+	/// Bind this texture to the given texture unit location.
+	/// \param textureUnitSlot texture unit location
+    void Texture2D::Bind(std::uint32_t textureUnitSlot)
     {
-        glBindTextureUnit(texSlot, m_ID);
+        glBindTextureUnit(textureUnitSlot, m_ID);
     }
 }
