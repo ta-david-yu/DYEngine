@@ -57,6 +57,8 @@ namespace DYE
 		WindowBase* m_SecondWindow = nullptr;
 
 		glm::vec2 m_WindowPosition;
+		float m_TargetWindowWidth = 1600;
+		float m_TargetWindowHeight = 900;
 
 		float m_WindowPixelChangePerSecond = 300.0f;
 

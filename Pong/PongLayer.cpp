@@ -6,6 +6,7 @@
 #include "WindowManager.h"
 #include "ContextBase.h"
 #include "Logger.h"
+#include "Math/Math.h"
 
 #include "Util/Time.h"
 #include "Util/ImGuiUtil.h"
@@ -58,7 +59,7 @@ namespace DYE
 			auto obj = std::make_shared<SpriteObject>();
 			obj->Name = "obj " + std::to_string(i);
 			obj->Texture = Texture2D::Create("assets\\Sprite_Grid.png");
-			obj->Texture->PixelsPerUnit = 32;
+			obj->Texture->PixelsPerUnit = 100;
 
 			obj->Position = {i * 2, 1, -1};
 
@@ -206,12 +207,9 @@ namespace DYE
 		auto mainWindowPtr = WindowManager::GetMainWindow();
 		if (change)
 		{
+			m_WindowPosition = glm::round(m_WindowPosition);
 			mainWindowPtr->SetWindowPosition(m_WindowPosition.x, m_WindowPosition.y);
 		}
-
-		auto prevWindowPos = mainWindowPtr->GetPosition();
-		int previousWidth = mainWindowPtr->GetWidth();
-		int previousHeight = mainWindowPtr->GetHeight();
 
 		if (INPUT.GetKeyDown(KeyCode::F1))
 		{
@@ -221,28 +219,88 @@ namespace DYE
 
 		if (INPUT.GetKeyDown(KeyCode::F2))
 		{
-			m_WindowPosition = mainWindowPtr->SetWindowSizeUsingWindowCenterAsAnchor(1920, 1080);
+			m_TargetWindowWidth = 1920;
+			m_TargetWindowHeight = 1080;
+			//m_WindowPosition = mainWindowPtr->SetWindowSizeUsingWindowCenterAsAnchor(1920, 1080);
 		}
 
 		if (INPUT.GetKeyDown(KeyCode::F3))
 		{
-			m_WindowPosition = mainWindowPtr->SetWindowSizeUsingWindowCenterAsAnchor(1600, 900);
+			m_TargetWindowWidth = 1600;
+			m_TargetWindowHeight = 900;
+			//m_WindowPosition = mainWindowPtr->SetWindowSizeUsingWindowCenterAsAnchor(1600, 900);
 		}
 
 		if (INPUT.GetKeyDown(KeyCode::F4))
 		{
-			m_WindowPosition = mainWindowPtr->SetWindowSizeUsingWindowCenterAsAnchor(800, 640);
+			m_TargetWindowWidth = 800;
+			m_TargetWindowHeight = 640;
+			//m_WindowPosition = mainWindowPtr->SetWindowSizeUsingWindowCenterAsAnchor(800, 640);
 		}
 
 		if (INPUT.GetKeyDown(KeyCode::F5))
 		{
-			m_WindowPosition = mainWindowPtr->SetWindowSizeUsingWindowCenterAsAnchor(640, 640);
+			m_TargetWindowWidth = 640;
+			m_TargetWindowHeight = 640;
+			//m_WindowPosition = mainWindowPtr->SetWindowSizeUsingWindowCenterAsAnchor(640, 640);
 		}
 
 		if (INPUT.GetKeyDown(KeyCode::F6))
 		{
-			m_WindowPosition = mainWindowPtr->SetWindowSizeUsingWindowCenterAsAnchor(320, 320);
+			m_TargetWindowWidth = 320;
+			m_TargetWindowHeight = 320;
+			//m_WindowPosition = mainWindowPtr->SetWindowSizeUsingWindowCenterAsAnchor(320, 320);
 		}
+
+		if (INPUT.GetKeyDown(KeyCode::F7))
+		{
+			m_TargetWindowWidth = 280;
+			m_TargetWindowHeight = 280;
+			//m_WindowPosition = mainWindowPtr->SetWindowSizeUsingWindowCenterAsAnchor(320, 320);
+		}
+
+		if (INPUT.GetKeyDown(KeyCode::F8))
+		{
+			m_TargetWindowWidth = 240;
+			m_TargetWindowHeight = 240;
+			//m_WindowPosition = mainWindowPtr->SetWindowSizeUsingWindowCenterAsAnchor(320, 320);
+		}
+
+		if (INPUT.GetKeyDown(KeyCode::Escape))
+		{
+			Application::GetRegisteredApplications()[0]->Shutdown();
+			return;
+		}
+
+		int currWidth = mainWindowPtr->GetWidth();
+		int currHeight = mainWindowPtr->GetHeight();
+
+		int const widthDiff = m_TargetWindowWidth - currWidth;
+		int const heightDiff = m_TargetWindowHeight - currHeight;
+		if (glm::abs(widthDiff) > 0 || glm::abs(heightDiff) > 0)
+		{
+			// TODO: Fixed precision issue because window size is int, but animation is using float!
+			//  We prolly want to use fixed animation instead (tween animation)
+			float newWidth = Math::Lerp(currWidth, m_TargetWindowWidth, 1.0f - glm::pow(0.5f, TIME.DeltaTime() / 0.1f));
+			float newHeight = Math::Lerp(currHeight, m_TargetWindowHeight, 1.0f - glm::pow(0.5f, TIME.DeltaTime() / 0.1f));
+
+			// Make the speed even, so SetWindowSizeUsingWindowCenterAsAnchor can properly derive precise integer position
+			int widthSpeed = glm::abs(newWidth - currWidth);
+			if (widthSpeed % 2 == 1) widthSpeed += 1;
+
+			int heightSpeed = glm::abs(newHeight - currHeight);
+			if (heightSpeed % 2 == 1) heightSpeed += 1;
+
+			currWidth += glm::sign(widthDiff) * std::min((int) widthSpeed, glm::abs(widthDiff));
+			currHeight += glm::sign(heightDiff) * std::min((int) heightSpeed, glm::abs(heightDiff));
+			m_WindowPosition = mainWindowPtr->SetWindowSizeUsingWindowCenterAsAnchor(currWidth, currHeight);
+
+			if (glm::abs(m_TargetWindowWidth - currWidth) < 5 && glm::abs(m_TargetWindowHeight - currHeight) < 5)
+			{
+				m_WindowPosition = mainWindowPtr->SetWindowSizeUsingWindowCenterAsAnchor(m_TargetWindowWidth, m_TargetWindowHeight);
+			}
+		}
+
 
 		glm::vec2 const windowPos = mainWindowPtr->GetPosition();
 		auto windowWidth = mainWindowPtr->GetWidth();
@@ -257,10 +315,12 @@ namespace DYE
 
 		normalizedWindowPos.y = screenHeight - normalizedWindowPos.y;
 
-		float const scalar = 1;//0.715f;
+		float const scalar = 0.5f; //* (320.0f / windowHeight);
 		m_CameraProperties->Position.x = ((normalizedWindowPos.x - screenWidth * 0.5f) / 32.0f) * scalar;
 		m_CameraProperties->Position.y = ((normalizedWindowPos.y - screenHeight * 0.5f) / 32.0f) * scalar;
-    	//m_CameraProperties->OrthographicSize = 10 * (screenWidth / windowWidth);
+
+		float const sizeScalar = 1.0f * (320.0f / windowHeight);
+    	m_CameraProperties->OrthographicSize = 5 / sizeScalar;
 	}
 
     void PongLayer::OnFixedUpdate()

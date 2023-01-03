@@ -92,7 +92,8 @@ set(HEADER_FILES
         include/Input/InputManager.h
         include/Graphics/MaterialPropertyBlock.h
         include/WindowManager.h
-        include/Math/Rect.h)
+        include/Math/Rect.h
+        include/Math/Math.h)
 
 message(STATUS "[DYEngine] Source Files: ${SOURCE_FILES}")
 message(STATUS "[DYEngine] Header Files: ${HEADER_FILES}")

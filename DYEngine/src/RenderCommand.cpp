@@ -77,8 +77,12 @@ namespace DYE
 
 	void RenderCommand::SetViewport(Math::Rect viewportRect)
 	{
-		glViewport(viewportRect.X, viewportRect.Y, viewportRect.Width, viewportRect.Height);
-		glScissor(viewportRect.X, viewportRect.Y, viewportRect.Width, viewportRect.Height);
+		int x = glm::round(viewportRect.X);
+		int y = glm::round(viewportRect.Y);
+		int width = glm::round(viewportRect.Width);
+		int height = glm::round(viewportRect.Height);
+		glViewport(x, y, width, height);
+		glScissor(x, y, width, height);
 	}
 
     void RenderCommand::SetClearColor(const glm::vec4 &color)

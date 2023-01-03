@@ -28,10 +28,13 @@ namespace DYE
 	{
 		int const previousWidth = GetWidth();
 		int const previousHeight = GetHeight();
-		auto previousWindowPos = GetPosition();
+		glm::vec2 previousWindowPos = GetPosition();
+
 		SetWindowSize(width, height);
 		previousWindowPos.x -= ((int) width - previousWidth) * 0.5f;
 		previousWindowPos.y -= ((int) height - previousHeight) * 0.5f;
+
+		previousWindowPos = glm::round(previousWindowPos);
 		SetWindowPosition(previousWindowPos.x, previousWindowPos.y);
 
 		return previousWindowPos;
