@@ -29,7 +29,7 @@ namespace DYE
 			case FullScreenMode::FullScreen:
 				fullScreenFlag = SDL_WINDOW_FULLSCREEN;
 				break;
-			case FullScreenMode::BorderlessWindow:
+			case FullScreenMode::FullScreenWithDesktopResolution:
 				fullScreenFlag = SDL_WINDOW_FULLSCREEN_DESKTOP;
 				break;
 		}
@@ -74,6 +74,21 @@ namespace DYE
 		return SDL_GetWindowID(m_pNativeWindow);
 	}
 
+	FullScreenMode SDLWindow::GetFullScreenMode() const
+	{
+		Uint32 flags = SDL_GetWindowFlags(m_pNativeWindow);
+		if (flags & SDL_WINDOW_FULLSCREEN)
+		{
+			return FullScreenMode::FullScreen;
+		}
+		else if (flags & SDL_WINDOW_FULLSCREEN_DESKTOP)
+		{
+			return FullScreenMode::FullScreenWithDesktopResolution;
+		}
+
+		return FullScreenMode::Window;
+	}
+
 	bool SDLWindow::SetFullScreenMode(FullScreenMode mode)
 	{
 		std::uint32_t fullScreenFlag = 0;
@@ -85,7 +100,7 @@ namespace DYE
 			case FullScreenMode::FullScreen:
 				fullScreenFlag = SDL_WINDOW_FULLSCREEN;
 				break;
-			case FullScreenMode::BorderlessWindow:
+			case FullScreenMode::FullScreenWithDesktopResolution:
 				fullScreenFlag = SDL_WINDOW_FULLSCREEN_DESKTOP;
 				break;
 		}
@@ -98,6 +113,16 @@ namespace DYE
 		}
 
 		return success;
+	}
+
+	bool SDLWindow::SetBorderedIfWindowed(bool isBordered)
+	{
+		if (GetFullScreenMode() != FullScreenMode::Window)
+		{
+			return false;
+		}
+		SDL_SetWindowBordered(m_pNativeWindow, isBordered? SDL_TRUE : SDL_FALSE);
+		return true;
 	}
 
 	void SDLWindow::SetWindowSize(std::uint32_t width, std::uint32_t height)

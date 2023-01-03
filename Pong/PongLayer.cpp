@@ -80,6 +80,8 @@ namespace DYE
 
 		m_WindowPosition = mainWindowPtr->GetPosition();
 
+		mainWindowPtr->SetBorderedIfWindowed(false);
+
 
 		//m_SecondWindow = WindowManager::CreateWindow(WindowProperty("Second Window"));
 

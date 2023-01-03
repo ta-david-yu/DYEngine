@@ -14,9 +14,9 @@ namespace DYE
 
 	enum class FullScreenMode
 	{
-		Window,
-		FullScreen,
-		BorderlessWindow,
+		Window
+		, FullScreen						/// Fullscreen and force changing the resolution of the display.
+		, FullScreenWithDesktopResolution 	/// Fullscreen but doesn't force the resolution of the display to the application resolution
 	};
 
     struct WindowProperty
@@ -57,6 +57,7 @@ namespace DYE
         virtual uint32_t GetWidth() const = 0;
         virtual uint32_t GetHeight() const = 0;
 		virtual glm::vec<2, std::int32_t> GetPosition() const = 0;
+		virtual FullScreenMode GetFullScreenMode() const = 0;
 		std::shared_ptr<ContextBase> GetContext() const;
 
         /// Get the pointer to the native window based on the platform library being used. ex. SDLWindow for Windows platform
@@ -78,6 +79,7 @@ namespace DYE
 
 		void SetContext(std::shared_ptr<ContextBase> context);
 		virtual bool SetFullScreenMode(FullScreenMode mode) = 0;
+		virtual bool SetBorderedIfWindowed(bool isBordered) = 0;
 		virtual void SetWindowSize(std::uint32_t width, std::uint32_t height) = 0;
 
 		/// Set the size of the window and set the position of it as if the window's position is the same if its anchor is the center of the window.
