@@ -56,17 +56,17 @@ namespace DYE
 
 		WindowBase* m_SecondWindow = nullptr;
 
-		float m_WindowWidth = 1600;
-		float m_WindowHeight = 900;
-
 		glm::vec2 m_WindowPosition;
 
-		float m_WindowPixelChangePerSecond = 100.0f;
+		float m_WindowPixelChangePerSecond = 300.0f;
 
 		float m_BallSpeed = 5.0f;
 
-		std::shared_ptr<SpriteObject> m_ProfileObject;
-		std::shared_ptr<SpriteObject> m_WhiteObject;
+		std::shared_ptr<SpriteObject> m_OriginObject;
+		std::shared_ptr<SpriteObject> m_AverageObject;
+		std::shared_ptr<SpriteObject> m_MovingObject;
+
+		std::vector<std::shared_ptr<SpriteObject>> m_CoordinateObjects;
 
 		std::shared_ptr<CameraProperties> m_CameraProperties;
 	};

@@ -25,7 +25,10 @@ namespace DYE
 
         F1 = SDL_KeyCode::SDLK_F1,
         F2 = SDL_KeyCode::SDLK_F2,
-        F3 = SDL_KeyCode::SDLK_F3
+        F3 = SDL_KeyCode::SDLK_F3,
+		F4 = SDL_KeyCode::SDLK_F4,
+		F5 = SDL_KeyCode::SDLK_F5,
+		F6 = SDL_KeyCode::SDLK_F6
     };
 
 	std::string GetKeyName(KeyCode keyCode);

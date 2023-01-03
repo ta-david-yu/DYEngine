@@ -79,6 +79,12 @@ namespace DYE
 		void SetContext(std::shared_ptr<ContextBase> context);
 		virtual bool SetFullScreenMode(FullScreenMode mode) = 0;
 		virtual void SetWindowSize(std::uint32_t width, std::uint32_t height) = 0;
+
+		/// Set the size of the window and set the position of it as if the window's position is the same if its anchor is the center of the window.
+		/// \param width
+		/// \param height
+		/// \return the new position
+		glm::vec<2, std::int32_t> SetWindowSizeUsingWindowCenterAsAnchor(std::uint32_t width, std::uint32_t height);
 		virtual void SetWindowPosition(std::int32_t x, std::int32_t y) = 0;
 
 		/// Set the window position to the center of the screen.

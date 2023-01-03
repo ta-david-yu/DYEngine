@@ -23,4 +23,17 @@ namespace DYE
 	{
 		m_Context->MakeCurrentForWindow(*this);
 	}
+
+	glm::vec<2, std::int32_t> WindowBase::SetWindowSizeUsingWindowCenterAsAnchor(std::uint32_t width, std::uint32_t height)
+	{
+		int const previousWidth = GetWidth();
+		int const previousHeight = GetHeight();
+		auto previousWindowPos = GetPosition();
+		SetWindowSize(width, height);
+		previousWindowPos.x -= ((int) width - previousWidth) * 0.5f;
+		previousWindowPos.y -= ((int) height - previousHeight) * 0.5f;
+		SetWindowPosition(previousWindowPos.x, previousWindowPos.y);
+
+		return previousWindowPos;
+	}
 }

@@ -37,49 +37,57 @@ namespace DYE
 	{
 		RenderCommand::GetInstance().SetClearColor(glm::vec4{0.5f, 0.5f, 0.5f, 0.5f});
 
-		m_ProfileObject = std::make_shared<SpriteObject>();
-		m_ProfileObject->Name = "Profile";
-		m_ProfileObject->Texture = Texture2D::Create("assets\\Sprite_Pong.png");
-		m_ProfileObject->Texture->PixelsPerUnit = 32;
+		m_OriginObject = std::make_shared<SpriteObject>();
+		m_OriginObject->Name = "Origin";
+		m_OriginObject->Texture = Texture2D::Create("assets\\Sprite_Pong.png");
+		m_OriginObject->Texture->PixelsPerUnit = 32;
 
-		m_WhiteObject = std::make_shared<SpriteObject>();
-		m_WhiteObject->Name = "White";
-		m_WhiteObject->Texture = Texture2D::Create("assets\\Sprite_Pong.png");
-		m_WhiteObject->Texture->PixelsPerUnit = 32;
+		m_AverageObject = std::make_shared<SpriteObject>();
+		m_AverageObject->Name = "Average";
+		m_AverageObject->Texture = Texture2D::Create("assets\\Sprite_Pong.png");
+		m_AverageObject->Texture->PixelsPerUnit = 32;
+
+		m_MovingObject = std::make_shared<SpriteObject>();
+		m_MovingObject->Name = "Moving";
+		m_MovingObject->Texture = Texture2D::Create("assets\\Sprite_Pong.png");
+		m_MovingObject->Texture->PixelsPerUnit = 32;
+
+		for (int i = 0; i < 5; i++)
+		{
+			auto obj = std::make_shared<SpriteObject>();
+			obj->Name = "obj " + std::to_string(i);
+			obj->Texture = Texture2D::Create("assets\\Sprite_Grid.png");
+			obj->Texture->PixelsPerUnit = 32;
+
+			obj->Position = {i * 2, 1, -1};
+
+			m_CoordinateObjects.emplace_back(obj);
+		}
 
 		auto mainWindowPtr = WindowManager::GetMainWindow();
+		mainWindowPtr->SetWindowSize(1600, 900);
 
 		m_CameraProperties = std::make_shared<CameraProperties>();
 		m_CameraProperties->Position = glm::vec3 {0, 0, 10};
 		m_CameraProperties->IsOrthographic = true;
 		m_CameraProperties->OrthographicSize = 10;
-
 		m_CameraProperties->TargetType = RenderTargetType::Window;
 		m_CameraProperties->TargetWindowID = mainWindowPtr->GetWindowID();
-
-		m_CameraProperties->UseManualAspectRatio = true;
-		m_CameraProperties->ManualAspectRatio = (float) mainWindowPtr->GetWidth() / (float) mainWindowPtr->GetHeight();
-
-		/*
-		m_CameraProperties->ViewportValueType = ViewportValueType::AbsoluteDimension;
-		m_CameraProperties->Viewport = { 0, 0, (float) mainWindowPtr->GetWidth(), (float) mainWindowPtr->GetHeight() };*/
-
+		m_CameraProperties->UseManualAspectRatio = false;
+		m_CameraProperties->ManualAspectRatio = (float) 1600 / 900;
 		m_CameraProperties->ViewportValueType = ViewportValueType::RelativeDimension;
 		m_CameraProperties->Viewport = { 0, 0, 1, 1 };
 
-		m_WindowWidth = mainWindowPtr->GetWidth();
-		m_WindowHeight = mainWindowPtr->GetHeight();
-
 		m_WindowPosition = mainWindowPtr->GetPosition();
 
-		/*
-		m_SecondWindow = WindowManager::CreateWindow(WindowProperty("Second Window"));
+
+		//m_SecondWindow = WindowManager::CreateWindow(WindowProperty("Second Window"));
 
 		// Use the same context of the main window for the second window
-		auto context = mainWindowPtr->GetContext();
-		m_SecondWindow->SetContext(context);
-		m_SecondWindow->MakeCurrent();
-		ContextBase::SetVSyncCountForCurrentContext(0);*/
+		//auto context = mainWindowPtr->GetContext();
+		//m_SecondWindow->SetContext(context);
+		//m_SecondWindow->MakeCurrent();
+		//ContextBase::SetVSyncCountForCurrentContext(0);
 
 		// Set the current context back to the main window.
 		mainWindowPtr->MakeCurrent();
@@ -89,15 +97,26 @@ namespace DYE
 	{
 		RenderPipelineManager::RegisterCameraForNextRender(*m_CameraProperties);
 
-		/*
-		CameraProperties cameraRenderToSecondWindow = *m_CameraProperties;
-		cameraRenderToSecondWindow.UseManualAspectRatio = false;
-		cameraRenderToSecondWindow.Viewport = {0.5f, 0.5f, 0.5f, 0.5f};
+/*
+		CameraProperties cameraRenderToSecondWindow {};
+		cameraRenderToSecondWindow.Position = {0, 0, 10};
+		cameraRenderToSecondWindow.IsOrthographic = true;
+		cameraRenderToSecondWindow.OrthographicSize = 10;
+		cameraRenderToSecondWindow.TargetType = RenderTargetType::Window;
 		cameraRenderToSecondWindow.TargetWindowID = m_SecondWindow->GetWindowID();
+		cameraRenderToSecondWindow.UseManualAspectRatio = false;
+		cameraRenderToSecondWindow.ViewportValueType = ViewportValueType::RelativeDimension;
+		cameraRenderToSecondWindow.Viewport = {0, 0, 1, 1};
 		RenderPipelineManager::RegisterCameraForNextRender(cameraRenderToSecondWindow);*/
 
-		renderMaterialObject(*m_ProfileObject);
-		renderMaterialObject(*m_WhiteObject);
+		renderMaterialObject(*m_OriginObject);
+		renderMaterialObject(*m_MovingObject);
+		renderMaterialObject(*m_AverageObject);
+
+		for (auto const& obj : m_CoordinateObjects)
+		{
+			renderMaterialObject(*obj);
+		}
 	}
 
 	void PongLayer::renderMaterialObject(SpriteObject& object)
@@ -114,28 +133,11 @@ namespace DYE
     {
         auto eventType = event.GetEventType();
 
-		DYE_LOG("%s", event.ToString().c_str());
 		if (eventType == EventType::WindowSizeChange)
 		{
-			auto windowSizeChangeEvent = static_cast<const WindowManualResizeEvent&>(event);
-			//m_CameraProperties->OrthographicSize = 10 * (windowSizeChangeEvent.GetWidth() / 1600.0f);
+			auto windowSizeChangeEvent = static_cast<const WindowSizeChangeEvent&>(event);
+
 			//m_CameraProperties->ManualAspectRatio = (float) windowSizeChangeEvent.GetWidth() / (float) windowSizeChangeEvent.GetHeight();
-		}
-		else if (eventType == EventType::WindowMove)
-		{
-			auto windowMoveEvent = static_cast<const WindowMoveEvent&>(event);
-		}
-		else if (eventType == EventType::KeyDown)
-		{
-			auto keyEvent = static_cast<KeyDownEvent&>(event);
-			//DYE_ASSERT(keyEvent.GetKeyCode() != KeyCode::Space);
-			//DYE_ASSERT_RELEASE(keyEvent.GetKeyCode() != KeyCode::Right);
-			//DYE_LOG("Sandbox, KeyDown - %s", GetKeyName(keyEvent.GetKeyCode()).c_str());
-		}
-		else if (eventType == EventType::KeyUp)
-		{
-			auto keyEvent = static_cast<KeyUpEvent&>(event);
-			//DYE_LOG("Sandbox, KeyUp - %d", keyEvent.GetKeyCode());
 		}
     }
 
@@ -155,23 +157,26 @@ namespace DYE
 
 		if (INPUT.GetKey(KeyCode::Up))
 		{
-			m_WhiteObject->Position.y += TIME.DeltaTime() * m_BallSpeed;
+			m_MovingObject->Position.y += TIME.DeltaTime() * m_BallSpeed;
 		}
 
 		if (INPUT.GetKey(KeyCode::Down))
 		{
-			m_WhiteObject->Position.y -= TIME.DeltaTime() * m_BallSpeed;
+			m_MovingObject->Position.y -= TIME.DeltaTime() * m_BallSpeed;
 		}
 
 		if (INPUT.GetKey(KeyCode::Right))
 		{
-			m_WhiteObject->Position.x += TIME.DeltaTime() * m_BallSpeed;
+			m_MovingObject->Position.x += TIME.DeltaTime() * m_BallSpeed;
 		}
 
 		if (INPUT.GetKey(KeyCode::Left))
 		{
-			m_WhiteObject->Position.x -= TIME.DeltaTime() * m_BallSpeed;
+			m_MovingObject->Position.x -= TIME.DeltaTime() * m_BallSpeed;
 		}
+
+		m_AverageObject->Position = (m_MovingObject->Position + m_OriginObject->Position) * 0.5f;
+
 
 		bool change = false;
 		if (INPUT.GetKey(KeyCode::W))
@@ -199,35 +204,61 @@ namespace DYE
 		if (change)
 		{
 			mainWindowPtr->SetWindowPosition(m_WindowPosition.x, m_WindowPosition.y);
-			//mainWindowPtr->SetWindowSize(m_WindowWidth, m_WindowHeight);
 		}
 
-
-		if (INPUT.GetKey(KeyCode::Space))
-		{
-			m_KeyCounter++;
-		}
-
-		if (INPUT.GetKeyDown(KeyCode::Space))
-		{
-			m_KeyDownCounter++;
-		}
-
-		if (INPUT.GetKeyUp(KeyCode::Space))
-		{
-			m_KeyUpCounter++;
-		}
+		auto prevWindowPos = mainWindowPtr->GetPosition();
+		int previousWidth = mainWindowPtr->GetWidth();
+		int previousHeight = mainWindowPtr->GetHeight();
 
 		if (INPUT.GetKeyDown(KeyCode::F1))
 		{
-			mainWindowPtr->SetWindowSize(1920, 1080);
+			mainWindowPtr->CenterWindow();
+			m_WindowPosition = mainWindowPtr->GetPosition();
 		}
 
 		if (INPUT.GetKeyDown(KeyCode::F2))
 		{
-			mainWindowPtr->SetWindowSize(1600, 900);
+			m_WindowPosition = mainWindowPtr->SetWindowSizeUsingWindowCenterAsAnchor(1920, 1080);
 		}
-    }
+
+		if (INPUT.GetKeyDown(KeyCode::F3))
+		{
+			m_WindowPosition = mainWindowPtr->SetWindowSizeUsingWindowCenterAsAnchor(1600, 900);
+		}
+
+		if (INPUT.GetKeyDown(KeyCode::F4))
+		{
+			m_WindowPosition = mainWindowPtr->SetWindowSizeUsingWindowCenterAsAnchor(800, 640);
+		}
+
+		if (INPUT.GetKeyDown(KeyCode::F5))
+		{
+			m_WindowPosition = mainWindowPtr->SetWindowSizeUsingWindowCenterAsAnchor(640, 640);
+		}
+
+		if (INPUT.GetKeyDown(KeyCode::F6))
+		{
+			m_WindowPosition = mainWindowPtr->SetWindowSizeUsingWindowCenterAsAnchor(320, 320);
+		}
+
+		glm::vec2 const windowPos = mainWindowPtr->GetPosition();
+		auto windowWidth = mainWindowPtr->GetWidth();
+		auto windowHeight = mainWindowPtr->GetHeight();
+
+		glm::vec2 normalizedWindowPos = windowPos;
+		normalizedWindowPos.x += windowWidth * 0.5f;
+		normalizedWindowPos.y += windowHeight * 0.5f;
+
+		float const screenWidth = 1920;
+		float const screenHeight = 1080;
+
+		normalizedWindowPos.y = screenHeight - normalizedWindowPos.y;
+
+		float const scalar = 1;//0.715f;
+		m_CameraProperties->Position.x = ((normalizedWindowPos.x - screenWidth * 0.5f) / 32.0f) * scalar;
+		m_CameraProperties->Position.y = ((normalizedWindowPos.y - screenHeight * 0.5f) / 32.0f) * scalar;
+    	//m_CameraProperties->OrthographicSize = 10 * (screenWidth / windowWidth);
+	}
 
     void PongLayer::OnFixedUpdate()
     {
@@ -297,24 +328,28 @@ namespace DYE
 				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			}
 
+			if (ImGui::Button("Center Window"))
+			{
+				mainWindowPtr->CenterWindow();
+				m_WindowPosition = mainWindowPtr->GetPosition();
+			}
+
 			ImGui::Text("Space Key: {%d}, Down: {%d}, Up: {%d}", m_KeyCounter, m_KeyDownCounter, m_KeyUpCounter);
 
 			ImGui::Separator();
 			ImGuiUtil::DrawCameraPropertiesControl("Camera Properties", *m_CameraProperties);
 
 			ImGui::Separator();
-			ImGuiUtil::DrawFloatControl("Camera Speed", m_BallSpeed, 1.0f);
+			ImGuiUtil::DrawFloatControl("Camera Speed", m_WindowPixelChangePerSecond, 300);
 
 			ImGui::Separator();
-			imguiMaterialObject(*m_ProfileObject);
+			imguiMaterialObject(*m_OriginObject);
 
 			ImGui::Separator();
-			imguiMaterialObject(*m_WhiteObject);
+			imguiMaterialObject(*m_MovingObject);
 		}
 
         ImGui::End();
-
-		ImGui::ShowDemoWindow();
     }
 
 	void PongLayer::imguiMaterialObject(SpriteObject &object)
