@@ -13,6 +13,18 @@
 
 namespace DYE
 {
+	std::vector<Application*> Application::s_RegisteredApplications = {};
+
+	void Application::RegisterApplication(Application* application)
+	{
+		s_RegisteredApplications.push_back(application);
+	}
+
+	std::vector<Application *> const &Application::GetRegisteredApplications()
+	{
+		return s_RegisteredApplications;
+	}
+
     Application::Application(const std::string &windowName, int fixedFramePerSecond)
     {
         SDL_Init(0);
@@ -212,7 +224,7 @@ namespace DYE
 
 	void Application::handleOnApplicationQuit(ApplicationQuitEvent const& event)
 	{
-		m_IsRunning = false;
+		Shutdown();
 	}
 
     void Application::handleOnWindowClose(const WindowCloseEvent &event)
@@ -221,7 +233,7 @@ namespace DYE
 		if (mainWindowID.has_value() && event.GetWindowID() == mainWindowID.value())
 		{
 			// If the close event comes from the main window, shutdown the application.
-			m_IsRunning = false;
+			Shutdown();
 		}
 	}
 
@@ -231,4 +243,9 @@ namespace DYE
 		// TODO: set viewport depending on the window ID & whether camera is targeting the window IF the camera is marked as auto-update aspect ratio
 		// TODO: We will need something like WindowManager.GetWindowWithID(id).Resize etc
     }
+
+	void Application::Shutdown()
+	{
+		m_IsRunning = false;
+	}
 }

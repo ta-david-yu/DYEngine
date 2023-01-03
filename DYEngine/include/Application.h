@@ -10,12 +10,19 @@
 #include "ImGuiLayer.h"
 
 #include <memory>
+#include <vector>
 
 namespace DYE
 {
     class Application : public EventHandler
     {
+	private:
+		static std::vector<Application*> s_RegisteredApplications;
+
     public:
+		static void RegisterApplication(Application* application);
+		static std::vector<Application*> const& GetRegisteredApplications();
+
         Application() = delete;
 
         Application(const Application &) = delete;
@@ -30,6 +37,8 @@ namespace DYE
         void Run();
 
         void Handle(Event& event) override;
+
+		void Shutdown();
 
     protected:
         void pushLayer(std::shared_ptr<LayerBase> layer);

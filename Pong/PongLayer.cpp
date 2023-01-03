@@ -1,5 +1,6 @@
 #include "Base.h"
 
+#include "Application.h"
 #include "PongLayer.h"
 #include "WindowBase.h"
 #include "WindowManager.h"
@@ -319,6 +320,14 @@ namespace DYE
 			ImGui::Text("DeltaTime: [%f]", TIME.DeltaTime());
 			ImGui::Text("FixedDeltaTime: [%f]", TIME.FixedDeltaTime());
 			ImGui::Text("FixedUpdateFrameCounter: [%d]", m_FixedUpdateCounter);
+
+			if (ImGui::Button("Quit App"))
+			{
+				for (auto const app : Application::GetRegisteredApplications())
+				{
+					app->Shutdown();
+				}
+			}
 
 			if (ImGui::Button("Wireframe Rendering Mode"))
 			{

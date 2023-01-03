@@ -6,7 +6,10 @@
 int main(int argc, char *argv[])
 {
     auto pApp = DYE::CreateApplication();
-    pApp->Run();
+
+	DYE::Application::RegisterApplication(pApp);
+
+	pApp->Run();
 
     delete pApp;
 
