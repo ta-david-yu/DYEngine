@@ -24,6 +24,7 @@ namespace DYE
 		RenderPipeline2D(RenderPipeline2D const& other) = delete;
 		void Submit(std::shared_ptr<VertexArray> &vertexArray, std::shared_ptr<Material> &material, glm::mat4 objectToWorldMatrix) override;
 		void SubmitSprite(const std::shared_ptr<Texture2D>& texture, glm::vec4 color, glm::mat4 objectToWorldMatrix);
+		void SubmitTiledSprite(const std::shared_ptr<Texture2D>& texture, glm::vec4 tilingOffset, glm::vec4 color, glm::mat4 objectToWorldMatrix);
 
 	protected:
 		void onPreRender() override;

@@ -9,6 +9,42 @@
 
 namespace DYE
 {
+	void Texture::SetWrapMode(WrapMode wrapMode)
+	{
+		// TODO: add per axis (u, v) settings.
+
+		auto id = GetID();
+		switch (wrapMode)
+		{
+			case WrapMode::Repeat:
+				glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_REPEAT);
+				glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_REPEAT);
+				break;
+			case WrapMode::Clamp:
+				glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_CLAMP);
+				glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_CLAMP);
+				break;
+		}
+	}
+
+	void Texture::SetFilterMode(FilterMode filterMode)
+	{
+		// TODO: add per min/mag filter settings.
+
+		auto id = GetID();
+		switch (filterMode)
+		{
+			case FilterMode::Nearest:
+				glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				break;
+			case FilterMode::Linear:
+				glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				break;
+		}
+	}
+
     std::shared_ptr<Texture2D> Texture2D::Create(std::uint32_t width, std::uint32_t height)
     {
         return std::make_shared<Texture2D>(width, height);

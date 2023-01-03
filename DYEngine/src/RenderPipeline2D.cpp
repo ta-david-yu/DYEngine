@@ -82,6 +82,30 @@ namespace DYE
 
 		MaterialPropertyBlock materialPropertyBlock;
 		materialPropertyBlock.SetTexture("_MainTex", texture);
+		materialPropertyBlock.SetFloat4("_MainTex_TilingOffset", {1, 1, 0, 0});
+		materialPropertyBlock.SetFloat4("_Color", color);
+
+		m_Submissions.push_back
+			(
+				RenderSubmission2D
+					{
+						.VertexArray = m_DefaultSpriteVAO,
+						.Material = m_DefaultSpriteMaterial,
+						.ObjectToWorldMatrix = objectToWorldMatrix,
+						.MaterialPropertyBlock = std::move(materialPropertyBlock)
+					}
+			);
+	}
+
+	void RenderPipeline2D::SubmitTiledSprite(const std::shared_ptr<Texture2D> &texture, glm::vec4 tilingOffset,
+											 glm::vec4 color, glm::mat4 objectToWorldMatrix)
+	{
+		// Scale the matrix based on sprite pixels per unit.
+		objectToWorldMatrix = glm::scale(objectToWorldMatrix, texture->GetScaleFromTextureDimensions());
+
+		MaterialPropertyBlock materialPropertyBlock;
+		materialPropertyBlock.SetTexture("_MainTex", texture);
+		materialPropertyBlock.SetFloat4("_MainTex_TilingOffset", tilingOffset);
 		materialPropertyBlock.SetFloat4("_Color", color);
 
 		m_Submissions.push_back

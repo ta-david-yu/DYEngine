@@ -55,6 +55,13 @@ namespace DYE
 		m_MovingObject->Texture = Texture2D::Create("assets\\Sprite_Pong.png");
 		m_MovingObject->Texture->PixelsPerUnit = 32;
 
+		m_BackgroundTileObject = std::make_shared<SpriteObject>();
+		m_BackgroundTileObject->Name = "Background";
+		m_BackgroundTileObject->Texture = Texture2D::Create("assets\\Sprite_Grid.png");
+		m_BackgroundTileObject->Texture->PixelsPerUnit = 32;
+		m_BackgroundTileObject->Scale = {5, 5, 1};
+		m_BackgroundTileObject->Position = {0, 0, -2};
+
 		for (int i = 0; i < 5; i++)
 		{
 			auto obj = std::make_shared<SpriteObject>();
@@ -110,24 +117,38 @@ namespace DYE
 		cameraRenderToSecondWindow.Viewport = {0, 0, 1, 1};
 		RenderPipelineManager::RegisterCameraForNextRender(cameraRenderToSecondWindow);*/
 
-		renderMaterialObject(*m_OriginObject);
-		renderMaterialObject(*m_MovingObject);
-		renderMaterialObject(*m_AverageObject);
+		renderSpriteObject(*m_OriginObject);
+		renderSpriteObject(*m_MovingObject);
+		renderSpriteObject(*m_AverageObject);
 
 		for (auto const& obj : m_CoordinateObjects)
 		{
-			renderMaterialObject(*obj);
+			//renderSpriteObject(*obj);
 		}
+
+		renderTiledSpriteObject(*m_BackgroundTileObject);
 	}
 
-	void PongLayer::renderMaterialObject(SpriteObject& object)
+	void PongLayer::renderSpriteObject(SpriteObject& object)
 	{
 		glm::mat4 modelMatrix = glm::mat4 {1.0f};
 		modelMatrix = glm::translate(modelMatrix, object.Position);
 		modelMatrix = modelMatrix * glm::toMat4(object.Rotation);
 		modelMatrix = glm::scale(modelMatrix, object.Scale);
 
-		RenderPipelineManager::GetTypedActiveRenderPipelinePtr<RenderPipeline2D>()->SubmitSprite(object.Texture, object.Color, modelMatrix);
+		RenderPipelineManager::GetTypedActiveRenderPipelinePtr<RenderPipeline2D>()
+		    ->SubmitSprite(object.Texture, object.Color, modelMatrix);
+	}
+
+	void PongLayer::renderTiledSpriteObject(SpriteObject& object)
+	{
+		glm::mat4 modelMatrix = glm::mat4 {1.0f};
+		modelMatrix = glm::translate(modelMatrix, object.Position);
+		modelMatrix = modelMatrix * glm::toMat4(object.Rotation);
+		modelMatrix = glm::scale(modelMatrix, object.Scale);
+
+		RenderPipelineManager::GetTypedActiveRenderPipelinePtr<RenderPipeline2D>()
+		    ->SubmitTiledSprite(object.Texture, {object.Scale.x, object.Scale.y, 0, 0}, object.Color, modelMatrix);
 	}
 
     void PongLayer::OnEvent(Event& event)
@@ -406,7 +427,7 @@ namespace DYE
         ImGui::End();
     }
 
-	void PongLayer::imguiMaterialObject(SpriteObject &object)
+	void PongLayer::imguiSpriteObject(SpriteObject &object)
 	{
 		ImGui::PushID(object.Name.c_str());
 

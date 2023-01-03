@@ -11,6 +11,20 @@ namespace DYE
     using TextureID = std::uint32_t;
     using TextureFormat = std::uint32_t;
 
+	enum class WrapMode
+	{
+		// TODO: to add more
+		Repeat,
+		Clamp
+	};
+
+	enum class FilterMode
+	{
+		// TODO: to add more
+		Nearest,
+		Linear
+	};
+
     /// A base interface class for any types of texture resource
     class Texture
     {
@@ -23,6 +37,9 @@ namespace DYE
 
         virtual void SetData(void* data, std::uint32_t size) = 0;
         virtual void Bind(std::uint32_t texSlot) = 0;
+
+		void SetWrapMode(WrapMode wrapMode);
+		void SetFilterMode(FilterMode filterMode);
     };
 
     class Texture2D : public Texture

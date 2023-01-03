@@ -41,8 +41,9 @@ namespace DYE
         void OnImGui() override;
 
 	private:
-		static void renderMaterialObject(SpriteObject& object);
-		void imguiMaterialObject(SpriteObject& object);
+		static void renderSpriteObject(SpriteObject& object);
+		static void renderTiledSpriteObject(SpriteObject& object);
+		void imguiSpriteObject(SpriteObject& object);
 
     private:
 		bool m_IsControlWindowOpen = false;
@@ -63,6 +64,7 @@ namespace DYE
 		std::shared_ptr<SpriteObject> m_OriginObject;
 		std::shared_ptr<SpriteObject> m_AverageObject;
 		std::shared_ptr<SpriteObject> m_MovingObject;
+		std::shared_ptr<SpriteObject> m_BackgroundTileObject;
 
 		std::vector<std::shared_ptr<SpriteObject>> m_CoordinateObjects;
 

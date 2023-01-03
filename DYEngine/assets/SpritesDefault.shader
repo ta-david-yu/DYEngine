@@ -34,6 +34,9 @@ in vec2 v_TexCoord;
 @Property _MainTex "Main Texture"
 uniform sampler2D _MainTex;
 
+@Property _MainTex_TilingOffset "Main Texture | Tiling Offset"
+uniform vec4 _MainTex_TilingOffset = vec4(1, 1, 0, 0);
+
 @Property _Color "Color"
 uniform vec4 _Color;
 
@@ -41,7 +44,9 @@ layout(location = 0) out vec4 color;
 
 void main()
 {
-    vec4 finalColor = _Color * texture(_MainTex, v_TexCoord);
+    // TilingOffset: xy -> tiling, zw -> offset
+    vec2 tileOffsetTexCoord = _MainTex_TilingOffset.zw + _MainTex_TilingOffset.xy * v_TexCoord;
+    vec4 finalColor = _Color * texture(_MainTex, tileOffsetTexCoord);
 
     if (finalColor.a < 0.01)
     {
@@ -49,5 +54,4 @@ void main()
     }
 
     color = finalColor;
-
 };
