@@ -42,7 +42,8 @@ set(SOURCE_FILES
         src/KeyCode.cpp
         src/InputManager.cpp
         src/MaterialPropertyBlock.cpp
-        src/WindowManager.cpp)
+        src/WindowManager.cpp
+        src/Screen.cpp)
 set(HEADER_FILES
         include/Application.h
         include/WindowBase.h
@@ -93,7 +94,8 @@ set(HEADER_FILES
         include/Graphics/MaterialPropertyBlock.h
         include/WindowManager.h
         include/Math/Rect.h
-        include/Math/Math.h)
+        include/Math/Math.h
+        include/Screen.h)
 
 message(STATUS "[DYEngine] Source Files: ${SOURCE_FILES}")
 message(STATUS "[DYEngine] Header Files: ${HEADER_FILES}")

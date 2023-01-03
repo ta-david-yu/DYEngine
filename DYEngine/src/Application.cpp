@@ -1,8 +1,9 @@
 #include "Application.h"
 #include "Base.h"
 #include "Logger.h"
-#include "Input/InputManager.h"
+#include "Screen.h"
 #include "ContextBase.h"
+#include "Input/InputManager.h"
 #include "Graphics/RenderCommand.h"
 #include "Graphics/RenderPipelineManager.h"
 #include "Graphics/RenderPipeline2D.h"
@@ -57,6 +58,7 @@ namespace DYE
 
         // Initialize core systems: time, input etc
 		Time::InitSingleton(fixedFramePerSecond);
+		Screen::InitSingleton();
 		InputManager::InitSingleton();
 
         // Create window and context

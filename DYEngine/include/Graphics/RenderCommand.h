@@ -24,6 +24,9 @@ namespace DYE
 
     class RenderCommand
     {
+	private:
+		static std::unique_ptr<RenderCommand> s_Instance;
+
     public:
 		static RenderCommand& GetInstance();
 
@@ -53,8 +56,5 @@ namespace DYE
 		/// \param vertexArray
 		/// \param objectToWorldMatrix
 		void DrawIndexedNow(RenderParameters const& renderParameters, VertexArray const& vertexArray, glm::mat4 objectToWorldMatrix);
-
-	private:
-		static std::unique_ptr<RenderCommand> s_Instance;
 	};
 }

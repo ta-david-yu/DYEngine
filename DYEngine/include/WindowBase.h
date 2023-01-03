@@ -33,7 +33,7 @@ namespace DYE
         explicit WindowProperty(std::string title,
                                 uint32_t width = 1600,
                                 uint32_t height = 900,
-                                bool isUserResizable = true)
+                                bool isUserResizable = false)
                 : Title(std::move(title)),
                   Width(width),
                   Height(height),
@@ -58,6 +58,7 @@ namespace DYE
         virtual uint32_t GetHeight() const = 0;
 		virtual glm::vec<2, std::int32_t> GetPosition() const = 0;
 		virtual FullScreenMode GetFullScreenMode() const = 0;
+		virtual int GetDisplayIndex() const = 0;
 		std::shared_ptr<ContextBase> GetContext() const;
 
         /// Get the pointer to the native window based on the platform library being used. ex. SDLWindow for Windows platform

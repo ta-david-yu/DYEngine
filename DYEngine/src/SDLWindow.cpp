@@ -89,6 +89,11 @@ namespace DYE
 		return FullScreenMode::Window;
 	}
 
+	int SDLWindow::GetDisplayIndex() const
+	{
+		return SDL_GetWindowDisplayIndex(m_pNativeWindow);
+	}
+
 	bool SDLWindow::SetFullScreenMode(FullScreenMode mode)
 	{
 		std::uint32_t fullScreenFlag = 0;

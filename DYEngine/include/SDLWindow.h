@@ -20,6 +20,7 @@ namespace DYE
         uint32_t GetHeight() const override;
 		glm::vec<2, std::int32_t> GetPosition() const override;
 		FullScreenMode GetFullScreenMode() const override;
+		int GetDisplayIndex() const override;
 
 		void *GetNativeWindowPtr() const override { return m_pNativeWindow; }
 		std::uint32_t GetWindowID() const override;
