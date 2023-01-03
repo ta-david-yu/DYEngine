@@ -6,6 +6,7 @@
 #include "WindowManager.h"
 #include "ContextBase.h"
 #include "Logger.h"
+#include "Screen.h"
 #include "Math/Math.h"
 
 #include "Util/Time.h"
@@ -59,7 +60,7 @@ namespace DYE
 			auto obj = std::make_shared<SpriteObject>();
 			obj->Name = "obj " + std::to_string(i);
 			obj->Texture = Texture2D::Create("assets\\Sprite_Grid.png");
-			obj->Texture->PixelsPerUnit = 100;
+			obj->Texture->PixelsPerUnit = 32;
 
 			obj->Position = {i * 2, 1, -1};
 
@@ -81,10 +82,6 @@ namespace DYE
 		m_CameraProperties->Viewport = { 0, 0, 1, 1 };
 
 		m_WindowPosition = mainWindowPtr->GetPosition();
-
-		mainWindowPtr->SetBorderedIfWindowed(false);
-
-
 		//m_SecondWindow = WindowManager::CreateWindow(WindowProperty("Second Window"));
 
 		// Use the same context of the main window for the second window
@@ -301,7 +298,6 @@ namespace DYE
 			}
 		}
 
-
 		glm::vec2 const windowPos = mainWindowPtr->GetPosition();
 		auto windowWidth = mainWindowPtr->GetWidth();
 		auto windowHeight = mainWindowPtr->GetHeight();
@@ -310,8 +306,10 @@ namespace DYE
 		normalizedWindowPos.x += windowWidth * 0.5f;
 		normalizedWindowPos.y += windowHeight * 0.5f;
 
-		float const screenWidth = 1920;
-		float const screenHeight = 1080;
+		int const mainDisplayIndex = mainWindowPtr->GetDisplayIndex();
+		std::optional<DisplayMode> const displayMode = SCREEN.GetDisplayMode(mainDisplayIndex);
+		float const screenWidth = displayMode->Width;
+		float const screenHeight = displayMode->Height;
 
 		normalizedWindowPos.y = screenHeight - normalizedWindowPos.y;
 
@@ -331,16 +329,13 @@ namespace DYE
 
     void PongLayer::OnImGui()
     {
-		//ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
-
-        static int counter = 0;
         // get the window size as a base for calculating widgets geometry
-        int sdl_width = 0, sdl_height = 0, controls_width = 0;
 		auto mainWindowPtr = WindowManager::GetMainWindow();
-        SDL_GetWindowSize(mainWindowPtr->GetTypedNativeWindowPtr<SDL_Window>(), &sdl_width, &sdl_height);
-        controls_width = sdl_width;
+        int windowWidth = mainWindowPtr->GetWidth();
+		int windowHeight = mainWindowPtr->GetHeight();
+		int controls_width = windowWidth;
         // make controls widget width to be 1/3 of the main window width
-        if ((controls_width /= 3) < 300) { controls_width = 300; }
+        if ((controls_width * 0.33f) < 300) { controls_width = 300; }
 
         // position the controls widget in the top-right corner with some margin
         ImGui::SetNextWindowPos
@@ -352,7 +347,7 @@ namespace DYE
         // the half height of the main window
         ImGui::SetNextWindowSize
 			(
-                ImVec2(static_cast<float>(controls_width), static_cast<float>(sdl_height * 0.5f)),
+                ImVec2(static_cast<float>(controls_width), static_cast<float>(windowHeight * 0.5f)),
                 ImGuiCond_FirstUseEver
 			);
 
@@ -365,21 +360,18 @@ namespace DYE
 			ImGui::Text("%s", SDL_GetPlatform());
 			ImGui::Text("CPU cores: %d", SDL_GetCPUCount());
 			ImGui::Text("RAM: %.2f GB", (float) SDL_GetSystemRAM() / 1024.0f);
-
-			// buttons and most other widgets return true when clicked/edited/activated
-			if (ImGui::Button("Counter button"))
-			{
-				SDL_Log("Counter Button Clicked");
-				counter++;
-			}
-
-			ImGui::SameLine();
-			ImGui::Text("counter = %d", counter);
-
 			ImGui::Text("expected FPS: [%d]", TIME.FixedFramePerSecond());
 			ImGui::Text("DeltaTime: [%f]", TIME.DeltaTime());
 			ImGui::Text("FixedDeltaTime: [%f]", TIME.FixedDeltaTime());
 			ImGui::Text("FixedUpdateFrameCounter: [%d]", m_FixedUpdateCounter);
+
+			int const mainDisplayIndex = mainWindowPtr->GetDisplayIndex();
+			ImGui::Text("MainWindowDisplayIndex = %d", mainDisplayIndex);
+			std::optional<DisplayMode> const displayMode = SCREEN.GetDisplayMode(mainDisplayIndex);
+			if (displayMode.has_value())
+			{
+				ImGui::Text("Display %d Info = (w=%d, h=%d, r=%d)", mainDisplayIndex, displayMode->Width, displayMode->Height, displayMode->RefreshRate);
+			}
 
 			if (ImGui::Button("Quit App"))
 			{
@@ -389,35 +381,26 @@ namespace DYE
 				}
 			}
 
-			if (ImGui::Button("Wireframe Rendering Mode"))
-			{
-				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			}
 			ImGui::SameLine();
-			if (ImGui::Button("Normal Rendering Mode"))
+			static bool isMainWindowBordered = true;
+			if (ImGui::Button("Toggle Window Bordered"))
 			{
-				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				isMainWindowBordered = !isMainWindowBordered;
+				mainWindowPtr->SetBorderedIfWindowed(isMainWindowBordered);
 			}
 
+			ImGui::SameLine();
 			if (ImGui::Button("Center Window"))
 			{
 				mainWindowPtr->CenterWindow();
 				m_WindowPosition = mainWindowPtr->GetPosition();
 			}
 
-			ImGui::Text("Space Key: {%d}, Down: {%d}, Up: {%d}", m_KeyCounter, m_KeyDownCounter, m_KeyUpCounter);
-
 			ImGui::Separator();
 			ImGuiUtil::DrawCameraPropertiesControl("Camera Properties", *m_CameraProperties);
 
 			ImGui::Separator();
 			ImGuiUtil::DrawFloatControl("Camera Speed", m_WindowPixelChangePerSecond, 300);
-
-			ImGui::Separator();
-			imguiMaterialObject(*m_OriginObject);
-
-			ImGui::Separator();
-			imguiMaterialObject(*m_MovingObject);
 		}
 
         ImGui::End();

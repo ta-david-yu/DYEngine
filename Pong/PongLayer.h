@@ -50,10 +50,6 @@ namespace DYE
         int m_FramesCounter = 0;
         int m_FixedUpdateCounter = 0;
 
-		int m_KeyDownCounter = 0;
-		int m_KeyUpCounter = 0;
-		int m_KeyCounter = 0;
-
 		WindowBase* m_SecondWindow = nullptr;
 
 		glm::vec2 m_WindowPosition;
