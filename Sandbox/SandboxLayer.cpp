@@ -61,7 +61,7 @@ namespace DYE
 			m_VertexArrayObject->SetIndexBuffer(indexBufferObject);
 		}
 
-		m_ShaderProgram = ShaderProgram::CreateFromFile("Shader_SpritesDefault", "assets/default/SpritesDefault.shader");
+		m_ShaderProgram = ShaderProgram::CreateFromFile("Shader_SpritesDefault", "assets/default/SpriteDefault.shader");
 		m_ShaderProgram->Use();
 
 		m_ProfileObject = std::make_shared<MaterialObject>();

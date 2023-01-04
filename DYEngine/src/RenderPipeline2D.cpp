@@ -46,7 +46,7 @@ namespace DYE
 			m_DefaultSpriteVAO->SetIndexBuffer(indexBufferObject);
 		}
 
-		auto spriteShader = ShaderProgram::CreateFromFile("Shader_SpritesDefault", "assets/default/SpritesDefault.shader");
+		auto spriteShader = ShaderProgram::CreateFromFile("Shader_SpritesDefault", "assets/default/SpriteDefault.shader");
 		spriteShader->Use();
 
 		m_DefaultSpriteMaterial = Material::CreateFromShader("Material_Sprite", spriteShader);

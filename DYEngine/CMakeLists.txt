@@ -163,8 +163,8 @@ target_link_libraries(DYEngine
 # ===========================================================================================
 # Copy default assets to the output directory
 set(DEFAULT_ASSETS
-        assets/Image.shader
-        assets/SpritesDefault.shader)
+        assets/SpriteDefault.shader
+        assets/SpriteUnlit.shader)
 
 foreach(ASSET ${DEFAULT_ASSETS})
     # extract filename
