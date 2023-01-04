@@ -4,7 +4,7 @@
 
 namespace DYE::Math
 {
-	bool Intersect2D(AABB const& a, AABB const& b)
+	bool AABBAABBIntersect2D(AABB const& a, AABB const& b)
 	{
 		// Two AABBs only overlap if they overlap on all axes.
 		// Compare each dimension as if their extent along each dimension is an interval.
@@ -14,7 +14,7 @@ namespace DYE::Math
 		return true;
 	}
 
-	bool Intersect(AABB const& a, AABB const& b)
+	bool AABBAABBIntersect(AABB const& a, AABB const& b)
 	{
 		// Two AABBs only overlap if they overlap on all axes.
 		// Compare each dimension as if their extent along each dimension is an interval.
@@ -23,5 +23,17 @@ namespace DYE::Math
 		if (a.Max[2] < b.Min[2] || a.Min[2] > b.Max[2]) return false;
 
 		return true;
+	}
+
+	bool AABBSphereIntersect(AABB const& a, glm::vec3 center, float radius)
+	{
+		float const aabbToCenterSqrDistance = a.SqrDistance(center);
+		return aabbToCenterSqrDistance <= radius * radius;
+	}
+
+	bool AABBCircleIntersect(AABB const& a, glm::vec2 center, float radius)
+	{
+		float const aabbToCenterSqrDistance = a.SqrDistance2D(center);
+		return aabbToCenterSqrDistance <= radius * radius;
 	}
 }
