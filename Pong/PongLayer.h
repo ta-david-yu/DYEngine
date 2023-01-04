@@ -42,7 +42,7 @@ namespace DYE
 
 	private:
 		static void renderSpriteObject(SpriteObject& object);
-		static void renderTiledSpriteObject(SpriteObject& object);
+		static void renderTiledSpriteObject(SpriteObject& object, glm::vec2 offset);
 		void imguiSpriteObject(SpriteObject& object);
 
     private:
@@ -60,6 +60,8 @@ namespace DYE
 		float m_WindowPixelChangePerSecond = 300.0f;
 
 		float m_BallSpeed = 5.0f;
+
+		float m_TileOffset = 0.0f;
 
 		std::shared_ptr<SpriteObject> m_OriginObject;
 		std::shared_ptr<SpriteObject> m_AverageObject;

@@ -59,7 +59,7 @@ namespace DYE
 		m_BackgroundTileObject->Name = "Background";
 		m_BackgroundTileObject->Texture = Texture2D::Create("assets\\Sprite_Grid.png");
 		m_BackgroundTileObject->Texture->PixelsPerUnit = 32;
-		m_BackgroundTileObject->Scale = {5, 5, 1};
+		m_BackgroundTileObject->Scale = {16.0f, 10.0f, 1};
 		m_BackgroundTileObject->Position = {0, 0, -2};
 
 		for (int i = 0; i < 5; i++)
@@ -89,13 +89,13 @@ namespace DYE
 		m_CameraProperties->Viewport = { 0, 0, 1, 1 };
 
 		m_WindowPosition = mainWindowPtr->GetPosition();
-		//m_SecondWindow = WindowManager::CreateWindow(WindowProperty("Second Window"));
+		m_SecondWindow = WindowManager::CreateWindow(WindowProperty("Second Window"));
 
 		// Use the same context of the main window for the second window
-		//auto context = mainWindowPtr->GetContext();
-		//m_SecondWindow->SetContext(context);
-		//m_SecondWindow->MakeCurrent();
-		//ContextBase::SetVSyncCountForCurrentContext(0);
+		auto context = mainWindowPtr->GetContext();
+		m_SecondWindow->SetContext(context);
+		m_SecondWindow->MakeCurrent();
+		ContextBase::SetVSyncCountForCurrentContext(0);
 
 		// Set the current context back to the main window.
 		mainWindowPtr->MakeCurrent();
@@ -105,7 +105,7 @@ namespace DYE
 	{
 		RenderPipelineManager::RegisterCameraForNextRender(*m_CameraProperties);
 
-/*
+
 		CameraProperties cameraRenderToSecondWindow {};
 		cameraRenderToSecondWindow.Position = {0, 0, 10};
 		cameraRenderToSecondWindow.IsOrthographic = true;
@@ -115,7 +115,7 @@ namespace DYE
 		cameraRenderToSecondWindow.UseManualAspectRatio = false;
 		cameraRenderToSecondWindow.ViewportValueType = ViewportValueType::RelativeDimension;
 		cameraRenderToSecondWindow.Viewport = {0, 0, 1, 1};
-		RenderPipelineManager::RegisterCameraForNextRender(cameraRenderToSecondWindow);*/
+		RenderPipelineManager::RegisterCameraForNextRender(cameraRenderToSecondWindow);
 
 		renderSpriteObject(*m_OriginObject);
 		renderSpriteObject(*m_MovingObject);
@@ -126,7 +126,7 @@ namespace DYE
 			//renderSpriteObject(*obj);
 		}
 
-		renderTiledSpriteObject(*m_BackgroundTileObject);
+		renderTiledSpriteObject(*m_BackgroundTileObject, {m_TileOffset, m_TileOffset});
 	}
 
 	void PongLayer::renderSpriteObject(SpriteObject& object)
@@ -140,7 +140,7 @@ namespace DYE
 		    ->SubmitSprite(object.Texture, object.Color, modelMatrix);
 	}
 
-	void PongLayer::renderTiledSpriteObject(SpriteObject& object)
+	void PongLayer::renderTiledSpriteObject(SpriteObject& object, glm::vec2 offset)
 	{
 		glm::mat4 modelMatrix = glm::mat4 {1.0f};
 		modelMatrix = glm::translate(modelMatrix, object.Position);
@@ -148,7 +148,7 @@ namespace DYE
 		modelMatrix = glm::scale(modelMatrix, object.Scale);
 
 		RenderPipelineManager::GetTypedActiveRenderPipelinePtr<RenderPipeline2D>()
-		    ->SubmitTiledSprite(object.Texture, {object.Scale.x, object.Scale.y, 0, 0}, object.Color, modelMatrix);
+		    ->SubmitTiledSprite(object.Texture, {object.Scale.x, object.Scale.y, offset.x, offset.y}, object.Color, modelMatrix);
 	}
 
     void PongLayer::OnEvent(Event& event)
@@ -165,6 +165,13 @@ namespace DYE
 
     void PongLayer::OnUpdate()
     {
+		// Scroll tiled offset
+		m_TileOffset += TIME.DeltaTime() * 0.5f;
+		if (m_TileOffset > 1.0f)
+		{
+			m_TileOffset -= 1.0f;
+		}
+
         // FPS
         m_FramesCounter++;
         m_FpsAccumulator += TIME.DeltaTime();
@@ -422,6 +429,12 @@ namespace DYE
 
 			ImGui::Separator();
 			ImGuiUtil::DrawFloatControl("Camera Speed", m_WindowPixelChangePerSecond, 300);
+
+			ImGui::Separator();
+			imguiSpriteObject(*m_MovingObject);
+
+			ImGui::Separator();
+			imguiSpriteObject(*m_BackgroundTileObject);
 		}
 
         ImGui::End();
