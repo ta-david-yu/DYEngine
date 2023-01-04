@@ -121,11 +121,6 @@ namespace DYE
 		renderSpriteObject(*m_MovingObject);
 		renderSpriteObject(*m_AverageObject);
 
-		for (auto const& obj : m_CoordinateObjects)
-		{
-			//renderSpriteObject(*obj);
-		}
-
 		renderTiledSpriteObject(*m_BackgroundTileObject, {m_TileOffset, m_TileOffset});
 	}
 
@@ -442,6 +437,12 @@ namespace DYE
 
 			ImGui::Separator();
 			imguiSpriteObject(*m_MovingObject);
+
+			ImGui::Separator();
+			imguiSpriteObject(*m_AverageObject);
+
+			ImGui::Separator();
+			imguiSpriteObject(*m_OriginObject);
 
 			ImGui::Separator();
 			imguiSpriteObject(*m_BackgroundTileObject);
