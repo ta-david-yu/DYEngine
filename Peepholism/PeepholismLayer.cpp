@@ -424,6 +424,16 @@ namespace DYE
 				m_WindowPosition = mainWindowPtr->GetPosition();
 			}
 
+			if (ImGui::Button("Line Mode"))
+			{
+				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Fill Mode"))
+			{
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			}
+
 			ImGui::Separator();
 			ImGuiUtil::DrawCameraPropertiesControl("Camera Properties", *m_CameraProperties);
 

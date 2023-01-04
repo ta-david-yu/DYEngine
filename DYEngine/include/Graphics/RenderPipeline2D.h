@@ -30,6 +30,7 @@ namespace DYE
 		void onPreRender() override;
 		void renderCamera(CameraProperties const& camera) override;
 		void onPostRender() override;
+
 	private:
 		std::vector<RenderSubmission2D> m_Submissions;
 
