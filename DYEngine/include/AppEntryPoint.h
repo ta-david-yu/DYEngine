@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Application.h"
+#include "Core/Application.h"
 
 // when using SDL, the main function should be like `int main(int argc, char **argv)`
 int main(int argc, char *argv[])

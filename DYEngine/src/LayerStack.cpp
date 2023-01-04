@@ -1,6 +1,6 @@
-#include "LayerStack.h"
+#include "Core/LayerStack.h"
 
-#include "LayerBase.h"
+#include "Core/LayerBase.h"
 
 #include <algorithm>
 

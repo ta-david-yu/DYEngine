@@ -45,7 +45,7 @@ set(SOURCE_FILES
         src/WindowManager.cpp
         src/Screen.cpp)
 set(HEADER_FILES
-        include/Application.h
+        include/Core/Application.h
         include/WindowBase.h
         include/SDLWindow.h
         include/Util/Time.h
@@ -59,9 +59,9 @@ set(HEADER_FILES
         include/ContextBase.h
         include/SDLContext.h
         include/AppEntryPoint.h
-        include/LayerBase.h
-        include/LayerStack.h
-        include/ImGuiLayer.h
+        include/Core/LayerBase.h
+        include/Core/LayerStack.h
+        include/ImGui/ImGuiLayer.h
         include/Util/Logger.h
         include/Scene/SceneLayer.h
         include/Scene/Entity.h
@@ -80,7 +80,7 @@ set(HEADER_FILES
         include/Input/MouseCode.h
         include/Message/Messaging.h
         include/Graphics/CameraProperties.h
-        include/Util/ImGuiUtil.h
+        include/ImGui/ImGuiUtil.h
         include/Graphics/ShaderProcessorBase.h
         include/Graphics/Material.h
         include/Graphics/RenderState.h

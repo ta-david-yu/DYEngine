@@ -1,6 +1,6 @@
 #include "Util/Macro.h"
 
-#include "Application.h"
+#include "Core/Application.h"
 #include "PongLayer.h"
 #include "WindowBase.h"
 #include "WindowManager.h"
@@ -10,7 +10,7 @@
 #include "Math/Math.h"
 
 #include "Util/Time.h"
-#include "Util/ImGuiUtil.h"
+#include "ImGui/ImGuiUtil.h"
 
 #include "Input/InputManager.h"
 
