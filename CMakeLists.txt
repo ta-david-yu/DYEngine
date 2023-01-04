@@ -31,7 +31,7 @@ add_subdirectory(DYEngine)
 # Sandbox executable
 add_subdirectory(Sandbox)
 
-# Pong executable
-add_subdirectory(Pong)
+# Peepholism executable
+add_subdirectory(Peepholism)
 
 # TODO: Build DYEditor

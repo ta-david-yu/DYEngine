@@ -1,7 +1,7 @@
 #include "Util/Macro.h"
 
 #include "Core/Application.h"
-#include "PongLayer.h"
+#include "PeepholismLayer.h"
 #include "Graphics/WindowBase.h"
 #include "Graphics/WindowManager.h"
 #include "Graphics/ContextBase.h"
@@ -32,11 +32,11 @@
 
 namespace DYE
 {
-	PongLayer::PongLayer()
+	PeepholismLayer::PeepholismLayer()
     {
     }
 
-	void PongLayer::OnInit()
+	void PeepholismLayer::OnInit()
 	{
 		RenderCommand::GetInstance().SetClearColor(glm::vec4{0.5f, 0.5f, 0.5f, 0.5f});
 
@@ -101,7 +101,7 @@ namespace DYE
 		mainWindowPtr->MakeCurrent();
 	}
 
-	void PongLayer::OnRender()
+	void PeepholismLayer::OnRender()
 	{
 		RenderPipelineManager::RegisterCameraForNextRender(*m_CameraProperties);
 
@@ -129,7 +129,7 @@ namespace DYE
 		renderTiledSpriteObject(*m_BackgroundTileObject, {m_TileOffset, m_TileOffset});
 	}
 
-	void PongLayer::renderSpriteObject(SpriteObject& object)
+	void PeepholismLayer::renderSpriteObject(SpriteObject& object)
 	{
 		glm::mat4 modelMatrix = glm::mat4 {1.0f};
 		modelMatrix = glm::translate(modelMatrix, object.Position);
@@ -140,7 +140,7 @@ namespace DYE
 		    ->SubmitSprite(object.Texture, object.Color, modelMatrix);
 	}
 
-	void PongLayer::renderTiledSpriteObject(SpriteObject& object, glm::vec2 offset)
+	void PeepholismLayer::renderTiledSpriteObject(SpriteObject& object, glm::vec2 offset)
 	{
 		glm::mat4 modelMatrix = glm::mat4 {1.0f};
 		modelMatrix = glm::translate(modelMatrix, object.Position);
@@ -151,7 +151,7 @@ namespace DYE
 		    ->SubmitTiledSprite(object.Texture, {object.Scale.x, object.Scale.y, offset.x, offset.y}, object.Color, modelMatrix);
 	}
 
-    void PongLayer::OnEvent(Event& event)
+    void PeepholismLayer::OnEvent(Event& event)
     {
         auto eventType = event.GetEventType();
 
@@ -163,7 +163,7 @@ namespace DYE
 		}
     }
 
-    void PongLayer::OnUpdate()
+    void PeepholismLayer::OnUpdate()
     {
 		// Scroll tiled offset
 		m_TileOffset += TIME.DeltaTime() * 0.5f;
@@ -349,13 +349,13 @@ namespace DYE
     	m_CameraProperties->OrthographicSize = 5 / sizeScalar;
 	}
 
-    void PongLayer::OnFixedUpdate()
+    void PeepholismLayer::OnFixedUpdate()
     {
         m_FixedUpdateCounter++;
         //SDL_Log("FixedDeltaTime - %f", TIME.FixedDeltaTime());
     }
 
-    void PongLayer::OnImGui()
+    void PeepholismLayer::OnImGui()
     {
         // get the window size as a base for calculating widgets geometry
 		auto mainWindowPtr = WindowManager::GetMainWindow();
@@ -440,7 +440,7 @@ namespace DYE
         ImGui::End();
     }
 
-	void PongLayer::imguiSpriteObject(SpriteObject &object)
+	void PeepholismLayer::imguiSpriteObject(SpriteObject &object)
 	{
 		ImGui::PushID(object.Name.c_str());
 

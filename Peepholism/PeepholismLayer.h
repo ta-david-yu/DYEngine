@@ -27,11 +27,11 @@ namespace DYE
 		glm::vec4 Color {1, 1, 1, 1};
 	};
 
-    class PongLayer : public LayerBase
+    class PeepholismLayer : public LayerBase
     {
     public:
-        PongLayer();
-		PongLayer(PongLayer const& other) = delete;
+        PeepholismLayer();
+		PeepholismLayer(PeepholismLayer const& other) = delete;
 
 		void OnInit() override;
         void OnEvent(Event& event) override;

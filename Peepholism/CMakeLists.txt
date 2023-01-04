@@ -1,13 +1,13 @@
-project(Pong)
+project(Peepholism)
 
-add_executable(Pong PongApp.cpp PongLayer.cpp)
+add_executable(Peepholism PeepholismApp.cpp PeepholismLayer.cpp)
 
-target_include_directories(Pong PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(Pong DYEngine)
+target_include_directories(Peepholism PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(Peepholism DYEngine)
 
 if(CMAKE_BUILD_TYPE MATCHES Release)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive")
-    target_link_libraries(Pong -static-libgcc)
+    target_link_libraries(Peepholism -static-libgcc)
 endif ()
 
 # Copy assets to the output directory
@@ -27,7 +27,7 @@ foreach(ASSET ${ASSETS})
     get_filename_component(ASSET_FILENAME ${ASSET} NAME)
 
     set(ASSET_INPUT_PATH ${PROJECT_SOURCE_DIR}/${ASSET})
-    message(STATUS "[Pong] copy asset: '${ASSET_INPUT_PATH}' -> '${ASSET_OUTPUT_PATH}'")
+    message(STATUS "[Peepholism] copy asset: '${ASSET_INPUT_PATH}' -> '${ASSET_OUTPUT_PATH}'")
     file(COPY ${ASSET_INPUT_PATH}
          DESTINATION ${ASSET_OUTPUT_PATH})
     # configure_file(${ASSET_INPUT_PATH} ${ASSET_OUTPUT_PATH} COPYONLY)
