@@ -1,6 +1,6 @@
 #include "WindowManager.h"
 
-#include "Base.h"
+#include "Util/Macro.h"
 
 namespace DYE
 {

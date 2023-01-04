@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Base.h"
+#include "Util/Macro.h"
 
 #include <type_traits>
 #include <string>

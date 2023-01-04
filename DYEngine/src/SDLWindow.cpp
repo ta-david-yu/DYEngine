@@ -1,6 +1,6 @@
 #include "SDLWindow.h"
 
-#include "Base.h"
+#include "Util/Macro.h"
 
 #include <SDL.h>
 

@@ -1,6 +1,6 @@
 #include "Graphics/Processor/UniformPropertyProcessor.h"
 
-#include "Base.h"
+#include "Util/Macro.h"
 #include "Graphics/UniformType.h"
 #include "Graphics/OpenGL.h"
 

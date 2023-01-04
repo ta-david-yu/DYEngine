@@ -1,6 +1,6 @@
 #include "Graphics/RenderCommand.h"
 
-#include "Logger.h"
+#include "Util/Logger.h"
 #include "Graphics/OpenGL.h"
 #include "Graphics/VertexArray.h"
 #include "Graphics/Shader.h"

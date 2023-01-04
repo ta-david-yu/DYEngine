@@ -1,6 +1,6 @@
 #include "Input/InputManager.h"
 
-#include "Base.h"
+#include "Util/Macro.h"
 
 #include <algorithm>
 

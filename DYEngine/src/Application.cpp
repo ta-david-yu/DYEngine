@@ -1,6 +1,6 @@
 #include "Application.h"
-#include "Base.h"
-#include "Logger.h"
+#include "Util/Macro.h"
+#include "Util/Logger.h"
 #include "Screen.h"
 #include "ContextBase.h"
 #include "Input/InputManager.h"

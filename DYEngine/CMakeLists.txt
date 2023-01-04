@@ -55,13 +55,14 @@ set(HEADER_FILES
         include/Event/KeyEvent.h
         include/Event/EventSystemBase.h
         include/Event/SDLEventSystem.h
-        include/Base.h include/ContextBase.h
+        include/Util/Macro.h
+        include/ContextBase.h
         include/SDLContext.h
         include/AppEntryPoint.h
         include/LayerBase.h
         include/LayerStack.h
         include/ImGuiLayer.h
-        include/Logger.h
+        include/Util/Logger.h
         include/Scene/SceneLayer.h
         include/Scene/Entity.h
         include/Scene/ComponentBase.h

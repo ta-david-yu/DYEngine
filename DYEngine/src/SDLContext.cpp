@@ -1,7 +1,7 @@
 #include "SDLContext.h"
 
 #include "SDLWindow.h"
-#include "Logger.h"
+#include "Util/Logger.h"
 
 #include <SDL.h>
 #include <glad/glad.h>

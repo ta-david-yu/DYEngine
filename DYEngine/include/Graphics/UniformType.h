@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Base.h"
+#include "Util/Macro.h"
 
 #include <string>
 #include <glad/glad.h>

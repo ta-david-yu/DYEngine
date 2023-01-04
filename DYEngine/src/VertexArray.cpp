@@ -1,5 +1,5 @@
 #include "Graphics/VertexArray.h"
-#include "Base.h"
+#include "Util/Macro.h"
 #include "Graphics/OpenGL.h"
 
 

@@ -1,11 +1,11 @@
-#include "Base.h"
+#include "Util/Macro.h"
 
 #include "Application.h"
 #include "PongLayer.h"
 #include "WindowBase.h"
 #include "WindowManager.h"
 #include "ContextBase.h"
-#include "Logger.h"
+#include "Util/Logger.h"
 #include "Screen.h"
 #include "Math/Math.h"
 

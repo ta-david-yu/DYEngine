@@ -7,7 +7,7 @@
 #include <Event/MouseEvent.h>
 #include <WindowBase.h>
 
-#include "Base.h"
+#include "Util/Macro.h"
 
 #ifdef DYE_DEBUG
 #include <imgui.h>

@@ -1,6 +1,6 @@
 #include "Graphics/Texture.h"
 #include "Graphics/OpenGL.h"
-#include "Base.h"
+#include "Util/Macro.h"
 
 #include <stb_image.h>
 #include <glm/gtx/transform.hpp>

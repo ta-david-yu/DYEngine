@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Logger.h"
+#include "Util/Logger.h"
 
 #include <glad/glad.h>
 #include <string>

@@ -2,7 +2,7 @@
 
 #include "SDLWindow.h"
 #include "SDLContext.h"
-#include "Logger.h"
+#include "Util/Logger.h"
 
 #include <SDL.h>
 
