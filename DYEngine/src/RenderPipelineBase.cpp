@@ -1,7 +1,7 @@
 #include "Graphics/RenderPipelineBase.h"
 
 #include "Graphics/RenderCommand.h"
-#include "WindowManager.h"
+#include "Graphics/WindowManager.h"
 
 namespace DYE
 {

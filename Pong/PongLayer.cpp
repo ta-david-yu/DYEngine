@@ -2,9 +2,9 @@
 
 #include "Core/Application.h"
 #include "PongLayer.h"
-#include "WindowBase.h"
-#include "WindowManager.h"
-#include "ContextBase.h"
+#include "Graphics/WindowBase.h"
+#include "Graphics/WindowManager.h"
+#include "Graphics/ContextBase.h"
 #include "Util/Logger.h"
 #include "Screen.h"
 #include "Math/Math.h"

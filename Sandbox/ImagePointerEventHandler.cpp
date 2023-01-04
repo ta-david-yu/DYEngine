@@ -5,7 +5,7 @@
 #include <Scene/ImageRenderer.h>
 #include <Event/Event.h>
 #include <Event/MouseEvent.h>
-#include <WindowBase.h>
+#include "Graphics/WindowBase.h"
 
 #include "Util/Macro.h"
 

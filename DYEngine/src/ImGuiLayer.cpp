@@ -1,9 +1,9 @@
 #include "ImGui/ImGuiLayer.h"
 
-#include "WindowBase.h"
-#include "ContextBase.h"
+#include "Graphics/WindowBase.h"
+#include "Graphics/ContextBase.h"
 #include "Graphics/OpenGL.h"
-#include "WindowManager.h"
+#include "Graphics/WindowManager.h"
 
 #include <SDL.h>
 #include <imgui.h>

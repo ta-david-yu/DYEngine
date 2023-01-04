@@ -1,6 +1,6 @@
 #include "Graphics/CameraProperties.h"
 
-#include "WindowManager.h"
+#include "Graphics/WindowManager.h"
 #include "Util/Logger.h"
 
 namespace DYE

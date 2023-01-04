@@ -2,8 +2,8 @@
 
 #include "Util/Macro.h"
 #include "Graphics/RenderCommand.h"
-#include "WindowManager.h"
-#include "ContextBase.h"
+#include "Graphics/WindowManager.h"
+#include "Graphics/ContextBase.h"
 
 #include <optional>
 

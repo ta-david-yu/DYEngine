@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Event.h"
-#include "WindowManager.h"
+#include "Graphics/WindowManager.h"
 
 #include <sstream>
 #include <glm/glm.hpp>

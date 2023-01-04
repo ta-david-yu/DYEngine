@@ -46,8 +46,8 @@ set(SOURCE_FILES
         src/Screen.cpp)
 set(HEADER_FILES
         include/Core/Application.h
-        include/WindowBase.h
-        include/SDLWindow.h
+        include/Graphics/WindowBase.h
+        include/Graphics/SDLWindow.h
         include/Util/Time.h
         include/Event/Event.h
         include/Event/ApplicationEvent.h
@@ -56,8 +56,8 @@ set(HEADER_FILES
         include/Event/EventSystemBase.h
         include/Event/SDLEventSystem.h
         include/Util/Macro.h
-        include/ContextBase.h
-        include/SDLContext.h
+        include/Graphics/ContextBase.h
+        include/Graphics/SDLContext.h
         include/AppEntryPoint.h
         include/Core/LayerBase.h
         include/Core/LayerStack.h
@@ -93,7 +93,7 @@ set(HEADER_FILES
         include/Util/Algorithm.h
         include/Input/InputManager.h
         include/Graphics/MaterialPropertyBlock.h
-        include/WindowManager.h
+        include/Graphics/WindowManager.h
         include/Math/Rect.h
         include/Math/Math.h
         include/Screen.h)

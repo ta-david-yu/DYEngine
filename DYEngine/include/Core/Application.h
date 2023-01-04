@@ -1,7 +1,7 @@
 #pragma once
 
-#include "WindowBase.h"
-#include "WindowManager.h"
+#include "Graphics/WindowBase.h"
+#include "Graphics/WindowManager.h"
 #include "Event/EventSystemBase.h"
 #include "Event/ApplicationEvent.h"
 #include "Util/Time.h"

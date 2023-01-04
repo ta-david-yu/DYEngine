@@ -2,7 +2,7 @@
 
 #include "Util/Macro.h"
 #include "Util/Time.h"
-#include "WindowBase.h"
+#include "Graphics/WindowBase.h"
 #include "Util/Logger.h"
 #include "Scene/Entity.h"
 #include "Scene/Transform.h"

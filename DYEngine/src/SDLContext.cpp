@@ -1,6 +1,6 @@
-#include "SDLContext.h"
+#include "Graphics/SDLContext.h"
 
-#include "SDLWindow.h"
+#include "Graphics/SDLWindow.h"
 #include "Util/Logger.h"
 
 #include <SDL.h>

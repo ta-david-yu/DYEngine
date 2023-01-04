@@ -1,8 +1,8 @@
 #include "Util/Macro.h"
 
 #include "SandboxLayer.h"
-#include "WindowBase.h"
-#include "WindowManager.h"
+#include "Graphics/WindowBase.h"
+#include "Graphics/WindowManager.h"
 #include "Util/Logger.h"
 
 #include "Util/Time.h"

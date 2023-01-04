@@ -4,7 +4,7 @@
 #include "Graphics/Shader.h"
 #include "Scene/Entity.h"
 #include "Scene/Transform.h"
-#include "WindowBase.h"
+#include "Graphics/WindowBase.h"
 #include "Util/Logger.h"
 #include "Graphics/OpenGL.h"
 #include "Graphics/RenderCommand.h"

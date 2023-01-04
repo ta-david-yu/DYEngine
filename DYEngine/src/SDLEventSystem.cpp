@@ -4,7 +4,7 @@
 #include "Event/ApplicationEvent.h"
 #include "Event/KeyEvent.h"
 #include "Event/MouseEvent.h"
-#include "WindowManager.h"
+#include "Graphics/WindowManager.h"
 
 #include <SDL.h>
 #include <imgui_impl_sdl.h>

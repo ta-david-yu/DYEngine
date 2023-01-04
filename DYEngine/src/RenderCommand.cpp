@@ -5,7 +5,7 @@
 #include "Graphics/VertexArray.h"
 #include "Graphics/Shader.h"
 #include "Graphics/Material.h"
-#include "WindowBase.h"
+#include "Graphics/WindowBase.h"
 
 #include <SDL.h>
 #include <glad/glad.h>

@@ -1,4 +1,4 @@
-#include "SDLWindow.h"
+#include "Graphics/SDLWindow.h"
 
 #include "Util/Macro.h"
 
