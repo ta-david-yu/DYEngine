@@ -6,8 +6,12 @@ namespace DYE::Math
 {
 	struct Rect
 	{
+		// The value is the same as xMin.
 		float X;
+
+		// The value is the same as yMin.
 		float Y;
+
 		float Width;
 		float Height;
 
