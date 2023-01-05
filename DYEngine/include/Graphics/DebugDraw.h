@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Graphics/CameraProperties.h"
+
 #include <glm/glm.hpp>
 
 #include <memory>
@@ -24,7 +26,8 @@ namespace DYE
 
 		static void initialize();
 		static void pushLineData(std::vector<glm::vec3> const& vertices, std::vector<std::uint32_t> const& indices);
-		static void flushDrawCalls();
+		static void renderDebugDrawOnCamera(CameraProperties const& camera);
+		static void clearDebugDraw();
 
 	public:
 		static void Line(glm::vec3 start, glm::vec3 end);

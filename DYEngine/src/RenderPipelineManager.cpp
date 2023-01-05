@@ -102,7 +102,7 @@ namespace DYE
 			s_ActiveRenderPipeline->renderCamera(camera);
 
 			// Render DebugDraw at the end.
-			DebugDraw::flushDrawCalls();
+			DebugDraw::renderDebugDrawOnCamera(camera);
 		}
 
 		if (!WindowManager::IsMainWindow(*pCurrentWindow))
@@ -112,6 +112,8 @@ namespace DYE
 		}
 
 		s_ActiveRenderPipeline->onPostRender();
+
+		DebugDraw::clearDebugDraw();
 
 		s_CameraProperties.clear();
 	}

@@ -36,12 +36,9 @@ namespace DYE
 	{
 		s_BatchedVertices.insert(s_BatchedVertices.end(), vertices.begin(), vertices.end());
 		s_BatchedIndices.insert(s_BatchedIndices.end(), indices.begin(), indices.end());
-
-		// TODO: flush data if it exceeds the limit,
-		//  to achieve it, pushLineData can only be called in a designated debug render phase.
 	}
 
-	void DebugDraw::flushDrawCalls()
+	void DebugDraw::renderDebugDrawOnCamera(CameraProperties const& camera)
 	{
 		if (!s_VertexArray || !s_ShaderProgram)
 		{
@@ -66,7 +63,10 @@ namespace DYE
 		s_ShaderProgram->GetDefaultRenderState().Apply();
 		s_ShaderProgram->Use();
 		RenderCommand::GetInstance().DrawIndexedLinesNow(*s_VertexArray);
+	}
 
+	void DebugDraw::clearDebugDraw()
+	{
 		// Flush the vertex & index data.
 		s_BatchedVertices.clear();
 		s_BatchedIndices.clear();
