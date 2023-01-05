@@ -84,6 +84,7 @@ namespace DYE
                                           element.Normalized ? GL_TRUE : GL_FALSE,
                                           layout.GetStride(),
                                           (const void*)element.Offset);
+					glVertexAttribDivisor(m_VertexBufferAttributeIndex, element.Divisor);
                     m_VertexBufferAttributeIndex++;
                     break;
                 }
@@ -100,6 +101,7 @@ namespace DYE
                                            ShaderDataTypeToOpenGLBaseType(element.Type),
                                            layout.GetStride(),
                                            (const void*)element.Offset);
+					glVertexAttribDivisor(m_VertexBufferAttributeIndex, element.Divisor);
                     m_VertexBufferAttributeIndex++;
                     break;
                 }
@@ -117,7 +119,7 @@ namespace DYE
                                               element.Normalized ? GL_TRUE : GL_FALSE,
                                               layout.GetStride(),
                                               (const void*)(element.Offset + sizeof(float) * count * i));
-                        glVertexAttribDivisor(m_VertexBufferAttributeIndex, 1);
+                        glVertexAttribDivisor(m_VertexBufferAttributeIndex, element.Divisor);
                         m_VertexBufferAttributeIndex++;
                     }
                     break;

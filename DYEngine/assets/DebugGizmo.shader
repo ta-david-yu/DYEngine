@@ -16,11 +16,10 @@ out vec4 v_Color;
 
 void main()
 {
-    v_Color = vec4(1, 0, 0, 1); //color;
+    v_Color = perInstanceColor;
 
     vec4 point4 = vec4(position, 1.0);
-    gl_Position = point4;
-    //gl_Position = _ProjectionMatrix * _ViewMatrix * perInstanceModelMatrix * point4;
+    gl_Position = _ProjectionMatrix * _ViewMatrix * perInstanceModelMatrix * point4;
 };
 
 #Shader Fragment

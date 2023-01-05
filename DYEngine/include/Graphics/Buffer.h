@@ -68,13 +68,13 @@ namespace DYE
         VertexAttributeType Type {VertexAttributeType::None};
         std::uint32_t Size {0};
         size_t Offset {0};
+		bool Normalized {false};
 		std::uint32_t Divisor {0};
-        bool Normalized {false};
 
         VertexAttribute() = default;
 
-        VertexAttribute(VertexAttributeType type, std::string name, std::uint32_t divisor = 0, bool normalized = false)
-                : Name(std::move(name)), Type(type), Size(VertexAttributeTypeSize(type)), Offset(0), Divisor(divisor), Normalized(normalized)
+        VertexAttribute(VertexAttributeType type, std::string name, bool normalized = false, std::uint32_t divisor = 0)
+                : Name(std::move(name)), Type(type), Size(VertexAttributeTypeSize(type)), Offset(0), Normalized(normalized), Divisor(divisor)
         {
         }
 

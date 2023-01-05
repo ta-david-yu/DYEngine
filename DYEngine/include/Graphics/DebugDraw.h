@@ -3,6 +3,7 @@
 #include "Graphics/CameraProperties.h"
 
 #include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <memory>
 #include <vector>
@@ -18,19 +19,46 @@ namespace DYE
 		friend RenderPipelineManager;
 
 	private:
-		static std::vector<glm::vec3> s_BatchedVertices;
-		static std::vector<std::uint32_t> s_BatchedIndices;
+		struct GeometryInstancedArrays
+		{
+			int NumberOfInstances = 0;
+			std::vector<float> Colors;
+			std::vector<float> ModelMatrices;
 
-		static std::shared_ptr<VertexArray> s_VertexArray;
+			/// The VBO which stores per-instance color is located at index 2 in Geometry VAO.
+			constexpr const static std::uint32_t ColorVBOIndex = 1;
+
+			/// The VBO which stores per-instance model matrix is located at index 1 in Geometry VAO.
+			constexpr const static std::uint32_t ModelMatrixVBOIndex = 2;
+
+			void AddInstance(glm::vec4 color, glm::mat4 modelMatrix)
+			{
+				Colors.insert(Colors.end(), glm::value_ptr(color), glm::value_ptr(color) + 4);
+				ModelMatrices.insert(ModelMatrices.end(), glm::value_ptr(modelMatrix), glm::value_ptr(modelMatrix) + 16);
+				NumberOfInstances++;
+			}
+
+			void Clear()
+			{
+				ModelMatrices.clear();
+				Colors.clear();
+				NumberOfInstances = 0;
+			}
+		};
+
 		static std::shared_ptr<ShaderProgram> s_ShaderProgram;
 
+		static std::shared_ptr<VertexArray> s_CubeVAO;
+		static GeometryInstancedArrays s_CubeInstancedArrays;
+
 		static void initialize();
-		static void pushLineData(std::vector<glm::vec3> const& vertices, std::vector<std::uint32_t> const& indices);
 		static void renderDebugDrawOnCamera(CameraProperties const& camera);
 		static void clearDebugDraw();
 
+		static std::shared_ptr<VertexArray> createWireCubeVAO();
+
 	public:
-		static void Line(glm::vec3 start, glm::vec3 end);
+		static void Cube(glm::vec3 center, glm::vec4 color);
 	};
 }
 

@@ -47,9 +47,10 @@ namespace DYE
         /// Clear currently bound draw buffer (color, depth, stencil)
         void Clear();
 
-		/// Draw Index Buffer of the given VAO as lines. The number of indices to be drawn is based on the length of the VAO's IndexBuffer.
+		/// Draw Index Buffer of the given VAO as lines with multiple instances. The number of indices to be drawn is based on the length of the VAO's IndexBuffer.
 		/// \param vertexArray
-		void DrawIndexedLinesNow(VertexArray const& vertexArray);
+		/// \param numberOfInstances the number of instances to be drawn
+		void DrawIndexedLinesInstancedNow(const VertexArray &vertexArray, int numberOfInstances);
 
 		/// Draw Index Buffer of the given VAO. The number of indices to be drawn is based on the length of the VAO's IndexBuffer.
 		/// \param vertexArray
