@@ -108,7 +108,7 @@ namespace DYE
 			return program;
 		}
 
-		DYE_LOG("- Successfully create shader [%d] \"%s\" from %s >>", program->m_ID, name.c_str(), filepath.string().c_str());
+		DYE_LOG("- Successfully create shader (%d) \"%s\" from \"%s\" >>", program->m_ID, name.c_str(), filepath.string().c_str());
 		return program;
 	}
 

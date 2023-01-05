@@ -48,13 +48,11 @@ namespace DYE
 
 		m_AverageObject = std::make_shared<SpriteObject>();
 		m_AverageObject->Name = "Average";
-		m_AverageObject->Texture = Texture2D::Create("assets\\Sprite_Pong.png");
-		m_AverageObject->Texture->PixelsPerUnit = 32;
+		m_AverageObject->Texture = m_OriginObject->Texture;
 
 		m_MovingObject = std::make_shared<SpriteObject>();
 		m_MovingObject->Name = "Moving";
-		m_MovingObject->Texture = Texture2D::Create("assets\\Sprite_Pong.png");
-		m_MovingObject->Texture->PixelsPerUnit = 32;
+		m_MovingObject->Texture = m_OriginObject->Texture;
 
 		m_BackgroundTileObject = std::make_shared<SpriteObject>();
 		m_BackgroundTileObject->Name = "Background";
