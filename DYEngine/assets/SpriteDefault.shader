@@ -46,7 +46,7 @@ void main()
 {
     // TilingOffset: xy -> tiling, zw -> offset
     vec2 tileOffsetTexCoord = _MainTex_TilingOffset.zw + _MainTex_TilingOffset.xy * v_TexCoord;
-    vec4 finalColor = _Color * texture(_MainTex, tileOffsetTexCoord);
+    vec4 finalColor = v_Color * _Color * texture(_MainTex, tileOffsetTexCoord);
 
     if (finalColor.a < 0.01)
     {

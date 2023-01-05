@@ -1,13 +1,12 @@
 @Blend SrcAlpha OneMinusSrcAlpha
 @ZWrite Off
-@ZTest Less
+@ZTest Always
 
 #Shader Vertex
 #version 330 core
 
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec4 color;
-layout(location = 2) in vec2 texCoord;
 
 uniform mat4 _ModelMatrix;
 uniform mat4 _ViewMatrix;
@@ -28,19 +27,10 @@ void main()
 
 in vec4 v_Color;
 
-@Property _Color "Color"
-uniform vec4 _Color;
-
 layout(location = 0) out vec4 color;
 
 void main()
 {
-    vec4 finalColor = v_Color * _Color;
-
-    if (finalColor.a < 0.01)
-    {
-        discard;
-    }
-
+    vec4 finalColor = v_Color;
     color = finalColor;
 };
