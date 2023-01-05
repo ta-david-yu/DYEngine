@@ -42,7 +42,7 @@ namespace DYE
 			vertexBufferObject->SetLayout(vertexLayout);
 			m_DefaultSpriteVAO->AddVertexBuffer(vertexBufferObject);
 
-			auto indexBufferObject = IndexBuffer::Create(indices, sizeof(indices));
+			auto indexBufferObject = IndexBuffer::CreateStatic(indices, sizeof(indices));
 			m_DefaultSpriteVAO->SetIndexBuffer(indexBufferObject);
 		}
 

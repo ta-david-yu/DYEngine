@@ -57,7 +57,7 @@ namespace DYE
 			vertexBufferObject->SetLayout(vertexLayout);
 			m_VertexArrayObject->AddVertexBuffer(vertexBufferObject);
 
-			auto indexBufferObject = IndexBuffer::Create(indices, sizeof(indices));
+			auto indexBufferObject = IndexBuffer::CreateStatic(indices, sizeof(indices));
 			m_VertexArrayObject->SetIndexBuffer(indexBufferObject);
 		}
 
