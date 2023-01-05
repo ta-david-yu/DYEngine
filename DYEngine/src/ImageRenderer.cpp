@@ -72,7 +72,7 @@ namespace DYE
         vB->SetLayout(layout);
         m_QuadVertexArray->AddVertexBuffer(vB);
 
-        auto iB = IndexBuffer::CreateStatic(indices, sizeof(indices) / sizeof(std::uint32_t));
+        auto iB = IndexBuffer::Create(indices, sizeof(indices) / sizeof(std::uint32_t));
         m_QuadVertexArray->SetIndexBuffer(iB);
 
         /// Create default shader program

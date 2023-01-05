@@ -205,7 +205,7 @@ namespace DYE
 		/// \param indices the indices data array
 		/// \param count the number of index elements in the array
 		/// \return
-		static std::shared_ptr<IndexBuffer> CreateStatic(std::uint32_t* indices, std::uint32_t count, BufferUsageHint usage = BufferUsageHint::StaticDraw);
+		static std::shared_ptr<IndexBuffer> Create(std::uint32_t* indices, std::uint32_t count, BufferUsageHint usage = BufferUsageHint::StaticDraw);
 
         IndexBuffer() = delete;
 

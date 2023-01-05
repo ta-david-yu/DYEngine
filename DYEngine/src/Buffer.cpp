@@ -52,7 +52,7 @@ namespace DYE
 		return std::make_shared<IndexBuffer>(count, usage);
 	}
 
-	std::shared_ptr<IndexBuffer> IndexBuffer::CreateStatic(std::uint32_t *indices, std::uint32_t count, BufferUsageHint usage)
+	std::shared_ptr<IndexBuffer> IndexBuffer::Create(std::uint32_t *indices, std::uint32_t count, BufferUsageHint usage)
 	{
 		return std::make_shared<IndexBuffer>(indices, count, usage);
 	}

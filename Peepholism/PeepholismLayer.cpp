@@ -25,6 +25,7 @@
 #include "Graphics/CameraProperties.h"
 #include "Graphics/Material.h"
 #include "Event/ApplicationEvent.h"
+#include "Graphics/DebugDraw.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -62,18 +63,6 @@ namespace DYE
 		m_BackgroundTileObject->Scale = {16.0f, 10.0f, 1};
 		m_BackgroundTileObject->Position = {0, 0, -2};
 
-		for (int i = 0; i < 5; i++)
-		{
-			auto obj = std::make_shared<SpriteObject>();
-			obj->Name = "obj " + std::to_string(i);
-			obj->Texture = Texture2D::Create("assets\\Sprite_Grid.png");
-			obj->Texture->PixelsPerUnit = 32;
-
-			obj->Position = {i * 2, 1, -1};
-
-			m_CoordinateObjects.emplace_back(obj);
-		}
-
 		auto mainWindowPtr = WindowManager::GetMainWindow();
 		mainWindowPtr->SetWindowSize(1600, 900);
 
@@ -89,13 +78,13 @@ namespace DYE
 		m_CameraProperties->Viewport = { 0, 0, 1, 1 };
 
 		m_WindowPosition = mainWindowPtr->GetPosition();
-		m_SecondWindow = WindowManager::CreateWindow(WindowProperty("Second Window"));
+		//m_SecondWindow = WindowManager::CreateWindow(WindowProperty("Second Window"));
 
 		// Use the same context of the main window for the second window
-		auto context = mainWindowPtr->GetContext();
-		m_SecondWindow->SetContext(context);
-		m_SecondWindow->MakeCurrent();
-		ContextBase::SetVSyncCountForCurrentContext(0);
+		//auto context = mainWindowPtr->GetContext();
+		//m_SecondWindow->SetContext(context);
+		//m_SecondWindow->MakeCurrent();
+		//ContextBase::SetVSyncCountForCurrentContext(0);
 
 		// Set the current context back to the main window.
 		mainWindowPtr->MakeCurrent();
@@ -105,7 +94,7 @@ namespace DYE
 	{
 		RenderPipelineManager::RegisterCameraForNextRender(*m_CameraProperties);
 
-
+/*
 		CameraProperties cameraRenderToSecondWindow {};
 		cameraRenderToSecondWindow.Position = {0, 0, 10};
 		cameraRenderToSecondWindow.IsOrthographic = true;
@@ -115,7 +104,7 @@ namespace DYE
 		cameraRenderToSecondWindow.UseManualAspectRatio = false;
 		cameraRenderToSecondWindow.ViewportValueType = ViewportValueType::RelativeDimension;
 		cameraRenderToSecondWindow.Viewport = {0, 0, 1, 1};
-		RenderPipelineManager::RegisterCameraForNextRender(cameraRenderToSecondWindow);
+		RenderPipelineManager::RegisterCameraForNextRender(cameraRenderToSecondWindow);*/
 
 		renderSpriteObject(*m_OriginObject);
 		renderSpriteObject(*m_MovingObject);
@@ -160,6 +149,12 @@ namespace DYE
 
     void PeepholismLayer::OnUpdate()
     {
+		DebugDraw::Line({0.5f, 0.5f, -1}, {1, 0.2f, -1});
+		DebugDraw::Line({0.2f, 0.9f, -1}, {1, 0.5f, -1});
+		DebugDraw::Line({0.2f, 0.4f, -1}, {1, 0.1f, -1});
+		DebugDraw::Line({0.4f, 0.5f, -1}, {0.1f, 0.2f, -1});
+		DebugDraw::Line({0.0f, 0.5f, -1}, {0.5f, 0.2f, -1});
+
 		// Scroll tiled offset
 		m_TileOffset += TIME.DeltaTime() * 0.5f;
 		if (m_TileOffset > 1.0f)

@@ -98,6 +98,14 @@ namespace DYE
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
 
+	void RenderCommand::DrawIndexedLinesNow(const VertexArray &vertexArray)
+	{
+		// Bind mesh (VAO)
+		vertexArray.Bind();
+		std::uint32_t const indexCount = vertexArray.GetIndexBuffer()->GetCount();
+		glCall(glDrawElements(GL_LINES, indexCount, GL_UNSIGNED_INT, nullptr));
+	}
+
 	void RenderCommand::DrawIndexedNow(VertexArray const& vertexArray)
 	{
 		// Bind mesh (VAO)

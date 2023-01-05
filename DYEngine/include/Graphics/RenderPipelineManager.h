@@ -19,6 +19,8 @@ namespace DYE
 		static std::vector<CameraProperties> s_CameraProperties;
 
 	public:
+		static void Initialize();
+
 		static void RenderWithActivePipeline();
 
 		template<class T> requires TypeUtil::DerivedFrom<T, RenderPipelineBase>
@@ -31,5 +33,8 @@ namespace DYE
 		static void SetActiveRenderPipeline(std::shared_ptr<RenderPipelineBase> renderPipeline);
 
 		static void RegisterCameraForNextRender(CameraProperties cameraProperties);
+
+	public:
+		static bool EnableDebugDraw;
 	};
 }
