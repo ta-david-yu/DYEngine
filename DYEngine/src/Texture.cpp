@@ -132,7 +132,7 @@ namespace DYE
         }
         else
         {
-            DYE_LOG("Failed to load texture %s!", path.string().c_str());
+            DYE_LOG("Failed to load texture \"%s\"!", path.string().c_str());
             DYE_ASSERT(false);
         }
 

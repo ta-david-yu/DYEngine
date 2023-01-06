@@ -78,30 +78,39 @@ namespace DYE
 
     std::shared_ptr<ShaderProgram> ShaderProgram::CreateFromFile(const std::string& name, const std::filesystem::path &filepath)
 	{
-		DYE_LOG("<< Start creating shader \"%s\" from %s -", name.c_str(), filepath.string().c_str());
+		DYE_LOG("<< Start creating shader \"%s\" from \"%s\" -", name.c_str(), filepath.string().c_str());
 
 		auto program = std::make_shared<ShaderProgram>(name);
 
-		std::ifstream fs(filepath);
-		std::string shaderProgramSource((std::istreambuf_iterator<char>(fs)),
-										(std::istreambuf_iterator<char>()));
-
-		// Populate shader processors!
-		std::vector<std::unique_ptr<ShaderProcessor::ShaderProcessorBase>> shaderProcessors {};
-		shaderProcessors.emplace_back(std::make_unique<ShaderProcessor::UniformPropertyProcessor>());
-		shaderProcessors.emplace_back(std::make_unique<ShaderProcessor::BlendStateCommandProcessor>());
-		shaderProcessors.emplace_back(std::make_unique<ShaderProcessor::DepthStateCommandProcessor>());
-
-		bool const success = program->initializeProgramFromSource(shaderProgramSource, shaderProcessors);
-
-		if (program->HasCompileError())
+		bool success = true;
+		if (!std::filesystem::exists(filepath))
 		{
-			DYE_LOG("There are compile errors in the shader!");
+			DYE_LOG("There is no file at the given path!");
+			success = false;
+		}
+		else
+		{
+			std::ifstream fs(filepath);
+			std::string shaderProgramSource((std::istreambuf_iterator<char>(fs)),
+											(std::istreambuf_iterator<char>()));
+
+			// Populate shader processors!
+			std::vector<std::unique_ptr<ShaderProcessor::ShaderProcessorBase>> shaderProcessors {};
+			shaderProcessors.emplace_back(std::make_unique<ShaderProcessor::UniformPropertyProcessor>());
+			shaderProcessors.emplace_back(std::make_unique<ShaderProcessor::BlendStateCommandProcessor>());
+			shaderProcessors.emplace_back(std::make_unique<ShaderProcessor::DepthStateCommandProcessor>());
+
+			success = program->initializeProgramFromSource(shaderProgramSource, shaderProcessors);
+
+			if (program->HasCompileError())
+			{
+				DYE_LOG("There are compile errors in the shader!");
+			}
 		}
 
 		if (!success)
 		{
-			DYE_LOG("- Failed to create shader [%d] \"%s\" from %s >>", program->m_ID, name.c_str(), filepath.string().c_str());
+			DYE_LOG("- Failed to create shader [%d] \"%s\" from \"%s\" >>", program->m_ID, name.c_str(), filepath.string().c_str());
 			DYE_ASSERT(false);
 
 			// We still return the program. In the future we might want to return a purple shader program.

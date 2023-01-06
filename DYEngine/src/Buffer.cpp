@@ -42,7 +42,7 @@ namespace DYE
 
 	void VertexBuffer::ResetData(const void *data, std::uint32_t size, BufferUsageHint usage)
 	{
-		glCall(glNamedBufferData(m_ID, size, data, static_cast<GLenum>(usage)));
+		glNamedBufferData(m_ID, size, data, static_cast<GLenum>(usage));
 	}
 
 	/* -- Index Buffer -- */

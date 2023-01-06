@@ -46,18 +46,29 @@ namespace DYE
 			}
 		};
 
-		static std::shared_ptr<ShaderProgram> s_ShaderProgram;
+		static std::shared_ptr<ShaderProgram> s_LineGizmoShaderProgram;
+		static std::shared_ptr<ShaderProgram> s_GeometryGizmoShaderProgram;
+
+		static std::shared_ptr<VertexArray> s_BatchedLineVAO;
+		static std::vector<float> s_BatchedLineVertices;
+		static std::vector<std::uint32_t> s_BatchedLineIndices;
 
 		static std::shared_ptr<VertexArray> s_CubeVAO;
 		static GeometryInstancedArrays s_CubeInstancedArrays;
 
 		static void initialize();
-		static void renderDebugDrawOnCamera(CameraProperties const& camera);
-		static void clearDebugDraw();
-
+		static std::shared_ptr<VertexArray> createBatchedLineVAO();
 		static std::shared_ptr<VertexArray> createWireCubeVAO();
 
+		static void renderDebugDrawOnCamera(CameraProperties const& camera);
+		static void renderBatchedLineVAO(CameraProperties const& camera);
+		static void renderGeometryVAO(VertexArray const& vao, GeometryInstancedArrays & instancedArrays);
+
+		static void clearDebugDraw();
+
 	public:
+		[[deprecated("Line function is still buggy, avoid calling it more than 100 times a frame.")]]
+		static void Line(glm::vec3 start, glm::vec3 end, glm::vec4 color);
 		static void Cube(glm::vec3 center, glm::vec4 color);
 	};
 }

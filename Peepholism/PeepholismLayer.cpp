@@ -147,18 +147,22 @@ namespace DYE
 
     void PeepholismLayer::OnUpdate()
     {
-		//DebugDraw::Line({0.5f, 0.5f, -1}, {1, 0.2f, -1});
-		//DebugDraw::Line({0.2f, 0.9f, -1}, {1, 0.5f, -1});
-		//DebugDraw::Line({0.2f, 0.4f, -1}, {1, 0.1f, -1});
-		//DebugDraw::Line({0.4f, 0.5f, -1}, {0.1f, 0.2f, -1});
-		//DebugDraw::Line({0.0f, 0.5f, -1}, {0.5f, 0.2f, -1});
+		for (int i = 0; i < 200; ++i)
+		{
 
-		DebugDraw::Cube({0, -2, 0}, {0, 1, 0, 0.5f});
-		DebugDraw::Cube({0, -1, 0}, {0, 0, 1, 1});
-		DebugDraw::Cube({0, 0, 0}, {1, 1, 0, 1});
-		DebugDraw::Cube({0, 1, 0}, {1, 0, 1, 1});
-		DebugDraw::Cube({0, 2, 0}, {1, 1, 1, 0.2f});
-		DebugDraw::Cube({0, 3, 0}, {1, 0, 0, 1});
+			DebugDraw::Cube({i, -2, 0}, {0, 1, 0, 0.5f});
+			DebugDraw::Cube({i, -1, 0}, {0, 0, 1, 1});
+			DebugDraw::Cube({i, 0, 0}, {1, 1, 0, 1});
+			DebugDraw::Cube({i, 1, 0}, {1, 0, 1, 1});
+			DebugDraw::Cube({i, 2, 0}, {1, 1, 1, 0.2f});
+			DebugDraw::Cube({i, 3, 0}, {1, 0, 0, 1});
+
+			/*
+			DebugDraw::Line({0, i, 0}, {1, 0.2f, -1}, {1, 0, 0, 1});
+			DebugDraw::Line({0, i, 0}, {1, 0.1f, -1}, {0, 1, 0, 1});
+			DebugDraw::Line({0, i, 0}, {0.5f, 0.2f, -1}, {0, 0, 1, 1});*/
+		}
+
 
 		// Scroll tiled offset
 		m_TileOffset += TIME.DeltaTime() * 0.5f;

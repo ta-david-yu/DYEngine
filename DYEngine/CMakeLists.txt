@@ -163,7 +163,8 @@ target_link_libraries(DYEngine
 # ===========================================================================================
 # Copy default assets to the output directory
 set(DEFAULT_ASSETS
-        assets/DebugGizmo.shader
+        assets/DebugLineGizmo.shader
+        assets/DebugGeometryGizmo.shader
         assets/SpriteDefault.shader
         assets/SpriteUnlit.shader)
 

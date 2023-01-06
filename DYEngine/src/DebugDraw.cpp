@@ -9,64 +9,44 @@
 
 namespace DYE
 {
-	std::shared_ptr<ShaderProgram> DebugDraw::s_ShaderProgram {};
+	std::shared_ptr<ShaderProgram> DebugDraw::s_LineGizmoShaderProgram {};
+	std::shared_ptr<ShaderProgram> DebugDraw::s_GeometryGizmoShaderProgram {};
+
+	std::shared_ptr<VertexArray> DebugDraw::s_BatchedLineVAO {};
+	std::vector<float> DebugDraw::s_BatchedLineVertices = {};
+	std::vector<std::uint32_t> DebugDraw::s_BatchedLineIndices = {};
 
 	std::shared_ptr<VertexArray> DebugDraw::s_CubeVAO {};
-	DebugDraw::GeometryInstancedArrays DebugDraw::s_CubeInstancedArrays;
+	DebugDraw::GeometryInstancedArrays DebugDraw::s_CubeInstancedArrays {};
 
 	void DebugDraw::initialize()
 	{
-		s_ShaderProgram = ShaderProgram::CreateFromFile("Shader_DebugGizmos", "assets\\default\\DebugGizmo.shader");
+		s_LineGizmoShaderProgram = ShaderProgram::CreateFromFile("Shader_DebugLineGizmo", "assets\\default\\DebugLineGizmo.shader");
+		s_GeometryGizmoShaderProgram = ShaderProgram::CreateFromFile("Shader_DebugGeometryGizmo", "assets\\default\\DebugGeometryGizmo.shader");
 
+		s_BatchedLineVAO = createBatchedLineVAO();
 		s_CubeVAO = createWireCubeVAO();
 	}
 
-	void DebugDraw::renderDebugDrawOnCamera(CameraProperties const& camera)
+	std::shared_ptr<VertexArray> DebugDraw::createBatchedLineVAO()
 	{
-		if (!s_ShaderProgram)
+		auto vao = VertexArray::Create();
 		{
-			DYE_ASSERT_RELEASE(false && "Debug Gizmo's VAO or Shader have not been created, did you forget to call DebugDraw::initialize()?");
-			return;
+			auto vertexBufferObject = VertexBuffer::Create(0, BufferUsageHint::StreamDraw);
+			VertexLayout const vertexLayout
+				{
+					VertexAttribute(VertexAttributeType::Float3, "position", false),
+					VertexAttribute(VertexAttributeType::Float4, "color", false)
+				};
+
+			vertexBufferObject->SetLayout(vertexLayout);
+			vao->AddVertexBuffer(vertexBufferObject);
+
+			auto indexBufferObject = IndexBuffer::Create(0, BufferUsageHint::StreamDraw);
+			vao->SetIndexBuffer(indexBufferObject);
 		}
 
-		// Bind gizmo shader and draw it.
-		s_ShaderProgram->GetDefaultRenderState().Apply();
-		s_ShaderProgram->Use();
-
-		// View Matrix: World space to camera space
-		glm::mat4 viewMatrix = camera.GetViewMatrix();
-		auto viewMatrixLoc = glGetUniformLocation(s_ShaderProgram->GetID(), DefaultUniformNames::ViewMatrix);
-		glCall(glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix)));
-
-		// Projection Matrix: Camera space to clip space
-		float const aspectRatio = camera.GetAspectRatio();
-		glm::mat4 projectionMatrix = camera.GetProjectionMatrix(aspectRatio);
-		auto projectionMatrixLoc = glGetUniformLocation(s_ShaderProgram->GetID(), DefaultUniformNames::ProjectionMatrix);
-		glCall(glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, glm::value_ptr(projectionMatrix)));
-
-		// Set per instance data: Color & Model Matrix
-		auto const& perInstanceColorVBO = s_CubeVAO->GetVertexBuffers()[GeometryInstancedArrays::ColorVBOIndex];
-		perInstanceColorVBO->ResetData
-			(
-				s_CubeInstancedArrays.Colors.data(),
-				s_CubeInstancedArrays.Colors.size() * sizeof (float),
-				BufferUsageHint::StreamDraw
-			);
-
-		auto const& perInstanceModelMatrixVBO = s_CubeVAO->GetVertexBuffers()[GeometryInstancedArrays::ModelMatrixVBOIndex];
-		perInstanceModelMatrixVBO->ResetData
-			(
-				s_CubeInstancedArrays.ModelMatrices.data(),
-				s_CubeInstancedArrays.ModelMatrices.size() * sizeof (float),
-				BufferUsageHint::StreamDraw
-			);
-
-		RenderCommand::GetInstance().DrawIndexedLinesInstancedNow(*s_CubeVAO, s_CubeInstancedArrays.NumberOfInstances);
-	}
-
-	void DebugDraw::clearDebugDraw()
-	{
-		s_CubeInstancedArrays.Clear();
+		return std::move(vao);
 	}
 
 	std::shared_ptr<VertexArray> DebugDraw::createWireCubeVAO()
@@ -153,6 +133,110 @@ namespace DYE
 		}
 
 		return std::move(vao);
+	}
+
+	void DebugDraw::renderDebugDrawOnCamera(CameraProperties const& camera)
+	{
+		if (!s_LineGizmoShaderProgram || !s_GeometryGizmoShaderProgram)
+		{
+			DYE_ASSERT_RELEASE(false && "Debug Gizmo's VAO or Shader have not been created, did you forget to call DebugDraw::initialize()?");
+			return;
+		}
+
+		renderBatchedLineVAO(camera);
+
+		s_GeometryGizmoShaderProgram->GetDefaultRenderState().Apply();
+		s_GeometryGizmoShaderProgram->Use();
+
+		// View matrix
+		glm::mat4 viewMatrix = camera.GetViewMatrix();
+		auto viewMatrixLoc = glGetUniformLocation(s_GeometryGizmoShaderProgram->GetID(), DefaultUniformNames::ViewMatrix);
+		glCall(glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix)));
+
+		// Projection matrix
+		float const aspectRatio = camera.GetAspectRatio();
+		glm::mat4 projectionMatrix = camera.GetProjectionMatrix(aspectRatio);
+		auto projectionMatrixLoc = glGetUniformLocation(s_GeometryGizmoShaderProgram->GetID(), DefaultUniformNames::ProjectionMatrix);
+		glCall(glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, glm::value_ptr(projectionMatrix)));
+
+		renderGeometryVAO(*s_CubeVAO, s_CubeInstancedArrays);
+	}
+
+	void DebugDraw::renderBatchedLineVAO(CameraProperties const& camera)
+	{
+		if (s_BatchedLineVertices.empty() || s_BatchedLineIndices.empty())
+		{
+			return;
+		}
+
+		s_LineGizmoShaderProgram->GetDefaultRenderState().Apply();
+		s_LineGizmoShaderProgram->Use();
+
+		// View matrix
+		glm::mat4 viewMatrix = camera.GetViewMatrix();
+		auto viewMatrixLoc = glGetUniformLocation(s_LineGizmoShaderProgram->GetID(), DefaultUniformNames::ViewMatrix);
+		glCall(glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix)));
+
+		// Projection matrix
+		float const aspectRatio = camera.GetAspectRatio();
+		glm::mat4 projectionMatrix = camera.GetProjectionMatrix(aspectRatio);
+		auto projectionMatrixLoc = glGetUniformLocation(s_LineGizmoShaderProgram->GetID(), DefaultUniformNames::ProjectionMatrix);
+		glCall(glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, glm::value_ptr(projectionMatrix)));
+
+		// Pass vertices & indices to VBO/EBO.
+		auto const vertexDataSize = s_BatchedLineVertices.size() * sizeof (float) * 7;  // pos + color = 3 floats + 4 floats = 7 floats
+		s_BatchedLineVAO->GetVertexBuffers()[0]->ResetData(s_BatchedLineVertices.data(), vertexDataSize, BufferUsageHint::StreamDraw);
+		s_BatchedLineVAO->GetIndexBuffer()->ResetData(s_BatchedLineIndices.data(), s_BatchedLineIndices.size(), BufferUsageHint::StreamDraw);
+
+		RenderCommand::GetInstance().DrawIndexedLinesNow(*s_BatchedLineVAO);
+	}
+
+	void DebugDraw::renderGeometryVAO(const VertexArray &vao, DebugDraw::GeometryInstancedArrays &instancedArrays)
+	{
+		if (instancedArrays.NumberOfInstances == 0)
+		{
+			return;
+		}
+
+		// Set per instance data: Color & Model Matrix
+		auto const& perInstanceColorVBO = vao.GetVertexBuffers()[GeometryInstancedArrays::ColorVBOIndex];
+		perInstanceColorVBO->ResetData
+			(
+				instancedArrays.Colors.data(),
+				instancedArrays.Colors.size() * sizeof (float),
+				BufferUsageHint::StreamDraw
+			);
+
+		auto const& perInstanceModelMatrixVBO = vao.GetVertexBuffers()[GeometryInstancedArrays::ModelMatrixVBOIndex];
+		perInstanceModelMatrixVBO->ResetData
+			(
+				instancedArrays.ModelMatrices.data(),
+				instancedArrays.ModelMatrices.size() * sizeof (float),
+				BufferUsageHint::StreamDraw
+			);
+
+		RenderCommand::GetInstance().DrawIndexedLinesInstancedNow(vao, instancedArrays.NumberOfInstances);
+	}
+
+	void DebugDraw::clearDebugDraw()
+	{
+		s_BatchedLineVertices.clear();
+		s_BatchedLineIndices.clear();
+
+		s_CubeInstancedArrays.Clear();
+	}
+
+	void DebugDraw::Line(glm::vec3 start, glm::vec3 end, glm::vec4 color)
+	{
+		std::uint32_t const startIndex = s_BatchedLineVertices.size() / 7;
+
+		s_BatchedLineVertices.insert(s_BatchedLineVertices.end(), glm::value_ptr(start), glm::value_ptr(start) + 3);
+		s_BatchedLineVertices.insert(s_BatchedLineVertices.end(), glm::value_ptr(color), glm::value_ptr(color) + 4);
+
+		s_BatchedLineVertices.insert(s_BatchedLineVertices.end(), glm::value_ptr(end), glm::value_ptr(end) + 3);
+		s_BatchedLineVertices.insert(s_BatchedLineVertices.end(), glm::value_ptr(color), glm::value_ptr(color) + 4);
+
+		s_BatchedLineIndices.insert(s_BatchedLineIndices.end(), {startIndex, startIndex + 1});
 	}
 
 	void DebugDraw::Cube(glm::vec3 center, glm::vec4 color)
