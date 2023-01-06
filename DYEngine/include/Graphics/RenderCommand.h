@@ -36,8 +36,7 @@ namespace DYE
 		RenderCommand() = default; // TODO: delete default constructor, because eventually the base class will become abstract/interface.
 		RenderCommand(const RenderCommand &) = delete;
 
-		/// Swap the front and back buffers of the given window if it's double-buffered.
-		/// You would have to make the context of the given window's current first.
+		/// Before calling this function, you have to call window.MakeCurrent() first.
 		void SwapWindowBuffer(WindowBase const& windowBase);
 
         void SetViewport(std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height);
