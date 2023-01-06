@@ -68,8 +68,6 @@ namespace DYE
 		std::shared_ptr<SpriteObject> m_MovingObject;
 		std::shared_ptr<SpriteObject> m_BackgroundTileObject;
 
-		std::vector<std::shared_ptr<SpriteObject>> m_CoordinateObjects;
-
 		std::shared_ptr<CameraProperties> m_CameraProperties;
 	};
 }

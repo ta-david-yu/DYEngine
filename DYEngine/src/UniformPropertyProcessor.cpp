@@ -120,6 +120,7 @@ namespace DYE::ShaderProcessor
 
 		if (numberOfUniforms <= 0)
 		{
+			DYE_LOG("There are [0] uniform variables.");
 			return {};
 		}
 

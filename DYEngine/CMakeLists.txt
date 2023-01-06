@@ -44,7 +44,7 @@ set(SOURCE_FILES
         src/MaterialPropertyBlock.cpp
         src/WindowManager.cpp
         src/Screen.cpp
-        src/AABB.cpp)
+        src/AABB.cpp src/DebugDraw.cpp)
 set(HEADER_FILES
         include/Core/Application.h
         include/Graphics/WindowBase.h
@@ -99,7 +99,7 @@ set(HEADER_FILES
         include/Math/Math.h
         include/Screen.h
         include/Math/AABB.h
-        include/Math/PrimitiveTest.h)
+        include/Math/PrimitiveTest.h include/Graphics/DebugDraw.h)
 
 message(STATUS "[DYEngine] Source Files: ${SOURCE_FILES}")
 message(STATUS "[DYEngine] Header Files: ${HEADER_FILES}")
@@ -163,6 +163,8 @@ target_link_libraries(DYEngine
 # ===========================================================================================
 # Copy default assets to the output directory
 set(DEFAULT_ASSETS
+        assets/DebugLineGizmo.shader
+        assets/DebugGeometryGizmo.shader
         assets/SpriteDefault.shader
         assets/SpriteUnlit.shader)
 

@@ -16,20 +16,21 @@ namespace DYE
 		//				   [       3,     4,        2] = 9 elements per vertex
 		float vertices[9 * 4] =
 			{
-				-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+				-0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
 				0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
 
-				0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f,
-				-0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f
+				0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+				-0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f
 			};
 
-		std::uint32_t indices[] =
+		std::array<std::uint32_t, 6> indices =
 			{
 				0, 1, 2,
 				2, 3, 0,
 			};
 
 		m_DefaultSpriteVAO = VertexArray::Create();
+
 		{
 			auto vertexBufferObject = VertexBuffer::Create(vertices, sizeof(vertices));
 			VertexLayout const vertexLayout
@@ -42,7 +43,7 @@ namespace DYE
 			vertexBufferObject->SetLayout(vertexLayout);
 			m_DefaultSpriteVAO->AddVertexBuffer(vertexBufferObject);
 
-			auto indexBufferObject = IndexBuffer::Create(indices, sizeof(indices));
+			auto indexBufferObject = IndexBuffer::Create(indices.data(), indices.size());
 			m_DefaultSpriteVAO->SetIndexBuffer(indexBufferObject);
 		}
 

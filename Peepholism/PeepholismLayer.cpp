@@ -25,6 +25,7 @@
 #include "Graphics/CameraProperties.h"
 #include "Graphics/Material.h"
 #include "Event/ApplicationEvent.h"
+#include "Graphics/DebugDraw.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -47,13 +48,11 @@ namespace DYE
 
 		m_AverageObject = std::make_shared<SpriteObject>();
 		m_AverageObject->Name = "Average";
-		m_AverageObject->Texture = Texture2D::Create("assets\\Sprite_Pong.png");
-		m_AverageObject->Texture->PixelsPerUnit = 32;
+		m_AverageObject->Texture = m_OriginObject->Texture;
 
 		m_MovingObject = std::make_shared<SpriteObject>();
 		m_MovingObject->Name = "Moving";
-		m_MovingObject->Texture = Texture2D::Create("assets\\Sprite_Pong.png");
-		m_MovingObject->Texture->PixelsPerUnit = 32;
+		m_MovingObject->Texture = m_OriginObject->Texture;
 
 		m_BackgroundTileObject = std::make_shared<SpriteObject>();
 		m_BackgroundTileObject->Name = "Background";
@@ -61,18 +60,6 @@ namespace DYE
 		m_BackgroundTileObject->Texture->PixelsPerUnit = 32;
 		m_BackgroundTileObject->Scale = {16.0f, 10.0f, 1};
 		m_BackgroundTileObject->Position = {0, 0, -2};
-
-		for (int i = 0; i < 5; i++)
-		{
-			auto obj = std::make_shared<SpriteObject>();
-			obj->Name = "obj " + std::to_string(i);
-			obj->Texture = Texture2D::Create("assets\\Sprite_Grid.png");
-			obj->Texture->PixelsPerUnit = 32;
-
-			obj->Position = {i * 2, 1, -1};
-
-			m_CoordinateObjects.emplace_back(obj);
-		}
 
 		auto mainWindowPtr = WindowManager::GetMainWindow();
 		mainWindowPtr->SetWindowSize(1600, 900);
@@ -89,13 +76,13 @@ namespace DYE
 		m_CameraProperties->Viewport = { 0, 0, 1, 1 };
 
 		m_WindowPosition = mainWindowPtr->GetPosition();
-		m_SecondWindow = WindowManager::CreateWindow(WindowProperty("Second Window"));
+		//m_SecondWindow = WindowManager::CreateWindow(WindowProperty("Second Window"));
 
 		// Use the same context of the main window for the second window
-		auto context = mainWindowPtr->GetContext();
-		m_SecondWindow->SetContext(context);
-		m_SecondWindow->MakeCurrent();
-		ContextBase::SetVSyncCountForCurrentContext(0);
+		//auto context = mainWindowPtr->GetContext();
+		//m_SecondWindow->SetContext(context);
+		//m_SecondWindow->MakeCurrent();
+		//ContextBase::SetVSyncCountForCurrentContext(0);
 
 		// Set the current context back to the main window.
 		mainWindowPtr->MakeCurrent();
@@ -105,7 +92,7 @@ namespace DYE
 	{
 		RenderPipelineManager::RegisterCameraForNextRender(*m_CameraProperties);
 
-
+/*
 		CameraProperties cameraRenderToSecondWindow {};
 		cameraRenderToSecondWindow.Position = {0, 0, 10};
 		cameraRenderToSecondWindow.IsOrthographic = true;
@@ -115,7 +102,7 @@ namespace DYE
 		cameraRenderToSecondWindow.UseManualAspectRatio = false;
 		cameraRenderToSecondWindow.ViewportValueType = ViewportValueType::RelativeDimension;
 		cameraRenderToSecondWindow.Viewport = {0, 0, 1, 1};
-		RenderPipelineManager::RegisterCameraForNextRender(cameraRenderToSecondWindow);
+		RenderPipelineManager::RegisterCameraForNextRender(cameraRenderToSecondWindow);*/
 
 		renderSpriteObject(*m_OriginObject);
 		renderSpriteObject(*m_MovingObject);
@@ -160,6 +147,23 @@ namespace DYE
 
     void PeepholismLayer::OnUpdate()
     {
+		for (int i = 0; i < 200; ++i)
+		{
+
+			DebugDraw::Cube({i, -2, 0}, {0, 1, 0, 0.5f});
+			DebugDraw::Cube({i, -1, 0}, {0, 0, 1, 1});
+			DebugDraw::Cube({i, 0, 0}, {1, 1, 0, 1});
+			DebugDraw::Cube({i, 1, 0}, {1, 0, 1, 1});
+			DebugDraw::Cube({i, 2, 0}, {1, 1, 1, 0.2f});
+			DebugDraw::Cube({i, 3, 0}, {1, 0, 0, 1});
+
+			/*
+			DebugDraw::Line({0, i, 0}, {1, 0.2f, -1}, {1, 0, 0, 1});
+			DebugDraw::Line({0, i, 0}, {1, 0.1f, -1}, {0, 1, 0, 1});
+			DebugDraw::Line({0, i, 0}, {0.5f, 0.2f, -1}, {0, 0, 1, 1});*/
+		}
+
+
 		// Scroll tiled offset
 		m_TileOffset += TIME.DeltaTime() * 0.5f;
 		if (m_TileOffset > 1.0f)

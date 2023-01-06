@@ -104,7 +104,7 @@ namespace DYE
         m_DataFormat = GL_RGBA;
 
         glCall(glCreateTextures(GL_TEXTURE_2D, 1, &m_ID));
-        DYE_LOG("Create Texture [%d], %d x %d", m_ID, width, height);
+        DYE_LOG("Create Texture (%d), %d x %d", m_ID, width, height);
         glTextureStorage2D(m_ID, 1, m_InternalFormat, m_Width, m_Height);
 
         glTextureParameteri(m_ID, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -132,7 +132,7 @@ namespace DYE
         }
         else
         {
-            DYE_LOG("Failed to load texture %s!", path.string().c_str());
+            DYE_LOG("Failed to load texture \"%s\"!", path.string().c_str());
             DYE_ASSERT(false);
         }
 
@@ -162,7 +162,7 @@ namespace DYE
 
         glTextureSubImage2D(m_ID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, (void*)data);
 
-        DYE_LOG("Create texture [%d] from %s\n\tComponents - %d\n\tDimension - %d x %d", m_ID, m_Path.c_str(),
+        DYE_LOG("Create texture (%d) from \"%s\"\n\tComponents - %d\n\tDimension - %d x %d", m_ID, m_Path.string().c_str(),
                 channels,
                 m_Width,
                 m_Height);

@@ -47,11 +47,20 @@ namespace DYE
         /// Clear currently bound draw buffer (color, depth, stencil)
         void Clear();
 
-		/// Draw Index Buffer of the given VAO. The number of indices to be drawn is based on the length of the VAO's IndexBuffer.
+		/// Draw VAO as line primitives.
+		/// \param vertexArray
+		void DrawIndexedLinesNow(const VertexArray &vertexArray);
+
+		/// Draw multiple VAO instances as line primitives.
+		/// \param vertexArray
+		/// \param numberOfInstances the number of instances to be drawn
+		void DrawIndexedLinesInstancedNow(const VertexArray &vertexArray, int numberOfInstances);
+
+		/// Draw VAO as triangle primitives.
 		/// \param vertexArray
 		void DrawIndexedNow(VertexArray const& vertexArray);
 
-		/// Execute draw call.
+		/// Draw VAO as triangle primitives with the given parameters.
 		/// \param renderParameters
 		/// \param vertexArray
 		/// \param objectToWorldMatrix

@@ -4,6 +4,7 @@
 #include "Graphics/RenderCommand.h"
 #include "Graphics/WindowManager.h"
 #include "Graphics/ContextBase.h"
+#include "Graphics/DebugDraw.h"
 
 #include <optional>
 
@@ -11,6 +12,12 @@ namespace DYE
 {
 	std::shared_ptr<RenderPipelineBase> RenderPipelineManager::s_ActiveRenderPipeline = {};
 	std::vector<CameraProperties> RenderPipelineManager::s_CameraProperties = {};
+	bool RenderPipelineManager::EnableDebugDraw = true;
+
+	void RenderPipelineManager::Initialize()
+	{
+		DebugDraw::initialize();
+	}
 
 	void RenderPipelineManager::RenderWithActivePipeline()
 	{
@@ -93,6 +100,9 @@ namespace DYE
 
 			// Actually run the object rendering process.
 			s_ActiveRenderPipeline->renderCamera(camera);
+
+			// Render DebugDraw at the end.
+			DebugDraw::renderDebugDrawOnCamera(camera);
 		}
 
 		if (!WindowManager::IsMainWindow(*pCurrentWindow))
@@ -102,6 +112,8 @@ namespace DYE
 		}
 
 		s_ActiveRenderPipeline->onPostRender();
+
+		DebugDraw::clearDebugDraw();
 
 		s_CameraProperties.clear();
 	}

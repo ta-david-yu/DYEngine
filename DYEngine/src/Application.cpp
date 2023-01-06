@@ -83,6 +83,7 @@ namespace DYE
 		RenderCommand::InitSingleton();
 		RenderCommand::GetInstance().SetViewport(0, 0, mainWindowPtr->GetWidth(), mainWindowPtr->GetHeight());
 		RenderCommand::GetInstance().SetClearColor(glm::vec4 {0, 0, 0, 0});
+		RenderPipelineManager::Initialize();
 		RenderPipelineManager::SetActiveRenderPipeline(std::make_shared<RenderPipeline2D>());	// Use 2D RenderPipeline by default
 
         // Register handleOnEvent member function to the EventSystem
