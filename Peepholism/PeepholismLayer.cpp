@@ -1,31 +1,34 @@
-#include "Util/Macro.h"
+#include "PeepholismLayer.h"
 
 #include "Core/Application.h"
-#include "PeepholismLayer.h"
-#include "Graphics/WindowBase.h"
-#include "Graphics/WindowManager.h"
-#include "Graphics/ContextBase.h"
 #include "Util/Logger.h"
-#include "Screen.h"
+#include "Util/Macro.h"
+#include "Util/Time.h"
+
+#include "Math/Color.h"
 #include "Math/Math.h"
 
-#include "Util/Time.h"
 #include "ImGui/ImGuiUtil.h"
 
 #include "Input/InputManager.h"
+#include "Screen.h"
 
 #include "Graphics/RenderCommand.h"
 #include "Graphics/RenderPipelineManager.h"
 #include "Graphics/RenderPipeline2D.h"
 
+#include "Graphics/WindowBase.h"
+#include "Graphics/WindowManager.h"
+#include "Graphics/ContextBase.h"
 #include "Graphics/VertexArray.h"
 #include "Graphics/Shader.h"
 #include "Graphics/OpenGL.h"
 #include "Graphics/Texture.h"
 #include "Graphics/CameraProperties.h"
 #include "Graphics/Material.h"
-#include "Event/ApplicationEvent.h"
 #include "Graphics/DebugDraw.h"
+
+#include "Event/ApplicationEvent.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -146,22 +149,11 @@ namespace DYE
 
     void PeepholismLayer::OnUpdate()
     {
-		DebugDraw::Circle({1, 3, 0}, 1, {0, 0, 1}, {1, 0, 0, 1});
-		DebugDraw::Sphere({-2, 3, 0}, 0.5f, {1, 0, 0, 1});
+		glm::vec3 center1 = {0, 0, 0};
+		glm::vec3 center2 = {2, 0, 0};
 
-		for (int i = 0; i < 200; ++i)
-		{
-
-			DebugDraw::Cube({i, -2, 0}, {1, 1, 1}, {0, 1, 0, 0.5f});
-			DebugDraw::Cube({i, -1, 0}, {0.5f, 2, 1}, {0, 0, 1, 1});
-			/*
-			DebugDraw::Line({0, i, 0}, {1, 0.2f, -1}, {1, 0, 0, 1});
-			DebugDraw::Line({0, i, 0}, {1, 0.1f, -1}, {0, 1, 0, 1});
-			DebugDraw::Line({0, i, 0}, {0.5f, 0.2f, -1}, {0, 0, 1, 1});*/
-		}
-
-		DebugDraw::AABB({-0.5f, -0.5f, 0.0f}, {0.5f, 0.5f, 0.0f}, {1, 0, 0, 1});
-
+		DebugDraw::AABB(center1 + glm::vec3 {-0.5f, -0.5f, 0.0f}, center1 + glm::vec3 {0.5f, 0.5f, 0.0f}, Color::Red);
+		DebugDraw::AABB(center2 + glm::vec3 {-0.5f, -0.5f, 0.0f}, center2 + glm::vec3 {0.5f, 0.5f, 0.0f}, Color::Yellow);
 
 		// Scroll tiled offset
 		m_TileOffset += TIME.DeltaTime() * 0.5f;
