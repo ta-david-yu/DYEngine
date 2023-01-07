@@ -79,7 +79,7 @@ namespace DYE
 		m_CameraProperties->Viewport = { 0, 0, 1, 1 };
 
 		m_WindowPosition = mainWindowPtr->GetPosition();
-		m_SecondWindow = WindowManager::CreateWindow(WindowProperty("Second Window"));
+		m_SecondWindow = WindowManager::CreateWindow(WindowProperty("SecondWindow", 640, 480));
 
 		// Use the same context of the main window for the second window
 		auto context = mainWindowPtr->GetContext();
