@@ -68,6 +68,9 @@ namespace DYE
 		std::shared_ptr<SpriteObject> m_MovingObject;
 		std::shared_ptr<SpriteObject> m_BackgroundTileObject;
 
+		glm::vec3 m_CollisionCenter {3, 0, 0};
+		glm::vec3 m_CollisionSize {1, 1, 1};
+
 		std::shared_ptr<CameraProperties> m_CameraProperties;
 	};
 }

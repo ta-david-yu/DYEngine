@@ -10,6 +10,13 @@ namespace DYE::Math
 		glm::vec3 Min;
 		glm::vec3 Max;
 
+		static AABB CreateFromCenter(glm::vec3 center, glm::vec3 size)
+		{
+			return AABB(center - size * 0.5f, center + size * 0.5f);
+		}
+
+		AABB(glm::vec3 min, glm::vec3 max) : Min(min), Max(max) { }
+
 		/// Check if a 3d point is inside AABB.
 		/// \param point
 		/// \return true if a point is inside AABB.
