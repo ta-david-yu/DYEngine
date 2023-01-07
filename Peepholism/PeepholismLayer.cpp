@@ -76,13 +76,13 @@ namespace DYE
 		m_CameraProperties->Viewport = { 0, 0, 1, 1 };
 
 		m_WindowPosition = mainWindowPtr->GetPosition();
-		//m_SecondWindow = WindowManager::CreateWindow(WindowProperty("Second Window"));
+		m_SecondWindow = WindowManager::CreateWindow(WindowProperty("Second Window"));
 
 		// Use the same context of the main window for the second window
-		//auto context = mainWindowPtr->GetContext();
-		//m_SecondWindow->SetContext(context);
-		//m_SecondWindow->MakeCurrent();
-		//ContextBase::SetVSyncCountForCurrentContext(0);
+		auto context = mainWindowPtr->GetContext();
+		m_SecondWindow->SetContext(context);
+		m_SecondWindow->MakeCurrent();
+		ContextBase::SetVSyncCountForCurrentContext(0);
 
 		// Set the current context back to the main window.
 		mainWindowPtr->MakeCurrent();
@@ -92,7 +92,6 @@ namespace DYE
 	{
 		RenderPipelineManager::RegisterCameraForNextRender(*m_CameraProperties);
 
-/*
 		CameraProperties cameraRenderToSecondWindow {};
 		cameraRenderToSecondWindow.Position = {0, 0, 10};
 		cameraRenderToSecondWindow.IsOrthographic = true;
@@ -102,7 +101,7 @@ namespace DYE
 		cameraRenderToSecondWindow.UseManualAspectRatio = false;
 		cameraRenderToSecondWindow.ViewportValueType = ViewportValueType::RelativeDimension;
 		cameraRenderToSecondWindow.Viewport = {0, 0, 1, 1};
-		RenderPipelineManager::RegisterCameraForNextRender(cameraRenderToSecondWindow);*/
+		RenderPipelineManager::RegisterCameraForNextRender(cameraRenderToSecondWindow);
 
 		renderSpriteObject(*m_OriginObject);
 		renderSpriteObject(*m_MovingObject);
@@ -147,21 +146,21 @@ namespace DYE
 
     void PeepholismLayer::OnUpdate()
     {
+		DebugDraw::Circle({1, 3, 0}, 1, {0, 0, 1}, {1, 0, 0, 1});
+		DebugDraw::Sphere({-2, 3, 0}, 0.5f, {1, 0, 0, 1});
+
 		for (int i = 0; i < 200; ++i)
 		{
 
-			DebugDraw::Cube({i, -2, 0}, {0, 1, 0, 0.5f});
-			DebugDraw::Cube({i, -1, 0}, {0, 0, 1, 1});
-			DebugDraw::Cube({i, 0, 0}, {1, 1, 0, 1});
-			DebugDraw::Cube({i, 1, 0}, {1, 0, 1, 1});
-			DebugDraw::Cube({i, 2, 0}, {1, 1, 1, 0.2f});
-			DebugDraw::Cube({i, 3, 0}, {1, 0, 0, 1});
-
+			DebugDraw::Cube({i, -2, 0}, {1, 1, 1}, {0, 1, 0, 0.5f});
+			DebugDraw::Cube({i, -1, 0}, {0.5f, 2, 1}, {0, 0, 1, 1});
 			/*
 			DebugDraw::Line({0, i, 0}, {1, 0.2f, -1}, {1, 0, 0, 1});
 			DebugDraw::Line({0, i, 0}, {1, 0.1f, -1}, {0, 1, 0, 1});
 			DebugDraw::Line({0, i, 0}, {0.5f, 0.2f, -1}, {0, 0, 1, 1});*/
 		}
+
+		DebugDraw::AABB({-0.5f, -0.5f, 0.0f}, {0.5f, 0.5f, 0.0f}, {1, 0, 0, 1});
 
 
 		// Scroll tiled offset

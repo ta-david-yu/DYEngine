@@ -56,9 +56,13 @@ namespace DYE
 		static std::shared_ptr<VertexArray> s_CubeVAO;
 		static GeometryInstancedArrays s_CubeInstancedArrays;
 
+		static std::shared_ptr<VertexArray> s_CircleVAO;
+		static GeometryInstancedArrays s_CircleInstancedArrays;
+
 		static void initialize();
 		static std::shared_ptr<VertexArray> createBatchedLineVAO();
 		static std::shared_ptr<VertexArray> createWireCubeVAO();
+		static std::shared_ptr<VertexArray> createWireCircleVAO();
 
 		static void renderDebugDrawOnCamera(CameraProperties const& camera);
 		static void renderBatchedLineVAO(CameraProperties const& camera);
@@ -69,7 +73,10 @@ namespace DYE
 	public:
 		[[deprecated("Line function is still buggy, avoid calling it more than 100 times a frame.")]]
 		static void Line(glm::vec3 start, glm::vec3 end, glm::vec4 color);
-		static void Cube(glm::vec3 center, glm::vec4 color);
+		static void Cube(glm::vec3 center, glm::vec3 size, glm::vec4 color);
+		static void AABB(glm::vec3 min, glm::vec3 max, glm::vec4 color);
+		static void Circle(glm::vec3 center, float radius, glm::vec3 up, glm::vec4 color);
+		static void Sphere(glm::vec3 center, float radius, glm::vec4 color);
 	};
 }
 

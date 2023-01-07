@@ -44,7 +44,7 @@ set(SOURCE_FILES
         src/MaterialPropertyBlock.cpp
         src/WindowManager.cpp
         src/Screen.cpp
-        src/AABB.cpp src/DebugDraw.cpp)
+        src/AABB.cpp src/DebugDraw.cpp src/Math.cpp)
 set(HEADER_FILES
         include/Core/Application.h
         include/Graphics/WindowBase.h
