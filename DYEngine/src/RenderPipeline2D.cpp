@@ -145,6 +145,8 @@ namespace DYE
 				}
 			);
 
+
+
 		// Execute draw-calls.
 		for (auto const &submission: m_Submissions)
 		{

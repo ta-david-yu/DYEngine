@@ -87,7 +87,6 @@ namespace DYE
 				pCurrentWindow = WindowManager::GetWindowFromID(camera.TargetWindowID);
 				pCurrentWindow->MakeCurrent();
 
-				// Clear the buffer of the new window.
 				RenderCommand::GetInstance().Clear();
 			}
 
@@ -98,16 +97,17 @@ namespace DYE
 
 			RenderCommand::GetInstance().SetViewport(viewportDimension);
 
-			// Actually run the object rendering process.
 			s_ActiveRenderPipeline->renderCamera(camera);
 
-			// Render DebugDraw at the end.
+			// Render DebugDraw at the end to make sure debug gizmos are on top of other objects.
 			DebugDraw::renderDebugDrawOnCamera(camera);
 		}
 
 		if (!WindowManager::IsMainWindow(*pCurrentWindow))
 		{
-			// Flush/swap the buffer of the last rendered window if it's not the main window.
+			// Swap the final rendered window if it's not the main window.
+			// Note that we only swap buffers of non-main windows because we want to render
+			// imgui contexts to the main window later.
 			RenderCommand::GetInstance().SwapWindowBuffer(*pCurrentWindow);
 		}
 
