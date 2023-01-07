@@ -91,6 +91,11 @@ namespace DYE
         glClearColor(color.r, color.g, color.b, color.a);
     }
 
+	void RenderCommand::SetLinePrimitiveWidth(float width)
+	{
+		glLineWidth(width);
+	}
+
     void RenderCommand::Clear()
     {
 		// Enable depth mask first so glClear() call actually clears depth buffer.

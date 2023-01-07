@@ -86,6 +86,8 @@ namespace DYE
 
 		// Set the current context back to the main window.
 		mainWindowPtr->MakeCurrent();
+
+		RenderCommand::GetInstance().SetLinePrimitiveWidth(4.5f);
 	}
 
 	void PeepholismLayer::OnRender()
