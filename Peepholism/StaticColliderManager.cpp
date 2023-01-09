@@ -91,7 +91,7 @@ namespace DYE
 		std::vector<RaycastHit2D> hits;
 
 		glm::vec2 const direction = end - start;
-		float const maxDistance = glm::length(end);
+		float const maxDistance = glm::length(direction);
 
 		// TODO: improve the performance with AABB tree OR grid broad-phase
 		for (auto const& pair : m_AABBs)
