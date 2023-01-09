@@ -127,6 +127,14 @@ namespace DYE
 		glCall(glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr));
 	}
 
+	void RenderCommand::DrawIndexedInstancedNow(const VertexArray &vertexArray, int numberOfInstances)
+	{
+		// Bind mesh (VAO)
+		vertexArray.Bind();
+		std::uint32_t const indexCount = vertexArray.GetIndexBuffer()->GetCount();
+		glCall(glDrawElementsInstanced(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr, numberOfInstances));
+	}
+
 	void RenderCommand::DrawIndexedNow(RenderParameters const& renderParameters, VertexArray const& vertexArray, glm::mat4 objectToWorldMatrix)
 	{
 		auto& shader = renderParameters.Material->GetShaderProgram();

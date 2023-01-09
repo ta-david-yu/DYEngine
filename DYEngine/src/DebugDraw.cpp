@@ -21,6 +21,9 @@ namespace DYE
 	std::shared_ptr<VertexArray> DebugDraw::s_CubeVAO {};
 	DebugDraw::GeometryInstancedArrays DebugDraw::s_CubeInstancedArrays {};
 
+	std::shared_ptr<VertexArray> DebugDraw::s_WireCubeVAO {};
+	DebugDraw::GeometryInstancedArrays DebugDraw::s_WireCubeInstancedArrays {};
+
 	std::shared_ptr<VertexArray> DebugDraw::s_CircleVAO {};
 	DebugDraw::GeometryInstancedArrays DebugDraw::s_CircleInstancedArrays {};
 
@@ -30,7 +33,8 @@ namespace DYE
 		s_GeometryGizmoShaderProgram = ShaderProgram::CreateFromFile("Shader_DebugGeometryGizmo", "assets\\default\\DebugGeometryGizmo.shader");
 
 		s_BatchedLineVAO = createBatchedLineVAO();
-		s_CubeVAO = createWireCubeVAO();
+		s_CubeVAO = createCubeVAO();
+		s_WireCubeVAO = createWireCubeVAO();
 		s_CircleVAO = createWireCircleVAO();
 	}
 
@@ -50,6 +54,95 @@ namespace DYE
 
 			auto indexBufferObject = IndexBuffer::Create(0, BufferUsageHint::StreamDraw);
 			vao->SetIndexBuffer(indexBufferObject);
+		}
+
+		return std::move(vao);
+	}
+
+	std::shared_ptr<VertexArray> DebugDraw::createCubeVAO()
+	{
+		auto vao = VertexArray::Create();
+
+		// Create the mesh vertex data and indices
+		{
+			// Create vertices [position]
+			//				   [       3] = 3 elements per vertex
+			float vertices[3 * 8] =
+				{
+					// Upper rect
+					0.5f, 0.5f, 0.5f,
+					-0.5f, 0.5f, 0.5f,
+					-0.5f, 0.5f, -0.5f,
+					0.5f, 0.5f, -0.5f,
+
+					// Lower rect
+					0.5f, -0.5f, 0.5f,
+					-0.5f, -0.5f, 0.5f,
+					-0.5f, -0.5f, -0.5f,
+					0.5f, -0.5f, -0.5f,
+				};
+
+
+			std::array<std::uint32_t, 36> indices =
+				{
+					0, 3, 1,
+					3, 2, 1,
+
+					2, 3, 7,
+					7, 6, 2,
+
+					3, 0, 7,
+					0, 4, 7,
+
+					5, 0, 1,
+					4, 0, 5,
+
+					5, 1, 6,
+					6, 1, 2,
+
+					7, 4, 5,
+					6, 7, 5
+				};
+
+			auto vertexPositionBufferObject = VertexBuffer::Create(vertices, sizeof(vertices));
+			VertexLayout const vertexLayout
+				{
+					VertexAttribute(VertexAttributeType::Float3, "position", false)
+				};
+
+			vertexPositionBufferObject->SetLayout(vertexLayout);
+			vao->AddVertexBuffer(vertexPositionBufferObject);
+
+			auto indexBufferObject = IndexBuffer::Create(indices.data(), indices.size());
+			vao->SetIndexBuffer(indexBufferObject);
+		}
+
+		// Create vertex buffer object for per instance color
+		{
+			auto instancedVertexBufferObject = VertexBuffer::Create(0, BufferUsageHint::StreamDraw);
+
+			// We set the divisor to 1, so the vertex attribute only strides when a new instance is being rendered.
+			VertexLayout const vertexLayout
+				{
+					VertexAttribute(VertexAttributeType::Float4, "perInstanceColor", false, 1)
+				};
+
+			instancedVertexBufferObject->SetLayout(vertexLayout);
+			vao->AddVertexBuffer(instancedVertexBufferObject);
+		}
+
+		// Create vertex buffer object for per instance model matrix
+		{
+			auto instancedVertexBufferObject = VertexBuffer::Create(0, BufferUsageHint::StreamDraw);
+
+			// We set the divisor to 1, so the vertex attribute only strides when a new instance is being rendered.
+			VertexLayout const vertexLayout
+				{
+					VertexAttribute(VertexAttributeType::Mat4, "perInstanceModelMatrix", false, 1)
+				};
+
+			instancedVertexBufferObject->SetLayout(vertexLayout);
+			vao->AddVertexBuffer(instancedVertexBufferObject);
 		}
 
 		return std::move(vao);
@@ -234,8 +327,9 @@ namespace DYE
 		auto projectionMatrixLoc = glGetUniformLocation(s_GeometryGizmoShaderProgram->GetID(), DefaultUniformNames::ProjectionMatrix);
 		glCall(glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, glm::value_ptr(projectionMatrix)));
 
-		renderGeometryVAO(*s_CubeVAO, s_CubeInstancedArrays);
-		renderGeometryVAO(*s_CircleVAO, s_CircleInstancedArrays);
+		renderTriangleGeometryVAO(*s_CubeVAO, s_CubeInstancedArrays);
+		renderLineGeometryVAO(*s_WireCubeVAO, s_WireCubeInstancedArrays);
+		renderLineGeometryVAO(*s_CircleVAO, s_CircleInstancedArrays);
 	}
 
 	void DebugDraw::renderBatchedLineVAO(CameraProperties const& camera)
@@ -267,7 +361,7 @@ namespace DYE
 		RenderCommand::GetInstance().DrawIndexedLinesNow(*s_BatchedLineVAO);
 	}
 
-	void DebugDraw::renderGeometryVAO(const VertexArray &vao, DebugDraw::GeometryInstancedArrays &instancedArrays)
+	void DebugDraw::renderLineGeometryVAO(const VertexArray &vao, DebugDraw::GeometryInstancedArrays &instancedArrays)
 	{
 		if (instancedArrays.NumberOfInstances == 0)
 		{
@@ -294,12 +388,40 @@ namespace DYE
 		RenderCommand::GetInstance().DrawIndexedLinesInstancedNow(vao, instancedArrays.NumberOfInstances);
 	}
 
+	void DebugDraw::renderTriangleGeometryVAO(const VertexArray &vao, DebugDraw::GeometryInstancedArrays &instancedArrays)
+	{
+		if (instancedArrays.NumberOfInstances == 0)
+		{
+			return;
+		}
+
+		// Set per instance data: Color & Model Matrix
+		auto const& perInstanceColorVBO = vao.GetVertexBuffers()[GeometryInstancedArrays::ColorVBOIndex];
+		perInstanceColorVBO->ResetData
+			(
+				instancedArrays.Colors.data(),
+				instancedArrays.Colors.size() * sizeof (float),
+				BufferUsageHint::StreamDraw
+			);
+
+		auto const& perInstanceModelMatrixVBO = vao.GetVertexBuffers()[GeometryInstancedArrays::ModelMatrixVBOIndex];
+		perInstanceModelMatrixVBO->ResetData
+			(
+				instancedArrays.ModelMatrices.data(),
+				instancedArrays.ModelMatrices.size() * sizeof (float),
+				BufferUsageHint::StreamDraw
+			);
+
+		RenderCommand::GetInstance().DrawIndexedInstancedNow(vao, instancedArrays.NumberOfInstances);
+	}
+
 	void DebugDraw::clearDebugDraw()
 	{
 		s_BatchedLineVertices.clear();
 		s_BatchedLineIndices.clear();
 
 		s_CubeInstancedArrays.Clear();
+		s_WireCubeInstancedArrays.Clear();
 		s_CircleInstancedArrays.Clear();
 	}
 
@@ -322,7 +444,8 @@ namespace DYE
 		modelMatrix = glm::translate(modelMatrix, center);
 		modelMatrix = glm::scale(modelMatrix, size);
 
-		s_CubeInstancedArrays.AddInstance(color, modelMatrix);
+		s_CubeInstancedArrays.AddInstance(color * 0.4f, modelMatrix);
+		s_WireCubeInstancedArrays.AddInstance(color, modelMatrix);
 	}
 
 	void DebugDraw::AABB(glm::vec3 min, glm::vec3 max, glm::vec4 color)
