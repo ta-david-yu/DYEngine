@@ -19,6 +19,9 @@ namespace DYE
 		std::optional<Math::AABB> GetAABB(ColliderID id);
 		bool SetAABB(ColliderID id, Math::AABB aabb);
 
+		std::vector<ColliderID> OverlapAABB(Math::AABB aabb) const;
+		std::vector<ColliderID> OverlapCircle(glm::vec3 center, float radius) const;
+
 		void DrawGizmos() const;
 		void DrawImGui();
 

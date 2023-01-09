@@ -160,8 +160,11 @@ namespace DYE
 		Math::AABB const movingAABB = Math::AABB::CreateFromCenter(m_MovingObject->Position, {0.5f, 0.5f, 0.5f});
 		Math::AABB const averageAABB = Math::AABB::CreateFromCenter(m_AverageObject->Position, {0.5f, 0.5f, 0.5f});
 
-		DebugDraw::AABB(movingAABB.Min, movingAABB.Max, Color::Yellow);
-		DebugDraw::AABB(averageAABB.Min, averageAABB.Max, Color::Yellow);
+		bool isMovingOverlapped = !m_ColliderManager.OverlapCircle(m_MovingObject->Position, 0.25f).empty();
+		bool isAverageOverlapped = !m_ColliderManager.OverlapCircle(m_AverageObject->Position, 0.25f).empty();
+
+		DebugDraw::Circle(m_MovingObject->Position, 0.25f, {0, 0, 1}, isMovingOverlapped? Color::Red : Color::Yellow);
+		DebugDraw::Circle(m_AverageObject->Position, 0.25f, {0, 0, 1}, isAverageOverlapped? Color::Red : Color::Yellow);
 
 		// Scroll tiled offset
 		m_TileOffset += TIME.DeltaTime() * 0.5f;

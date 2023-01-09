@@ -52,6 +52,40 @@ namespace DYE
 		return true;
 	}
 
+	std::vector<ColliderID> StaticColliderManager::OverlapAABB(Math::AABB aabb) const
+	{
+		std::vector<ColliderID> overlappedIds;
+
+		// TODO: improve the performance with AABB tree OR grid broad-phase
+		for (auto const& pair : m_AABBs)
+		{
+			bool const intersect = Math::AABBAABBIntersect2D(pair.second, aabb);
+			if (intersect)
+			{
+				overlappedIds.push_back(pair.first);
+			}
+		}
+
+		return std::move(overlappedIds);
+	}
+
+	std::vector<ColliderID> StaticColliderManager::OverlapCircle(glm::vec3 center, float radius) const
+	{
+		std::vector<ColliderID> overlappedIds;
+
+		// TODO: improve the performance with AABB tree OR grid broad-phase
+		for (auto const& pair : m_AABBs)
+		{
+			bool const intersect = Math::AABBCircleIntersect(pair.second, center, radius);
+			if (intersect)
+			{
+				overlappedIds.push_back(pair.first);
+			}
+		}
+
+		return std::move(overlappedIds);
+	}
+
 	void StaticColliderManager::DrawGizmos() const
 	{
 		for (auto const& pair : m_AABBs)
