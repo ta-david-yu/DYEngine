@@ -69,7 +69,7 @@ namespace DYE
 		return std::move(overlappedIds);
 	}
 
-	std::vector<ColliderID> StaticColliderManager::OverlapCircle(glm::vec3 center, float radius) const
+	std::vector<ColliderID> StaticColliderManager::OverlapCircle(glm::vec2 center, float radius) const
 	{
 		std::vector<ColliderID> overlappedIds;
 
@@ -84,6 +84,31 @@ namespace DYE
 		}
 
 		return std::move(overlappedIds);
+	}
+
+	std::vector<RaycastHit2D> StaticColliderManager::RaycastAll(glm::vec2 start, glm::vec2 end) const
+	{
+		std::vector<RaycastHit2D> hits;
+
+		glm::vec2 const direction = end - start;
+		float const maxDistance = glm::length(end);
+
+		// TODO: improve the performance with AABB tree OR grid broad-phase
+		for (auto const& pair : m_AABBs)
+		{
+			float hitTime;
+			glm::vec2 hitPoint;
+			bool const intersect = Math::RayAABBIntersect2D(start, direction, maxDistance, pair.second, hitTime, hitPoint);
+			if (intersect)
+			{
+				hits.push_back(RaycastHit2D { .ColliderID = pair.first, .Time = hitTime, .Point = hitPoint });
+			}
+		}
+
+		std::sort(hits.begin(), hits.end(), [](RaycastHit2D const& hitA, RaycastHit2D const& hitB) { return hitA.Time < hitB.Time; });
+
+		return std::move(hits);
+
 	}
 
 	void StaticColliderManager::DrawGizmos() const

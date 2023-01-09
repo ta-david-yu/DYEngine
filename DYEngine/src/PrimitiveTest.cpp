@@ -1,6 +1,7 @@
 #include "Math/PrimitiveTest.h"
 
 #include <glm/gtc/epsilon.hpp>
+#include <glm/gtx/norm.hpp>
 
 #include <climits>
 
@@ -76,7 +77,7 @@ namespace DYE::Math
 				hitTime = firstSlabIntersectionTime;
 			}
 
-			if (secondSlabIntersectionTime > exitTime)
+			if (secondSlabIntersectionTime < exitTime)
 			{
 				exitTime = secondSlabIntersectionTime;
 			}
@@ -130,7 +131,7 @@ namespace DYE::Math
 				hitTime = firstSlabIntersectionTime;
 			}
 
-			if (secondSlabIntersectionTime > exitTime)
+			if (secondSlabIntersectionTime < exitTime)
 			{
 				exitTime = secondSlabIntersectionTime;
 			}
