@@ -1,6 +1,6 @@
 project(Peepholism)
 
-add_executable(Peepholism PeepholismApp.cpp PeepholismLayer.cpp)
+add_executable(Peepholism PeepholismApp.cpp PeepholismLayer.cpp StaticColliderManager.cpp)
 
 target_include_directories(Peepholism PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(Peepholism DYEngine)

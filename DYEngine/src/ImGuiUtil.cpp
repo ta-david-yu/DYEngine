@@ -3,6 +3,7 @@
 #include "Graphics/CameraProperties.h"
 #include "Graphics/Material.h"
 #include "Graphics/Shader.h"
+#include "Math/AABB.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -438,6 +439,82 @@ namespace DYE::ImGuiUtil
 		ImGui::PopStyleVar();
 		ImGui::Columns(1);
 		ImGui::PopID();
+	}
+
+	bool DrawAABBControl(const std::string& label, Math::AABB& aabb)
+	{
+		bool isValueChanged = false;
+
+		ImGuiIO& io = ImGui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+
+		ImGui::PushID(label.c_str());
+
+		ImGui::Columns(2);
+		ImGui::SetColumnWidth(0, Parameters::ControlLabelWidth);
+		ImGui::Text(label.c_str());
+		ImGui::NextColumn();
+
+		{
+			ImGui::PushMultiItemsWidths(4, ImGui::CalcItemWidth());
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
+			{
+				ImGui::LabelText("", "Min");
+				ImGui::PopItemWidth();
+
+				ImGui::SameLine();
+				isValueChanged |= ImGui::DragFloat("##MinX", &aabb.Min.x, 0.1f, 0.0f, 0.0f, "%.2f");
+				ImGui::PopItemWidth();
+
+				ImGui::SameLine();
+				isValueChanged |= ImGui::DragFloat("##MinY", &aabb.Min.y, 0.1f, 0.0f, 0.0f, "%.2f");
+				ImGui::PopItemWidth();
+
+				ImGui::SameLine();
+				isValueChanged |= ImGui::DragFloat("##MinZ", &aabb.Min.z, 0.1f, 0.0f, 0.0f, "%.2f");
+				ImGui::PopItemWidth();
+			}
+			ImGui::PopStyleVar();
+		}
+
+		{
+			ImGui::PushMultiItemsWidths(4, ImGui::CalcItemWidth());
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
+			{
+				ImGui::LabelText("", "Max");
+				ImGui::PopItemWidth();
+
+				ImGui::SameLine();
+				isValueChanged |= ImGui::DragFloat("##MaxX", &aabb.Max.x, 0.1f, 0.0f, 0.0f, "%.2f");
+				ImGui::PopItemWidth();
+
+				ImGui::SameLine();
+				isValueChanged |= ImGui::DragFloat("##MaxY", &aabb.Max.y, 0.1f, 0.0f, 0.0f, "%.2f");
+				ImGui::PopItemWidth();
+
+				ImGui::SameLine();
+				isValueChanged |= ImGui::DragFloat("##MaxZ", &aabb.Max.z, 0.1f, 0.0f, 0.0f, "%.2f");
+				ImGui::PopItemWidth();
+			}
+			ImGui::PopStyleVar();
+		}
+
+		{
+			ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
+			{
+				auto const center = aabb.Center();
+				ImGui::LabelText("", "Center (%.2f, %.2f, %.2f)", center.x, center.y, center.z);
+				ImGui::PopItemWidth();
+			}
+			ImGui::PopStyleVar();
+		}
+
+		ImGui::Columns(1);
+
+		ImGui::PopID();
+
+		return isValueChanged;
 	}
 
 	bool DrawCameraPropertiesControl(const std::string& label, CameraProperties& cameraProperties)

@@ -47,7 +47,7 @@ set(SOURCE_FILES
         src/AABB.cpp
         src/DebugDraw.cpp
         src/Math.cpp
-        src/Color.cpp)
+        src/Color.cpp src/PrimitiveTest.cpp)
 set(HEADER_FILES
         include/Core/Application.h
         include/Graphics/WindowBase.h

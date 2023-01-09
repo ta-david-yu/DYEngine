@@ -90,6 +90,11 @@ namespace DYE
 
 		// Set the current context back to the main window.
 		mainWindowPtr->MakeCurrent();
+
+		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({2, 0, 0}, {1, 1, 0}));
+		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({-2, 0, 0}, {1, 1, 0}));
+		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({0, 2, 0}, {1, 1, 0}));
+		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({0, -3, 0}, {2, 3, 0}));
 	}
 
 	void PeepholismLayer::OnRender()
@@ -150,17 +155,13 @@ namespace DYE
 
     void PeepholismLayer::OnUpdate()
     {
+		m_ColliderManager.DrawGizmos();
+
 		Math::AABB const movingAABB = Math::AABB::CreateFromCenter(m_MovingObject->Position, {0.5f, 0.5f, 0.5f});
 		Math::AABB const averageAABB = Math::AABB::CreateFromCenter(m_AverageObject->Position, {0.5f, 0.5f, 0.5f});
-		Math::AABB const colliderAABB = Math::AABB::CreateFromCenter(m_CollisionCenter, m_CollisionSize);
 
-		bool isMovingCollided = Math::AABBAABBIntersect2D(movingAABB, colliderAABB);
-		bool isAverageCollided = Math::AABBAABBIntersect2D(averageAABB, colliderAABB);
-
-		DebugDraw::AABB(movingAABB.Min, movingAABB.Max, isMovingCollided? Color::Red : Color::Yellow);
-		DebugDraw::AABB(averageAABB.Min, averageAABB.Max, isAverageCollided? Color::Red : Color::Yellow);
-
-		DebugDraw::AABB(colliderAABB.Min, colliderAABB.Max, Color::Blue);
+		DebugDraw::AABB(movingAABB.Min, movingAABB.Max, Color::Yellow);
+		DebugDraw::AABB(averageAABB.Min, averageAABB.Max, Color::Yellow);
 
 		// Scroll tiled offset
 		m_TileOffset += TIME.DeltaTime() * 0.5f;
@@ -448,13 +449,11 @@ namespace DYE
 
 			ImGui::Separator();
 			imguiSpriteObject(*m_BackgroundTileObject);
-
-			ImGui::Separator();
-			ImGuiUtil::DrawVec3Control("Collider Center", m_CollisionCenter);
-			ImGuiUtil::DrawVec3Control("Collider Size", m_CollisionSize, 1);
 		}
 
         ImGui::End();
+
+		m_ColliderManager.DrawImGui();
     }
 
 	void PeepholismLayer::imguiSpriteObject(SpriteObject &object)

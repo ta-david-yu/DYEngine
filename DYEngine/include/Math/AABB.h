@@ -17,6 +17,8 @@ namespace DYE::Math
 
 		AABB(glm::vec3 min, glm::vec3 max) : Min(min), Max(max) { }
 
+		glm::vec3 Center() const { return Min + (Max - Min) * 0.5f; }
+
 		/// Check if a 3d point is inside AABB.
 		/// \param point
 		/// \return true if a point is inside AABB.
