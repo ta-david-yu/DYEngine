@@ -111,6 +111,27 @@ namespace DYE
 
 	}
 
+	std::vector<RaycastHit2D> StaticColliderManager::CircleCastAll(glm::vec2 center, float radius, glm::vec2 direction) const
+	{
+		std::vector<RaycastHit2D> hits;
+
+		// TODO: improve the performance with AABB tree OR grid broad-phase
+		for (auto const& pair : m_AABBs)
+		{
+			float hitTime;
+			bool const intersect = Math::MovingCircleAABBIntersect(center, radius, direction, pair.second, hitTime);
+			if (intersect)
+			{
+				glm::vec2 const hitPoint = center + direction * hitTime;
+				hits.push_back(RaycastHit2D { .ColliderID = pair.first, .Time = hitTime, .Point = hitPoint });
+			}
+		}
+
+		std::sort(hits.begin(), hits.end(), [](RaycastHit2D const& hitA, RaycastHit2D const& hitB) { return hitA.Time < hitB.Time; });
+
+		return std::move(hits);
+	}
+
 	void StaticColliderManager::DrawGizmos() const
 	{
 		for (auto const& pair : m_AABBs)

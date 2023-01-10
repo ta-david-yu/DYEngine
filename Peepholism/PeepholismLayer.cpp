@@ -160,21 +160,23 @@ namespace DYE
 		Math::AABB const movingAABB = Math::AABB::CreateFromCenter(m_MovingObject->Position, {0.5f, 0.5f, 0.5f});
 		Math::AABB const averageAABB = Math::AABB::CreateFromCenter(m_AverageObject->Position, {0.5f, 0.5f, 0.5f});
 
-		bool const isMovingOverlapped = !m_ColliderManager.OverlapCircle(m_MovingObject->Position, 0.25f).empty();
-		bool const isAverageOverlapped = !m_ColliderManager.OverlapCircle(m_AverageObject->Position, 0.25f).empty();
+		float const circleRadius = 0.25f;
+		bool const isMovingOverlapped = !m_ColliderManager.OverlapCircle(m_MovingObject->Position, circleRadius).empty();
+		bool const isAverageOverlapped = !m_ColliderManager.OverlapCircle(m_AverageObject->Position, circleRadius).empty();
 
-		DebugDraw::Circle(m_MovingObject->Position, 0.25f, {0, 0, 1}, isMovingOverlapped? Color::Red : Color::Yellow);
-		DebugDraw::Circle(m_AverageObject->Position, 0.25f, {0, 0, 1}, isAverageOverlapped? Color::Red : Color::Yellow);
+		DebugDraw::Circle(m_MovingObject->Position, circleRadius, {0, 0, 1}, isMovingOverlapped? Color::Red : Color::Yellow);
+		DebugDraw::Circle(m_AverageObject->Position, circleRadius, {0, 0, 1}, isAverageOverlapped? Color::Red : Color::Yellow);
 
 		glm::vec2 const rayStart = m_AverageObject->Position;
 		glm::vec2 const rayEnd = m_MovingObject->Position;
 
-		auto hits = m_ColliderManager.RaycastAll(rayStart, rayEnd);
+		//auto hits = m_ColliderManager.RaycastAll(rayStart, rayEnd);
+		auto hits = m_ColliderManager.CircleCastAll(rayStart, circleRadius, rayEnd - rayStart);
 		bool const hasIntersect = !hits.empty();
 
 		for (auto& hit : hits)
 		{
-			DebugDraw::Circle({hit.Point.x, hit.Point.y, 0}, 0.05f, {0, 0, 1}, Color::Red);
+			DebugDraw::Circle({hit.Point.x, hit.Point.y, 0}, circleRadius, {0, 0, 1}, Color::Red);
 		}
 
 		DebugDraw::Line(m_MovingObject->Position, m_AverageObject->Position, hasIntersect? Color::Red : Color::Yellow);

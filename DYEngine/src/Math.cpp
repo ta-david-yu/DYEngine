@@ -41,4 +41,43 @@ namespace DYE::Math
 
 		return 	{s * 0.5f, rotationAxis.x * invs, rotationAxis.y * invs, rotationAxis.z * invs };
 	}
+
+	glm::vec3 ClosestPointOnLine(glm::vec3 point, glm::vec3 linePointA, glm::vec3 linePointB)
+	{
+		//      P
+		//     /|
+		//    / |
+		//   /  |
+		//  A --D-- B
+		// We want to find D.
+
+		glm::vec3 const ap = point - linePointA;
+		glm::vec3 const ab = linePointB - linePointA;
+
+		// Find the value of t to represent point D on lineAB in parametric form.
+		float const t = glm::dot(ap, ab) / glm::dot(ab, ab);
+
+		return linePointA + t * ab;
+	}
+
+	glm::vec3 ClosestPointOnLineSegment(glm::vec3 point, glm::vec3 linePointA, glm::vec3 linePointB)
+	{
+		//      P
+		//     /|
+		//    / |
+		//   /  |
+		//  A --D-- B
+		// We want to find D.
+
+		glm::vec3 const ap = point - linePointA;
+		glm::vec3 const ab = linePointB - linePointA;
+
+		// Find the value of t to represent point D on the line segment AB in parametric form.
+		float t = glm::dot(ap, ab) / glm::dot(ab, ab);
+
+		// We want to make sure D is on the segment [a, b].
+		t = glm::clamp(t, 0.0f, 1.0f);
+
+		return linePointA + t * ab;
+	}
 }
