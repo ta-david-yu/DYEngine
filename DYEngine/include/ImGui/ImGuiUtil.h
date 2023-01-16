@@ -7,6 +7,7 @@
 namespace DYE::Math
 {
 	struct Rect;
+	struct AABB;
 }
 
 namespace DYE
@@ -42,6 +43,7 @@ namespace DYE::ImGuiUtil
 
 	void DrawReadOnlyLabelText(std::string const& label, std::string const& text);
 
+	bool DrawAABBControl(const std::string& label, Math::AABB& aabb);
 	bool DrawCameraPropertiesControl(const std::string& label, CameraProperties& cameraProperties);
 	bool DrawMaterialControl(const std::string& label, Material& material);
 }

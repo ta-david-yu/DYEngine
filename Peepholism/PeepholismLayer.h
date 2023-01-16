@@ -3,6 +3,8 @@
 #include "Core/LayerBase.h"
 #include "Event/KeyEvent.h"
 
+#include "StaticColliderManager.h"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
@@ -67,6 +69,8 @@ namespace DYE
 		std::shared_ptr<SpriteObject> m_AverageObject;
 		std::shared_ptr<SpriteObject> m_MovingObject;
 		std::shared_ptr<SpriteObject> m_BackgroundTileObject;
+
+		StaticColliderManager m_ColliderManager;
 
 		std::shared_ptr<CameraProperties> m_CameraProperties;
 	};

@@ -1,31 +1,35 @@
-#include "Util/Macro.h"
+#include "PeepholismLayer.h"
 
 #include "Core/Application.h"
-#include "PeepholismLayer.h"
-#include "Graphics/WindowBase.h"
-#include "Graphics/WindowManager.h"
-#include "Graphics/ContextBase.h"
 #include "Util/Logger.h"
-#include "Screen.h"
+#include "Util/Macro.h"
+#include "Util/Time.h"
+
+#include "Math/Color.h"
 #include "Math/Math.h"
 
-#include "Util/Time.h"
 #include "ImGui/ImGuiUtil.h"
 
 #include "Input/InputManager.h"
+#include "Screen.h"
+#include "Math/PrimitiveTest.h"
 
 #include "Graphics/RenderCommand.h"
 #include "Graphics/RenderPipelineManager.h"
 #include "Graphics/RenderPipeline2D.h"
 
+#include "Graphics/WindowBase.h"
+#include "Graphics/WindowManager.h"
+#include "Graphics/ContextBase.h"
 #include "Graphics/VertexArray.h"
 #include "Graphics/Shader.h"
 #include "Graphics/OpenGL.h"
 #include "Graphics/Texture.h"
 #include "Graphics/CameraProperties.h"
 #include "Graphics/Material.h"
-#include "Event/ApplicationEvent.h"
 #include "Graphics/DebugDraw.h"
+
+#include "Event/ApplicationEvent.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -76,7 +80,7 @@ namespace DYE
 		m_CameraProperties->Viewport = { 0, 0, 1, 1 };
 
 		m_WindowPosition = mainWindowPtr->GetPosition();
-		m_SecondWindow = WindowManager::CreateWindow(WindowProperty("Second Window"));
+		m_SecondWindow = WindowManager::CreateWindow(WindowProperty("SecondWindow", 640, 480));
 
 		// Use the same context of the main window for the second window
 		auto context = mainWindowPtr->GetContext();
@@ -86,6 +90,11 @@ namespace DYE
 
 		// Set the current context back to the main window.
 		mainWindowPtr->MakeCurrent();
+
+		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({2, 0, 0}, {1, 1, 0}));
+		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({-2, 0, 0}, {1, 1, 0}));
+		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({0, 2, 0}, {1, 1, 0}));
+		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({0, -3, 0}, {2, 3, 0}));
 	}
 
 	void PeepholismLayer::OnRender()
@@ -146,22 +155,31 @@ namespace DYE
 
     void PeepholismLayer::OnUpdate()
     {
-		DebugDraw::Circle({1, 3, 0}, 1, {0, 0, 1}, {1, 0, 0, 1});
-		DebugDraw::Sphere({-2, 3, 0}, 0.5f, {1, 0, 0, 1});
+		m_ColliderManager.DrawGizmos();
 
-		for (int i = 0; i < 200; ++i)
+		Math::AABB const movingAABB = Math::AABB::CreateFromCenter(m_MovingObject->Position, {0.5f, 0.5f, 0.5f});
+		Math::AABB const averageAABB = Math::AABB::CreateFromCenter(m_AverageObject->Position, {0.5f, 0.5f, 0.5f});
+
+		float const circleRadius = 0.25f;
+		bool const isMovingOverlapped = !m_ColliderManager.OverlapCircle(m_MovingObject->Position, circleRadius).empty();
+		bool const isAverageOverlapped = !m_ColliderManager.OverlapCircle(m_AverageObject->Position, circleRadius).empty();
+
+		DebugDraw::Circle(m_MovingObject->Position, circleRadius, {0, 0, 1}, isMovingOverlapped? Color::Red : Color::Yellow);
+		DebugDraw::Circle(m_AverageObject->Position, circleRadius, {0, 0, 1}, isAverageOverlapped? Color::Red : Color::Yellow);
+
+		glm::vec2 const rayStart = m_AverageObject->Position;
+		glm::vec2 const rayEnd = m_MovingObject->Position;
+
+		//auto hits = m_ColliderManager.RaycastAll(rayStart, rayEnd);
+		auto hits = m_ColliderManager.CircleCastAll(rayStart, circleRadius, rayEnd - rayStart);
+		bool const hasIntersect = !hits.empty();
+
+		for (auto& hit : hits)
 		{
-
-			DebugDraw::Cube({i, -2, 0}, {1, 1, 1}, {0, 1, 0, 0.5f});
-			DebugDraw::Cube({i, -1, 0}, {0.5f, 2, 1}, {0, 0, 1, 1});
-			/*
-			DebugDraw::Line({0, i, 0}, {1, 0.2f, -1}, {1, 0, 0, 1});
-			DebugDraw::Line({0, i, 0}, {1, 0.1f, -1}, {0, 1, 0, 1});
-			DebugDraw::Line({0, i, 0}, {0.5f, 0.2f, -1}, {0, 0, 1, 1});*/
+			DebugDraw::Circle({hit.Point.x, hit.Point.y, 0}, circleRadius, {0, 0, 1}, Color::Red);
 		}
 
-		DebugDraw::AABB({-0.5f, -0.5f, 0.0f}, {0.5f, 0.5f, 0.0f}, {1, 0, 0, 1});
-
+		DebugDraw::Line(m_MovingObject->Position, m_AverageObject->Position, hasIntersect? Color::Red : Color::Yellow);
 
 		// Scroll tiled offset
 		m_TileOffset += TIME.DeltaTime() * 0.5f;
@@ -452,6 +470,8 @@ namespace DYE
 		}
 
         ImGui::End();
+
+		m_ColliderManager.DrawImGui();
     }
 
 	void PeepholismLayer::imguiSpriteObject(SpriteObject &object)

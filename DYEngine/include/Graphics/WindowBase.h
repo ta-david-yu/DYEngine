@@ -22,13 +22,13 @@ namespace DYE
     struct WindowProperty
     {
         std::string Title;
-        uint32_t Width;
-        uint32_t Height;
+        uint32_t Width {1600};
+        uint32_t Height {900};
 
-		FullScreenMode FullScreeMode = FullScreenMode::Window;
+		FullScreenMode FullScreeMode {FullScreenMode::Window};
 
         /// Whether or not the window can be resized by the user
-        bool IsUserResizable;
+        bool IsUserResizable {false};
 
         explicit WindowProperty(std::string title,
                                 uint32_t width = 1600,

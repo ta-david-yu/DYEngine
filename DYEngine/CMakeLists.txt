@@ -44,7 +44,10 @@ set(SOURCE_FILES
         src/MaterialPropertyBlock.cpp
         src/WindowManager.cpp
         src/Screen.cpp
-        src/AABB.cpp src/DebugDraw.cpp src/Math.cpp)
+        src/AABB.cpp
+        src/DebugDraw.cpp
+        src/Math.cpp
+        src/Color.cpp src/PrimitiveTest.cpp)
 set(HEADER_FILES
         include/Core/Application.h
         include/Graphics/WindowBase.h
@@ -99,7 +102,9 @@ set(HEADER_FILES
         include/Math/Math.h
         include/Screen.h
         include/Math/AABB.h
-        include/Math/PrimitiveTest.h include/Graphics/DebugDraw.h)
+        include/Math/PrimitiveTest.h
+        include/Graphics/DebugDraw.h
+        include/Math/Color.h)
 
 message(STATUS "[DYEngine] Source Files: ${SOURCE_FILES}")
 message(STATUS "[DYEngine] Header Files: ${HEADER_FILES}")

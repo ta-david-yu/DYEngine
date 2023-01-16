@@ -4,36 +4,22 @@
 
 namespace DYE::Math
 {
-	bool AABBAABBIntersect2D(AABB const& a, AABB const& b)
-	{
-		// Two AABBs only overlap if they overlap on all axes.
-		// Compare each dimension as if their extent along each dimension is an interval.
-		if (a.Max[0] < b.Min[0] || a.Min[0] > b.Max[0]) return false;
-		if (a.Max[1] < b.Min[1] || a.Min[1] > b.Max[1]) return false;
+	bool AABBAABBIntersect2D(AABB const& a, AABB const& b);
+	bool AABBAABBIntersect(AABB const& a, AABB const& b);
 
-		return true;
-	}
+	bool AABBSphereIntersect(AABB const& a, glm::vec3 center, float radius);
+	bool AABBCircleIntersect(AABB const& a, glm::vec2 center, float radius);
 
-	bool AABBAABBIntersect(AABB const& a, AABB const& b)
-	{
-		// Two AABBs only overlap if they overlap on all axes.
-		// Compare each dimension as if their extent along each dimension is an interval.
-		if (a.Max[0] < b.Min[0] || a.Min[0] > b.Max[0]) return false;
-		if (a.Max[1] < b.Min[1] || a.Min[1] > b.Max[1]) return false;
-		if (a.Max[2] < b.Min[2] || a.Min[2] > b.Max[2]) return false;
+	/// \param hitTime only valid if the function returns true. The normalized hit time based on rayDirection length,
+	/// therefore if the value is between [0, 1], it means the hit point lies between points (origin) & (origin + direction).
+	/// \param hitPoint only valid if the function returns true.
+	bool RayAABBIntersect2D(glm::vec2 rayOrigin, glm::vec2 rayDirection, Math::AABB const& aabb, float& hitTime, glm::vec2& hitPoint);
 
-		return true;
-	}
+	/// \param hitTime only valid if the function returns true. The normalized hit time based on rayDirection length.
+	/// \param hitPoint only valid if the function returns true.
+	bool RayAABBIntersect2D(glm::vec2 rayOrigin, glm::vec2 rayDirection, float maxDistance, Math::AABB const& aabb, float& hitTime, glm::vec2& hitPoint);
 
-	bool AABBSphereIntersect(AABB const& a, glm::vec3 center, float radius)
-	{
-		float const aabbToCenterSqrDistance = a.SqrDistance(center);
-		return aabbToCenterSqrDistance <= radius * radius;
-	}
+	bool RayCircleIntersect(glm::vec2 rayOrigin, glm::vec2 rayDirection, glm::vec2 center, float radius, float& hitTime, glm::vec2& hitPoint);
 
-	bool AABBCircleIntersect(AABB const& a, glm::vec2 center, float radius)
-	{
-		float const aabbToCenterSqrDistance = a.SqrDistance2D(center);
-		return aabbToCenterSqrDistance <= radius * radius;
-	}
+	bool MovingCircleAABBIntersect(glm::vec2 center, float radius, glm::vec2 direction, AABB const& aabb, float& hitTime);
 }

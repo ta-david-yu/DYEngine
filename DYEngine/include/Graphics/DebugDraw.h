@@ -56,17 +56,22 @@ namespace DYE
 		static std::shared_ptr<VertexArray> s_CubeVAO;
 		static GeometryInstancedArrays s_CubeInstancedArrays;
 
+		static std::shared_ptr<VertexArray> s_WireCubeVAO;
+		static GeometryInstancedArrays s_WireCubeInstancedArrays;
+
 		static std::shared_ptr<VertexArray> s_CircleVAO;
 		static GeometryInstancedArrays s_CircleInstancedArrays;
 
 		static void initialize();
 		static std::shared_ptr<VertexArray> createBatchedLineVAO();
+		static std::shared_ptr<VertexArray> createCubeVAO();
 		static std::shared_ptr<VertexArray> createWireCubeVAO();
 		static std::shared_ptr<VertexArray> createWireCircleVAO();
 
 		static void renderDebugDrawOnCamera(CameraProperties const& camera);
 		static void renderBatchedLineVAO(CameraProperties const& camera);
-		static void renderGeometryVAO(VertexArray const& vao, GeometryInstancedArrays & instancedArrays);
+		static void renderLineGeometryVAO(VertexArray const& vao, GeometryInstancedArrays & instancedArrays);
+		static void renderTriangleGeometryVAO(const VertexArray &vao, DebugDraw::GeometryInstancedArrays &instancedArrays);
 
 		static void clearDebugDraw();
 

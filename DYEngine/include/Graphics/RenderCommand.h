@@ -60,6 +60,11 @@ namespace DYE
 		/// \param vertexArray
 		void DrawIndexedNow(VertexArray const& vertexArray);
 
+		/// Draw multiple VAO instances as triangle primitives.
+		/// \param vertexArray
+		/// \param numberOfInstances the number of instances to be drawn
+		void DrawIndexedInstancedNow(const VertexArray &vertexArray, int numberOfInstances);
+
 		/// Draw VAO as triangle primitives with the given parameters.
 		/// \param renderParameters
 		/// \param vertexArray

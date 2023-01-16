@@ -149,6 +149,8 @@ namespace DYE
             }
             onPostRenderLayers();
 
+			glEnable(GL_CULL_FACE);
+			glCullFace(GL_BACK);
 			// Execute draw-calls on GPU
 			RenderPipelineManager::RenderWithActivePipeline();
 
