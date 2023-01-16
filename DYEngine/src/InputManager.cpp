@@ -39,14 +39,14 @@ namespace DYE
 		// Update keyboard key states.
 		const Uint8* states = SDL_GetKeyboardState(nullptr);
 		auto const& firstKeyScanIndex = SDL_SCANCODE_A;
-		for (int i = firstKeyScanIndex; i < k_KeyArraySize; i++)
+		for (int i = firstKeyScanIndex; i < NumberOfKeys; i++)
 		{
 			m_KeyboardKeys[i] = states[i];
 		}
 
 		// Update mouse button states.
 		std::uint32_t const buttonState = SDL_GetGlobalMouseState(&m_MouseX, &m_MouseY);
-		for (int i = 0; i < k_MouseButtonCount; i++)
+		for (int i = 0; i < NumberOfMouseButtons; i++)
 		{
 			m_MouseButtons[i] = buttonState & SDL_BUTTON(i + 1);
 		}
@@ -55,7 +55,7 @@ namespace DYE
 	bool InputManager::GetKey(KeyCode keyCode) const
 	{
 		auto const scanCode = SDL_GetScancodeFromKey(static_cast<SDL_KeyCode>(keyCode));
-		if (scanCode <= 0 || scanCode >= k_KeyArraySize)
+		if (scanCode <= 0 || scanCode >= NumberOfKeys)
 		{
 			return false;
 		}
@@ -66,7 +66,7 @@ namespace DYE
 	bool InputManager::GetKeyDown(KeyCode keyCode) const
 	{
 		auto const scanCode = SDL_GetScancodeFromKey(static_cast<SDL_KeyCode>(keyCode));
-		if (scanCode <= 0 || scanCode >= k_KeyArraySize)
+		if (scanCode <= 0 || scanCode >= NumberOfKeys)
 		{
 			return false;
 		}
@@ -77,7 +77,7 @@ namespace DYE
 	bool InputManager::GetKeyUp(KeyCode keyCode) const
 	{
 		auto const scanCode = SDL_GetScancodeFromKey(static_cast<SDL_KeyCode>(keyCode));
-		if (scanCode <= 0 || scanCode >= k_KeyArraySize)
+		if (scanCode <= 0 || scanCode >= NumberOfKeys)
 		{
 			return false;
 		}

@@ -27,7 +27,8 @@ namespace DYE
         Application =  1<<0,
         Input =        1<<1,
         Keyboard =     1<<2,
-        Mouse =        1<<3
+        Mouse =        1<<3,
+		Controller =   1<<4
     };
 
     inline EventCategory operator | (EventCategory lhs, EventCategory rhs)

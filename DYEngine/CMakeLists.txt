@@ -47,7 +47,9 @@ set(SOURCE_FILES
         src/AABB.cpp
         src/DebugDraw.cpp
         src/Math.cpp
-        src/Color.cpp src/PrimitiveTest.cpp src/ControllerEvent.cpp)
+        src/Color.cpp
+        src/PrimitiveTest.cpp
+        src/ControllerEvent.cpp)
 set(HEADER_FILES
         include/Core/Application.h
         include/Graphics/WindowBase.h
@@ -104,7 +106,10 @@ set(HEADER_FILES
         include/Math/AABB.h
         include/Math/PrimitiveTest.h
         include/Graphics/DebugDraw.h
-        include/Math/Color.h include/Event/ControllerEvent.h include/Input/MouseButton.h)
+        include/Math/Color.h
+        include/Event/ControllerEvent.h
+        include/Input/MouseButton.h
+        include/Input/Controller.h)
 
 message(STATUS "[DYEngine] Source Files: ${SOURCE_FILES}")
 message(STATUS "[DYEngine] Header Files: ${HEADER_FILES}")

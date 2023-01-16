@@ -2,6 +2,7 @@
 
 #include "Input/KeyCode.h"
 #include "Input/MouseButton.h"
+#include "Input/Controller.h"
 
 #include <SDL.h>
 #include <glm/glm.hpp>
@@ -46,23 +47,26 @@ namespace DYE
 	private:
 		static std::unique_ptr<InputManager> s_Instance;
 
-		// Keyboard:
+		struct ControllerState
+		{
+			DeviceIndex DeviceIndex = -1;
+			void* NativeControllerData = nullptr;
 
-		// Normally we would use SDL_NUM_SCANCODES. But to save memory, we use 287 instead (SDL_SCANCODE_AUDIOFASTFORWARD + 1)
-		static constexpr const int k_KeyArraySize = 287;
-		std::array<bool, k_KeyArraySize> m_KeyboardKeys = {false};
-		std::array<bool, k_KeyArraySize> m_PreviousKeyboardKeys = {false};
+			std::array<bool, NumberOfControllerButtons> Buttons;
+			std::array<bool, NumberOfControllerButtons> PreviousButtons;
+			std::array<float, NumberOfControllerAxes> Axes;
+			std::array<float, NumberOfControllerAxes> PreviousAxes;
+		};
 
-		// Mouse:
+		std::array<bool, NumberOfKeys> m_KeyboardKeys = {false};
+		std::array<bool, NumberOfKeys> m_PreviousKeyboardKeys = {false};
+
+		std::array<bool, NumberOfMouseButtons> m_MouseButtons = {false};
+		std::array<bool, NumberOfMouseButtons> m_PreviousMouseButtons = {false};
 
 		std::int32_t m_MouseX {0};
 		std::int32_t m_MouseY {0};
 		std::int32_t m_PreviousMouseX {0};
 		std::int32_t m_PreviousMouseY {0};
-
-		// SDL supports up to 5 mouse buttons (SDL_BUTTON_LEFT)
-		static constexpr const int k_MouseButtonCount = 5;
-		std::array<bool, k_MouseButtonCount> m_MouseButtons = {false};
-		std::array<bool, k_MouseButtonCount> m_PreviousMouseButtons = {false};
 	};
 }

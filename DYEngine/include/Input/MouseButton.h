@@ -4,6 +4,8 @@
 
 namespace DYE
 {
+	// SDL supports up to 5 mouse buttons - see SDL_BUTTON_LEFT.
+	constexpr int const NumberOfMouseButtons = 5;
 	enum class MouseButton
 	{
 		Left = SDL_BUTTON_LEFT,
