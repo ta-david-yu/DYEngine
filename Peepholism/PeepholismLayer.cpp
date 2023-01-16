@@ -220,6 +220,28 @@ namespace DYE
 			m_MovingObject->Position.x -= TIME.DeltaTime() * m_BallSpeed;
 		}
 
+		if (INPUT.GetMouseButton(MouseButton::Left))
+		{
+			m_MovingObject->Position.x -= TIME.DeltaTime() * m_BallSpeed;
+		}
+
+		if (INPUT.GetMouseButton(MouseButton::Right))
+		{
+			m_MovingObject->Position.x += TIME.DeltaTime() * m_BallSpeed;
+		}
+
+		if (INPUT.GetMouseButtonDown(MouseButton::Middle))
+		{
+			m_MovingObject->Position.y += m_BallSpeed;
+		}
+
+		if (INPUT.GetMouseButtonUp(MouseButton::Middle))
+		{
+			m_MovingObject->Position.y -= m_BallSpeed;
+		}
+
+
+
 		m_AverageObject->Position = (m_MovingObject->Position + m_OriginObject->Position) * 0.5f;
 
 
@@ -416,6 +438,9 @@ namespace DYE
 			{
 				ImGui::Text("Display %d Info = (w=%d, h=%d, r=%d)", mainDisplayIndex, displayMode->Width, displayMode->Height, displayMode->RefreshRate);
 			}
+
+			ImGui::Text("Mouse Position = %d, %d", INPUT.GetGlobalMousePosition().x, INPUT.GetGlobalMousePosition().y);
+			ImGui::Text("Mouse Delta = %d, %d", INPUT.GetGlobalMouseDelta().x, INPUT.GetGlobalMouseDelta().y);
 
 			if (ImGui::Button("Quit App"))
 			{

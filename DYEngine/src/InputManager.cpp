@@ -30,13 +30,25 @@ namespace DYE
 
 	void InputManager::UpdateInputState()
 	{
-		// Buffer the current key states and update the new states.
-		m_PreviousKeyboardKeys = m_KeyboardKeys;
+		// Buffer the current states.
+
+		std::copy(m_KeyboardKeys.begin(), m_KeyboardKeys.end(), m_PreviousKeyboardKeys.begin());
+		std::copy(m_MouseButtons.begin(), m_MouseButtons.end(), m_PreviousMouseButtons.begin());
+		m_PreviousMouseX = m_MouseX; m_PreviousMouseY = m_MouseY;
+
+		// Update keyboard key states.
 		const Uint8* states = SDL_GetKeyboardState(nullptr);
 		auto const& firstKeyScanIndex = SDL_SCANCODE_A;
 		for (int i = firstKeyScanIndex; i < k_KeyArraySize; i++)
 		{
 			m_KeyboardKeys[i] = states[i];
+		}
+
+		// Update mouse button states.
+		std::uint32_t const buttonState = SDL_GetGlobalMouseState(&m_MouseX, &m_MouseY);
+		for (int i = 0; i < k_MouseButtonCount; i++)
+		{
+			m_MouseButtons[i] = buttonState & SDL_BUTTON(i + 1);
 		}
 	}
 
@@ -71,5 +83,23 @@ namespace DYE
 		}
 
 		return !m_KeyboardKeys[scanCode] && m_PreviousKeyboardKeys[scanCode];
+	}
+
+	bool InputManager::GetMouseButton(MouseButton button) const
+	{
+		int const index = static_cast<int>(button) - 1;
+		return m_MouseButtons[index];
+	}
+
+	bool InputManager::GetMouseButtonDown(MouseButton button) const
+	{
+		int const index = static_cast<int>(button) - 1;
+		return m_MouseButtons[index] && !m_PreviousMouseButtons[index];
+	}
+
+	bool InputManager::GetMouseButtonUp(MouseButton button) const
+	{
+		int const index = static_cast<int>(button) - 1;
+		return !m_MouseButtons[index] && m_PreviousMouseButtons[index];
 	}
 }

@@ -89,9 +89,18 @@ namespace DYE
                     eventPtr.reset(new MouseButtonUpEvent(static_cast<MouseCode>(event.button.button)));
                     caught = true;
                     break;
+				case SDL_JOYDEVICEADDED:
+					DYE_LOG("Joystick Added: %d", event.jdevice.which);
+					break;
+				case SDL_CONTROLLERDEVICEADDED:
+					DYE_LOG("Controller Added: %d", event.cdevice.which);
+				case SDL_JOYDEVICEREMOVED:
+					DYE_LOG("Joystick Removed: %d", event.jdevice.which);
+					break;
+				case SDL_CONTROLLERDEVICEREMOVED:
+					DYE_LOG("Controller Removed: %d", event.cdevice.which);
                 default:
                     // Error
-                    //SDL_Log("Unhandled SDL Event Type %d", event.type);
                     caught = false;
                     break;
             }

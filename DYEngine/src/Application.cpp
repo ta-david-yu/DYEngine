@@ -31,7 +31,12 @@ namespace DYE
         SDL_Init(0);
         SDL_InitSubSystem(SDL_INIT_AUDIO);
         SDL_InitSubSystem(SDL_INIT_VIDEO);
-        DYE_LOG("Init SDL");
+		SDL_InitSubSystem(SDL_INIT_JOYSTICK);
+		SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER);
+
+		SDL_version sdlVersion;
+		SDL_GetVersion(&sdlVersion);
+        DYE_LOG("Init SDL: %d.%d.%d", sdlVersion.major, sdlVersion.minor, sdlVersion.patch);
         DYE_LOG("OS: %s", SDL_GetPlatform());
         DYE_LOG("CPU cores: %d", SDL_GetCPUCount());
         DYE_LOG("RAM: %.2f GB", (float) SDL_GetSystemRAM() / 1024.0f);
@@ -148,7 +153,6 @@ namespace DYE
                 layer->OnRender();
             }
             onPostRenderLayers();
-
 			glEnable(GL_CULL_FACE);
 			glCullFace(GL_BACK);
 			// Execute draw-calls on GPU

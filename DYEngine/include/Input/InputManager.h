@@ -1,8 +1,10 @@
 #pragma once
 
 #include "Input/KeyCode.h"
+#include "Input/MouseButton.h"
 
 #include <SDL.h>
+#include <glm/glm.hpp>
 
 #include <memory>
 #include <array>
@@ -34,13 +36,33 @@ namespace DYE
 		bool GetKeyDown(KeyCode keyCode) const;
 		bool GetKeyUp(KeyCode keyCode) const;
 
+		inline glm::vec<2, std::int32_t> GetGlobalMousePosition() const { return {m_MouseX, m_MouseY }; }
+		inline glm::vec<2, std::int32_t> GetGlobalMouseDelta() const { return {m_MouseX - m_PreviousMouseX, m_MouseY - m_PreviousMouseY }; }
+
+		bool GetMouseButton(MouseButton button) const;
+		bool GetMouseButtonDown(MouseButton button) const;
+		bool GetMouseButtonUp(MouseButton button) const;
+
 	private:
 		static std::unique_ptr<InputManager> s_Instance;
 
+		// Keyboard:
+
 		// Normally we would use SDL_NUM_SCANCODES. But to save memory, we use 287 instead (SDL_SCANCODE_AUDIOFASTFORWARD + 1)
 		static constexpr const int k_KeyArraySize = 287;
-
 		std::array<bool, k_KeyArraySize> m_KeyboardKeys = {false};
 		std::array<bool, k_KeyArraySize> m_PreviousKeyboardKeys = {false};
+
+		// Mouse:
+
+		std::int32_t m_MouseX {0};
+		std::int32_t m_MouseY {0};
+		std::int32_t m_PreviousMouseX {0};
+		std::int32_t m_PreviousMouseY {0};
+
+		// SDL supports up to 5 mouse buttons (SDL_BUTTON_LEFT)
+		static constexpr const int k_MouseButtonCount = 5;
+		std::array<bool, k_MouseButtonCount> m_MouseButtons = {false};
+		std::array<bool, k_MouseButtonCount> m_PreviousMouseButtons = {false};
 	};
 }
