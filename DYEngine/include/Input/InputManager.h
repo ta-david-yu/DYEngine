@@ -2,21 +2,29 @@
 
 #include "Input/KeyCode.h"
 #include "Input/MouseButton.h"
-#include "Input/Controller.h"
+#include "Input/Gamepad.h"
+#include "Event/GamepadEvent.h"
+#include "Event/EventSystemBase.h"
 
 #include <SDL.h>
 #include <glm/glm.hpp>
 
+#include <string>
 #include <memory>
 #include <array>
+#include <vector>
+#include <unordered_map>
 
 #define INPUT InputManager::GetInstance()
 
 namespace DYE
 {
+	// Inherit from EventHandler to receive device connect/disconnect events from EventSystem.
 	class InputManager
 	{
 	public:
+		constexpr const static std::uint32_t MaxNumberOfConnectedGamepads = 32;
+
 		static InputManager& GetInstance();
 
 		/// Initialize internal input manager instance based on the platform.
@@ -24,6 +32,10 @@ namespace DYE
 
 		InputManager() = default; // TODO: delete default constructor, because eventually the base class will become abstract/interface.
 		InputManager(const InputManager &) = delete;
+		virtual ~InputManager() = default;
+
+		// Handle EventSystem events such as GamepadConnect.
+		void HandleSystemEvent(Event &event);
 
 		// Reset all the input states stored in the manager to false.
 		void ResetInputState();
@@ -44,19 +56,14 @@ namespace DYE
 		bool GetMouseButtonDown(MouseButton button) const;
 		bool GetMouseButtonUp(MouseButton button) const;
 
+		void DrawDeviceDescriptorImGui() const;
+
+	private:
+		void handleOnGamepadConnected(GamepadConnectEvent const& connectEvent);
+		void handleOnGamepadDisconnected(GamepadDisconnectEvent const& disconnectEvent);
+
 	private:
 		static std::unique_ptr<InputManager> s_Instance;
-
-		struct ControllerState
-		{
-			DeviceIndex DeviceIndex = -1;
-			void* NativeControllerData = nullptr;
-
-			std::array<bool, NumberOfControllerButtons> Buttons;
-			std::array<bool, NumberOfControllerButtons> PreviousButtons;
-			std::array<float, NumberOfControllerAxes> Axes;
-			std::array<float, NumberOfControllerAxes> PreviousAxes;
-		};
 
 		std::array<bool, NumberOfKeys> m_KeyboardKeys = {false};
 		std::array<bool, NumberOfKeys> m_PreviousKeyboardKeys = {false};
@@ -68,5 +75,23 @@ namespace DYE
 		std::int32_t m_MouseY {0};
 		std::int32_t m_PreviousMouseX {0};
 		std::int32_t m_PreviousMouseY {0};
+
+		struct GamepadState
+		{
+			std::string GUID;
+			void* NativeGamepadObject = nullptr;
+
+			std::array<bool, NumberOfGamepadButtons> Buttons = {false};
+			std::array<bool, NumberOfGamepadButtons> PreviousButtons = {false};
+			std::array<float, NumberOfGamepadAxes> Axes = {false};
+			std::array<float, NumberOfGamepadAxes> PreviousAxes = {false};
+		};
+
+		std::unordered_map<std::string, DeviceID> m_DeviceIDTable; 	// GUID string -> DeviceID
+		std::vector<DeviceDescriptor> m_DeviceDescriptors;
+
+		std::uint32_t m_NumberOfConnectedGamepads = 0;
+		std::array<GamepadState, MaxNumberOfConnectedGamepads> m_GamepadStates;		// Connected gamepad sparse set - dense array
+		std::array<int, MaxNumberOfConnectedGamepads> m_GamepadStateIndices = {0};	// Connected gamepad sparse set - sparse array
 	};
 }

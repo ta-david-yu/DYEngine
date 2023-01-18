@@ -50,7 +50,6 @@ namespace DYE
 		static std::unique_ptr<WindowBase> Create(const WindowProperty &windowProperty);
 		static WindowID GetMouseFocusedWindowID();
 
-		// ctor and dtor
         virtual ~WindowBase() = default;
 
         virtual void OnUpdate() = 0;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Event/Event.h"
-#include "Input/MouseCode.h"
+#include "Input/MouseButton.h"
 
 namespace DYE
 {
@@ -28,20 +28,20 @@ namespace DYE
     class MouseButtonEvent : public Event
     {
     public:
-        MouseCode GetMouseButton() const { return m_Button; }
+		MouseButton GetMouseButton() const { return m_Button; }
 
         EVENT_CLASS_CATEGORY(EventCategory::Mouse | EventCategory::Input)
     protected:
-        explicit MouseButtonEvent(const MouseCode button)
+        explicit MouseButtonEvent(const MouseButton button)
                 : m_Button(button) {}
 
-        MouseCode m_Button;
+		MouseButton m_Button;
     };
 
     class MouseButtonDownEvent : public MouseButtonEvent
     {
     public:
-        explicit MouseButtonDownEvent(const MouseCode button)
+        explicit MouseButtonDownEvent(const MouseButton button)
                 : MouseButtonEvent(button) {}
 
         EVENT_CLASS_TYPE(MouseButtonDown)
@@ -50,7 +50,7 @@ namespace DYE
     class MouseButtonUpEvent : public MouseButtonEvent
     {
     public:
-        explicit MouseButtonUpEvent(const MouseCode button)
+        explicit MouseButtonUpEvent(const MouseButton button)
                 : MouseButtonEvent(button) {}
 
         EVENT_CLASS_TYPE(MouseButtonUp)

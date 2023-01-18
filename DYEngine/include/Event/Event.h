@@ -16,7 +16,8 @@ namespace DYE
         ApplicationQuit,
         WindowClose, WindowSizeChange, WindowManualResize, WindowMove,
         KeyDown, KeyUp,
-        MouseButtonDown, MouseButtonUp, MouseMove, MouseDrag
+        MouseButtonDown, MouseButtonUp, MouseMove, MouseDrag,
+		GamepadConnect, GamepadDisconnect
     };
 
     /// EventCategory, a higher level of categories. An event could be Input + Keyboard, or Input + Mouse event
@@ -24,11 +25,11 @@ namespace DYE
     {
         None = 0,
         /// Window related events, such as WindowClose, WindowSizeChange
-        Application =  1<<0,
-        Input =        1<<1,
-        Keyboard =     1<<2,
-        Mouse =        1<<3,
-		Controller =   1<<4
+        Application =  	1 << 0,
+        Input =        	1 << 1,
+        Keyboard =		1 << 2,
+        Mouse =			1 << 3,
+		Gamepad =   	1 << 4
     };
 
     inline EventCategory operator | (EventCategory lhs, EventCategory rhs)

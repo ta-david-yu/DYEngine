@@ -41,7 +41,7 @@ namespace DYE::ImGuiUtil
 	bool DrawToolbar(const std::string& label, int32_t& value, std::vector<std::string> const& texts);
 	bool DrawDropdown(const std::string& label, int32_t& value, std::vector<char const*> const& texts);
 
-	void DrawReadOnlyLabelText(std::string const& label, std::string const& text);
+	void DrawReadOnlyTextWithLabel(std::string const& label, std::string const& text);
 
 	bool DrawAABBControl(const std::string& label, Math::AABB& aabb);
 	bool DrawCameraPropertiesControl(const std::string& label, CameraProperties& cameraProperties);

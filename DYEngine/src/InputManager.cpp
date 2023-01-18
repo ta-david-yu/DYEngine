@@ -1,6 +1,9 @@
 #include "Input/InputManager.h"
 
 #include "Util/Macro.h"
+#include "ImGui/ImGuiUtil.h"
+
+#include <imgui.h>
 
 #include <algorithm>
 
@@ -20,6 +23,21 @@ namespace DYE
 	{
 		s_Instance = std::make_unique<InputManager>();
 		s_Instance->ResetInputState();
+	}
+
+	void InputManager::HandleSystemEvent(Event &event)
+	{
+		auto const eventType = event.GetEventType();
+		if (eventType == EventType::GamepadConnect)
+		{
+			auto const& controllerEvent = static_cast<const GamepadConnectEvent&>(event);
+			handleOnGamepadConnected(controllerEvent);
+		}
+		else if (eventType == EventType::GamepadDisconnect)
+		{
+			auto const& controllerEvent = static_cast<const GamepadDisconnectEvent&>(event);
+			handleOnGamepadDisconnected(controllerEvent);
+		}
 	}
 
 	void InputManager::ResetInputState()
@@ -101,5 +119,83 @@ namespace DYE
 	{
 		int const index = static_cast<int>(button) - 1;
 		return !m_MouseButtons[index] && m_PreviousMouseButtons[index];
+	}
+
+	void InputManager::DrawDeviceDescriptorImGui() const
+	{
+		if (ImGui::Begin("InputManager - Device Descriptor"))
+		{
+			for (auto const& descriptor : m_DeviceDescriptors)
+			{
+				char const* name = SDL_JoystickName(SDL_JoystickFromInstanceID(descriptor.InstanceID));
+				std::string const nameStr = name;
+				ImGuiUtil::DrawReadOnlyTextWithLabel(nameStr, descriptor.ToString());
+			}
+		}
+
+		ImGui::End();
+	}
+
+	void InputManager::handleOnGamepadConnected(const GamepadConnectEvent &connectEvent)
+	{
+		DeviceInstanceID const instanceId = connectEvent.GetDeviceInstanceID();
+		SDL_Joystick* sdlJoystick = SDL_JoystickFromInstanceID(instanceId);
+
+		// Get GUID.
+		SDL_JoystickGUID const guid = SDL_JoystickGetGUID(sdlJoystick);
+		char guidCStr[64] = {};
+		SDL_JoystickGetGUIDString(guid, guidCStr, 64);
+		std::string const guidString(guidCStr);
+
+		// Generate or get Device ID.
+		DeviceID deviceId = -1;
+		auto deviceIDItr = m_DeviceIDTable.find(guidString);
+		bool const hasDeviceID = deviceIDItr != m_DeviceIDTable.end();
+		if (!hasDeviceID)
+		{
+			// Create a device descriptor if this device has never been plugged before in the application session.
+			deviceId = static_cast<DeviceID>(m_DeviceDescriptors.size());
+			m_DeviceIDTable[guidString] = deviceId;
+			m_DeviceDescriptors.emplace_back(DeviceDescriptor { .GUID = guidString, .ID = deviceId, .InstanceID = instanceId });
+		}
+		else
+		{
+			// Acquire already-existing device deviceId and update instance deviceId.
+			deviceId = m_DeviceIDTable[guidString];
+			m_DeviceDescriptors[deviceId].InstanceID = instanceId;
+		}
+
+		m_NumberOfConnectedGamepads++;
+
+		// TODO: initialize GamepadState etc.
+
+		DYE_LOG("Gamepad Connected - %s, Gamepad Count = %d", m_DeviceDescriptors[deviceId].ToString().c_str(), m_NumberOfConnectedGamepads);
+	}
+
+	void InputManager::handleOnGamepadDisconnected(const GamepadDisconnectEvent &disconnectEvent)
+	{
+		DeviceInstanceID const instanceId = disconnectEvent.GetDeviceInstanceID();
+		SDL_Joystick* sdlJoystick = SDL_JoystickFromInstanceID(instanceId);
+
+		// Get GUID.
+		SDL_JoystickGUID const guid = SDL_JoystickGetGUID(sdlJoystick);
+		char guidCStr[64] = {};
+		SDL_JoystickGetGUIDString(guid, guidCStr, 64);
+		std::string const guidString(guidCStr);
+
+		// Generate or get Device ID.
+		DeviceID deviceId = -1;
+		if (!m_DeviceIDTable.contains(guidString))
+		{
+			// The disconnected device has never been registered in InputManager, ignore this disconnect event.
+			return;
+		}
+
+		deviceId = m_DeviceIDTable[guidString];
+
+		// TODO: resize GamepadState etc.
+
+		m_NumberOfConnectedGamepads--;
+		DYE_LOG("Gamepad Disconnected - %s, Gamepad Count = %d", m_DeviceDescriptors[deviceId].ToString().c_str(), m_NumberOfConnectedGamepads);
 	}
 }

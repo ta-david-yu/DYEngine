@@ -52,7 +52,6 @@ namespace DYE
     private:
 		void handleOnApplicationQuit(ApplicationQuitEvent const& event);
         void handleOnWindowClose(const WindowCloseEvent& event);
-        void handleOnWindowSizeChange(const WindowSizeChangeEvent& event);
 
     protected:
         /// The main event system that poll events from the framework (SDL/GLFW for instance)

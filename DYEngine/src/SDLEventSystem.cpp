@@ -4,6 +4,7 @@
 #include "Event/ApplicationEvent.h"
 #include "Event/KeyEvent.h"
 #include "Event/MouseEvent.h"
+#include "Event/GamepadEvent.h"
 #include "Graphics/WindowManager.h"
 
 #include <SDL.h>
@@ -26,6 +27,7 @@ namespace DYE
             }
 
             std::shared_ptr<Event> eventPtr;
+			SDL_JoystickID joystickInstanceID;
             bool caught = false;
 
             switch (event.type)
@@ -81,25 +83,45 @@ namespace DYE
                     break;
                 case SDL_MOUSEBUTTONDOWN:
                     // TODO: Imgui Process, look at imgui_impl_sdl
-                    eventPtr.reset(new MouseButtonDownEvent(static_cast<MouseCode>(event.button.button)));
+                    eventPtr.reset(new MouseButtonDownEvent(static_cast<MouseButton>(event.button.button)));
                     caught = true;
                     break;
                 case SDL_MOUSEBUTTONUP:
                     // TODO: Imgui Process, look at imgui_impl_sdl
-                    eventPtr.reset(new MouseButtonUpEvent(static_cast<MouseCode>(event.button.button)));
+                    eventPtr.reset(new MouseButtonUpEvent(static_cast<MouseButton>(event.button.button)));
                     caught = true;
                     break;
-				case SDL_JOYDEVICEADDED:
-					DYE_LOG("Joystick Added: %d", event.jdevice.which);
-					break;
 				case SDL_CONTROLLERDEVICEADDED:
-					DYE_LOG("Controller Added: %d", event.cdevice.which);
-				case SDL_JOYDEVICEREMOVED:
-					DYE_LOG("Joystick Removed: %d", event.jdevice.which);
+					// Note that cdevice.which is not the instance id in ControllerAddedEvent, but index (location in the system array).
+					// To keep the event data symmetrical, we want to use the instance id instead.
+					if (!SDL_GameControllerOpen(event.cdevice.which))
+					{
+						DYE_LOG_ERROR("SDL_GameControllerOpen failed: %s", SDL_GetError());
+						break;
+					}
+					joystickInstanceID = SDL_JoystickGetDeviceInstanceID(event.cdevice.which);
+					eventPtr.reset(new GamepadConnectEvent(joystickInstanceID));
+					caught = true;
 					break;
 				case SDL_CONTROLLERDEVICEREMOVED:
-					DYE_LOG("Controller Removed: %d", event.cdevice.which);
-                default:
+					// This event would only be fired if the disconnected joystick is:
+					// 1. a game controller/gamepad
+					// 2. has been opened
+					joystickInstanceID = event.cdevice.which;
+					eventPtr.reset(new GamepadDisconnectEvent(joystickInstanceID));
+					caught = true;
+					break;
+				case SDL_CONTROLLERDEVICEREMAPPED:
+					break;
+				case SDL_JOYDEVICEADDED:
+					joystickInstanceID = SDL_JoystickGetDeviceInstanceID(event.jdevice.which);
+					DYE_LOG("Joystick Connect %d (index=%d), count - %d", joystickInstanceID, event.jdevice.which, SDL_NumJoysticks());
+					break;
+				case SDL_JOYDEVICEREMOVED:
+					DYE_LOG("Joystick Disconnect %d, count - %d", event.jdevice.which, SDL_NumJoysticks());
+					break;
+
+				default:
                     // Error
                     caught = false;
                     break;

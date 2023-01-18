@@ -80,9 +80,10 @@ namespace DYE
 		m_CameraProperties->Viewport = { 0, 0, 1, 1 };
 
 		m_WindowPosition = mainWindowPtr->GetPosition();
-		m_SecondWindow = WindowManager::CreateWindow(WindowProperty("SecondWindow", 640, 480));
+
 
 		// Use the same context of the main window for the second window
+		m_SecondWindow = WindowManager::CreateWindow(WindowProperty("SecondWindow", 640, 480));
 		auto context = mainWindowPtr->GetContext();
 		m_SecondWindow->SetContext(context);
 		m_SecondWindow->MakeCurrent();
@@ -143,14 +144,7 @@ namespace DYE
 
     void PeepholismLayer::OnEvent(Event& event)
     {
-        auto eventType = event.GetEventType();
 
-		if (eventType == EventType::WindowSizeChange)
-		{
-			auto windowSizeChangeEvent = static_cast<const WindowSizeChangeEvent&>(event);
-
-			//m_CameraProperties->ManualAspectRatio = (float) windowSizeChangeEvent.GetWidth() / (float) windowSizeChangeEvent.GetHeight();
-		}
     }
 
     void PeepholismLayer::OnUpdate()
@@ -497,6 +491,7 @@ namespace DYE
         ImGui::End();
 
 		m_ColliderManager.DrawImGui();
+		INPUT.DrawDeviceDescriptorImGui();
     }
 
 	void PeepholismLayer::imguiSpriteObject(SpriteObject &object)
