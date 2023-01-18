@@ -121,15 +121,24 @@ namespace DYE
 		return !m_MouseButtons[index] && m_PreviousMouseButtons[index];
 	}
 
+	std::optional<DeviceDescriptor> InputManager::GetDeviceDescriptor(DeviceID deviceId) const
+	{
+		if (deviceId >= m_DeviceDescriptors.size())
+		{
+			// Invalid device ID.
+			return {};
+		}
+
+		return m_DeviceDescriptors[deviceId];
+	}
+
 	void InputManager::DrawDeviceDescriptorImGui() const
 	{
 		if (ImGui::Begin("InputManager - Device Descriptor"))
 		{
 			for (auto const& descriptor : m_DeviceDescriptors)
 			{
-				char const* name = SDL_JoystickName(SDL_JoystickFromInstanceID(descriptor.InstanceID));
-				std::string const nameStr = name;
-				ImGuiUtil::DrawReadOnlyTextWithLabel(nameStr, descriptor.ToString());
+				ImGuiUtil::DrawReadOnlyTextWithLabel(descriptor.Name, descriptor.ToString());
 			}
 		}
 
@@ -140,6 +149,11 @@ namespace DYE
 	{
 		DeviceInstanceID const instanceId = connectEvent.GetDeviceInstanceID();
 		SDL_Joystick* sdlJoystick = SDL_JoystickFromInstanceID(instanceId);
+		if (sdlJoystick == nullptr)
+		{
+			DYE_LOG_ERROR("InputManager::handleOnGamepadConnected(instanceId=%d) -> SDL_JoystickFromInstanceID failed: %s", instanceId, SDL_GetError());
+			return;
+		}
 
 		// Get GUID.
 		SDL_JoystickGUID const guid = SDL_JoystickGetGUID(sdlJoystick);
@@ -153,10 +167,17 @@ namespace DYE
 		bool const hasDeviceID = deviceIDItr != m_DeviceIDTable.end();
 		if (!hasDeviceID)
 		{
+			char const* cName = SDL_JoystickName(sdlJoystick);
+			if (cName == nullptr)
+			{
+				DYE_LOG_ERROR("InputManager::handleOnGamepadConnected(%d) -> SDL_JoystickName failed: %s", deviceId, SDL_GetError());
+				cName = "<no-name>";
+			}
+
 			// Create a device descriptor if this device has never been plugged before in the application session.
 			deviceId = static_cast<DeviceID>(m_DeviceDescriptors.size());
 			m_DeviceIDTable[guidString] = deviceId;
-			m_DeviceDescriptors.emplace_back(DeviceDescriptor { .GUID = guidString, .ID = deviceId, .InstanceID = instanceId });
+			m_DeviceDescriptors.emplace_back(DeviceDescriptor { .GUID = guidString, .Name = cName, .ID = deviceId, .InstanceID = instanceId });
 		}
 		else
 		{
@@ -176,6 +197,11 @@ namespace DYE
 	{
 		DeviceInstanceID const instanceId = disconnectEvent.GetDeviceInstanceID();
 		SDL_Joystick* sdlJoystick = SDL_JoystickFromInstanceID(instanceId);
+		if (sdlJoystick == nullptr)
+		{
+			DYE_LOG_ERROR("InputManager::handleOnGamepadConnected(instanceId=%d) -> SDL_JoystickFromInstanceID failed: %s", instanceId, SDL_GetError());
+			return;
+		}
 
 		// Get GUID.
 		SDL_JoystickGUID const guid = SDL_JoystickGetGUID(sdlJoystick);

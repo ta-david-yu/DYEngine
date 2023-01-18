@@ -55,7 +55,9 @@ namespace DYE
 	struct DeviceDescriptor
 	{
 		std::string GUID;
+		std::string Name;
 		DeviceID ID;
+
 		DeviceInstanceID InstanceID;
 
 		std::string ToString() const

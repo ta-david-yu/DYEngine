@@ -14,6 +14,7 @@
 #include <array>
 #include <vector>
 #include <unordered_map>
+#include <optional>
 
 #define INPUT InputManager::GetInstance()
 
@@ -55,6 +56,9 @@ namespace DYE
 		bool GetMouseButton(MouseButton button) const;
 		bool GetMouseButtonDown(MouseButton button) const;
 		bool GetMouseButtonUp(MouseButton button) const;
+
+		std::optional<DeviceDescriptor> GetDeviceDescriptor(DeviceID deviceId) const;
+		std::optional<std::string> GetDeviceName(DeviceID deviceId) const;
 
 		void DrawDeviceDescriptorImGui() const;
 
