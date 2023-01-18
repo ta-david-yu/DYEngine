@@ -13,22 +13,27 @@ namespace DYE
 
 		EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Gamepad)
 	protected:
-		explicit GamepadEvent(DeviceInstanceID const deviceIndex) : m_InstanceID(deviceIndex) { }
+		explicit GamepadEvent(DeviceInstanceID const deviceInstanceId) : m_InstanceID(deviceInstanceId) { }
 		DeviceInstanceID m_InstanceID;
 	};
 
 	class GamepadConnectEvent : public GamepadEvent
 	{
 	public:
-		explicit GamepadConnectEvent(DeviceInstanceID const deviceIndex) : GamepadEvent(deviceIndex) { }
+		explicit GamepadConnectEvent(DeviceInstanceID const deviceInstanceId, std::int32_t const deviceIndex) : GamepadEvent(deviceInstanceId), m_DeviceIndex(deviceIndex) { }
+
+		std::int32_t GetDeviceIndex() const { return m_DeviceIndex; }
 
 		EVENT_CLASS_TYPE(GamepadConnect)
+
+	private:
+		std::int32_t m_DeviceIndex;
 	};
 
 	class GamepadDisconnectEvent : public GamepadEvent
 	{
 	public:
-		explicit GamepadDisconnectEvent(DeviceInstanceID const deviceIndex) : GamepadEvent(deviceIndex) { }
+		explicit GamepadDisconnectEvent(DeviceInstanceID const deviceInstanceId) : GamepadEvent(deviceInstanceId) { }
 
 		EVENT_CLASS_TYPE(GamepadDisconnect)
 	};

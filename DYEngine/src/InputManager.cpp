@@ -147,6 +147,13 @@ namespace DYE
 
 	void InputManager::handleOnGamepadConnected(const GamepadConnectEvent &connectEvent)
 	{
+		std::int32_t const deviceIndex = connectEvent.GetDeviceIndex();
+		if (!SDL_GameControllerOpen(deviceIndex))
+		{
+			DYE_LOG_ERROR("InputManager::handleOnGamepadConnected(instanceId=%d) -> SDL_GameControllerOpen failed: %s", SDL_GetError());
+			return;
+		}
+
 		DeviceInstanceID const instanceId = connectEvent.GetDeviceInstanceID();
 		SDL_Joystick* sdlJoystick = SDL_JoystickFromInstanceID(instanceId);
 		if (sdlJoystick == nullptr)
@@ -218,6 +225,10 @@ namespace DYE
 		}
 
 		deviceId = m_DeviceIDTable[guidString];
+
+		// Free SDL internal memory usage for the game controller object.
+		SDL_GameController* sdlGameController = SDL_GameControllerFromInstanceID(instanceId);
+		SDL_GameControllerClose(sdlGameController);
 
 		// TODO: resize GamepadState etc.
 

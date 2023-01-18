@@ -94,13 +94,8 @@ namespace DYE
 				case SDL_CONTROLLERDEVICEADDED:
 					// Note that cdevice.which is not the instance id in ControllerAddedEvent, but index (location in the system array).
 					// To keep the event data symmetrical, we want to use the instance id instead.
-					if (!SDL_GameControllerOpen(event.cdevice.which))
-					{
-						DYE_LOG_ERROR("SDL_GameControllerOpen failed: %s", SDL_GetError());
-						break;
-					}
 					joystickInstanceID = SDL_JoystickGetDeviceInstanceID(event.cdevice.which);
-					eventPtr.reset(new GamepadConnectEvent(joystickInstanceID));
+					eventPtr.reset(new GamepadConnectEvent(joystickInstanceID, event.cdevice.which));
 					caught = true;
 					break;
 				case SDL_CONTROLLERDEVICEREMOVED:
