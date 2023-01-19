@@ -248,7 +248,7 @@ namespace DYE
 
 				for (int axisIndex = 0; axisIndex < NumberOfGamepadAxes; ++axisIndex)
 				{
-					float axisValue = gamepadState.Axes[axisIndex];
+					float const axisValue = gamepadState.Axes[axisIndex];
 					auto axisName = GetGamepadAxisName(static_cast<GamepadAxis>(axisIndex));
 					ImGuiUtil::DrawReadOnlyTextWithLabel(axisName, std::to_string(axisValue));
 				}
