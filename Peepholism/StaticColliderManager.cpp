@@ -96,12 +96,11 @@ namespace DYE
 		// TODO: improve the performance with AABB tree OR grid broad-phase
 		for (auto const& pair : m_AABBs)
 		{
-			float hitTime;
-			glm::vec2 hitPoint;
-			bool const intersect = Math::RayAABBIntersect2D(start, direction, maxDistance, pair.second, hitTime, hitPoint);
+			Math::DynamicTestResult2D testResult;
+			bool const intersect = Math::RayAABBIntersect2D(start, direction, maxDistance, pair.second, testResult);
 			if (intersect)
 			{
-				hits.push_back(RaycastHit2D { .ColliderID = pair.first, .Time = hitTime, .Point = hitPoint });
+				hits.push_back(RaycastHit2D { .ColliderID = pair.first, .Time = testResult.HitTime, .Point = testResult.HitPoint });
 			}
 		}
 
@@ -118,12 +117,11 @@ namespace DYE
 		// TODO: improve the performance with AABB tree OR grid broad-phase
 		for (auto const& pair : m_AABBs)
 		{
-			float hitTime;
-			bool const intersect = Math::MovingCircleAABBIntersect(center, radius, direction, pair.second, hitTime);
+			Math::DynamicTestResult2D testResult;
+			bool const intersect = Math::MovingCircleAABBIntersect(center, radius, direction, pair.second, testResult);
 			if (intersect)
 			{
-				glm::vec2 const hitPoint = center + direction * hitTime;
-				hits.push_back(RaycastHit2D { .ColliderID = pair.first, .Time = hitTime, .Point = hitPoint });
+				hits.push_back(RaycastHit2D { .ColliderID = pair.first, .Time = testResult.HitTime, .Point = testResult.HitPoint });
 			}
 		}
 

@@ -40,9 +40,9 @@ namespace DYE::Math
 		return aabbToCenterSqrDistance <= radius * radius;
 	}
 
-	bool RayAABBIntersect2D(glm::vec2 rayOrigin, glm::vec2 rayDirection, Math::AABB const& aabb, float& hitTime, glm::vec2& hitPoint)
+	bool RayAABBIntersect2D(glm::vec2 rayOrigin, glm::vec2 rayDirection, Math::AABB const& aabb, DynamicTestResult2D& testResult)
 	{
-		hitTime = 0.0f; // Could also call it slab 'enter time'. We could set this to -float.max to get hit on the line instead of the ray.
+		testResult.HitTime = 0.0f; // Could also call it slab 'enter time'. We could set this to -float.max to get hit on the line instead of the ray.
 		float exitTime = std::numeric_limits<float>::max();
 
 		// A slab for each dimension.
@@ -72,9 +72,9 @@ namespace DYE::Math
 			}
 
 			// Update overall slab enter / exit time interval.
-			if (firstSlabIntersectionTime > hitTime)
+			if (firstSlabIntersectionTime > testResult.HitTime)
 			{
-				hitTime = firstSlabIntersectionTime;
+				testResult.HitTime = firstSlabIntersectionTime;
 			}
 
 			if (secondSlabIntersectionTime < exitTime)
@@ -82,7 +82,7 @@ namespace DYE::Math
 				exitTime = secondSlabIntersectionTime;
 			}
 
-			if (hitTime > exitTime)
+			if (testResult.HitTime > exitTime)
 			{
 				// Exit with no intersection because the slab intersection has become an empty interval.
 				return false;
@@ -90,13 +90,13 @@ namespace DYE::Math
 		}
 
 		// The ray intersects with all dimension's slabs.
-		hitPoint = rayOrigin + rayDirection * hitTime;
+		testResult.HitPoint = rayOrigin + rayDirection * testResult.HitTime;
 		return true;
 	}
 
-	bool RayAABBIntersect2D(glm::vec2 rayOrigin, glm::vec2 rayDirection, float maxDistance, Math::AABB const& aabb, float& hitTime, glm::vec2& hitPoint)
+	bool RayAABBIntersect2D(glm::vec2 rayOrigin, glm::vec2 rayDirection, float maxDistance, Math::AABB const& aabb, DynamicTestResult2D& testResult)
 	{
-		hitTime = 0.0f; // Could also call it slab 'enter time'. We could set this to -float.max to get hit on the line instead of the ray.
+		testResult.HitTime = 0.0f; // Could also call it slab 'enter time'. We could set this to -float.max to get hit on the line instead of the ray.
 		float exitTime = maxDistance;
 
 		// A slab for each dimension.
@@ -126,9 +126,9 @@ namespace DYE::Math
 			}
 
 			// Update overall slab enter / exit time interval.
-			if (firstSlabIntersectionTime > hitTime)
+			if (firstSlabIntersectionTime > testResult.HitTime)
 			{
-				hitTime = firstSlabIntersectionTime;
+				testResult.HitTime = firstSlabIntersectionTime;
 			}
 
 			if (secondSlabIntersectionTime < exitTime)
@@ -136,7 +136,7 @@ namespace DYE::Math
 				exitTime = secondSlabIntersectionTime;
 			}
 
-			if (hitTime > exitTime)
+			if (testResult.HitTime > exitTime)
 			{
 				// Exit with no intersection because the slab intersection has become an empty interval.
 				return false;
@@ -144,11 +144,11 @@ namespace DYE::Math
 		}
 
 		// The ray intersects with all dimension's slabs.
-		hitPoint = rayOrigin + rayDirection * hitTime;
+		testResult.HitPoint = rayOrigin + rayDirection * testResult.HitTime;
 		return true;
 	}
 
-	bool RayCircleIntersect(glm::vec2 rayOrigin, glm::vec2 rayDirection, glm::vec2 center, float radius, float &hitTime, glm::vec2 &hitPoint)
+	bool RayCircleIntersect(glm::vec2 rayOrigin, glm::vec2 rayDirection, glm::vec2 center, float radius, DynamicTestResult2D& testResult)
 	{
 		glm::vec2 const cp = rayOrigin - center;
 		float const a = glm::dot(rayDirection, rayDirection);
@@ -173,18 +173,18 @@ namespace DYE::Math
 		}
 
 		// Ray now found to intersect sphere, compute smallest t value of intersection
-		hitTime = (-b - glm::sqrt(discriminant)) / a;
+		testResult.HitTime = (-b - glm::sqrt(discriminant)) / a;
 
 		// If t is negative, ray started inside sphere so clamp t to zero
-		if (hitTime < 0.0f)
+		if (testResult.HitTime < 0.0f)
 		{
-			hitTime = 0.0f;
+			testResult.HitTime = 0.0f;
 		}
-		hitPoint = rayOrigin + hitTime * rayDirection;
+		testResult.HitPoint = rayOrigin + testResult.HitTime * rayDirection;
 		return true;
 	}
 
-	bool MovingCircleAABBIntersect(glm::vec2 center, float radius, glm::vec2 direction, const AABB &aabb, float &hitTime)
+	bool MovingCircleAABBIntersect(glm::vec2 center, float radius, glm::vec2 direction, const AABB &aabb, DynamicTestResult2D& testResult)
 	{
 		// Compute the AABB resulting from expanding aabb by circle's radius.
 		AABB expandedAABB = aabb;
@@ -192,8 +192,7 @@ namespace DYE::Math
 		expandedAABB.Max.x += radius; expandedAABB.Max.y += radius;
 
 		// Do a ray & expanded AABB intersect test.
-		glm::vec2 hitPoint;
-		if (!RayAABBIntersect2D(center, direction, expandedAABB, hitTime, hitPoint) || hitTime > 1.0f)
+		if (!RayAABBIntersect2D(center, direction, expandedAABB, testResult) || testResult.HitTime > 1.0f)
 		{
 			// The ray doesn't intersect with the expanded AABB
 			// OR it intersects but at a point where it's farther than direction vector.
@@ -208,8 +207,8 @@ namespace DYE::Math
 		//    c |  e  | c
 		// min
 		//       slabX
-		bool const inSlabX = hitPoint.x >= aabb.Min.x && hitPoint.x <= aabb.Max.x;
-		bool const inSlabY = hitPoint.y >= aabb.Min.y && hitPoint.y <= aabb.Max.y;
+		bool const inSlabX = testResult.HitPoint.x >= aabb.Min.x && testResult.HitPoint.x <= aabb.Max.x;
+		bool const inSlabY = testResult.HitPoint.y >= aabb.Min.y && testResult.HitPoint.y <= aabb.Max.y;
 
 		bool const isEdgeRegion = inSlabX || inSlabY;
 		if (isEdgeRegion)
@@ -219,9 +218,9 @@ namespace DYE::Math
 
 		// The hitPoint is inside vertex region, do a ray & circle intersect.
 		glm::vec2 corner;
-		corner.x = (hitPoint.x < aabb.Min.x)? aabb.Min.x : aabb.Max.x;
-		corner.y = (hitPoint.y < aabb.Min.y)? aabb.Min.y : aabb.Max.y;
+		corner.x = (testResult.HitPoint.x < aabb.Min.x)? aabb.Min.x : aabb.Max.x;
+		corner.y = (testResult.HitPoint.y < aabb.Min.y)? aabb.Min.y : aabb.Max.y;
 
-		return RayCircleIntersect(center, direction, corner, radius, hitTime, hitPoint);
+		return RayCircleIntersect(center, direction, corner, radius, testResult);
 	}
 }

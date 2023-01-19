@@ -214,30 +214,22 @@ namespace DYE
 			m_MovingObject->Position.x -= TIME.DeltaTime() * m_BallSpeed;
 		}
 
-		if (INPUT.GetMouseButton(MouseButton::Left))
+		if (INPUT.GetMouseButtonDown(MouseButton::Left))
 		{
-			m_MovingObject->Position.x -= TIME.DeltaTime() * m_BallSpeed;
+			m_MovingObject->Color = Color::Yellow;
 		}
 
-		if (INPUT.GetMouseButton(MouseButton::Right))
+		if (INPUT.GetMouseButtonDown(MouseButton::Right))
 		{
-			m_MovingObject->Position.x += TIME.DeltaTime() * m_BallSpeed;
+			m_MovingObject->Color = Color::Blue;
 		}
 
 		if (INPUT.GetMouseButtonDown(MouseButton::Middle))
 		{
-			m_MovingObject->Position.y += m_BallSpeed;
+			m_MovingObject->Color = Color::Red;
 		}
-
-		if (INPUT.GetMouseButtonUp(MouseButton::Middle))
-		{
-			m_MovingObject->Position.y -= m_BallSpeed;
-		}
-
-
 
 		m_AverageObject->Position = (m_MovingObject->Position + m_OriginObject->Position) * 0.5f;
-
 
 		bool change = false;
 		if (INPUT.GetKey(KeyCode::W))
@@ -329,14 +321,20 @@ namespace DYE
 			return;
 		}
 
-		float const horizontal = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickHorizontal);
-		float const vertical = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickVertical);
+		if (INPUT.IsGamepadConnected(0))
+		{
+			float const horizontal = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickHorizontal);
+			float const vertical = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickVertical);
 
-		glm::vec3 const axis = { horizontal, vertical, 0 };
-		float const magnitude = glm::length(axis);
-		glm::vec3 const direction = glm::normalize(axis);
-		m_MovingObject->Position += direction * (magnitude * (float) TIME.DeltaTime());
+			glm::vec3 const axis = {horizontal, vertical, 0};
 
+			if (glm::length2(axis) > 0.01f)
+			{
+				float const magnitude = glm::length(axis);
+				glm::vec3 const direction = glm::normalize(axis);
+				m_MovingObject->Position += direction * (magnitude * (float) TIME.DeltaTime());
+			}
+		}
 
 		int currWidth = mainWindowPtr->GetWidth();
 		int currHeight = mainWindowPtr->GetHeight();
