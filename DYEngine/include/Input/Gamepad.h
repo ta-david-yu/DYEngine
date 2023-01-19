@@ -52,6 +52,9 @@ namespace DYE
 		DPadRight = SDL_CONTROLLER_BUTTON_DPAD_RIGHT
 	};
 
+	std::string GetGamepadAxisName(GamepadAxis gamepadAxis);
+	std::string GetGamepadButtonName(GamepadButton gamepadButton);
+
 	struct DeviceDescriptor
 	{
 		std::string GUID;

@@ -53,13 +53,9 @@ namespace DYE
 
 	void InputManager::UpdateInputState()
 	{
-		// Buffer the current states.
-
+		// Buffer & update keyboard key states.
 		std::copy(m_KeyboardKeys.begin(), m_KeyboardKeys.end(), m_PreviousKeyboardKeys.begin());
-		std::copy(m_MouseButtons.begin(), m_MouseButtons.end(), m_PreviousMouseButtons.begin());
-		m_PreviousMouseX = m_MouseX; m_PreviousMouseY = m_MouseY;
 
-		// Update keyboard key states.
 		const Uint8* states = SDL_GetKeyboardState(nullptr);
 		auto const& firstKeyScanIndex = SDL_SCANCODE_A;
 		for (int i = firstKeyScanIndex; i < NumberOfKeys; i++)
@@ -67,11 +63,44 @@ namespace DYE
 			m_KeyboardKeys[i] = states[i];
 		}
 
-		// Update mouse button states.
+		// Buffer & update mouse button states.
+		std::copy(m_MouseButtons.begin(), m_MouseButtons.end(), m_PreviousMouseButtons.begin());
+		m_PreviousMouseX = m_MouseX; m_PreviousMouseY = m_MouseY;
+
 		std::uint32_t const buttonState = SDL_GetGlobalMouseState(&m_MouseX, &m_MouseY);
 		for (int i = 0; i < NumberOfMouseButtons; i++)
 		{
 			m_MouseButtons[i] = buttonState & SDL_BUTTON(i + 1);
+		}
+
+		// Buffer & update gamepad states.
+		for (int gamepadStateIndex = 0; gamepadStateIndex < m_NumberOfConnectedGamepads; gamepadStateIndex++)
+		{
+			GamepadState& gamepadState = m_GamepadStates[gamepadStateIndex];
+			std::copy(gamepadState.Buttons.begin(), gamepadState.Buttons.end(), gamepadState.PreviousButtons.begin());
+			std::copy(gamepadState.Axes.begin(), gamepadState.Axes.end(), gamepadState.PreviousAxes.begin());
+
+			auto* pSDLGameController = static_cast<SDL_GameController*>(gamepadState.NativeGamepadObject);
+			for (int i = 0; i < static_cast<int>(NumberOfGamepadButtons); i++)
+			{
+				gamepadState.Buttons[i] = SDL_GameControllerGetButton
+					(
+						pSDLGameController,
+						static_cast<SDL_GameControllerButton>(i)
+					);
+			}
+
+			for (int i = 0; i < static_cast<int>(NumberOfGamepadAxes); i++)
+			{
+				// SDL ranges axes from -32768 to 32767, we want to normalize/clamp it to -1.0f ~ 1.0f
+				auto const originalAxisValue = SDL_GameControllerGetAxis(pSDLGameController, static_cast<SDL_GameControllerAxis>(i));
+				gamepadState.Axes[i] = std::clamp
+					(
+						originalAxisValue / 32767.f,
+						-1.f,
+						1.f
+					);
+			}
 		}
 	}
 
@@ -126,7 +155,64 @@ namespace DYE
 		return !m_MouseButtons[index] && m_PreviousMouseButtons[index];
 	}
 
-	std::optional<DeviceDescriptor> InputManager::GetDeviceDescriptor(DeviceID deviceId) const
+	bool InputManager::IsGamepadConnected(DeviceID deviceId) const
+	{
+		return getGamepadState(deviceId) != nullptr;
+	}
+
+	bool InputManager::GetGamepadButton(DeviceID deviceId, GamepadButton button) const
+	{
+		int const index = static_cast<int>(button);
+		auto const* pGamepadState = getGamepadState(deviceId);
+		if (pGamepadState == nullptr)
+		{
+			DYE_LOG("Gamepad %d is not available.", deviceId);
+			return false;
+		}
+
+		return pGamepadState->Buttons[index];
+	}
+
+	bool InputManager::GetGamepadButtonDown(DeviceID deviceId, GamepadButton button) const
+	{
+		int const index = static_cast<int>(button);
+		auto const* pGamepadState = getGamepadState(deviceId);
+		if (pGamepadState == nullptr)
+		{
+			DYE_LOG("Gamepad %d is not available.", deviceId);
+			return false;
+		}
+
+		return pGamepadState->Buttons[index] && !pGamepadState->PreviousButtons[index];
+	}
+
+	bool InputManager::GetGamepadButtonUp(DeviceID deviceId, GamepadButton button) const
+	{
+		int const index = static_cast<int>(button);
+		auto const* pGamepadState = getGamepadState(deviceId);
+		if (pGamepadState == nullptr)
+		{
+			DYE_LOG("Gamepad %d is not available.", deviceId);
+			return false;
+		}
+
+		return !pGamepadState->Buttons[index] && pGamepadState->PreviousButtons[index];
+	}
+
+	float InputManager::GetGamepadAxis(DeviceID deviceId, GamepadAxis axis) const
+	{
+		int const index = static_cast<int>(axis);
+		auto const* pGamepadState = getGamepadState(deviceId);
+		if (pGamepadState == nullptr)
+		{
+			DYE_LOG("Gamepad %d is not available.", deviceId);
+			return 0;
+		}
+
+		return pGamepadState->Axes[index];
+	}
+
+	std::optional<DeviceDescriptor> InputManager::GetGamepadDeviceDescriptor(DeviceID deviceId) const
 	{
 		if (deviceId >= m_RegisteredDeviceDescriptors.size())
 		{
@@ -157,8 +243,17 @@ namespace DYE
 			for (int i = 0; i < m_NumberOfConnectedGamepads; i++)
 			{
 				GamepadState const& gamepadState = m_GamepadStates[i];
-				DeviceDescriptor descriptor = GetDeviceDescriptor(gamepadState.DeviceID).value();
+				DeviceDescriptor const descriptor = GetGamepadDeviceDescriptor(gamepadState.DeviceID).value();
 				ImGuiUtil::DrawReadOnlyTextWithLabel(descriptor.Name, descriptor.ToString());
+
+				for (int axisIndex = 0; axisIndex < NumberOfGamepadAxes; ++axisIndex)
+				{
+					float axisValue = gamepadState.Axes[axisIndex];
+					auto axisName = GetGamepadAxisName(static_cast<GamepadAxis>(axisIndex));
+					ImGuiUtil::DrawReadOnlyTextWithLabel(axisName, std::to_string(axisValue));
+				}
+
+				ImGui::Separator();
 			}
 		}
 
@@ -229,12 +324,13 @@ namespace DYE
 		}
 
 		m_NumberOfConnectedGamepads++;
-		m_GamepadStateIndices[deviceId] = m_NumberOfConnectedGamepads - 1;		// Make the index slot point to the last element in the dense array.
 
-		GamepadState* pGamepadState = getGamepadState(deviceId);
-		pGamepadState->DeviceID = deviceId;
-		pGamepadState->NativeGamepadObject = pSDLNativeGameController;
-		pGamepadState->Reset();
+		int const denseArrayIndex = m_NumberOfConnectedGamepads - 1;	// Make the index slot point to the last element in the dense array.
+		m_GamepadStateIndices[deviceId] = denseArrayIndex;
+		GamepadState& pGamepadState = m_GamepadStates[denseArrayIndex];
+		pGamepadState.DeviceID = deviceId;
+		pGamepadState.NativeGamepadObject = pSDLNativeGameController;
+		pGamepadState.Reset();
 
 		DYE_LOG("Gamepad Connected - %s, Gamepad Count = %d", m_RegisteredDeviceDescriptors[deviceId].ToString().c_str(), m_NumberOfConnectedGamepads);
 	}
@@ -265,7 +361,7 @@ namespace DYE
 
 		deviceId = m_RegisteredDeviceIDTable[guidString];
 
-		GamepadState* pGamepadState = getGamepadState(deviceId);
+		GamepadState const* pGamepadState = getGamepadState(deviceId);
 		if (pGamepadState == nullptr)
 		{
 			// This normally shouldn't happen:
@@ -285,15 +381,16 @@ namespace DYE
 		SDL_GameControllerClose(sdlGameController);
 
 		// Swap the gamepad state slot with the last slot in the dense array.
+		int const toBeRemovedDenseArrayIndex = m_GamepadStateIndices[deviceId];
 		int const lastDenseArrayElementDeviceId = m_GamepadStates[m_NumberOfConnectedGamepads - 1].DeviceID;
 		std::swap(m_GamepadStateIndices[deviceId], m_GamepadStateIndices[lastDenseArrayElementDeviceId]);
-		std::swap(*pGamepadState, m_GamepadStates[m_NumberOfConnectedGamepads - 1]);
+		std::swap(m_GamepadStates[toBeRemovedDenseArrayIndex], m_GamepadStates[m_NumberOfConnectedGamepads - 1]);
 
 		m_NumberOfConnectedGamepads--;
 		DYE_LOG("Gamepad Disconnected - %s, Gamepad Count = %d", m_RegisteredDeviceDescriptors[deviceId].ToString().c_str(), m_NumberOfConnectedGamepads);
 	}
 
-	InputManager::GamepadState* InputManager::getGamepadState(DeviceID deviceId)
+	InputManager::GamepadState const* InputManager::getGamepadState(DeviceID deviceId) const
 	{
 		int const denseArrayIndex = m_GamepadStateIndices[deviceId];
 		bool const outOfValidBounds = denseArrayIndex >= m_NumberOfConnectedGamepads;

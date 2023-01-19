@@ -329,6 +329,15 @@ namespace DYE
 			return;
 		}
 
+		float const horizontal = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickHorizontal);
+		float const vertical = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickVertical);
+
+		glm::vec3 const axis = { horizontal, vertical, 0 };
+		float const magnitude = glm::length(axis);
+		glm::vec3 const direction = glm::normalize(axis);
+		m_MovingObject->Position += direction * (magnitude * (float) TIME.DeltaTime());
+
+
 		int currWidth = mainWindowPtr->GetWidth();
 		int currHeight = mainWindowPtr->GetHeight();
 

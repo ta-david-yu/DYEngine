@@ -49,7 +49,7 @@ set(SOURCE_FILES
         src/Math.cpp
         src/Color.cpp
         src/PrimitiveTest.cpp
-        src/GamepadEvent.cpp)
+        src/GamepadEvent.cpp src/Gamepad.cpp)
 set(HEADER_FILES
         include/Core/Application.h
         include/Graphics/WindowBase.h

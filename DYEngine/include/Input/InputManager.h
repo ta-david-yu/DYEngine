@@ -78,7 +78,12 @@ namespace DYE
 		bool GetMouseButtonDown(MouseButton button) const;
 		bool GetMouseButtonUp(MouseButton button) const;
 
-		std::optional<DeviceDescriptor> GetDeviceDescriptor(DeviceID deviceId) const;
+		bool IsGamepadConnected(DeviceID deviceId) const;
+		bool GetGamepadButton(DeviceID deviceId, GamepadButton button) const;
+		bool GetGamepadButtonDown(DeviceID deviceId, GamepadButton button) const;
+		bool GetGamepadButtonUp(DeviceID deviceId, GamepadButton button) const;
+		float GetGamepadAxis(DeviceID deviceId, GamepadAxis axis) const;
+		std::optional<DeviceDescriptor> GetGamepadDeviceDescriptor(DeviceID deviceId) const;
 
 		void DrawAllRegisteredDeviceDescriptorsImGui() const;
 		void DrawAllConnectedDeviceDescriptorsImGui() const;
@@ -90,7 +95,7 @@ namespace DYE
 		/// Instead of returning a reference, we use pointer because we want to:
 		/// 1. Indicate invalid parameter (i.e. device with the id not connected)
 		/// 2. But still be able to reference the gamepad state without copying
-		GamepadState* getGamepadState(DeviceID deviceId);
+		GamepadState const* getGamepadState(DeviceID deviceId) const;
 
 	private:
 		static std::unique_ptr<InputManager> s_Instance;
