@@ -1,12 +1,14 @@
 #pragma once
 
 #include <string>
-#include <cstdint>
 
 #include <SDL.h>
 
 namespace DYE
 {
+	// Normally we would use SDL_NUM_SCANCODES. But to save memory, we use 287 instead - see SDL_SCANCODE_AUDIOFASTFORWARD + 1
+	static constexpr const int NumberOfKeys = 287;
+
     /// KeyCode enumeration, currently mapped to SDL_KeyCode (event.key.keysym.sym)
     /// To be added with more keys
     enum class KeyCode

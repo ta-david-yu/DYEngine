@@ -47,7 +47,9 @@ set(SOURCE_FILES
         src/AABB.cpp
         src/DebugDraw.cpp
         src/Math.cpp
-        src/Color.cpp src/PrimitiveTest.cpp)
+        src/Color.cpp
+        src/PrimitiveTest.cpp
+        src/GamepadEvent.cpp src/Gamepad.cpp)
 set(HEADER_FILES
         include/Core/Application.h
         include/Graphics/WindowBase.h
@@ -81,7 +83,6 @@ set(HEADER_FILES
         include/Scene/ImageRenderer.h
         include/Graphics/Texture.h
         include/Event/MouseEvent.h
-        include/Input/MouseCode.h
         include/Message/Messaging.h
         include/Graphics/CameraProperties.h
         include/ImGui/ImGuiUtil.h
@@ -104,7 +105,10 @@ set(HEADER_FILES
         include/Math/AABB.h
         include/Math/PrimitiveTest.h
         include/Graphics/DebugDraw.h
-        include/Math/Color.h)
+        include/Math/Color.h
+        include/Event/GamepadEvent.h
+        include/Input/MouseButton.h
+        include/Input/Gamepad.h)
 
 message(STATUS "[DYEngine] Source Files: ${SOURCE_FILES}")
 message(STATUS "[DYEngine] Header Files: ${HEADER_FILES}")

@@ -92,4 +92,10 @@ namespace DYE
 			windowPair.second->OnUpdate();
 		}
 	}
+
+	WindowBase *WindowManager::GetMouseFocusedWindow()
+	{
+		WindowID const id = WindowBase::GetMouseFocusedWindowID();
+		return GetWindowFromID(id);
+	}
 }

@@ -1,6 +1,8 @@
 #include "Graphics/WindowBase.h"
 #include "Graphics/SDLWindow.h"
 
+#include <SDL.h>
+
 namespace DYE
 {
     std::unique_ptr<WindowBase> WindowBase::Create(const WindowProperty &windowProperty)
@@ -8,6 +10,13 @@ namespace DYE
         // TODO: add other window types. For instance, GLFWWindow
         return std::make_unique<SDLWindow>(windowProperty);
     }
+
+	WindowID WindowBase::GetMouseFocusedWindowID()
+	{
+		// TODO: add other window types. For instance, GLFWWindow
+		SDL_Window* pSDLWindow = SDL_GetMouseFocus();
+		return SDL_GetWindowID(pSDLWindow);
+	}
 
 	std::shared_ptr<ContextBase> WindowBase::GetContext() const
 	{

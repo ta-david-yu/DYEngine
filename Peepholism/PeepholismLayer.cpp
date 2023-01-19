@@ -80,9 +80,10 @@ namespace DYE
 		m_CameraProperties->Viewport = { 0, 0, 1, 1 };
 
 		m_WindowPosition = mainWindowPtr->GetPosition();
-		m_SecondWindow = WindowManager::CreateWindow(WindowProperty("SecondWindow", 640, 480));
+
 
 		// Use the same context of the main window for the second window
+		m_SecondWindow = WindowManager::CreateWindow(WindowProperty("SecondWindow", 640, 480));
 		auto context = mainWindowPtr->GetContext();
 		m_SecondWindow->SetContext(context);
 		m_SecondWindow->MakeCurrent();
@@ -143,14 +144,7 @@ namespace DYE
 
     void PeepholismLayer::OnEvent(Event& event)
     {
-        auto eventType = event.GetEventType();
 
-		if (eventType == EventType::WindowSizeChange)
-		{
-			auto windowSizeChangeEvent = static_cast<const WindowSizeChangeEvent&>(event);
-
-			//m_CameraProperties->ManualAspectRatio = (float) windowSizeChangeEvent.GetWidth() / (float) windowSizeChangeEvent.GetHeight();
-		}
     }
 
     void PeepholismLayer::OnUpdate()
@@ -219,6 +213,28 @@ namespace DYE
 		{
 			m_MovingObject->Position.x -= TIME.DeltaTime() * m_BallSpeed;
 		}
+
+		if (INPUT.GetMouseButton(MouseButton::Left))
+		{
+			m_MovingObject->Position.x -= TIME.DeltaTime() * m_BallSpeed;
+		}
+
+		if (INPUT.GetMouseButton(MouseButton::Right))
+		{
+			m_MovingObject->Position.x += TIME.DeltaTime() * m_BallSpeed;
+		}
+
+		if (INPUT.GetMouseButtonDown(MouseButton::Middle))
+		{
+			m_MovingObject->Position.y += m_BallSpeed;
+		}
+
+		if (INPUT.GetMouseButtonUp(MouseButton::Middle))
+		{
+			m_MovingObject->Position.y -= m_BallSpeed;
+		}
+
+
 
 		m_AverageObject->Position = (m_MovingObject->Position + m_OriginObject->Position) * 0.5f;
 
@@ -312,6 +328,15 @@ namespace DYE
 			Application::GetRegisteredApplications()[0]->Shutdown();
 			return;
 		}
+
+		float const horizontal = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickHorizontal);
+		float const vertical = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickVertical);
+
+		glm::vec3 const axis = { horizontal, vertical, 0 };
+		float const magnitude = glm::length(axis);
+		glm::vec3 const direction = glm::normalize(axis);
+		m_MovingObject->Position += direction * (magnitude * (float) TIME.DeltaTime());
+
 
 		int currWidth = mainWindowPtr->GetWidth();
 		int currHeight = mainWindowPtr->GetHeight();
@@ -417,6 +442,9 @@ namespace DYE
 				ImGui::Text("Display %d Info = (w=%d, h=%d, r=%d)", mainDisplayIndex, displayMode->Width, displayMode->Height, displayMode->RefreshRate);
 			}
 
+			ImGui::Text("Mouse Position = %d, %d", INPUT.GetGlobalMousePosition().x, INPUT.GetGlobalMousePosition().y);
+			ImGui::Text("Mouse Delta = %d, %d", INPUT.GetGlobalMouseDelta().x, INPUT.GetGlobalMouseDelta().y);
+
 			if (ImGui::Button("Quit App"))
 			{
 				for (auto const app : Application::GetRegisteredApplications())
@@ -472,6 +500,8 @@ namespace DYE
         ImGui::End();
 
 		m_ColliderManager.DrawImGui();
+		INPUT.DrawAllRegisteredDeviceDescriptorsImGui();
+		INPUT.DrawAllConnectedDeviceDescriptorsImGui();
     }
 
 	void PeepholismLayer::imguiSpriteObject(SpriteObject &object)

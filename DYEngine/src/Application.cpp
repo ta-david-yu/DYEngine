@@ -30,8 +30,16 @@ namespace DYE
     {
         SDL_Init(0);
         SDL_InitSubSystem(SDL_INIT_AUDIO);
-        SDL_InitSubSystem(SDL_INIT_VIDEO);
-        DYE_LOG("Init SDL");
+        SDL_InitSubSystem(SDL_INIT_VIDEO);			// This would implicitly init events subsystem
+		SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER);	// This would implicitly init joystick subsystem
+		//SDL_InitSubSystem(SDL_INIT_JOYSTICK);
+
+		SDL_GameControllerEventState(SDL_ENABLE);
+		SDL_JoystickEventState(SDL_ENABLE);
+
+		SDL_version sdlVersion;
+		SDL_GetVersion(&sdlVersion);
+        DYE_LOG("Init SDL: %d.%d.%d", sdlVersion.major, sdlVersion.minor, sdlVersion.patch);
         DYE_LOG("OS: %s", SDL_GetPlatform());
         DYE_LOG("CPU cores: %d", SDL_GetCPUCount());
         DYE_LOG("RAM: %.2f GB", (float) SDL_GetSystemRAM() / 1024.0f);
@@ -148,7 +156,6 @@ namespace DYE
                 layer->OnRender();
             }
             onPostRenderLayers();
-
 			glEnable(GL_CULL_FACE);
 			glCullFace(GL_BACK);
 			// Execute draw-calls on GPU
@@ -185,7 +192,6 @@ namespace DYE
     void Application::Handle(Event& event)
     {
         auto const& eventType = event.GetEventType();
-		auto const& eventCategory = event.GetCategoryFlags();
 
         // Handle WindowEvent on application level
 		if (eventType == EventType::ApplicationQuit)
@@ -198,9 +204,11 @@ namespace DYE
 			handleOnWindowClose(static_cast<const WindowCloseEvent&>(event));
 			event.IsUsed = true;
 		}
-		else if (eventType == EventType::WindowSizeChange)
+
+		// InputManager will handle input related event
+		if (event.IsInCategory(EventCategory::Input))
 		{
-			handleOnWindowSizeChange(static_cast<const WindowSizeChangeEvent &>(event));
+			INPUT.HandleSystemEvent(event);
 		}
 
         // Event is passed from top to bottom layer
@@ -241,13 +249,6 @@ namespace DYE
 			Shutdown();
 		}
 	}
-
-    void Application::handleOnWindowSizeChange(const WindowSizeChangeEvent &event)
-    {
-		// TODO: instead of calling set viewport here,
-		// TODO: set viewport depending on the window ID & whether camera is targeting the window IF the camera is marked as auto-update aspect ratio
-		// TODO: We will need something like WindowManager.GetWindowWithID(id).Resize etc
-    }
 
 	void Application::Shutdown()
 	{
