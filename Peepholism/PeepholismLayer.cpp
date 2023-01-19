@@ -491,7 +491,8 @@ namespace DYE
         ImGui::End();
 
 		m_ColliderManager.DrawImGui();
-		INPUT.DrawDeviceDescriptorImGui();
+		INPUT.DrawAllRegisteredDeviceDescriptorsImGui();
+		INPUT.DrawAllConnectedDeviceDescriptorsImGui();
     }
 
 	void PeepholismLayer::imguiSpriteObject(SpriteObject &object)

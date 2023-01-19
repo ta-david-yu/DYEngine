@@ -44,6 +44,11 @@ namespace DYE
 	{
 		std::fill(m_KeyboardKeys.begin(), m_KeyboardKeys.end(), false);
 		std::fill(m_PreviousKeyboardKeys.begin(), m_PreviousKeyboardKeys.end(), false);
+
+		for (int i = 0; i < m_NumberOfConnectedGamepads; i++)
+		{
+			m_GamepadStates[i].Reset();
+		}
 	}
 
 	void InputManager::UpdateInputState()
@@ -123,21 +128,36 @@ namespace DYE
 
 	std::optional<DeviceDescriptor> InputManager::GetDeviceDescriptor(DeviceID deviceId) const
 	{
-		if (deviceId >= m_DeviceDescriptors.size())
+		if (deviceId >= m_RegisteredDeviceDescriptors.size())
 		{
 			// Invalid device ID.
 			return {};
 		}
 
-		return m_DeviceDescriptors[deviceId];
+		return m_RegisteredDeviceDescriptors[deviceId];
 	}
 
-	void InputManager::DrawDeviceDescriptorImGui() const
+	void InputManager::DrawAllRegisteredDeviceDescriptorsImGui() const
 	{
-		if (ImGui::Begin("InputManager - Device Descriptor"))
+		if (ImGui::Begin("InputManager - Registered Device Descriptor"))
 		{
-			for (auto const& descriptor : m_DeviceDescriptors)
+			for (auto const& descriptor : m_RegisteredDeviceDescriptors)
 			{
+				ImGuiUtil::DrawReadOnlyTextWithLabel(descriptor.Name, descriptor.ToString());
+			}
+		}
+
+		ImGui::End();
+	}
+
+	void InputManager::DrawAllConnectedDeviceDescriptorsImGui() const
+	{
+		if (ImGui::Begin("InputManager - Connected Device Descriptor"))
+		{
+			for (int i = 0; i < m_NumberOfConnectedGamepads; i++)
+			{
+				GamepadState const& gamepadState = m_GamepadStates[i];
+				DeviceDescriptor descriptor = GetDeviceDescriptor(gamepadState.DeviceID).value();
 				ImGuiUtil::DrawReadOnlyTextWithLabel(descriptor.Name, descriptor.ToString());
 			}
 		}
@@ -148,13 +168,14 @@ namespace DYE
 	void InputManager::handleOnGamepadConnected(const GamepadConnectEvent &connectEvent)
 	{
 		std::int32_t const deviceIndex = connectEvent.GetDeviceIndex();
-		if (!SDL_GameControllerOpen(deviceIndex))
+		DeviceInstanceID const instanceId = connectEvent.GetDeviceInstanceID();
+		SDL_GameController* pSDLNativeGameController = SDL_GameControllerOpen(deviceIndex);
+		if (pSDLNativeGameController == nullptr)
 		{
-			DYE_LOG_ERROR("InputManager::handleOnGamepadConnected(instanceId=%d) -> SDL_GameControllerOpen failed: %s", SDL_GetError());
+			DYE_LOG_ERROR("InputManager::handleOnGamepadConnected(instanceId=%d) -> SDL_GameControllerOpen failed: %s", instanceId, SDL_GetError());
 			return;
 		}
 
-		DeviceInstanceID const instanceId = connectEvent.GetDeviceInstanceID();
 		SDL_Joystick* sdlJoystick = SDL_JoystickFromInstanceID(instanceId);
 		if (sdlJoystick == nullptr)
 		{
@@ -170,10 +191,26 @@ namespace DYE
 
 		// Generate or get Device ID.
 		DeviceID deviceId = -1;
-		auto deviceIDItr = m_DeviceIDTable.find(guidString);
-		bool const hasDeviceID = deviceIDItr != m_DeviceIDTable.end();
+		auto deviceIDItr = m_RegisteredDeviceIDTable.find(guidString);
+		bool const hasDeviceID = deviceIDItr != m_RegisteredDeviceIDTable.end();
 		if (!hasDeviceID)
 		{
+			if (m_RegisteredDeviceDescriptors.size() >= MaxNumberOfUniqueGamepads)
+			{
+				// It's a new device for this application session;
+				// but the number of recorded devices has exceeded the max count.
+				// Close the newly connected controller and ignore it.
+				DYE_LOG("InputManager::handleOnGamepadConnected(instanceId=%d): "
+							  "There have been %d gamepads connected, which is the max number of devices allowed per session."
+							  "The newly connected device is ignored.", instanceId, MaxNumberOfUniqueGamepads);
+
+				SDL_GameControllerClose(pSDLNativeGameController);
+				return;
+			}
+
+			// Create a device descriptor if this device has never been plugged before in the application session.
+			deviceId = static_cast<DeviceID>(m_RegisteredDeviceDescriptors.size());
+
 			char const* cName = SDL_JoystickName(sdlJoystick);
 			if (cName == nullptr)
 			{
@@ -181,23 +218,25 @@ namespace DYE
 				cName = "<no-name>";
 			}
 
-			// Create a device descriptor if this device has never been plugged before in the application session.
-			deviceId = static_cast<DeviceID>(m_DeviceDescriptors.size());
-			m_DeviceIDTable[guidString] = deviceId;
-			m_DeviceDescriptors.emplace_back(DeviceDescriptor { .GUID = guidString, .Name = cName, .ID = deviceId, .InstanceID = instanceId });
+			m_RegisteredDeviceIDTable[guidString] = deviceId;
+			m_RegisteredDeviceDescriptors.emplace_back(DeviceDescriptor { .GUID = guidString, .Name = cName, .ID = deviceId, .InstanceID = instanceId });
 		}
 		else
 		{
 			// Acquire already-existing device deviceId and update instance deviceId.
-			deviceId = m_DeviceIDTable[guidString];
-			m_DeviceDescriptors[deviceId].InstanceID = instanceId;
+			deviceId = m_RegisteredDeviceIDTable[guidString];
+			m_RegisteredDeviceDescriptors[deviceId].InstanceID = instanceId;
 		}
 
 		m_NumberOfConnectedGamepads++;
+		m_GamepadStateIndices[deviceId] = m_NumberOfConnectedGamepads - 1;		// Make the index slot point to the last element in the dense array.
 
-		// TODO: initialize GamepadState etc.
+		GamepadState* pGamepadState = getGamepadState(deviceId);
+		pGamepadState->DeviceID = deviceId;
+		pGamepadState->NativeGamepadObject = pSDLNativeGameController;
+		pGamepadState->Reset();
 
-		DYE_LOG("Gamepad Connected - %s, Gamepad Count = %d", m_DeviceDescriptors[deviceId].ToString().c_str(), m_NumberOfConnectedGamepads);
+		DYE_LOG("Gamepad Connected - %s, Gamepad Count = %d", m_RegisteredDeviceDescriptors[deviceId].ToString().c_str(), m_NumberOfConnectedGamepads);
 	}
 
 	void InputManager::handleOnGamepadDisconnected(const GamepadDisconnectEvent &disconnectEvent)
@@ -206,7 +245,7 @@ namespace DYE
 		SDL_Joystick* sdlJoystick = SDL_JoystickFromInstanceID(instanceId);
 		if (sdlJoystick == nullptr)
 		{
-			DYE_LOG_ERROR("InputManager::handleOnGamepadConnected(instanceId=%d) -> SDL_JoystickFromInstanceID failed: %s", instanceId, SDL_GetError());
+			DYE_LOG_ERROR("InputManager::handleOnGamepadDisconnected(instanceId=%d) -> SDL_JoystickFromInstanceID failed: %s", instanceId, SDL_GetError());
 			return;
 		}
 
@@ -218,21 +257,61 @@ namespace DYE
 
 		// Generate or get Device ID.
 		DeviceID deviceId = -1;
-		if (!m_DeviceIDTable.contains(guidString))
+		if (!m_RegisteredDeviceIDTable.contains(guidString))
 		{
 			// The disconnected device has never been registered in InputManager, ignore this disconnect event.
 			return;
 		}
 
-		deviceId = m_DeviceIDTable[guidString];
+		deviceId = m_RegisteredDeviceIDTable[guidString];
+
+		GamepadState* pGamepadState = getGamepadState(deviceId);
+		if (pGamepadState == nullptr)
+		{
+			// This normally shouldn't happen:
+			//
+			// Null pointer means this device has not been properly
+			// 1. Assigned a gamepad state slot
+			// 2. Marked as connected
+			// in the dense array for some reason (even though it has a registered device id).
+			//
+			DYE_LOG_ERROR("InputManager::handleOnGamepadDisconnected(deviceId=%d, instanceId=%d): "
+						  "a registered device is connected although it was not marked as connected.", deviceId, instanceId);
+			return;
+		}
 
 		// Free SDL internal memory usage for the game controller object.
-		SDL_GameController* sdlGameController = SDL_GameControllerFromInstanceID(instanceId);
+		auto* sdlGameController = static_cast<SDL_GameController*>(pGamepadState->NativeGamepadObject);
 		SDL_GameControllerClose(sdlGameController);
 
-		// TODO: resize GamepadState etc.
+		// Swap the gamepad state slot with the last slot in the dense array.
+		int const lastDenseArrayElementDeviceId = m_GamepadStates[m_NumberOfConnectedGamepads - 1].DeviceID;
+		std::swap(m_GamepadStateIndices[deviceId], m_GamepadStateIndices[lastDenseArrayElementDeviceId]);
+		std::swap(*pGamepadState, m_GamepadStates[m_NumberOfConnectedGamepads - 1]);
 
 		m_NumberOfConnectedGamepads--;
-		DYE_LOG("Gamepad Disconnected - %s, Gamepad Count = %d", m_DeviceDescriptors[deviceId].ToString().c_str(), m_NumberOfConnectedGamepads);
+		DYE_LOG("Gamepad Disconnected - %s, Gamepad Count = %d", m_RegisteredDeviceDescriptors[deviceId].ToString().c_str(), m_NumberOfConnectedGamepads);
+	}
+
+	InputManager::GamepadState* InputManager::getGamepadState(DeviceID deviceId)
+	{
+		int const denseArrayIndex = m_GamepadStateIndices[deviceId];
+		bool const outOfValidBounds = denseArrayIndex >= m_NumberOfConnectedGamepads;
+		if (outOfValidBounds)
+		{
+			// The index slot is pointing to an invalid element in the dense array,
+			// which means the device is either disconnected or doesn't exist, return null.
+			return nullptr;
+		}
+
+		bool const deviceIdMismatched = m_GamepadStates[denseArrayIndex].DeviceID != deviceId;
+		if (deviceIdMismatched)
+		{
+			// The gamepad state stored at the location is not pointing back to device id,
+			// which means the state has been taken by another device therefore the given device id is not connected, return null.
+			return nullptr;
+		}
+
+		return &m_GamepadStates[denseArrayIndex];
 	}
 }

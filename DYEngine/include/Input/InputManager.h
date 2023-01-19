@@ -23,8 +23,29 @@ namespace DYE
 	// Inherit from EventHandler to receive device connect/disconnect events from EventSystem.
 	class InputManager
 	{
+	private:
+		struct GamepadState
+		{
+			DeviceID DeviceID;
+			void* NativeGamepadObject = nullptr;
+
+			std::array<bool, NumberOfGamepadButtons> Buttons = {false};
+			std::array<bool, NumberOfGamepadButtons> PreviousButtons = {false};
+			std::array<float, NumberOfGamepadAxes> Axes = {0.0f};
+			std::array<float, NumberOfGamepadAxes> PreviousAxes = {0.0f};
+
+			void Reset()
+			{
+				std::fill(Buttons.begin(), Buttons.end(), false);
+				std::fill(PreviousButtons.begin(), PreviousButtons.end(), false);
+				std::fill(Axes.begin(), Axes.end(), 0.0f);
+				std::fill(PreviousAxes.begin(), PreviousAxes.end(), 0.0f);
+			}
+		};
+
 	public:
-		constexpr const static std::uint32_t MaxNumberOfConnectedGamepads = 32;
+		/// An application session could only have the number of devices with unique DeviceIDs.
+		constexpr const static std::uint32_t MaxNumberOfUniqueGamepads = 32;
 
 		static InputManager& GetInstance();
 
@@ -58,13 +79,18 @@ namespace DYE
 		bool GetMouseButtonUp(MouseButton button) const;
 
 		std::optional<DeviceDescriptor> GetDeviceDescriptor(DeviceID deviceId) const;
-		std::optional<std::string> GetDeviceName(DeviceID deviceId) const;
 
-		void DrawDeviceDescriptorImGui() const;
+		void DrawAllRegisteredDeviceDescriptorsImGui() const;
+		void DrawAllConnectedDeviceDescriptorsImGui() const;
 
 	private:
 		void handleOnGamepadConnected(GamepadConnectEvent const& connectEvent);
 		void handleOnGamepadDisconnected(GamepadDisconnectEvent const& disconnectEvent);
+
+		/// Instead of returning a reference, we use pointer because we want to:
+		/// 1. Indicate invalid parameter (i.e. device with the id not connected)
+		/// 2. But still be able to reference the gamepad state without copying
+		GamepadState* getGamepadState(DeviceID deviceId);
 
 	private:
 		static std::unique_ptr<InputManager> s_Instance;
@@ -80,22 +106,14 @@ namespace DYE
 		std::int32_t m_PreviousMouseX {0};
 		std::int32_t m_PreviousMouseY {0};
 
-		struct GamepadState
-		{
-			std::string GUID;
-			void* NativeGamepadObject = nullptr;
+		std::unordered_map<std::string, DeviceID> m_RegisteredDeviceIDTable; 	// GUID string -> DeviceID
+		std::vector<DeviceDescriptor> m_RegisteredDeviceDescriptors;
 
-			std::array<bool, NumberOfGamepadButtons> Buttons = {false};
-			std::array<bool, NumberOfGamepadButtons> PreviousButtons = {false};
-			std::array<float, NumberOfGamepadAxes> Axes = {false};
-			std::array<float, NumberOfGamepadAxes> PreviousAxes = {false};
-		};
-
-		std::unordered_map<std::string, DeviceID> m_DeviceIDTable; 	// GUID string -> DeviceID
-		std::vector<DeviceDescriptor> m_DeviceDescriptors;
-
-		std::uint32_t m_NumberOfConnectedGamepads = 0;
-		std::array<GamepadState, MaxNumberOfConnectedGamepads> m_GamepadStates;		// Connected gamepad sparse set - dense array
-		std::array<int, MaxNumberOfConnectedGamepads> m_GamepadStateIndices = {0};	// Connected gamepad sparse set - sparse array
+		std::int32_t m_NumberOfConnectedGamepads = 0;
+		// Connected gamepad sparse set - dense array
+		std::array<GamepadState, MaxNumberOfUniqueGamepads> m_GamepadStates;
+		// Connected gamepad sparse set - sparse array
+		// i.e. The index for device id 'x' in m_GamepadStates array is stored at m_GamepadStateIndices[x].
+		std::array<std::int32_t, MaxNumberOfUniqueGamepads> m_GamepadStateIndices = {0};
 	};
 }
