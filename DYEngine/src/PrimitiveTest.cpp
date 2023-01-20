@@ -103,7 +103,8 @@ namespace DYE::Math
 		}
 
 		// The ray intersects with all dimension's slabs.
-		testResult.HitPoint = rayOrigin + rayDirection * testResult.HitTime;
+		testResult.HitCentroid = rayOrigin + rayDirection * testResult.HitTime;
+		testResult.HitPoint = testResult.HitCentroid;
 		return true;
 	}
 
@@ -170,7 +171,8 @@ namespace DYE::Math
 		}
 
 		// The ray intersects with all dimension's slabs.
-		testResult.HitPoint = rayOrigin + rayDirection * testResult.HitTime;
+		testResult.HitCentroid = rayOrigin + rayDirection * testResult.HitTime;
+		testResult.HitPoint = testResult.HitCentroid;
 		return true;
 	}
 
@@ -210,11 +212,12 @@ namespace DYE::Math
 			testResult.HitTime = 0.0f;
 		}
 
-		testResult.HitPoint = rayOrigin + testResult.HitTime * rayDirection;
+		testResult.HitCentroid = rayOrigin + testResult.HitTime * rayDirection;
+		testResult.HitPoint = testResult.HitCentroid;
 		if (!insideCircle)
 		{
 			// If rayOrigin is not inside, the hit normal would be 'circle center' to 'hit point'.
-			testResult.HitNormal = testResult.HitPoint - center;
+			testResult.HitNormal = testResult.HitCentroid - center;
 		}
 
 		return true;
@@ -222,6 +225,8 @@ namespace DYE::Math
 
 	bool MovingCircleAABBIntersect(glm::vec2 center, float radius, glm::vec2 direction, const AABB &aabb, DynamicTestResult2D& testResult)
 	{
+		testResult.HitNormal = -glm::normalize(direction); // Set normal to the opposite of moving direction by default.
+
 		// Compute the AABB resulting from expanding aabb by circle's radius.
 		AABB expandedAABB = aabb;
 		expandedAABB.Min.x -= radius; expandedAABB.Min.y -= radius;
@@ -243,20 +248,38 @@ namespace DYE::Math
 		//    c |  e  | c
 		// min
 		//       slabX
-		bool const inSlabX = testResult.HitPoint.x >= aabb.Min.x && testResult.HitPoint.x <= aabb.Max.x;
-		bool const inSlabY = testResult.HitPoint.y >= aabb.Min.y && testResult.HitPoint.y <= aabb.Max.y;
+		bool const inSlabX = testResult.HitCentroid.x >= aabb.Min.x && testResult.HitCentroid.x <= aabb.Max.x;
+		bool const inSlabY = testResult.HitCentroid.y >= aabb.Min.y && testResult.HitCentroid.y <= aabb.Max.y;
+
+		bool const isInsideAABB = inSlabX && inSlabY;
+		if (isInsideAABB)
+		{
+			return true;
+		}
 
 		bool const isEdgeRegion = inSlabX || inSlabY;
+		if (inSlabX)
+		{
+			testResult.HitNormal.x = 0.0f;
+		}
+		if (inSlabY)
+		{
+			testResult.HitNormal.y = 0.0f;
+		}
+
 		if (isEdgeRegion)
 		{
+			testResult.HitPoint = testResult.HitCentroid - glm::normalize(testResult.HitNormal) * radius;
 			return true;
 		}
 
 		// The hitPoint is inside vertex region, do a ray & circle intersect.
 		glm::vec2 corner;
-		corner.x = (testResult.HitPoint.x < aabb.Min.x)? aabb.Min.x : aabb.Max.x;
-		corner.y = (testResult.HitPoint.y < aabb.Min.y)? aabb.Min.y : aabb.Max.y;
+		corner.x = (testResult.HitCentroid.x < aabb.Min.x) ? aabb.Min.x : aabb.Max.x;
+		corner.y = (testResult.HitCentroid.y < aabb.Min.y) ? aabb.Min.y : aabb.Max.y;
 
-		return RayCircleIntersect(center, direction, corner, radius, testResult);
+		bool const rayExpandedCircleIntersect = RayCircleIntersect(center, direction, corner, radius, testResult);
+		testResult.HitPoint = testResult.HitCentroid - testResult.HitNormal;
+		return rayExpandedCircleIntersect;
 	}
 }

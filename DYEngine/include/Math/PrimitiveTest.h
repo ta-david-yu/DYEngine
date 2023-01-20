@@ -7,9 +7,15 @@ namespace DYE::Math
 	struct DynamicTestResult2D
 	{
 		float HitTime {0.0f};
+
+		// This will be the same as HitPoint if the moving object is a ray.
+		// Otherwise, it will be the position of the moving object when the hit happens
+		// (i.e. the center location of circle when circle hits the object tested against).
+		glm::vec2 HitCentroid {0.0f, 0.0f};
+
 		glm::vec2 HitPoint {0.0f, 0.0f};
 
-		// The normal vector of the surface hit by the movement direction. Note that the length is not guaranteed to be 1.
+		// Note that the length is not guaranteed to be 1.
 		// If a hit occurs starting inside the test target, the collision normal is the opposite direction of the movement direction.
 		glm::vec2 HitNormal {0.0f, 0.0f};
 	};

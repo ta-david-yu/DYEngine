@@ -100,7 +100,7 @@ namespace DYE
 			bool const intersect = Math::RayAABBIntersect2D(start, direction, maxDistance, pair.second, testResult);
 			if (intersect)
 			{
-				hits.push_back(RaycastHit2D { .ColliderID = pair.first, .Time = testResult.HitTime, .Point = testResult.HitPoint, .Normal = testResult.HitNormal });
+				hits.push_back(RaycastHit2D { .ColliderID = pair.first, .Time = testResult.HitTime, .Centroid = testResult.HitCentroid, .Point = testResult.HitPoint, .Normal = testResult.HitNormal });
 			}
 		}
 
@@ -121,7 +121,7 @@ namespace DYE
 			bool const intersect = Math::MovingCircleAABBIntersect(center, radius, direction, pair.second, testResult);
 			if (intersect)
 			{
-				hits.push_back(RaycastHit2D { .ColliderID = pair.first, .Time = testResult.HitTime, .Point = testResult.HitPoint });
+				hits.push_back(RaycastHit2D { .ColliderID = pair.first, .Time = testResult.HitTime, .Centroid = testResult.HitCentroid, .Point = testResult.HitPoint, .Normal = testResult.HitNormal });
 			}
 		}
 

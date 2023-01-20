@@ -164,6 +164,7 @@ namespace DYE
 		glm::vec2 const rayStart = m_AverageObject->Position;
 		glm::vec2 const rayEnd = m_MovingObject->Position;
 
+		/*
 		auto hits = m_ColliderManager.RaycastAll(rayStart, rayEnd);
 		for (auto& hit : hits)
 		{
@@ -171,13 +172,17 @@ namespace DYE
 			glm::vec3 const hitNormal3D = {hit.Normal.x, hit.Normal.y, 0};
 			DebugDraw::Line(hitPoint3D, hitPoint3D + hitNormal3D, Color::Yellow);
 			DebugDraw::Circle(hitPoint3D, 0.05f, {0, 0, 1}, Color::Red);
-		}
+		}*/
 
-		/*auto hits = m_ColliderManager.CircleCastAll(rayStart, circleRadius, rayEnd - rayStart);
+		auto hits = m_ColliderManager.CircleCastAll(rayStart, circleRadius, rayEnd - rayStart);
 		for (auto& hit : hits)
 		{
-			DebugDraw::Circle({hit.Point.x, hit.Point.y, 0}, circleRadius, {0, 0, 1}, Color::Red);
-		}*/
+			glm::vec3 const hitPoint3D = {hit.Point.x, hit.Point.y, 0};
+			glm::vec3 const hitNormal3D = {hit.Normal.x, hit.Normal.y, 0};
+			DebugDraw::Line(hitPoint3D, hitPoint3D + hitNormal3D, Color::Yellow);
+			DebugDraw::Circle(hitPoint3D, 0.05f, {0, 0, 1}, Color::Red);
+			DebugDraw::Circle({hit.Centroid.x, hit.Centroid.y, 0}, circleRadius, {0, 0, 1}, Color::Red);
+		}
 
 		bool const hasIntersect = !hits.empty();
 		DebugDraw::Line(m_MovingObject->Position, m_AverageObject->Position, hasIntersect? Color::Red : Color::Yellow);

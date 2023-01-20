@@ -14,6 +14,7 @@ namespace DYE
 	{
 		ColliderID ColliderID;
 		float Time;
+		glm::vec2 Centroid;
 		glm::vec2 Point;
 		glm::vec2 Normal;
 	};
