@@ -9,7 +9,7 @@ namespace DYE::Math
 		float HitTime {0.0f};
 		glm::vec2 HitPoint {0.0f, 0.0f};
 
-		// The normal vector of the surface hit by the movement direction.
+		// The normal vector of the surface hit by the movement direction. Note that the length is not guaranteed to be 1.
 		// If a hit occurs starting inside the test target, the collision normal is the opposite direction of the movement direction.
 		glm::vec2 HitNormal {0.0f, 0.0f};
 	};

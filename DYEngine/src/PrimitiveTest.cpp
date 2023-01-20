@@ -176,6 +176,8 @@ namespace DYE::Math
 
 	bool RayCircleIntersect(glm::vec2 rayOrigin, glm::vec2 rayDirection, glm::vec2 center, float radius, DynamicTestResult2D& testResult)
 	{
+		testResult.HitNormal = -glm::normalize(rayDirection); // Set normal to the opposite of ray direction by default.
+
 		glm::vec2 const cp = rayOrigin - center;
 		float const a = glm::dot(rayDirection, rayDirection);
 		float const b = glm::dot(cp, rayDirection);
@@ -192,21 +194,29 @@ namespace DYE::Math
 		// Reference: Real-Time Collision Detection by Christer Ericson.
 		float const discriminant = b * b - a * c;
 
-		// A negative discriminant corresponds to ray missing sphere
+		// A negative discriminant corresponds to ray missing circle
 		if (discriminant < 0.0f)
 		{
 			return false;
 		}
 
-		// Ray now found to intersect sphere, compute smallest t value of intersection
+		// Ray now found to intersect circle, compute smallest t value of intersection
 		testResult.HitTime = (-b - glm::sqrt(discriminant)) / a;
 
-		// If t is negative, ray started inside sphere so clamp t to zero
-		if (testResult.HitTime < 0.0f)
+		// If t is negative, ray started inside circle so clamp t to zero
+		bool const insideCircle = testResult.HitTime < 0.0f;
+		if (insideCircle)
 		{
 			testResult.HitTime = 0.0f;
 		}
+
 		testResult.HitPoint = rayOrigin + testResult.HitTime * rayDirection;
+		if (!insideCircle)
+		{
+			// If rayOrigin is not inside, the hit normal would be 'circle center' to 'hit point'.
+			testResult.HitNormal = testResult.HitPoint - center;
+		}
+
 		return true;
 	}
 
