@@ -42,11 +42,13 @@ namespace DYE::Math
 
 	bool RayAABBIntersect2D(glm::vec2 rayOrigin, glm::vec2 rayDirection, Math::AABB const& aabb, DynamicTestResult2D& testResult)
 	{
-		testResult.HitTime = 0.0f; // Could also call it slab 'enter time'. We could set this to -float.max to get hit on the line instead of the ray.
+		testResult.HitTime = 0.0f;	// Could also call it slab 'enter time'. We could set this to -float.max to get hit on the line instead of the ray.
+		testResult.HitNormal = -glm::normalize(rayDirection); // Set normal to the opposite of ray direction by default.
 		float exitTime = std::numeric_limits<float>::max();
 
 		// A slab for each dimension.
 		int const numberOfDimension = 2;
+		int hitSlabDimensionIndex = -1;	// The dimension index of the slab that ray enters. We use this to calculate hit normal later.
 		for (int i = 0; i < numberOfDimension; i++)
 		{
 			bool const isRayParallelToSlab = glm::epsilonEqual(rayDirection[i], 0.0f, std::numeric_limits<float>::epsilon());
@@ -75,6 +77,7 @@ namespace DYE::Math
 			if (firstSlabIntersectionTime > testResult.HitTime)
 			{
 				testResult.HitTime = firstSlabIntersectionTime;
+				hitSlabDimensionIndex = i;
 			}
 
 			if (secondSlabIntersectionTime < exitTime)
@@ -89,6 +92,16 @@ namespace DYE::Math
 			}
 		}
 
+		if (hitSlabDimensionIndex != -1)
+		{
+			// Compute hit normal.
+			for (int i = 0; i < numberOfDimension; i++)
+			{
+				float const sign = glm::sign(testResult.HitNormal[i]);
+				testResult.HitNormal[i] = (i == hitSlabDimensionIndex)? sign * 1.0f : 0.0f;
+			}
+		}
+
 		// The ray intersects with all dimension's slabs.
 		testResult.HitPoint = rayOrigin + rayDirection * testResult.HitTime;
 		return true;
@@ -97,10 +110,12 @@ namespace DYE::Math
 	bool RayAABBIntersect2D(glm::vec2 rayOrigin, glm::vec2 rayDirection, float maxDistance, Math::AABB const& aabb, DynamicTestResult2D& testResult)
 	{
 		testResult.HitTime = 0.0f; // Could also call it slab 'enter time'. We could set this to -float.max to get hit on the line instead of the ray.
+		testResult.HitNormal = -glm::normalize(rayDirection); // Set normal to the opposite of ray direction by default.
 		float exitTime = maxDistance;
 
 		// A slab for each dimension.
 		int const numberOfDimension = 2;
+		int hitSlabDimensionIndex = -1;	// The dimension index of the slab that ray enters. We use this to calculate hit normal later.
 		for (int i = 0; i < numberOfDimension; i++)
 		{
 			bool const isRayParallelToSlab = glm::epsilonEqual(rayDirection[i], 0.0f, std::numeric_limits<float>::epsilon());
@@ -129,6 +144,7 @@ namespace DYE::Math
 			if (firstSlabIntersectionTime > testResult.HitTime)
 			{
 				testResult.HitTime = firstSlabIntersectionTime;
+				hitSlabDimensionIndex = i;
 			}
 
 			if (secondSlabIntersectionTime < exitTime)
@@ -140,6 +156,16 @@ namespace DYE::Math
 			{
 				// Exit with no intersection because the slab intersection has become an empty interval.
 				return false;
+			}
+		}
+
+		if (hitSlabDimensionIndex != -1)
+		{
+			// Compute hit normal.
+			for (int i = 0; i < numberOfDimension; i++)
+			{
+				float const sign = glm::sign(testResult.HitNormal[i]);
+				testResult.HitNormal[i] = (i == hitSlabDimensionIndex)? sign * 1.0f : 0.0f;
 			}
 		}
 

@@ -15,6 +15,7 @@ namespace DYE
 		ColliderID ColliderID;
 		float Time;
 		glm::vec2 Point;
+		glm::vec2 Normal;
 	};
 
 	class StaticColliderManager

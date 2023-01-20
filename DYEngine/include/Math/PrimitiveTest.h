@@ -8,6 +8,10 @@ namespace DYE::Math
 	{
 		float HitTime {0.0f};
 		glm::vec2 HitPoint {0.0f, 0.0f};
+
+		// The normal vector of the surface hit by the movement direction.
+		// If a hit occurs starting inside the test target, the collision normal is the opposite direction of the movement direction.
+		glm::vec2 HitNormal {0.0f, 0.0f};
 	};
 
 	bool AABBAABBIntersect2D(AABB const& a, AABB const& b);
