@@ -10,7 +10,7 @@
 
 namespace DYE
 {
-	class WindowBase;
+    class WindowBase;
 	class VertexArray;
 	class ShaderProgram;
 	class Material;
@@ -29,29 +29,29 @@ namespace DYE
 		glm::vec4 Color {1, 1, 1, 1};
 	};
 
-	class PeepholismLayer : public LayerBase
-	{
-	public:
-		PeepholismLayer();
-		PeepholismLayer(PeepholismLayer const& other) = delete;
+    class CollisionTestLayer : public LayerBase
+    {
+    public:
+        CollisionTestLayer();
+		CollisionTestLayer(CollisionTestLayer const& other) = delete;
 
 		void OnInit() override;
-		void OnEvent(Event& event) override;
-		void OnUpdate() override;
-		void OnFixedUpdate() override;
+        void OnEvent(Event& event) override;
+        void OnUpdate() override;
+        void OnFixedUpdate() override;
 		void OnRender() override;
-		void OnImGui() override;
+        void OnImGui() override;
 
 	private:
 		static void renderSpriteObject(SpriteObject& object);
 		static void renderTiledSpriteObject(SpriteObject& object, glm::vec2 offset);
 		void imguiSpriteObject(SpriteObject& object);
 
-	private:
+    private:
 		bool m_IsControlWindowOpen = false;
-		double m_FpsAccumulator = 0;
-		int m_FramesCounter = 0;
-		int m_FixedUpdateCounter = 0;
+        double m_FpsAccumulator = 0;
+        int m_FramesCounter = 0;
+        int m_FixedUpdateCounter = 0;
 
 		WindowBase* m_SecondWindow = nullptr;
 
@@ -60,11 +60,13 @@ namespace DYE
 		float m_TargetWindowHeight = 900;
 
 		float m_WindowPixelChangePerSecond = 300.0f;
+
+		float m_BallSpeed = 5.0f;
+
 		float m_TileOffset = 0.0f;
 
-		float m_BallSpeed = 3.0f;
-		glm::vec2 m_BallVelocity = {0.2f, 0.5f};
-
+		std::shared_ptr<SpriteObject> m_OriginObject;
+		std::shared_ptr<SpriteObject> m_AverageObject;
 		std::shared_ptr<SpriteObject> m_MovingObject;
 		std::shared_ptr<SpriteObject> m_BackgroundTileObject;
 

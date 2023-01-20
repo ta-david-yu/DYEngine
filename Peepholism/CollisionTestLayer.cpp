@@ -1,4 +1,4 @@
-#include "PeepholismLayer.h"
+#include "CollisionTestLayer.h"
 
 #include "Core/Application.h"
 #include "Util/Logger.h"
@@ -37,18 +37,26 @@
 
 namespace DYE
 {
-	PeepholismLayer::PeepholismLayer()
-	{
-	}
+	CollisionTestLayer::CollisionTestLayer()
+    {
+    }
 
-	void PeepholismLayer::OnInit()
+	void CollisionTestLayer::OnInit()
 	{
 		RenderCommand::GetInstance().SetClearColor(glm::vec4{0.5f, 0.5f, 0.5f, 0.5f});
 
+		m_OriginObject = std::make_shared<SpriteObject>();
+		m_OriginObject->Name = "Origin";
+		m_OriginObject->Texture = Texture2D::Create("assets\\Sprite_Pong.png");
+		m_OriginObject->Texture->PixelsPerUnit = 32;
+
+		m_AverageObject = std::make_shared<SpriteObject>();
+		m_AverageObject->Name = "Average";
+		m_AverageObject->Texture = m_OriginObject->Texture;
+
 		m_MovingObject = std::make_shared<SpriteObject>();
 		m_MovingObject->Name = "Moving";
-		m_MovingObject->Texture = Texture2D::Create("assets\\Sprite_Pong.png");
-		m_MovingObject->Texture->PixelsPerUnit = 32;
+		m_MovingObject->Texture = m_OriginObject->Texture;
 
 		m_BackgroundTileObject = std::make_shared<SpriteObject>();
 		m_BackgroundTileObject->Name = "Background";
@@ -84,21 +92,18 @@ namespace DYE
 		// Set the current context back to the main window.
 		mainWindowPtr->MakeCurrent();
 
-		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({5, 0, 0}, {1, 12, 0}));
-		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({-5, 2, 0}, {1, 12, 0}));
-		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({0, 5, 0}, {12, 1, 0}));
-		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({0, -6, 0}, {12, 3, 0}));
-
+		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({2, 0, 0}, {1, 1, 0}));
+		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({-2, 0, 0}, {1, 1, 0}));
 		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({0, 2, 0}, {1, 1, 0}));
-		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({-1, 0.5f, 0}, {1, 1, 0}));
+		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({0, -3, 0}, {2, 3, 0}));
 	}
 
-	void PeepholismLayer::OnRender()
+	void CollisionTestLayer::OnRender()
 	{
 		RenderPipelineManager::RegisterCameraForNextRender(*m_CameraProperties);
 
 		CameraProperties cameraRenderToSecondWindow {};
-		cameraRenderToSecondWindow.Position = {m_MovingObject->Position.x, m_MovingObject->Position.y, 10};
+		cameraRenderToSecondWindow.Position = {0, 0, 10};
 		cameraRenderToSecondWindow.IsOrthographic = true;
 		cameraRenderToSecondWindow.OrthographicSize = 10;
 		cameraRenderToSecondWindow.TargetType = RenderTargetType::Window;
@@ -108,12 +113,14 @@ namespace DYE
 		cameraRenderToSecondWindow.Viewport = {0, 0, 1, 1};
 		RenderPipelineManager::RegisterCameraForNextRender(cameraRenderToSecondWindow);
 
+		renderSpriteObject(*m_OriginObject);
 		renderSpriteObject(*m_MovingObject);
+		renderSpriteObject(*m_AverageObject);
 
 		renderTiledSpriteObject(*m_BackgroundTileObject, {m_TileOffset, m_TileOffset});
 	}
 
-	void PeepholismLayer::renderSpriteObject(SpriteObject& object)
+	void CollisionTestLayer::renderSpriteObject(SpriteObject& object)
 	{
 		glm::mat4 modelMatrix = glm::mat4 {1.0f};
 		modelMatrix = glm::translate(modelMatrix, object.Position);
@@ -121,10 +128,10 @@ namespace DYE
 		modelMatrix = glm::scale(modelMatrix, object.Scale);
 
 		RenderPipelineManager::GetTypedActiveRenderPipelinePtr<RenderPipeline2D>()
-			->SubmitSprite(object.Texture, object.Color, modelMatrix);
+		    ->SubmitSprite(object.Texture, object.Color, modelMatrix);
 	}
 
-	void PeepholismLayer::renderTiledSpriteObject(SpriteObject& object, glm::vec2 offset)
+	void CollisionTestLayer::renderTiledSpriteObject(SpriteObject& object, glm::vec2 offset)
 	{
 		glm::mat4 modelMatrix = glm::mat4 {1.0f};
 		modelMatrix = glm::translate(modelMatrix, object.Position);
@@ -132,23 +139,53 @@ namespace DYE
 		modelMatrix = glm::scale(modelMatrix, object.Scale);
 
 		RenderPipelineManager::GetTypedActiveRenderPipelinePtr<RenderPipeline2D>()
-			->SubmitTiledSprite(object.Texture, {object.Scale.x, object.Scale.y, offset.x, offset.y}, object.Color, modelMatrix);
+		    ->SubmitTiledSprite(object.Texture, {object.Scale.x, object.Scale.y, offset.x, offset.y}, object.Color, modelMatrix);
 	}
 
-	void PeepholismLayer::OnEvent(Event& event)
-	{
+    void CollisionTestLayer::OnEvent(Event& event)
+    {
 
-	}
+    }
 
-	void PeepholismLayer::OnUpdate()
-	{
+    void CollisionTestLayer::OnUpdate()
+    {
 		m_ColliderManager.DrawGizmos();
 
 		Math::AABB const movingAABB = Math::AABB::CreateFromCenter(m_MovingObject->Position, {0.5f, 0.5f, 0.5f});
+		Math::AABB const averageAABB = Math::AABB::CreateFromCenter(m_AverageObject->Position, {0.5f, 0.5f, 0.5f});
 
 		float const circleRadius = 0.25f;
 		bool const isMovingOverlapped = !m_ColliderManager.OverlapCircle(m_MovingObject->Position, circleRadius).empty();
-		//DebugDraw::Circle(m_MovingObject->Position, circleRadius, {0, 0, 1}, isMovingOverlapped? Color::Red : Color::Yellow);
+		bool const isAverageOverlapped = !m_ColliderManager.OverlapCircle(m_AverageObject->Position, circleRadius).empty();
+
+		DebugDraw::Circle(m_MovingObject->Position, circleRadius, {0, 0, 1}, isMovingOverlapped? Color::Red : Color::Yellow);
+		DebugDraw::Circle(m_AverageObject->Position, circleRadius, {0, 0, 1}, isAverageOverlapped? Color::Red : Color::Yellow);
+
+		glm::vec2 const rayStart = m_AverageObject->Position;
+		glm::vec2 const rayEnd = m_MovingObject->Position;
+
+		/*
+		auto hits = m_ColliderManager.RaycastAll(rayStart, rayEnd);
+		for (auto& hit : hits)
+		{
+			glm::vec3 const hitPoint3D = {hit.Point.x, hit.Point.y, 0};
+			glm::vec3 const hitNormal3D = {hit.Normal.x, hit.Normal.y, 0};
+			DebugDraw::Line(hitPoint3D, hitPoint3D + hitNormal3D, Color::Yellow);
+			DebugDraw::Circle(hitPoint3D, 0.05f, {0, 0, 1}, Color::Red);
+		}*/
+
+		auto hits = m_ColliderManager.CircleCastAll(rayStart, circleRadius, rayEnd - rayStart);
+		for (auto& hit : hits)
+		{
+			glm::vec3 const hitPoint3D = {hit.Point.x, hit.Point.y, 0};
+			glm::vec3 const hitNormal3D = {hit.Normal.x, hit.Normal.y, 0};
+			DebugDraw::Line(hitPoint3D, hitPoint3D + hitNormal3D, Color::Yellow);
+			DebugDraw::Circle(hitPoint3D, 0.05f, {0, 0, 1}, Color::Red);
+			DebugDraw::Circle({hit.Centroid.x, hit.Centroid.y, 0}, circleRadius, {0, 0, 1}, Color::Red);
+		}
+
+		bool const hasIntersect = !hits.empty();
+		DebugDraw::Line(m_MovingObject->Position, m_AverageObject->Position, hasIntersect? Color::Red : Color::Yellow);
 
 		// Scroll tiled offset
 		m_TileOffset += TIME.DeltaTime() * 0.5f;
@@ -157,36 +194,36 @@ namespace DYE
 			m_TileOffset -= 1.0f;
 		}
 
-		// FPS
-		m_FramesCounter++;
-		m_FpsAccumulator += TIME.DeltaTime();
-		if (m_FpsAccumulator >= 0.25)
-		{
-			double const fps = m_FramesCounter / m_FpsAccumulator;
-			//SDL_Log("Delta FPS: %f", fps);
+        // FPS
+        m_FramesCounter++;
+        m_FpsAccumulator += TIME.DeltaTime();
+        if (m_FpsAccumulator >= 0.25)
+        {
+            double const fps = m_FramesCounter / m_FpsAccumulator;
+            //SDL_Log("Delta FPS: %f", fps);
 
-			m_FramesCounter = 0;
-			m_FpsAccumulator = 0;
-		}
+            m_FramesCounter = 0;
+            m_FpsAccumulator = 0;
+        }
 
 		if (INPUT.GetKey(KeyCode::Up))
 		{
-			m_BallVelocity.y += TIME.DeltaTime() * m_BallSpeed;
+			m_MovingObject->Position.y += TIME.DeltaTime() * m_BallSpeed;
 		}
 
 		if (INPUT.GetKey(KeyCode::Down))
 		{
-			m_BallVelocity.y -= TIME.DeltaTime() * m_BallSpeed;
+			m_MovingObject->Position.y -= TIME.DeltaTime() * m_BallSpeed;
 		}
 
 		if (INPUT.GetKey(KeyCode::Right))
 		{
-			m_BallVelocity.x += TIME.DeltaTime() * m_BallSpeed;
+			m_MovingObject->Position.x += TIME.DeltaTime() * m_BallSpeed;
 		}
 
 		if (INPUT.GetKey(KeyCode::Left))
 		{
-			m_BallVelocity.x -= TIME.DeltaTime() * m_BallSpeed;
+			m_MovingObject->Position.x -= TIME.DeltaTime() * m_BallSpeed;
 		}
 
 		if (INPUT.GetMouseButtonDown(MouseButton::Left))
@@ -203,6 +240,8 @@ namespace DYE
 		{
 			m_MovingObject->Color = Color::Red;
 		}
+
+		m_AverageObject->Position = (m_MovingObject->Position + m_OriginObject->Position) * 0.5f;
 
 		bool change = false;
 		if (INPUT.GetKey(KeyCode::W))
@@ -224,11 +263,6 @@ namespace DYE
 		{
 			m_WindowPosition.x -= TIME.DeltaTime() * m_WindowPixelChangePerSecond;
 			change = true;
-		}
-
-		if (INPUT.GetKeyDown(KeyCode::Space))
-		{
-			m_BallVelocity += glm::vec2 {0, 5};
 		}
 
 		auto mainWindowPtr = WindowManager::GetMainWindow();
@@ -363,63 +397,42 @@ namespace DYE
 		m_CameraProperties->Position.y = ((normalizedWindowPos.y - screenHeight * 0.5f) / 32.0f) * scalar;
 
 		float const sizeScalar = 1.0f * (320.0f / windowHeight);
-		m_CameraProperties->OrthographicSize = 5 / sizeScalar;
+    	m_CameraProperties->OrthographicSize = 5 / sizeScalar;
 	}
 
-	void PeepholismLayer::OnFixedUpdate()
-	{
-		m_FixedUpdateCounter++;
+    void CollisionTestLayer::OnFixedUpdate()
+    {
+        m_FixedUpdateCounter++;
+        //SDL_Log("FixedDeltaTime - %f", TIME.FixedDeltaTime());
+    }
 
-		auto const timeStep = (float) TIME.FixedDeltaTime();
-		glm::vec2 const positionChange = timeStep * m_BallVelocity;
-		auto const& hits = m_ColliderManager.CircleCastAll(m_MovingObject->Position, 0.25f, positionChange);
-		if (!hits.empty())
-		{
-			// Collide with a box!
-			auto const& hit = hits[0];
-			glm::vec2 const normal = glm::normalize(hit.Normal);
-
-			float const minimumTravelTimeAfterReflected = 0.001f;
-			float const reflectedTravelTime = glm::max(minimumTravelTimeAfterReflected, timeStep - hit.Time);
-			m_BallVelocity = m_BallVelocity - 2 * glm::dot(normal, m_BallVelocity) * normal;
-			m_BallVelocity.y = m_BallVelocity.y * 0.8f;
-			m_MovingObject->Position = glm::vec3(hit.Centroid + reflectedTravelTime * m_BallVelocity, 0);
-		}
-		else
-		{
-			m_MovingObject->Position += glm::vec3(positionChange, 0);
-		}
-
-		m_BallVelocity.y -= 9.8f * timeStep;
-	}
-
-	void PeepholismLayer::OnImGui()
-	{
-		// get the window size as a base for calculating widgets geometry
+    void CollisionTestLayer::OnImGui()
+    {
+        // get the window size as a base for calculating widgets geometry
 		auto mainWindowPtr = WindowManager::GetMainWindow();
-		int windowWidth = mainWindowPtr->GetWidth();
+        int windowWidth = mainWindowPtr->GetWidth();
 		int windowHeight = mainWindowPtr->GetHeight();
 		int controls_width = windowWidth;
-		// make controls widget width to be 1/3 of the main window width
-		if ((controls_width * 0.33f) < 300) { controls_width = 300; }
+        // make controls widget width to be 1/3 of the main window width
+        if ((controls_width * 0.33f) < 300) { controls_width = 300; }
 
-		// position the controls widget in the top-right corner with some margin
-		ImGui::SetNextWindowPos
+        // position the controls widget in the top-right corner with some margin
+        ImGui::SetNextWindowPos
 			(
 				ImVec2(10, 10),
 				ImGuiCond_FirstUseEver
 			);
-		// here we set the calculated width and also make the height to be
-		// the half height of the main window
-		ImGui::SetNextWindowSize
+        // here we set the calculated width and also make the height to be
+        // the half height of the main window
+        ImGui::SetNextWindowSize
 			(
-				ImVec2(static_cast<float>(controls_width), static_cast<float>(windowHeight * 0.5f)),
-				ImGuiCond_FirstUseEver
+                ImVec2(static_cast<float>(controls_width), static_cast<float>(windowHeight * 0.5f)),
+                ImGuiCond_FirstUseEver
 			);
 
-		// create a window and append into it
+        // create a window and append into it
 		//ImGuiWindowFlags window_flags = ImGuiWindowFlags_None;
-		if (ImGui::Begin("Controls", &m_IsControlWindowOpen))
+        if (ImGui::Begin("Controls", &m_IsControlWindowOpen))
 		{
 			ImGui::Dummy(ImVec2(0.0f, 1.0f));
 			ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "Platform");
@@ -485,17 +498,23 @@ namespace DYE
 			imguiSpriteObject(*m_MovingObject);
 
 			ImGui::Separator();
+			imguiSpriteObject(*m_AverageObject);
+
+			ImGui::Separator();
+			imguiSpriteObject(*m_OriginObject);
+
+			ImGui::Separator();
 			imguiSpriteObject(*m_BackgroundTileObject);
 		}
 
-		ImGui::End();
+        ImGui::End();
 
 		m_ColliderManager.DrawImGui();
 		INPUT.DrawAllRegisteredDeviceDescriptorsImGui();
 		INPUT.DrawAllConnectedDeviceDescriptorsImGui();
-	}
+    }
 
-	void PeepholismLayer::imguiSpriteObject(SpriteObject &object)
+	void CollisionTestLayer::imguiSpriteObject(SpriteObject &object)
 	{
 		ImGui::PushID(object.Name.c_str());
 
