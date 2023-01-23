@@ -97,9 +97,6 @@ namespace DYE
 		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({-5, 2, 0}, {1, 12, 0}));
 		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({0, 5, 0}, {12, 1, 0}));
 		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({0, -6, 0}, {12, 3, 0}));
-
-		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({0, 2, 0}, {1, 1, 0}));
-		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({-1, 0.5f, 0}, {1, 1, 0}));
 	}
 
 	void PeepholismLayer::registerBoxCollider(Pong::Transform &transform, Pong::BoxCollider &collider)
