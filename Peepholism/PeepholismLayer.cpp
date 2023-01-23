@@ -45,11 +45,11 @@ namespace DYE
 	{
 		RenderCommand::GetInstance().SetClearColor(glm::vec4{0.5f, 0.5f, 0.5f, 0.5f});
 
-		m_PlayerPaddle1.Transform.Position = {-10, 0, 0};
-		m_PlayerPaddle1.Collider.Size = {0.5f, 3, 1};
+		m_PlayerPaddle1.Transform.Position = {-4, 0, 0};
+		m_PlayerPaddle1.Collider.Size = {0.75f, 3, 1};
 
-		m_PlayerPaddle2.Transform.Position = {10, 0, 0};
-		m_PlayerPaddle2.Collider.Size = {0.5f, 3, 1};
+		m_PlayerPaddle2.Transform.Position = {4, 0, 0};
+		m_PlayerPaddle2.Collider.Size = {0.75f, 3, 1};
 
 		registerBoxCollider(m_PlayerPaddle1.Transform, m_PlayerPaddle1.Collider);
 		registerBoxCollider(m_PlayerPaddle2.Transform, m_PlayerPaddle2.Collider);
@@ -353,7 +353,7 @@ namespace DYE
 			float const horizontal = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickHorizontal);
 			float const vertical = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickVertical);
 
-			glm::vec3 const axis = {horizontal, vertical, 0};
+			glm::vec3 const axis = {0, -vertical, 0};
 
 			if (glm::length2(axis) > 0.01f)
 			{
@@ -370,8 +370,8 @@ namespace DYE
 		{
 			// TODO: Fixed precision issue because window size is int, but animation is using float!
 			//  We prolly want to use fixed animation instead (tween animation)
-			float newWidth = Math::Lerp(currWidth, m_TargetWindowWidth, 1.0f - glm::pow(0.5f, TIME.DeltaTime() / 0.1f));
-			float newHeight = Math::Lerp(currHeight, m_TargetWindowHeight, 1.0f - glm::pow(0.5f, TIME.DeltaTime() / 0.1f));
+			float const newWidth = Math::Lerp(currWidth, m_TargetWindowWidth, 1.0f - glm::pow(0.5f, TIME.DeltaTime() / 0.1f));
+			float const newHeight = Math::Lerp(currHeight, m_TargetWindowHeight, 1.0f - glm::pow(0.5f, TIME.DeltaTime() / 0.1f));
 
 			// Make the speed even, so SetWindowSizeUsingWindowCenterAsAnchor can properly derive precise integer position
 			int widthSpeed = glm::abs(newWidth - currWidth);
@@ -417,16 +417,44 @@ namespace DYE
 	{
 		m_FixedUpdateCounter++;
 
+		float const ballRadius = 0.25f;
+
 		float const inputSqr = glm::length2(m_PlayerPaddle1.MovementInputBuffer);
+		glm::vec3 paddleVelocityPerSecond = glm::vec3 {0, 0, 0};
 		if (inputSqr > glm::epsilon<float>())
 		{
+			// Calculate the paddleVelocity
 			float const magnitude = glm::length(m_PlayerPaddle1.MovementInputBuffer);
 			glm::vec3 const direction = glm::normalize(glm::vec3{m_PlayerPaddle1.MovementInputBuffer, 0});
-			m_PlayerPaddle1.Transform.Position += m_PlayerPaddle1.Speed * direction * (magnitude * (float) TIME.FixedDeltaTime());
+			paddleVelocityPerSecond = m_PlayerPaddle1.Speed * direction * magnitude;
+			glm::vec3 const paddleVelocity = paddleVelocityPerSecond * (float) TIME.FixedDeltaTime();
 
-			m_PlayerPaddle1.MovementInputBuffer = {0, 0};
+			// Push the ball if there is an overlap.
+			Math::DynamicTestResult2D result2D;
+			bool const intersectBall = Math::MovingCircleAABBIntersect(m_MovingObject->Position, ballRadius, -paddleVelocity, m_PlayerPaddle1.GetAABB(), result2D);
+			if (intersectBall)
+			{
+				glm::vec2 const normal = glm::normalize(result2D.HitNormal);
+				auto ballPaddleDot = glm::dot(paddleVelocity, glm::vec3 {m_BallVelocity, 0});
 
+				if (ballPaddleDot < 0.0f)
+				{
+					// If the ball is moving in the opposite direction of the paddle,
+					// bounce (deflect) the ball into reflected direction.
+					m_BallVelocity = m_BallVelocity - 2 * glm::dot(normal, m_BallVelocity) * normal;
+					m_BallVelocity += glm::vec2 {paddleVelocityPerSecond.x, paddleVelocityPerSecond.y};
+				}
+
+				// Move the ball away from the paddle to avoid tunneling
+				m_MovingObject->Position += paddleVelocity;
+			}
+
+			// Update collider info stored in the collider manager.
 			updateBoxCollider(m_PlayerPaddle1.Transform, m_PlayerPaddle1.Collider);
+
+			// Move the paddle.
+			m_PlayerPaddle1.Transform.Position += paddleVelocity;
+			m_PlayerPaddle1.MovementInputBuffer = {0, 0};
 		}
 
 		auto const timeStep = (float) TIME.FixedDeltaTime();
@@ -442,6 +470,13 @@ namespace DYE
 			float const reflectedTravelTime = glm::max(minimumTravelTimeAfterReflected, timeStep - hit.Time);
 			m_BallVelocity = m_BallVelocity - 2 * glm::dot(normal, m_BallVelocity) * normal;
 			m_MovingObject->Position = glm::vec3(hit.Centroid + reflectedTravelTime * m_BallVelocity, 0);
+
+			if (hit.ColliderID == m_PlayerPaddle1.Collider.ID)
+			{
+				// The ball hits a paddle!
+				// Adjust velocity based on the paddle's velocity.
+				m_BallVelocity += glm::vec2 {paddleVelocityPerSecond.x, paddleVelocityPerSecond.y};
+			}
 		}
 		else
 		{
