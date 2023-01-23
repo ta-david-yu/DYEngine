@@ -3,7 +3,9 @@
 #include "Core/LayerBase.h"
 #include "Event/KeyEvent.h"
 
-#include "StaticColliderManager.h"
+#include "ColliderManager.h"
+#include "Objects/PlayerPaddle.h"
+#include "Objects/Wall.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -43,6 +45,10 @@ namespace DYE
 		void OnImGui() override;
 
 	private:
+		void registerBoxCollider(Pong::Transform& transform, Pong::BoxCollider& collider);
+		void unregisterBoxCollider(Pong::Transform& transform, Pong::BoxCollider& collider);
+		void updateBoxCollider(Pong::Transform& transform, Pong::BoxCollider& collider);
+
 		static void renderSpriteObject(SpriteObject& object);
 		static void renderTiledSpriteObject(SpriteObject& object, glm::vec2 offset);
 		void imguiSpriteObject(SpriteObject& object);
@@ -53,14 +59,21 @@ namespace DYE
 		int m_FramesCounter = 0;
 		int m_FixedUpdateCounter = 0;
 
-		WindowBase* m_SecondWindow = nullptr;
+		ColliderManager m_ColliderManager;
+		std::shared_ptr<CameraProperties> m_CameraProperties;
 
+		WindowBase* m_SecondWindow = nullptr;
 		glm::vec2 m_WindowPosition;
 		float m_TargetWindowWidth = 1600;
 		float m_TargetWindowHeight = 900;
-
 		float m_WindowPixelChangePerSecond = 300.0f;
+
 		float m_TileOffset = 0.0f;
+
+		Pong::PlayerPaddle m_PlayerPaddle1;
+		Pong::PlayerPaddle m_PlayerPaddle2;
+		std::vector<Pong::Wall> m_Walls;
+
 
 		float m_BallSpeed = 3.0f;
 		glm::vec2 m_BallVelocity = {0.2f, 0.5f};
@@ -68,8 +81,5 @@ namespace DYE
 		std::shared_ptr<SpriteObject> m_MovingObject;
 		std::shared_ptr<SpriteObject> m_BackgroundTileObject;
 
-		StaticColliderManager m_ColliderManager;
-
-		std::shared_ptr<CameraProperties> m_CameraProperties;
 	};
 }

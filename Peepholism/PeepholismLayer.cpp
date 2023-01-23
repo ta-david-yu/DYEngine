@@ -45,6 +45,15 @@ namespace DYE
 	{
 		RenderCommand::GetInstance().SetClearColor(glm::vec4{0.5f, 0.5f, 0.5f, 0.5f});
 
+		m_PlayerPaddle1.Transform.Position = {-10, 0, 0};
+		m_PlayerPaddle1.Collider.Size = {0.5f, 3, 1};
+
+		m_PlayerPaddle2.Transform.Position = {10, 0, 0};
+		m_PlayerPaddle2.Collider.Size = {0.5f, 3, 1};
+
+		registerBoxCollider(m_PlayerPaddle1.Transform, m_PlayerPaddle1.Collider);
+		registerBoxCollider(m_PlayerPaddle2.Transform, m_PlayerPaddle2.Collider);
+
 		m_MovingObject = std::make_shared<SpriteObject>();
 		m_MovingObject->Name = "Moving";
 		m_MovingObject->Texture = Texture2D::Create("assets\\Sprite_Pong.png");
@@ -54,7 +63,7 @@ namespace DYE
 		m_BackgroundTileObject->Name = "Background";
 		m_BackgroundTileObject->Texture = Texture2D::Create("assets\\Sprite_Grid.png");
 		m_BackgroundTileObject->Texture->PixelsPerUnit = 32;
-		m_BackgroundTileObject->Scale = {16.0f, 10.0f, 1};
+		m_BackgroundTileObject->Scale = {64.0f, 64.0f, 1};
 		m_BackgroundTileObject->Position = {0, 0, -2};
 
 		auto mainWindowPtr = WindowManager::GetMainWindow();
@@ -91,6 +100,51 @@ namespace DYE
 
 		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({0, 2, 0}, {1, 1, 0}));
 		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({-1, 0.5f, 0}, {1, 1, 0}));
+	}
+
+	void PeepholismLayer::registerBoxCollider(Pong::Transform &transform, Pong::BoxCollider &collider)
+	{
+		if (collider.ID.has_value() && m_ColliderManager.IsColliderRegistered(collider.ID.value()))
+		{
+			// The collider has already been registered to the manager.
+			return;
+		}
+
+		collider.ID = m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter(transform.Position, collider.Size));
+	}
+
+	void PeepholismLayer::unregisterBoxCollider(Pong::Transform &transform, Pong::BoxCollider &collider)
+	{
+		if (!collider.ID.has_value())
+		{
+			// The collider doesn't have an ID.
+			return;
+		}
+
+		if (!m_ColliderManager.IsColliderRegistered(collider.ID.value()))
+		{
+			// The collider is not registered to this manager.
+			return;
+		}
+
+		m_ColliderManager.UnregisterAABB(collider.ID.value());
+	}
+
+	void PeepholismLayer::updateBoxCollider(Pong::Transform &transform, Pong::BoxCollider &collider)
+	{
+		if (!collider.ID.has_value())
+		{
+			// The collider doesn't have an ID.
+			return;
+		}
+
+		if (!m_ColliderManager.IsColliderRegistered(collider.ID.value()))
+		{
+			// The collider is not registered to this manager.
+			return;
+		}
+
+		m_ColliderManager.SetAABB(collider.ID.value(), Math::AABB::CreateFromCenter(transform.Position, collider.Size));
 	}
 
 	void PeepholismLayer::OnRender()
@@ -248,35 +302,30 @@ namespace DYE
 		{
 			m_TargetWindowWidth = 1920;
 			m_TargetWindowHeight = 1080;
-			//m_WindowPosition = mainWindowPtr->SetWindowSizeUsingWindowCenterAsAnchor(1920, 1080);
 		}
 
 		if (INPUT.GetKeyDown(KeyCode::F3))
 		{
 			m_TargetWindowWidth = 1600;
 			m_TargetWindowHeight = 900;
-			//m_WindowPosition = mainWindowPtr->SetWindowSizeUsingWindowCenterAsAnchor(1600, 900);
 		}
 
 		if (INPUT.GetKeyDown(KeyCode::F4))
 		{
 			m_TargetWindowWidth = 800;
 			m_TargetWindowHeight = 640;
-			//m_WindowPosition = mainWindowPtr->SetWindowSizeUsingWindowCenterAsAnchor(800, 640);
 		}
 
 		if (INPUT.GetKeyDown(KeyCode::F5))
 		{
 			m_TargetWindowWidth = 640;
 			m_TargetWindowHeight = 640;
-			//m_WindowPosition = mainWindowPtr->SetWindowSizeUsingWindowCenterAsAnchor(640, 640);
 		}
 
 		if (INPUT.GetKeyDown(KeyCode::F6))
 		{
 			m_TargetWindowWidth = 320;
 			m_TargetWindowHeight = 320;
-			//m_WindowPosition = mainWindowPtr->SetWindowSizeUsingWindowCenterAsAnchor(320, 320);
 		}
 
 		if (INPUT.GetKeyDown(KeyCode::F7))
@@ -308,9 +357,7 @@ namespace DYE
 
 			if (glm::length2(axis) > 0.01f)
 			{
-				float const magnitude = glm::length(axis);
-				glm::vec3 const direction = glm::normalize(axis);
-				m_MovingObject->Position += direction * (magnitude * (float) TIME.DeltaTime());
+				m_PlayerPaddle1.MovementInputBuffer = axis;
 			}
 		}
 
@@ -370,6 +417,18 @@ namespace DYE
 	{
 		m_FixedUpdateCounter++;
 
+		float const inputSqr = glm::length2(m_PlayerPaddle1.MovementInputBuffer);
+		if (inputSqr > glm::epsilon<float>())
+		{
+			float const magnitude = glm::length(m_PlayerPaddle1.MovementInputBuffer);
+			glm::vec3 const direction = glm::normalize(glm::vec3{m_PlayerPaddle1.MovementInputBuffer, 0});
+			m_PlayerPaddle1.Transform.Position += m_PlayerPaddle1.Speed * direction * (magnitude * (float) TIME.FixedDeltaTime());
+
+			m_PlayerPaddle1.MovementInputBuffer = {0, 0};
+
+			updateBoxCollider(m_PlayerPaddle1.Transform, m_PlayerPaddle1.Collider);
+		}
+
 		auto const timeStep = (float) TIME.FixedDeltaTime();
 		glm::vec2 const positionChange = timeStep * m_BallVelocity;
 		auto const& hits = m_ColliderManager.CircleCastAll(m_MovingObject->Position, 0.25f, positionChange);
@@ -382,15 +441,12 @@ namespace DYE
 			float const minimumTravelTimeAfterReflected = 0.001f;
 			float const reflectedTravelTime = glm::max(minimumTravelTimeAfterReflected, timeStep - hit.Time);
 			m_BallVelocity = m_BallVelocity - 2 * glm::dot(normal, m_BallVelocity) * normal;
-			m_BallVelocity.y = m_BallVelocity.y * 0.8f;
 			m_MovingObject->Position = glm::vec3(hit.Centroid + reflectedTravelTime * m_BallVelocity, 0);
 		}
 		else
 		{
 			m_MovingObject->Position += glm::vec3(positionChange, 0);
 		}
-
-		m_BallVelocity.y -= 9.8f * timeStep;
 	}
 
 	void PeepholismLayer::OnImGui()

@@ -1,6 +1,12 @@
 project(Peepholism)
 
-add_executable(Peepholism PeepholismApp.cpp StaticColliderManager.cpp CollisionTestLayer.cpp PeepholismLayer.cpp)
+add_executable(Peepholism
+        PeepholismApp.cpp
+        ColliderManager.cpp
+        CollisionTestLayer.cpp
+        PeepholismLayer.cpp
+        Objects/PlayerPaddle.cpp
+        Components/Transform.cpp Components/Sprite.cpp Components/Collider.cpp Objects/Wall.cpp)
 
 target_include_directories(Peepholism PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(Peepholism DYEngine)
