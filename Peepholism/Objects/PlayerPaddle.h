@@ -11,10 +11,10 @@ namespace DYE::Pong
 		Transform Transform;
 		BoxCollider Collider;
 
-		float Speed = 5.0f;
+		float Speed = 7.0f;
 		glm::vec2 MovementInputBuffer {0, 0};
 
-		Math::AABB GetAABB() const { return Math::AABB::CreateFromCenter(Transform.Position, Collider.Size); }
+		inline Math::AABB GetAABB() const { return Math::AABB::CreateFromCenter(Transform.Position, Collider.Size); }
 
 		//Sprite Sprite;
 	};

@@ -6,7 +6,7 @@ add_executable(Peepholism
         CollisionTestLayer.cpp
         PeepholismLayer.cpp
         Objects/PlayerPaddle.cpp
-        Components/Transform.cpp Components/Sprite.cpp Components/Collider.cpp Objects/Wall.cpp)
+        Components/Transform.cpp Components/Sprite.cpp Components/Collider.cpp Objects/Wall.cpp Objects/WindowFrame.cpp Objects/Ball.cpp Components/Velocity.cpp Objects/Camera.cpp)
 
 target_include_directories(Peepholism PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(Peepholism DYEngine)

@@ -2,10 +2,13 @@
 
 #include "Core/LayerBase.h"
 #include "Event/KeyEvent.h"
+#include "Util/FPSCounter.h"
 
 #include "ColliderManager.h"
 #include "Objects/PlayerPaddle.h"
 #include "Objects/Wall.h"
+#include "Objects/Ball.h"
+#include "Objects/Camera.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -47,17 +50,16 @@ namespace DYE
 	private:
 		void registerBoxCollider(Pong::Transform& transform, Pong::BoxCollider& collider);
 		void unregisterBoxCollider(Pong::Transform& transform, Pong::BoxCollider& collider);
+		/// \return the velocity per second for the paddle.
+		glm::vec3 updatePaddle(Pong::PlayerPaddle& paddle);
 		void updateBoxCollider(Pong::Transform& transform, Pong::BoxCollider& collider);
+		void renderSprite(Pong::Transform& transform, Pong::Sprite& sprite);
 
-		static void renderSpriteObject(SpriteObject& object);
-		static void renderTiledSpriteObject(SpriteObject& object, glm::vec2 offset);
 		void imguiSpriteObject(SpriteObject& object);
 
 	private:
 		bool m_IsControlWindowOpen = false;
-		double m_FpsAccumulator = 0;
-		int m_FramesCounter = 0;
-		int m_FixedUpdateCounter = 0;
+		FPSCounter m_FPSCounter = FPSCounter(0.25);
 
 		ColliderManager m_ColliderManager;
 		std::shared_ptr<CameraProperties> m_CameraProperties;
@@ -68,18 +70,14 @@ namespace DYE
 		float m_TargetWindowHeight = 900;
 		float m_WindowPixelChangePerSecond = 300.0f;
 
-		float m_TileOffset = 0.0f;
-
+		Pong::Camera m_MainCamera;
+		Pong::Camera m_DebugCamera;
+		Pong::Ball m_Ball;
 		Pong::PlayerPaddle m_PlayerPaddle1;
 		Pong::PlayerPaddle m_PlayerPaddle2;
 		std::vector<Pong::Wall> m_Walls;
 
-
-		float m_BallSpeed = 3.0f;
-		glm::vec2 m_BallVelocity = {0.2f, 0.5f};
-
-		std::shared_ptr<SpriteObject> m_MovingObject;
-		std::shared_ptr<SpriteObject> m_BackgroundTileObject;
-
+		Pong::Transform m_BackgroundTransform;
+		Pong::Sprite m_BackgroundSprite;
 	};
 }

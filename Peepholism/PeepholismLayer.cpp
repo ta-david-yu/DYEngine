@@ -45,58 +45,83 @@ namespace DYE
 	{
 		RenderCommand::GetInstance().SetClearColor(glm::vec4{0.5f, 0.5f, 0.5f, 0.5f});
 
-		m_PlayerPaddle1.Transform.Position = {-4, 0, 0};
+		// Create paddle objects.
+		m_PlayerPaddle1.Transform.Position = {-10, 0, 0};
 		m_PlayerPaddle1.Collider.Size = {0.75f, 3, 1};
 
-		m_PlayerPaddle2.Transform.Position = {4, 0, 0};
+		m_PlayerPaddle2.Transform.Position = {10, 0, 0};
 		m_PlayerPaddle2.Collider.Size = {0.75f, 3, 1};
 
 		registerBoxCollider(m_PlayerPaddle1.Transform, m_PlayerPaddle1.Collider);
 		registerBoxCollider(m_PlayerPaddle2.Transform, m_PlayerPaddle2.Collider);
 
-		m_MovingObject = std::make_shared<SpriteObject>();
-		m_MovingObject->Name = "Moving";
-		m_MovingObject->Texture = Texture2D::Create("assets\\Sprite_Pong.png");
-		m_MovingObject->Texture->PixelsPerUnit = 32;
+		// Create wall objects.
+		Pong::Wall leftWall; leftWall.Transform.Position = {12, 0, 0}; leftWall.Collider.Size = {1, 16, 0};
+		Pong::Wall rightWall; rightWall.Transform.Position = {-12, 0, 0}; rightWall.Collider.Size = {1, 16, 0};
+		Pong::Wall topWall; topWall.Transform.Position = {0, 7, 0}; topWall.Collider.Size = {26, 1, 0};
+		Pong::Wall bottomWall; bottomWall.Transform.Position = {0, -7, 0}; bottomWall.Collider.Size = {26, 1, 0};
 
-		m_BackgroundTileObject = std::make_shared<SpriteObject>();
-		m_BackgroundTileObject->Name = "Background";
-		m_BackgroundTileObject->Texture = Texture2D::Create("assets\\Sprite_Grid.png");
-		m_BackgroundTileObject->Texture->PixelsPerUnit = 32;
-		m_BackgroundTileObject->Scale = {64.0f, 64.0f, 1};
-		m_BackgroundTileObject->Position = {0, 0, -2};
+		m_Walls.emplace_back(leftWall);
+		m_Walls.emplace_back(rightWall);
+		m_Walls.emplace_back(topWall);
+		m_Walls.emplace_back(bottomWall);
 
+		for (auto& wall : m_Walls)
+		{
+			registerBoxCollider(wall.Transform, wall.Collider);
+		}
+
+		// Create ball objects.
+		m_Ball.Transform.Position = {0, 0, 0};
+		m_Ball.Collider.Radius = 0.25f;
+		m_Ball.Velocity.Value = {0.5f, -0.5f};
+		m_Ball.Sprite.Texture = Texture2D::Create("assets\\Sprite_Pong.png");
+		m_Ball.Sprite.Texture->PixelsPerUnit = 32;
+		m_Ball.Sprite.Color = Color::White;
+
+		// Create background object.
+		m_BackgroundSprite.Texture = Texture2D::Create("assets\\Sprite_Grid.png");
+		m_BackgroundSprite.Texture->PixelsPerUnit = 32;
+		m_BackgroundTransform.Scale = {64.0f, 64.0f, 1};
+		m_BackgroundTransform.Position = {0, 0, -2};
+
+		// Create main camera.
 		auto mainWindowPtr = WindowManager::GetMainWindow();
 		mainWindowPtr->SetWindowSize(1600, 900);
 
-		m_CameraProperties = std::make_shared<CameraProperties>();
-		m_CameraProperties->Position = glm::vec3 {0, 0, 10};
-		m_CameraProperties->IsOrthographic = true;
-		m_CameraProperties->OrthographicSize = 10;
-		m_CameraProperties->TargetType = RenderTargetType::Window;
-		m_CameraProperties->TargetWindowID = mainWindowPtr->GetWindowID();
-		m_CameraProperties->UseManualAspectRatio = false;
-		m_CameraProperties->ManualAspectRatio = (float) 1600 / 900;
-		m_CameraProperties->ViewportValueType = ViewportValueType::RelativeDimension;
-		m_CameraProperties->Viewport = { 0, 0, 1, 1 };
+		m_MainCamera.Transform.Position = glm::vec3 {0, 0, 10};
+		m_MainCamera.Properties.IsOrthographic = true;
+		m_MainCamera.Properties.OrthographicSize = 10;
+		m_MainCamera.Properties.TargetType = RenderTargetType::Window;
+		m_MainCamera.Properties.TargetWindowID = mainWindowPtr->GetWindowID();
+		m_MainCamera.Properties.UseManualAspectRatio = false;
+		m_MainCamera.Properties.ManualAspectRatio = (float) 1600 / 900;
+		m_MainCamera.Properties.ViewportValueType = ViewportValueType::RelativeDimension;
+		m_MainCamera.Properties.Viewport = { 0, 0, 1, 1 };
 
 		m_WindowPosition = mainWindowPtr->GetPosition();
 
-
-		// Use the same context of the main window for the second window
+		// Use the same context of the main window for the second window.
 		m_SecondWindow = WindowManager::CreateWindow(WindowProperty("SecondWindow", 640, 480));
 		auto context = mainWindowPtr->GetContext();
 		m_SecondWindow->SetContext(context);
 		m_SecondWindow->MakeCurrent();
 		ContextBase::SetVSyncCountForCurrentContext(0);
 
+		// Create debug camera.
+		m_DebugCamera.Transform.Position = {m_Ball.Transform.Position.x, m_Ball.Transform.Position.y, 10};
+		m_DebugCamera.Properties.IsOrthographic = true;
+		m_DebugCamera.Properties.OrthographicSize = 20;
+		m_DebugCamera.Properties.TargetType = RenderTargetType::Window;
+		m_DebugCamera.Properties.TargetWindowID = m_SecondWindow->GetWindowID();
+		m_DebugCamera.Properties.UseManualAspectRatio = false;
+		m_DebugCamera.Properties.ViewportValueType = ViewportValueType::RelativeDimension;
+		m_DebugCamera.Properties.Viewport = {0, 0, 1, 1};
+
 		// Set the current context back to the main window.
 		mainWindowPtr->MakeCurrent();
-
-		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({5, 0, 0}, {1, 12, 0}));
-		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({-5, 2, 0}, {1, 12, 0}));
-		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({0, 5, 0}, {12, 1, 0}));
-		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({0, -6, 0}, {12, 3, 0}));
+		mainWindowPtr->SetBorderedIfWindowed(false);
+		ContextBase::SetVSyncCountForCurrentContext(0);
 	}
 
 	void PeepholismLayer::registerBoxCollider(Pong::Transform &transform, Pong::BoxCollider &collider)
@@ -146,44 +171,31 @@ namespace DYE
 
 	void PeepholismLayer::OnRender()
 	{
-		RenderPipelineManager::RegisterCameraForNextRender(*m_CameraProperties);
+		RenderPipelineManager::RegisterCameraForNextRender(m_MainCamera.GetTransformedProperties());
+		RenderPipelineManager::RegisterCameraForNextRender(m_DebugCamera.GetTransformedProperties());
 
-		CameraProperties cameraRenderToSecondWindow {};
-		cameraRenderToSecondWindow.Position = {m_MovingObject->Position.x, m_MovingObject->Position.y, 10};
-		cameraRenderToSecondWindow.IsOrthographic = true;
-		cameraRenderToSecondWindow.OrthographicSize = 10;
-		cameraRenderToSecondWindow.TargetType = RenderTargetType::Window;
-		cameraRenderToSecondWindow.TargetWindowID = m_SecondWindow->GetWindowID();
-		cameraRenderToSecondWindow.UseManualAspectRatio = false;
-		cameraRenderToSecondWindow.ViewportValueType = ViewportValueType::RelativeDimension;
-		cameraRenderToSecondWindow.Viewport = {0, 0, 1, 1};
-		RenderPipelineManager::RegisterCameraForNextRender(cameraRenderToSecondWindow);
+		renderSprite(m_Ball.Transform, m_Ball.Sprite);
 
-		renderSpriteObject(*m_MovingObject);
+		// Scroll tiled offset
+		float const offsetChange = TIME.DeltaTime() * 0.5f;
+		m_BackgroundSprite.TilingOffset += glm::vec2 {offsetChange, offsetChange};
+		if (m_BackgroundSprite.TilingOffset.x > 1.0f)
+		{
+			m_BackgroundSprite.TilingOffset -= glm::vec2 {1.0f, 1.0f};
+		}
 
-		renderTiledSpriteObject(*m_BackgroundTileObject, {m_TileOffset, m_TileOffset});
+		renderSprite(m_BackgroundTransform, m_BackgroundSprite);
 	}
 
-	void PeepholismLayer::renderSpriteObject(SpriteObject& object)
+	void PeepholismLayer::renderSprite(Pong::Transform &transform, Pong::Sprite &sprite)
 	{
 		glm::mat4 modelMatrix = glm::mat4 {1.0f};
-		modelMatrix = glm::translate(modelMatrix, object.Position);
-		modelMatrix = modelMatrix * glm::toMat4(object.Rotation);
-		modelMatrix = glm::scale(modelMatrix, object.Scale);
+		modelMatrix = glm::translate(modelMatrix, transform.Position);
+		modelMatrix = modelMatrix * glm::toMat4(transform.Rotation);
+		modelMatrix = glm::scale(modelMatrix, transform.Scale);
 
 		RenderPipelineManager::GetTypedActiveRenderPipelinePtr<RenderPipeline2D>()
-			->SubmitSprite(object.Texture, object.Color, modelMatrix);
-	}
-
-	void PeepholismLayer::renderTiledSpriteObject(SpriteObject& object, glm::vec2 offset)
-	{
-		glm::mat4 modelMatrix = glm::mat4 {1.0f};
-		modelMatrix = glm::translate(modelMatrix, object.Position);
-		modelMatrix = modelMatrix * glm::toMat4(object.Rotation);
-		modelMatrix = glm::scale(modelMatrix, object.Scale);
-
-		RenderPipelineManager::GetTypedActiveRenderPipelinePtr<RenderPipeline2D>()
-			->SubmitTiledSprite(object.Texture, {object.Scale.x, object.Scale.y, offset.x, offset.y}, object.Color, modelMatrix);
+			->SubmitTiledSprite(sprite.Texture, {transform.Scale.x * sprite.TilingScale.x, transform.Scale.y * sprite.TilingScale.y, sprite.TilingOffset}, sprite.Color, modelMatrix);
 	}
 
 	void PeepholismLayer::OnEvent(Event& event)
@@ -193,68 +205,8 @@ namespace DYE
 
 	void PeepholismLayer::OnUpdate()
 	{
+		m_FPSCounter.NewFrame(TIME.DeltaTime());
 		m_ColliderManager.DrawGizmos();
-
-		Math::AABB const movingAABB = Math::AABB::CreateFromCenter(m_MovingObject->Position, {0.5f, 0.5f, 0.5f});
-
-		float const circleRadius = 0.25f;
-		bool const isMovingOverlapped = !m_ColliderManager.OverlapCircle(m_MovingObject->Position, circleRadius).empty();
-		//DebugDraw::Circle(m_MovingObject->Position, circleRadius, {0, 0, 1}, isMovingOverlapped? Color::Red : Color::Yellow);
-
-		// Scroll tiled offset
-		m_TileOffset += TIME.DeltaTime() * 0.5f;
-		if (m_TileOffset > 1.0f)
-		{
-			m_TileOffset -= 1.0f;
-		}
-
-		// FPS
-		m_FramesCounter++;
-		m_FpsAccumulator += TIME.DeltaTime();
-		if (m_FpsAccumulator >= 0.25)
-		{
-			double const fps = m_FramesCounter / m_FpsAccumulator;
-			//SDL_Log("Delta FPS: %f", fps);
-
-			m_FramesCounter = 0;
-			m_FpsAccumulator = 0;
-		}
-
-		if (INPUT.GetKey(KeyCode::Up))
-		{
-			m_BallVelocity.y += TIME.DeltaTime() * m_BallSpeed;
-		}
-
-		if (INPUT.GetKey(KeyCode::Down))
-		{
-			m_BallVelocity.y -= TIME.DeltaTime() * m_BallSpeed;
-		}
-
-		if (INPUT.GetKey(KeyCode::Right))
-		{
-			m_BallVelocity.x += TIME.DeltaTime() * m_BallSpeed;
-		}
-
-		if (INPUT.GetKey(KeyCode::Left))
-		{
-			m_BallVelocity.x -= TIME.DeltaTime() * m_BallSpeed;
-		}
-
-		if (INPUT.GetMouseButtonDown(MouseButton::Left))
-		{
-			m_MovingObject->Color = Color::Yellow;
-		}
-
-		if (INPUT.GetMouseButtonDown(MouseButton::Right))
-		{
-			m_MovingObject->Color = Color::Blue;
-		}
-
-		if (INPUT.GetMouseButtonDown(MouseButton::Middle))
-		{
-			m_MovingObject->Color = Color::Red;
-		}
-
 		bool change = false;
 		if (INPUT.GetKey(KeyCode::W))
 		{
@@ -279,7 +231,7 @@ namespace DYE
 
 		if (INPUT.GetKeyDown(KeyCode::Space))
 		{
-			m_BallVelocity += glm::vec2 {0, 5};
+			m_Ball.Velocity.Value += glm::vec2 {0, 5};
 		}
 
 		auto mainWindowPtr = WindowManager::GetMainWindow();
@@ -347,14 +299,30 @@ namespace DYE
 
 		if (INPUT.IsGamepadConnected(0))
 		{
-			float const horizontal = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickHorizontal);
-			float const vertical = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickVertical);
-
-			glm::vec3 const axis = {0, -vertical, 0};
-
-			if (glm::length2(axis) > 0.01f)
 			{
-				m_PlayerPaddle1.MovementInputBuffer = axis;
+				// Paddle 1
+				float const horizontal = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickHorizontal);
+				float const vertical = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickVertical);
+
+				glm::vec3 const axis = {0, -vertical, 0};
+
+				if (glm::length2(axis) > 0.01f)
+				{
+					m_PlayerPaddle1.MovementInputBuffer = axis;
+				}
+			}
+
+			{
+				// Paddle 2
+				float const horizontal = INPUT.GetGamepadAxis(0, GamepadAxis::RightStickHorizontal);
+				float const vertical = INPUT.GetGamepadAxis(0, GamepadAxis::RightStickVertical);
+
+				glm::vec3 const axis = {0, -vertical, 0};
+
+				if (glm::length2(axis) > 0.01f)
+				{
+					m_PlayerPaddle2.MovementInputBuffer = axis;
+				}
 			}
 		}
 
@@ -403,60 +371,21 @@ namespace DYE
 		normalizedWindowPos.y = screenHeight - normalizedWindowPos.y;
 
 		float const scalar = 0.5f; //* (320.0f / windowHeight);
-		m_CameraProperties->Position.x = ((normalizedWindowPos.x - screenWidth * 0.5f) / 32.0f) * scalar;
-		m_CameraProperties->Position.y = ((normalizedWindowPos.y - screenHeight * 0.5f) / 32.0f) * scalar;
+		m_MainCamera.Transform.Position.x = ((normalizedWindowPos.x - screenWidth * 0.5f) / 32.0f) * scalar;
+		m_MainCamera.Transform.Position.y = ((normalizedWindowPos.y - screenHeight * 0.5f) / 32.0f) * scalar;
 
 		float const sizeScalar = 1.0f * (320.0f / windowHeight);
-		m_CameraProperties->OrthographicSize = 5 / sizeScalar;
+		m_MainCamera.Properties.OrthographicSize = 5 / sizeScalar;
 	}
 
 	void PeepholismLayer::OnFixedUpdate()
 	{
-		m_FixedUpdateCounter++;
-
-		float const ballRadius = 0.25f;
-
-		float const inputSqr = glm::length2(m_PlayerPaddle1.MovementInputBuffer);
-		glm::vec3 paddleVelocityPerSecond = glm::vec3 {0, 0, 0};
-		if (inputSqr > glm::epsilon<float>())
-		{
-			// Calculate the paddleVelocity
-			float const magnitude = glm::length(m_PlayerPaddle1.MovementInputBuffer);
-			glm::vec3 const direction = glm::normalize(glm::vec3{m_PlayerPaddle1.MovementInputBuffer, 0});
-			paddleVelocityPerSecond = m_PlayerPaddle1.Speed * direction * magnitude;
-			glm::vec3 const paddleVelocity = paddleVelocityPerSecond * (float) TIME.FixedDeltaTime();
-
-			// Push the ball if there is an overlap.
-			Math::DynamicTestResult2D result2D;
-			bool const intersectBall = Math::MovingCircleAABBIntersect(m_MovingObject->Position, ballRadius, -paddleVelocity, m_PlayerPaddle1.GetAABB(), result2D);
-			if (intersectBall)
-			{
-				glm::vec2 const normal = glm::normalize(result2D.HitNormal);
-				auto ballPaddleDot = glm::dot(paddleVelocity, glm::vec3 {m_BallVelocity, 0});
-
-				if (ballPaddleDot < 0.0f)
-				{
-					// If the ball is moving in the opposite direction of the paddle,
-					// bounce (deflect) the ball into reflected direction.
-					m_BallVelocity = m_BallVelocity - 2 * glm::dot(normal, m_BallVelocity) * normal;
-					m_BallVelocity += glm::vec2 {paddleVelocityPerSecond.x, paddleVelocityPerSecond.y};
-				}
-
-				// Move the ball away from the paddle to avoid tunneling
-				m_MovingObject->Position += paddleVelocity;
-			}
-
-			// Update collider info stored in the collider manager.
-			updateBoxCollider(m_PlayerPaddle1.Transform, m_PlayerPaddle1.Collider);
-
-			// Move the paddle.
-			m_PlayerPaddle1.Transform.Position += paddleVelocity;
-			m_PlayerPaddle1.MovementInputBuffer = {0, 0};
-		}
+		auto paddleVec1 = updatePaddle(m_PlayerPaddle1);
+		auto paddleVec2 = updatePaddle(m_PlayerPaddle2);
 
 		auto const timeStep = (float) TIME.FixedDeltaTime();
-		glm::vec2 const positionChange = timeStep * m_BallVelocity;
-		auto const& hits = m_ColliderManager.CircleCastAll(m_MovingObject->Position, 0.25f, positionChange);
+		glm::vec2 const positionChange = timeStep * m_Ball.Velocity.Value;
+		auto const& hits = m_ColliderManager.CircleCastAll(m_Ball.Transform.Position, 0.25f, positionChange);
 		if (!hits.empty())
 		{
 			// Collide with a box!
@@ -465,48 +394,80 @@ namespace DYE
 
 			float const minimumTravelTimeAfterReflected = 0.001f;
 			float const reflectedTravelTime = glm::max(minimumTravelTimeAfterReflected, timeStep - hit.Time);
-			m_BallVelocity = m_BallVelocity - 2 * glm::dot(normal, m_BallVelocity) * normal;
-			m_MovingObject->Position = glm::vec3(hit.Centroid + reflectedTravelTime * m_BallVelocity, 0);
+			m_Ball.Velocity.Value = m_Ball.Velocity.Value - 2 * glm::dot(normal, m_Ball.Velocity.Value) * normal;
+			m_Ball.Transform.Position = glm::vec3(hit.Centroid + reflectedTravelTime * m_Ball.Velocity.Value, 0);
 
 			if (hit.ColliderID == m_PlayerPaddle1.Collider.ID)
 			{
 				// The ball hits a paddle!
 				// Adjust velocity based on the paddle's velocity.
-				m_BallVelocity += glm::vec2 {paddleVelocityPerSecond.x, paddleVelocityPerSecond.y};
+				m_Ball.Velocity.Value += glm::vec2 {paddleVec1.x, paddleVec1.y};
+			}
+
+			if (hit.ColliderID == m_PlayerPaddle2.Collider.ID)
+			{
+				// The ball hits a paddle!
+				// Adjust velocity based on the paddle's velocity.
+				m_Ball.Velocity.Value += glm::vec2 {paddleVec2.x, paddleVec2.y};
 			}
 		}
 		else
 		{
-			m_MovingObject->Position += glm::vec3(positionChange, 0);
+			m_Ball.Transform.Position += glm::vec3(positionChange, 0);
 		}
+	}
+
+	glm::vec3 PeepholismLayer::updatePaddle(Pong::PlayerPaddle& paddle)
+	{
+		float const inputSqr = glm::length2(paddle.MovementInputBuffer);
+		glm::vec3 paddleVelocityPerSecond = glm::vec3 {0, 0, 0};
+		if (inputSqr <= glm::epsilon<float>())
+		{
+			return paddleVelocityPerSecond;
+		}
+
+		// Calculate the paddleVelocity
+		float const magnitude = glm::length(paddle.MovementInputBuffer);
+		glm::vec3 const direction = glm::normalize(glm::vec3 {paddle.MovementInputBuffer, 0});
+		paddleVelocityPerSecond = paddle.Speed * direction * magnitude;
+		glm::vec3 const paddleVelocity = paddleVelocityPerSecond * (float) TIME.FixedDeltaTime();
+
+		// Push the ball if there is an overlap.
+		Math::DynamicTestResult2D result2D;
+		bool const intersectBall = Math::MovingCircleAABBIntersect(m_Ball.Transform.Position, m_Ball.Collider.Radius,
+																   -paddleVelocity, paddle.GetAABB(), result2D);
+		if (intersectBall)
+		{
+			glm::vec2 const normal = glm::normalize(result2D.HitNormal);
+			auto ballPaddleDot = glm::dot(paddleVelocity, glm::vec3 {m_Ball.Velocity.Value, 0});
+
+			if (ballPaddleDot < 0.0f)
+			{
+				// If the ball is moving in the opposite direction of the paddle,
+				// bounce (deflect) the ball into reflected direction.
+				m_Ball.Velocity.Value = m_Ball.Velocity.Value - 2 * glm::dot(normal, m_Ball.Velocity.Value) * normal;
+				m_Ball.Velocity.Value += glm::vec2 {paddleVelocityPerSecond.x, paddleVelocityPerSecond.y};
+			}
+
+			// Move the ball away from the paddle to avoid tunneling
+			m_Ball.Transform.Position += paddleVelocity;
+		}
+
+		// Update collider info stored in the collider manager.
+		updateBoxCollider(paddle.Transform, paddle.Collider);
+
+		// Move the paddle.
+		paddle.Transform.Position += paddleVelocity;
+		paddle.MovementInputBuffer = {0, 0};
+
+		return paddleVelocityPerSecond;
 	}
 
 	void PeepholismLayer::OnImGui()
 	{
 		// get the window size as a base for calculating widgets geometry
 		auto mainWindowPtr = WindowManager::GetMainWindow();
-		int windowWidth = mainWindowPtr->GetWidth();
-		int windowHeight = mainWindowPtr->GetHeight();
-		int controls_width = windowWidth;
-		// make controls widget width to be 1/3 of the main window width
-		if ((controls_width * 0.33f) < 300) { controls_width = 300; }
 
-		// position the controls widget in the top-right corner with some margin
-		ImGui::SetNextWindowPos
-			(
-				ImVec2(10, 10),
-				ImGuiCond_FirstUseEver
-			);
-		// here we set the calculated width and also make the height to be
-		// the half height of the main window
-		ImGui::SetNextWindowSize
-			(
-				ImVec2(static_cast<float>(controls_width), static_cast<float>(windowHeight * 0.5f)),
-				ImGuiCond_FirstUseEver
-			);
-
-		// create a window and append into it
-		//ImGuiWindowFlags window_flags = ImGuiWindowFlags_None;
 		if (ImGui::Begin("Controls", &m_IsControlWindowOpen))
 		{
 			ImGui::Dummy(ImVec2(0.0f, 1.0f));
@@ -514,10 +475,8 @@ namespace DYE
 			ImGui::Text("%s", SDL_GetPlatform());
 			ImGui::Text("CPU cores: %d", SDL_GetCPUCount());
 			ImGui::Text("RAM: %.2f GB", (float) SDL_GetSystemRAM() / 1024.0f);
-			ImGui::Text("expected FPS: [%d]", TIME.FixedFramePerSecond());
 			ImGui::Text("DeltaTime: [%f]", TIME.DeltaTime());
-			ImGui::Text("FixedDeltaTime: [%f]", TIME.FixedDeltaTime());
-			ImGui::Text("FixedUpdateFrameCounter: [%d]", m_FixedUpdateCounter);
+			ImGui::Text("FPS: [%f]", m_FPSCounter.GetLastCalculatedFPS());
 
 			int const mainDisplayIndex = mainWindowPtr->GetDisplayIndex();
 			ImGui::Text("MainWindowDisplayIndex = %d", mainDisplayIndex);
@@ -564,16 +523,13 @@ namespace DYE
 			}
 
 			ImGui::Separator();
-			ImGuiUtil::DrawCameraPropertiesControl("Camera Properties", *m_CameraProperties);
+			ImGuiUtil::DrawCameraPropertiesControl("Main Camera Properties", m_MainCamera.Properties);
 
 			ImGui::Separator();
 			ImGuiUtil::DrawFloatControl("Camera Speed", m_WindowPixelChangePerSecond, 300);
 
 			ImGui::Separator();
-			imguiSpriteObject(*m_MovingObject);
-
-			ImGui::Separator();
-			imguiSpriteObject(*m_BackgroundTileObject);
+			ImGuiUtil::DrawCameraPropertiesControl("Debug Camera Properties", m_DebugCamera.Properties);
 		}
 
 		ImGui::End();
