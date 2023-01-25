@@ -52,7 +52,7 @@ namespace DYE
 		player1.Settings.GoalAreaCenter = {14, 0, 0};	// TODO:
 		player1.Settings.GoalAreaSize = {2, 16, 1}; 	// TODO:
 
-		player1.State.Score = 0;
+		player1.State.Health = 5;
 
 		MiniGame::PongPlayer player2 {};
 		player2.Settings.ID = 1;
@@ -60,7 +60,7 @@ namespace DYE
 		player2.Settings.GoalAreaCenter = {-14, 0, 0};	// TODO:
 		player2.Settings.GoalAreaSize = {2, 16, 1}; 	// TODO:
 
-		player2.State.Score = 0;
+		player2.State.Health = 5;
 
 		m_Players.emplace_back(player1);
 		m_Players.emplace_back(player2);
@@ -71,7 +71,7 @@ namespace DYE
 			MiniGame::PlayerPaddle paddle;
 			paddle.PlayerID = player.Settings.ID;
 			paddle.Transform.Position = player.Settings.InitialPaddleLocation;
-			paddle.Collider.Size = {0.5f, 3, 1};
+			paddle.Collider.Size = {0.25f, 3, 1};
 
 			registerBoxCollider(paddle.Transform, paddle.Collider);
 			m_PlayerPaddles.emplace_back(paddle);
@@ -493,6 +493,13 @@ namespace DYE
 
 	void PongLayer::updateBall(float timeStep)
 	{
+		if (m_Ball.Attachable.AttachedPaddle != nullptr)
+		{
+			// The ball is attached to a paddle, move the ball with the paddle
+			m_Ball.Transform.Position = m_Ball.Attachable.AttachedPaddle->Transform.Position + glm::vec3 {m_Ball.Attachable.AttachOffset, 0};
+			return;
+		}
+
 		glm::vec2 const positionChange = timeStep * m_Ball.Velocity.Value;
 		auto const& hits = m_ColliderManager.CircleCastAll(m_Ball.Transform.Position, 0.25f, positionChange);
 		if (!hits.empty())
@@ -524,6 +531,7 @@ namespace DYE
 			m_Ball.Transform.Position += glm::vec3(positionChange, 0);
 		}
 
+		// Check if it's a goal.
 		for (auto const& goalArea : m_GoalAreas)
 		{
 			if (!Math::AABBCircleIntersect(goalArea.GetAABB(), m_Ball.Transform.Position, m_Ball.Collider.Radius))
@@ -532,10 +540,9 @@ namespace DYE
 			}
 
 			// The ball hits a goal! Reset the game.
-			m_Ball.Transform.Position = {0, 0, 0};
-			m_Ball.Velocity.Value = {5, 1};
+			m_Ball.Hittable.LastHitByPlayerID = goalArea.PlayerID;
 
-			// Score one point to the area owner.
+			// Health one point to the area owner.
 			int const playerID = goalArea.PlayerID;
 			auto playerItr = std::find_if(
 								m_Players.begin(),
@@ -545,11 +552,34 @@ namespace DYE
 									return playerID == player.Settings.ID;
 								});
 
-			if (playerItr == m_Players.end())
+			if (playerItr != m_Players.end())
 			{
-				continue;
+				// Reduce health
+				playerItr->State.Health--;
 			}
-			playerItr->State.Score++;
+
+			auto paddleItr = std::find_if(
+				m_PlayerPaddles.begin(),
+				m_PlayerPaddles.end(),
+				[playerID](MiniGame::PlayerPaddle const& paddle)
+				{
+					return playerID == paddle.PlayerID;
+				});
+
+			if (paddleItr != m_PlayerPaddles.end())
+			{
+				m_Ball.Attachable.AttachedPaddle = &(*paddleItr);
+				m_Ball.Attachable.AttachOffset = {0, 0}; // TODO:
+
+				m_Ball.Transform.Position = paddleItr->Transform.Position + glm::vec3 {m_Ball.Attachable.AttachOffset, 0};
+				m_Ball.Velocity.Value = {0, 0};
+			}
+			else
+			{
+				m_Ball.Transform.Position = {0, 0, 0};
+				m_Ball.Velocity.Value = {5, 1};
+			}
+			break;
 		}
 	}
 
@@ -576,7 +606,7 @@ namespace DYE
 				for (int i = 0; i < m_Players.size(); i++)
 				{
 					auto& player = m_Players[i];
-					ImGuiUtil::DrawUnsignedIntControl("Player " + std::to_string(i), player.State.Score, 0);
+					ImGuiUtil::DrawUnsignedIntControl("Player " + std::to_string(i), player.State.Health, 0);
 				}
 			}
 

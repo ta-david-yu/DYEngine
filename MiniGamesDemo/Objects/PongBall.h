@@ -5,6 +5,7 @@
 #include "Components/Collider.h"
 #include "Components/Sprite.h"
 #include "Components/Hittable.h"
+#include "Components/AttachableToPaddle.h"
 
 namespace DYE::MiniGame
 {
@@ -14,6 +15,7 @@ namespace DYE::MiniGame
 		Velocity Velocity;
 		CircleCollider Collider;
 		Hittable Hittable;
+		AttachableToPaddle Attachable;
 		Sprite Sprite;
 	};
 }

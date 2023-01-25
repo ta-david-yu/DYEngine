@@ -17,7 +17,7 @@ namespace DYE::MiniGame
 
 		struct State
 		{
-			int Score;
+			int Health = 5;
 		} State;
 	};
 }
