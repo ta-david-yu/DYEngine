@@ -39,7 +39,7 @@ namespace DYE
 		/// \return the velocity per second for the paddle.
 		void debugInput();
 		void readPaddleInput();
-		glm::vec2 updatePaddle(MiniGame::PlayerPaddle& paddle, float timeStep);
+		void updatePaddle(MiniGame::PlayerPaddle& paddle, float timeStep);
 		void updateBall(float timeStep);
 		void updateBoxCollider(MiniGame::Transform& transform, MiniGame::BoxCollider& collider);
 

@@ -247,35 +247,7 @@ namespace DYE
 
 		readPaddleInput();
 
-		bool change = false;
-		if (INPUT.GetKey(KeyCode::W))
-		{
-			m_WindowPosition.y -= TIME.DeltaTime() * m_WindowPixelChangePerSecond;
-			change = true;
-		}
-		if (INPUT.GetKey(KeyCode::S))
-		{
-			m_WindowPosition.y += TIME.DeltaTime() * m_WindowPixelChangePerSecond;
-			change = true;
-		}
-		if (INPUT.GetKey(KeyCode::D))
-		{
-			m_WindowPosition.x += TIME.DeltaTime() * m_WindowPixelChangePerSecond;
-			change = true;
-		}
-		if (INPUT.GetKey(KeyCode::A))
-		{
-			m_WindowPosition.x -= TIME.DeltaTime() * m_WindowPixelChangePerSecond;
-			change = true;
-		}
-
 		auto mainWindowPtr = WindowManager::GetMainWindow();
-		if (change)
-		{
-			m_WindowPosition = glm::round(m_WindowPosition);
-			mainWindowPtr->SetWindowPosition(m_WindowPosition.x, m_WindowPosition.y);
-		}
-
 		if (INPUT.GetKeyDown(KeyCode::F1))
 		{
 			mainWindowPtr->CenterWindow();
@@ -470,30 +442,50 @@ namespace DYE
 		updateBall(timeStep);
 	}
 
-	glm::vec2 PongLayer::updatePaddle(MiniGame::PlayerPaddle& paddle, float timeStep)
+	void PongLayer::updatePaddle(MiniGame::PlayerPaddle& paddle, float timeStep)
 	{
 		float const inputSqr = glm::length2(paddle.MovementInputBuffer);
 		if (inputSqr <= glm::epsilon<float>())
 		{
 			paddle.VelocityBuffer = {0, 0};
-			return {0, 0};
+			return;
 		}
 
-		// Calculate the paddleVelocity
+		// Calculate the paddleVelocityForFrame
 		float const magnitude = glm::length(paddle.MovementInputBuffer);
 		glm::vec3 const direction = glm::normalize(glm::vec3 {paddle.MovementInputBuffer, 0});
-		paddle.VelocityBuffer = paddle.Speed * magnitude * direction;
+		glm::vec3 const paddleVelocity = paddle.Speed * magnitude * direction;
+		glm::vec3 const paddleVelocityForFrame = paddleVelocity * timeStep;
 
-		glm::vec3 const paddleVelocity = glm::vec3 {paddle.VelocityBuffer, 0} * timeStep;
+		// Calculate the new position for the paddle.
+		// Clamp the position & velocity if it's over the max/min constraints.
+		auto newPaddlePosition = paddle.Transform.Position + paddleVelocityForFrame;
+		bool isPaddleVelocityClamped = false;
+		if (newPaddlePosition.y < paddle.MinPositionY)
+		{
+			isPaddleVelocityClamped = true;
+			newPaddlePosition.y = paddle.MinPositionY;
+		}
+		if (newPaddlePosition.y > paddle.MaxPositionY)
+		{
+			isPaddleVelocityClamped = true;
+			newPaddlePosition.y = paddle.MaxPositionY;
+		}
+
+		auto actualPositionOffset = newPaddlePosition - paddle.Transform.Position;
+		auto actualPositionOffsetInSecond = actualPositionOffset / timeStep;
+
+		// In case when the velocity is clamped, we will buffer the actual position offset instead.
+		paddle.VelocityBuffer = isPaddleVelocityClamped? actualPositionOffsetInSecond : paddleVelocity;
 
 		// Push the ball if there is an overlap.
 		Math::DynamicTestResult2D result2D;
 		bool const intersectBall = Math::MovingCircleAABBIntersect(m_Ball.Transform.Position, m_Ball.Collider.Radius,
-																   -paddleVelocity, paddle.GetAABB(), result2D);
+																   -actualPositionOffset, paddle.GetAABB(), result2D);
 		if (intersectBall)
 		{
 			glm::vec2 const normal = glm::normalize(result2D.HitNormal);
-			auto ballPaddleDot = glm::dot(paddleVelocity, glm::vec3 {m_Ball.Velocity.Value, 0});
+			auto ballPaddleDot = glm::dot(actualPositionOffset, glm::vec3 {m_Ball.Velocity.Value, 0});
 
 			if (ballPaddleDot < 0.0f)
 			{
@@ -504,18 +496,16 @@ namespace DYE
 			}
 
 			// Move the ball away from the paddle to avoid tunneling
-			m_Ball.Transform.Position += paddleVelocity;
+			m_Ball.Transform.Position += actualPositionOffset;
 			m_Ball.Hittable.LastHitByPlayerID = paddle.PlayerID;
 		}
 
-		// Update collider info stored in the collider manager.
+		// Actually update the paddle and its collider.
+		paddle.Transform.Position = newPaddlePosition;
+		paddle.MovementInputBuffer = {0, 0};
 		updateBoxCollider(paddle.Transform, paddle.Collider);
 
-		// Move the paddle.
-		paddle.Transform.Position += paddleVelocity;
-		paddle.MovementInputBuffer = {0, 0};
-
-		return paddle.VelocityBuffer;
+		return;
 	}
 
 	void PongLayer::updateBall(float timeStep)
