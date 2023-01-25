@@ -45,15 +45,49 @@ namespace DYE
 	{
 		RenderCommand::GetInstance().SetClearColor(glm::vec4{0.5f, 0.5f, 0.5f, 0.5f});
 
+		// Create player objects.
+		MiniGame::PongPlayer player1 {};
+		player1.Settings.ID = 0;
+		player1.Settings.InitialPaddleLocation = {-10, 0, 0};
+		player1.Settings.GoalAreaCenter = {14, 0, 0};	// TODO:
+		player1.Settings.GoalAreaSize = {2, 16, 1}; 	// TODO:
+
+		player1.State.Score = 0;
+
+		MiniGame::PongPlayer player2 {};
+		player2.Settings.ID = 1;
+		player2.Settings.InitialPaddleLocation = {10, 0, 0};
+		player2.Settings.GoalAreaCenter = {-14, 0, 0};	// TODO:
+		player2.Settings.GoalAreaSize = {2, 16, 1}; 	// TODO:
+
+		player2.State.Score = 0;
+
+		m_Players.emplace_back(player1);
+		m_Players.emplace_back(player2);
+
 		// Create paddle objects.
-		m_PlayerPaddle1.Transform.Position = {-10, 0, 0};
-		m_PlayerPaddle1.Collider.Size = {0.75f, 3, 1};
+		for (auto const& player : m_Players)
+		{
+			MiniGame::PlayerPaddle paddle;
+			paddle.PlayerID = player.Settings.ID;
+			paddle.Transform.Position = player.Settings.InitialPaddleLocation;
+			paddle.Collider.Size = {0.5f, 3, 1};
 
-		m_PlayerPaddle2.Transform.Position = {10, 0, 0};
-		m_PlayerPaddle2.Collider.Size = {0.75f, 3, 1};
+			registerBoxCollider(paddle.Transform, paddle.Collider);
+			m_PlayerPaddles.emplace_back(paddle);
+		}
 
-		registerBoxCollider(m_PlayerPaddle1.Transform, m_PlayerPaddle1.Collider);
-		registerBoxCollider(m_PlayerPaddle2.Transform, m_PlayerPaddle2.Collider);
+		// Create goal areas.
+		for (auto const& player : m_Players)
+		{
+			MiniGame::PongGoalArea area;
+			area.PlayerID = player.Settings.ID;
+			area.Transform.Position = player.Settings.GoalAreaCenter;
+			area.Collider.Size = player.Settings.GoalAreaSize;
+
+			m_GoalAreas.emplace_back(area);
+		}
+
 
 		// Create wall objects.
 		MiniGame::Wall leftUpperWall; leftUpperWall.Transform.Position = {12, 8, 0}; leftUpperWall.Collider.Size = {1, 8, 0};
@@ -61,8 +95,8 @@ namespace DYE
 		MiniGame::Wall leftLowerWall; leftLowerWall.Transform.Position = {12, -8, 0}; leftLowerWall.Collider.Size = {1, 8, 0};
 		MiniGame::Wall rightLowerWall; rightLowerWall.Transform.Position = {-12, -8, 0}; rightLowerWall.Collider.Size = {1, 8, 0};
 
-		MiniGame::Wall topWall; topWall.Transform.Position = {0, 6.5f, 0}; topWall.Collider.Size = {26, 1, 0};
-		MiniGame::Wall bottomWall; bottomWall.Transform.Position = {0, -6.5f, 0}; bottomWall.Collider.Size = {26, 1, 0};
+		MiniGame::Wall topWall; topWall.Transform.Position = {0, 6.5f, 0}; topWall.Collider.Size = {32, 1, 0};
+		MiniGame::Wall bottomWall; bottomWall.Transform.Position = {0, -6.5f, 0}; bottomWall.Collider.Size = {32, 1, 0};
 
 		m_Walls.emplace_back(leftLowerWall);
 		m_Walls.emplace_back(rightLowerWall);
@@ -79,7 +113,7 @@ namespace DYE
 		// Create ball objects.
 		m_Ball.Transform.Position = {0, 0, 0};
 		m_Ball.Collider.Radius = 0.25f;
-		m_Ball.Velocity.Value = {0.5f, -0.5f};
+		m_Ball.Velocity.Value = {5.0f, -0.5f};
 		m_Ball.Sprite.Texture = Texture2D::Create("assets\\Sprite_Pong.png");
 		m_Ball.Sprite.Texture->PixelsPerUnit = 32;
 		m_Ball.Sprite.Color = Color::White;
@@ -158,23 +192,6 @@ namespace DYE
 		m_ColliderManager.UnregisterAABB(collider.ID.value());
 	}
 
-	void PongLayer::updateBoxCollider(MiniGame::Transform &transform, MiniGame::BoxCollider &collider)
-	{
-		if (!collider.ID.has_value())
-		{
-			// The collider doesn't have an ID.
-			return;
-		}
-
-		if (!m_ColliderManager.IsColliderRegistered(collider.ID.value()))
-		{
-			// The collider is not registered to this manager.
-			return;
-		}
-
-		m_ColliderManager.SetAABB(collider.ID.value(), Math::AABB::CreateFromCenter(transform.Position, collider.Size));
-	}
-
 	void PongLayer::OnRender()
 	{
 		RenderPipelineManager::RegisterCameraForNextRender(m_MainCamera.GetTransformedProperties());
@@ -217,6 +234,10 @@ namespace DYE
 		if (m_DrawColliderGizmos)
 		{
 			m_ColliderManager.DrawGizmos();
+			for (auto const& area : m_GoalAreas)
+			{
+				DebugDraw::Cube(area.Transform.Position, area.Collider.Size, Color::Yellow);
+			}
 		}
 
 		readPaddleInput();
@@ -377,7 +398,7 @@ namespace DYE
 
 				if (glm::length2(axis) > 0.01f)
 				{
-					m_PlayerPaddle1.MovementInputBuffer = axis;
+					m_PlayerPaddles[0].MovementInputBuffer = axis;
 				}
 			}
 
@@ -390,65 +411,54 @@ namespace DYE
 
 				if (glm::length2(axis) > 0.01f)
 				{
-					m_PlayerPaddle2.MovementInputBuffer = axis;
+					m_PlayerPaddles[1].MovementInputBuffer = axis;
 				}
 			}
 		}
 	}
 
-	void PongLayer::OnFixedUpdate()
+	void PongLayer::updateBoxCollider(MiniGame::Transform &transform, MiniGame::BoxCollider &collider)
 	{
-		auto paddleVec1 = updatePaddle(m_PlayerPaddle1);
-		auto paddleVec2 = updatePaddle(m_PlayerPaddle2);
-
-		auto const timeStep = (float) TIME.FixedDeltaTime();
-		glm::vec2 const positionChange = timeStep * m_Ball.Velocity.Value;
-		auto const& hits = m_ColliderManager.CircleCastAll(m_Ball.Transform.Position, 0.25f, positionChange);
-		if (!hits.empty())
+		if (!collider.ID.has_value())
 		{
-			// Collide with a box!
-			auto const& hit = hits[0];
-			glm::vec2 const normal = glm::normalize(hit.Normal);
-
-			float const minimumTravelTimeAfterReflected = 0.001f;
-			float const reflectedTravelTime = glm::max(minimumTravelTimeAfterReflected, timeStep - hit.Time);
-			m_Ball.Velocity.Value = m_Ball.Velocity.Value - 2 * glm::dot(normal, m_Ball.Velocity.Value) * normal;
-			m_Ball.Transform.Position = glm::vec3(hit.Centroid + reflectedTravelTime * m_Ball.Velocity.Value, 0);
-
-			if (hit.ColliderID == m_PlayerPaddle1.Collider.ID)
-			{
-				// The ball hits a paddle!
-				// Adjust velocity based on the paddle's velocity.
-				m_Ball.Velocity.Value += glm::vec2 {paddleVec1.x, paddleVec1.y};
-			}
-
-			if (hit.ColliderID == m_PlayerPaddle2.Collider.ID)
-			{
-				// The ball hits a paddle!
-				// Adjust velocity based on the paddle's velocity.
-				m_Ball.Velocity.Value += glm::vec2 {paddleVec2.x, paddleVec2.y};
-			}
+			// The collider doesn't have an ID.
+			return;
 		}
-		else
+
+		if (!m_ColliderManager.IsColliderRegistered(collider.ID.value()))
 		{
-			m_Ball.Transform.Position += glm::vec3(positionChange, 0);
+			// The collider is not registered to this manager.
+			return;
 		}
+
+		m_ColliderManager.SetAABB(collider.ID.value(), Math::AABB::CreateFromCenter(transform.Position, collider.Size));
 	}
 
-	glm::vec3 PongLayer::updatePaddle(MiniGame::PlayerPaddle& paddle)
+	void PongLayer::OnFixedUpdate()
+	{
+		auto const timeStep = (float) TIME.FixedDeltaTime();
+		for (auto& paddle : m_PlayerPaddles)
+		{
+			updatePaddle(paddle, timeStep);
+		}
+
+		updateBall(timeStep);
+	}
+
+	glm::vec2 PongLayer::updatePaddle(MiniGame::PlayerPaddle& paddle, float timeStep)
 	{
 		float const inputSqr = glm::length2(paddle.MovementInputBuffer);
-		glm::vec3 paddleVelocityPerSecond = glm::vec3 {0, 0, 0};
 		if (inputSqr <= glm::epsilon<float>())
 		{
-			return paddleVelocityPerSecond;
+			return {0, 0};
 		}
 
 		// Calculate the paddleVelocity
 		float const magnitude = glm::length(paddle.MovementInputBuffer);
 		glm::vec3 const direction = glm::normalize(glm::vec3 {paddle.MovementInputBuffer, 0});
-		paddleVelocityPerSecond = paddle.Speed * direction * magnitude;
-		glm::vec3 const paddleVelocity = paddleVelocityPerSecond * (float) TIME.FixedDeltaTime();
+		paddle.VelocityBuffer = paddle.Speed * magnitude * direction;
+
+		glm::vec3 const paddleVelocity = glm::vec3 {paddle.VelocityBuffer, 0} * timeStep;
 
 		// Push the ball if there is an overlap.
 		Math::DynamicTestResult2D result2D;
@@ -464,7 +474,7 @@ namespace DYE
 				// If the ball is moving in the opposite direction of the paddle,
 				// bounce (deflect) the ball into reflected direction.
 				m_Ball.Velocity.Value = m_Ball.Velocity.Value - 2 * glm::dot(normal, m_Ball.Velocity.Value) * normal;
-				m_Ball.Velocity.Value += glm::vec2 {paddleVelocityPerSecond.x, paddleVelocityPerSecond.y};
+				m_Ball.Velocity.Value += glm::vec2 {paddle.VelocityBuffer.x, paddle.VelocityBuffer.y};
 			}
 
 			// Move the ball away from the paddle to avoid tunneling
@@ -478,7 +488,69 @@ namespace DYE
 		paddle.Transform.Position += paddleVelocity;
 		paddle.MovementInputBuffer = {0, 0};
 
-		return paddleVelocityPerSecond;
+		return paddle.VelocityBuffer;
+	}
+
+	void PongLayer::updateBall(float timeStep)
+	{
+		glm::vec2 const positionChange = timeStep * m_Ball.Velocity.Value;
+		auto const& hits = m_ColliderManager.CircleCastAll(m_Ball.Transform.Position, 0.25f, positionChange);
+		if (!hits.empty())
+		{
+			// Collide with a box!
+			auto const& hit = hits[0];
+			glm::vec2 const normal = glm::normalize(hit.Normal);
+
+			float const minimumTravelTimeAfterReflected = 0.001f;
+			float const reflectedTravelTime = glm::max(minimumTravelTimeAfterReflected, timeStep - hit.Time);
+			m_Ball.Velocity.Value = m_Ball.Velocity.Value - 2 * glm::dot(normal, m_Ball.Velocity.Value) * normal;
+			m_Ball.Transform.Position = glm::vec3(hit.Centroid + reflectedTravelTime * m_Ball.Velocity.Value, 0);
+
+			for (auto const& paddle : m_PlayerPaddles)
+			{
+				// If the box is a paddle, update velocity based on the paddle's state.
+				if (hit.ColliderID != paddle.Collider.ID)
+				{
+					continue;
+				}
+
+				auto paddleVelocity = paddle.VelocityBuffer;
+				m_Ball.Velocity.Value += glm::vec2 {paddleVelocity.x, paddleVelocity.y};
+				m_Ball.Hittable.LastHitByPlayerID = paddle.PlayerID;
+			}
+		}
+		else
+		{
+			m_Ball.Transform.Position += glm::vec3(positionChange, 0);
+		}
+
+		for (auto const& goalArea : m_GoalAreas)
+		{
+			if (!Math::AABBCircleIntersect(goalArea.GetAABB(), m_Ball.Transform.Position, m_Ball.Collider.Radius))
+			{
+				continue;
+			}
+
+			// The ball hits a goal! Reset the game.
+			m_Ball.Transform.Position = {0, 0, 0};
+			m_Ball.Velocity.Value = {5, 1};
+
+			// Score one point to the area owner.
+			int const playerID = goalArea.PlayerID;
+			auto playerItr = std::find_if(
+								m_Players.begin(),
+								m_Players.end(),
+								[playerID](MiniGame::PongPlayer const& player)
+								{
+									return playerID == player.Settings.ID;
+								});
+
+			if (playerItr == m_Players.end())
+			{
+				continue;
+			}
+			playerItr->State.Score++;
+		}
 	}
 
 	void PongLayer::OnImGui()
@@ -497,6 +569,15 @@ namespace DYE
 				ImGui::Text("RAM: %.2f GB", (float) SDL_GetSystemRAM() / 1024.0f);
 				ImGui::Text("DeltaTime: [%f]", TIME.DeltaTime());
 				ImGui::Text("FPS: [%f]", m_FPSCounter.GetLastCalculatedFPS());
+			}
+
+			if (ImGui::CollapsingHeader("Players"))
+			{
+				for (int i = 0; i < m_Players.size(); i++)
+				{
+					auto& player = m_Players[i];
+					ImGuiUtil::DrawUnsignedIntControl("Player " + std::to_string(i), player.State.Score, 0);
+				}
 			}
 
 			if (ImGui::CollapsingHeader("Window & Mouse"))
@@ -566,7 +647,7 @@ namespace DYE
 				ImGuiUtil::DrawCameraPropertiesControl("Debug Camera Properties", m_DebugCamera.Properties);
 
 				ImGui::Separator();
-				imguiSprite("Ball", m_Ball.Transform, m_Ball.Sprite);
+				imguiSprite("PongBall", m_Ball.Transform, m_Ball.Sprite);
 				ImGui::Separator();
 				imguiSprite("Background", m_BackgroundTransform, m_BackgroundSprite);
 			}
