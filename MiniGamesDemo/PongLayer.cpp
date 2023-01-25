@@ -45,20 +45,34 @@ namespace DYE
 	{
 		RenderCommand::GetInstance().SetClearColor(glm::vec4{0.5f, 0.5f, 0.5f, 0.5f});
 
+		// Create ball objects.
+		m_Ball.Transform.Position = {0, 0, 0};
+		m_Ball.Collider.Radius = 0.25f;
+		m_Ball.Velocity.Value = {5.0f, -0.5f};
+		m_Ball.LaunchBaseSpeed = 7;
+		m_Ball.Sprite.Texture = Texture2D::Create("assets\\Sprite_Pong.png");
+		m_Ball.Sprite.Texture->PixelsPerUnit = 32;
+		m_Ball.Sprite.Color = Color::White;
+
 		// Create player objects.
+		float const mainPaddleWidth = 0.5f;
+		float const paddleAttachOffsetX = m_Ball.Collider.Radius + mainPaddleWidth * 0.5f + 0.01f; // Add 0.01f to avoid floating point error
+
 		MiniGame::PongPlayer player1 {};
 		player1.Settings.ID = 0;
-		player1.Settings.InitialPaddleLocation = {-10, 0, 0};
-		player1.Settings.GoalAreaCenter = {14, 0, 0};	// TODO:
-		player1.Settings.GoalAreaSize = {2, 16, 1}; 	// TODO:
+		player1.Settings.MainPaddleLocation = {-10, 0, 0};
+		player1.Settings.MainPaddleAttachOffset = {paddleAttachOffsetX, 0};
+		player1.Settings.HomebaseCenter = {-14, 0, 0};	// TODO:
+		player1.Settings.HomebaseSize = {2, 16, 1}; 	// TODO:
 
 		player1.State.Health = 5;
 
 		MiniGame::PongPlayer player2 {};
 		player2.Settings.ID = 1;
-		player2.Settings.InitialPaddleLocation = {10, 0, 0};
-		player2.Settings.GoalAreaCenter = {-14, 0, 0};	// TODO:
-		player2.Settings.GoalAreaSize = {2, 16, 1}; 	// TODO:
+		player2.Settings.MainPaddleLocation = {10, 0, 0};
+		player2.Settings.MainPaddleAttachOffset = {-paddleAttachOffsetX, 0};
+		player2.Settings.HomebaseCenter = {14, 0, 0};	// TODO:
+		player2.Settings.HomebaseSize = {2, 16, 1}; 	// TODO:
 
 		player2.State.Health = 5;
 
@@ -70,8 +84,8 @@ namespace DYE
 		{
 			MiniGame::PlayerPaddle paddle;
 			paddle.PlayerID = player.Settings.ID;
-			paddle.Transform.Position = player.Settings.InitialPaddleLocation;
-			paddle.Collider.Size = {0.25f, 3, 1};
+			paddle.Transform.Position = player.Settings.MainPaddleLocation;
+			paddle.Collider.Size = {mainPaddleWidth, 3, 1};
 
 			registerBoxCollider(paddle.Transform, paddle.Collider);
 			m_PlayerPaddles.emplace_back(paddle);
@@ -80,14 +94,13 @@ namespace DYE
 		// Create goal areas.
 		for (auto const& player : m_Players)
 		{
-			MiniGame::PongGoalArea area;
-			area.PlayerID = player.Settings.ID;
-			area.Transform.Position = player.Settings.GoalAreaCenter;
-			area.Collider.Size = player.Settings.GoalAreaSize;
+			MiniGame::PongHomebase homebase;
+			homebase.PlayerID = player.Settings.ID;
+			homebase.Transform.Position = player.Settings.HomebaseCenter;
+			homebase.Collider.Size = player.Settings.HomebaseSize;
 
-			m_GoalAreas.emplace_back(area);
+			m_Homebases.emplace_back(homebase);
 		}
-
 
 		// Create wall objects.
 		MiniGame::Wall leftUpperWall; leftUpperWall.Transform.Position = {12, 8, 0}; leftUpperWall.Collider.Size = {1, 8, 0};
@@ -109,14 +122,6 @@ namespace DYE
 		{
 			registerBoxCollider(wall.Transform, wall.Collider);
 		}
-
-		// Create ball objects.
-		m_Ball.Transform.Position = {0, 0, 0};
-		m_Ball.Collider.Radius = 0.25f;
-		m_Ball.Velocity.Value = {5.0f, -0.5f};
-		m_Ball.Sprite.Texture = Texture2D::Create("assets\\Sprite_Pong.png");
-		m_Ball.Sprite.Texture->PixelsPerUnit = 32;
-		m_Ball.Sprite.Color = Color::White;
 
 		// Create background object.
 		m_BackgroundSprite.Texture = Texture2D::Create("assets\\Sprite_Grid.png");
@@ -234,7 +239,7 @@ namespace DYE
 		if (m_DrawColliderGizmos)
 		{
 			m_ColliderManager.DrawGizmos();
-			for (auto const& area : m_GoalAreas)
+			for (auto const& area : m_Homebases)
 			{
 				DebugDraw::Cube(area.Transform.Position, area.Collider.Size, Color::Yellow);
 			}
@@ -375,7 +380,7 @@ namespace DYE
 	{
 		if (INPUT.GetKeyDown(KeyCode::Space))
 		{
-			m_Ball.Velocity.Value += glm::vec2 {0, 5};
+			m_Ball.Velocity.Value += glm::vec2 {5, 0};
 		}
 
 		if (INPUT.GetKeyDown(KeyCode::Escape))
@@ -387,10 +392,13 @@ namespace DYE
 
 	void PongLayer::readPaddleInput()
 	{
+		// TODO: change to using two controllers
 		if (INPUT.IsGamepadConnected(0))
 		{
 			{
 				// Paddle 1
+				auto& paddle = m_PlayerPaddles[0];
+
 				float const horizontal = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickHorizontal);
 				float const vertical = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickVertical);
 
@@ -398,12 +406,21 @@ namespace DYE
 
 				if (glm::length2(axis) > 0.01f)
 				{
-					m_PlayerPaddles[0].MovementInputBuffer = axis;
+					paddle.MovementInputBuffer = axis;
+				}
+
+				if (INPUT.GetGamepadButtonDown(0, GamepadButton::LeftStick))
+				{
+					if (m_Ball.Attachable.IsAttached && m_Ball.Attachable.AttachedPaddle == &paddle)
+					{
+						m_Ball.LaunchFromAttachedPaddle();
+					}
 				}
 			}
 
 			{
 				// Paddle 2
+				auto& paddle = m_PlayerPaddles[1];
 				float const horizontal = INPUT.GetGamepadAxis(0, GamepadAxis::RightStickHorizontal);
 				float const vertical = INPUT.GetGamepadAxis(0, GamepadAxis::RightStickVertical);
 
@@ -411,7 +428,15 @@ namespace DYE
 
 				if (glm::length2(axis) > 0.01f)
 				{
-					m_PlayerPaddles[1].MovementInputBuffer = axis;
+					paddle.MovementInputBuffer = axis;
+				}
+
+				if (INPUT.GetGamepadButtonDown(0, GamepadButton::RightStick))
+				{
+					if (m_Ball.Attachable.IsAttached && m_Ball.Attachable.AttachedPaddle == &paddle)
+					{
+						m_Ball.LaunchFromAttachedPaddle();
+					}
 				}
 			}
 		}
@@ -450,6 +475,7 @@ namespace DYE
 		float const inputSqr = glm::length2(paddle.MovementInputBuffer);
 		if (inputSqr <= glm::epsilon<float>())
 		{
+			paddle.VelocityBuffer = {0, 0};
 			return {0, 0};
 		}
 
@@ -479,6 +505,7 @@ namespace DYE
 
 			// Move the ball away from the paddle to avoid tunneling
 			m_Ball.Transform.Position += paddleVelocity;
+			m_Ball.Hittable.LastHitByPlayerID = paddle.PlayerID;
 		}
 
 		// Update collider info stored in the collider manager.
@@ -500,11 +527,11 @@ namespace DYE
 			return;
 		}
 
+		// Ball collision detection.
 		glm::vec2 const positionChange = timeStep * m_Ball.Velocity.Value;
 		auto const& hits = m_ColliderManager.CircleCastAll(m_Ball.Transform.Position, 0.25f, positionChange);
 		if (!hits.empty())
 		{
-			// Collide with a box!
 			auto const& hit = hits[0];
 			glm::vec2 const normal = glm::normalize(hit.Normal);
 
@@ -522,8 +549,16 @@ namespace DYE
 				}
 
 				auto paddleVelocity = paddle.VelocityBuffer;
+
+				// Increase the horizontal speed if it's a paddle.
+				m_Ball.Velocity.Value.x += glm::sign(m_Ball.Velocity.Value.x) * paddle.HorizontalBallSpeedIncreasePerHit;
+
+				// Add paddle velocity to the ball.
 				m_Ball.Velocity.Value += glm::vec2 {paddleVelocity.x, paddleVelocity.y};
+
 				m_Ball.Hittable.LastHitByPlayerID = paddle.PlayerID;
+
+				break;
 			}
 		}
 		else
@@ -532,18 +567,18 @@ namespace DYE
 		}
 
 		// Check if it's a goal.
-		for (auto const& goalArea : m_GoalAreas)
+		for (auto const& homebase : m_Homebases)
 		{
-			if (!Math::AABBCircleIntersect(goalArea.GetAABB(), m_Ball.Transform.Position, m_Ball.Collider.Radius))
+			if (!Math::AABBCircleIntersect(homebase.GetAABB(), m_Ball.Transform.Position, m_Ball.Collider.Radius))
 			{
 				continue;
 			}
 
-			// The ball hits a goal! Reset the game.
-			m_Ball.Hittable.LastHitByPlayerID = goalArea.PlayerID;
+			// The ball hits a homebase! Reset the state.
+			m_Ball.Hittable.LastHitByPlayerID = homebase.PlayerID;
 
-			// Health one point to the area owner.
-			int const playerID = goalArea.PlayerID;
+			// Deal 1 damage to the homebase.
+			int const playerID = homebase.PlayerID;
 			auto playerItr = std::find_if(
 								m_Players.begin(),
 								m_Players.end(),
@@ -568,16 +603,14 @@ namespace DYE
 
 			if (paddleItr != m_PlayerPaddles.end())
 			{
-				m_Ball.Attachable.AttachedPaddle = &(*paddleItr);
-				m_Ball.Attachable.AttachOffset = {0, 0}; // TODO:
-
-				m_Ball.Transform.Position = paddleItr->Transform.Position + glm::vec3 {m_Ball.Attachable.AttachOffset, 0};
-				m_Ball.Velocity.Value = {0, 0};
+				// Attach the ball to the paddle!
+				m_Ball.EquipToPaddle(*paddleItr, playerItr->Settings.MainPaddleAttachOffset);
 			}
 			else
 			{
+				// Reset the ball to the center
 				m_Ball.Transform.Position = {0, 0, 0};
-				m_Ball.Velocity.Value = {5, 1};
+				m_Ball.Velocity.Value = {5, 1}; // TODO: randomized the velocity.
 			}
 			break;
 		}
@@ -601,12 +634,21 @@ namespace DYE
 				ImGui::Text("FPS: [%f]", m_FPSCounter.GetLastCalculatedFPS());
 			}
 
-			if (ImGui::CollapsingHeader("Players"))
+			if (ImGui::CollapsingHeader("Game State"))
 			{
 				for (int i = 0; i < m_Players.size(); i++)
 				{
 					auto& player = m_Players[i];
-					ImGuiUtil::DrawUnsignedIntControl("Player " + std::to_string(i), player.State.Health, 0);
+					ImGuiUtil::DrawUnsignedIntControl("Player " + std::to_string(i) + " Health", player.State.Health, 0);
+				}
+
+				if (m_Ball.Attachable.IsAttached)
+				{
+					ImGuiUtil::DrawReadOnlyTextWithLabel("Ball Attach To", std::to_string(m_Ball.Attachable.AttachedPaddle->PlayerID));
+				}
+				else
+				{
+					ImGuiUtil::DrawVec2Control("Ball Velocity", m_Ball.Velocity.Value, 0.0f);
 				}
 			}
 

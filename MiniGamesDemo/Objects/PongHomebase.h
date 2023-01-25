@@ -5,7 +5,7 @@
 
 namespace DYE::MiniGame
 {
-	struct PongGoalArea
+	struct PongHomebase
 	{
 		int PlayerID = 0;
 		Transform Transform;

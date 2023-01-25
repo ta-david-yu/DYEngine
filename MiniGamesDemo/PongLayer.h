@@ -10,7 +10,7 @@
 #include "Objects/PongPlayer.h"
 #include "Objects/PlayerPaddle.h"
 #include "Objects/PongBall.h"
-#include "Objects/PongGoalArea.h"
+#include "Objects/PongHomebase.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -70,6 +70,6 @@ namespace DYE
 		std::vector<MiniGame::PongPlayer> m_Players;
 		std::vector<MiniGame::PlayerPaddle> m_PlayerPaddles;
 		std::vector<MiniGame::Wall> m_Walls;
-		std::vector<MiniGame::PongGoalArea> m_GoalAreas;
+		std::vector<MiniGame::PongHomebase> m_Homebases;
 	};
 }

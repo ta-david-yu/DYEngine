@@ -9,9 +9,11 @@ namespace DYE::MiniGame
 		struct Settings
 		{
 			int ID;
-			glm::vec3 InitialPaddleLocation;
-			glm::vec3 GoalAreaCenter;
-			glm::vec3 GoalAreaSize;
+			glm::vec3 MainPaddleLocation;
+			// The location offset for ball to attach at.
+			glm::vec2 MainPaddleAttachOffset;
+			glm::vec3 HomebaseCenter;
+			glm::vec3 HomebaseSize;
 			glm::vec3 Color;
 		} Settings;
 

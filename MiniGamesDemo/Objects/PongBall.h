@@ -17,5 +17,10 @@ namespace DYE::MiniGame
 		Hittable Hittable;
 		AttachableToPaddle Attachable;
 		Sprite Sprite;
+
+		float LaunchBaseSpeed;
+
+		void EquipToPaddle(PlayerPaddle& paddle, glm::vec2 offset);
+		void LaunchFromAttachedPaddle();
 	};
 }

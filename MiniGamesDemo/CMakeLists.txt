@@ -6,7 +6,7 @@ add_executable(MiniGames
         CollisionTestLayer.cpp
         PongLayer.cpp
         Objects/PlayerPaddle.cpp
-        Components/Transform.cpp Components/Sprite.cpp Components/Collider.cpp Objects/Wall.cpp Objects/WindowFrame.cpp Objects/PongBall.cpp Components/Velocity.cpp Objects/Camera.cpp Components/Hittable.cpp Objects/PongPlayer.cpp Objects/PongGoalArea.cpp Components/AttachableToPaddle.cpp)
+        Components/Transform.cpp Components/Sprite.cpp Components/Collider.cpp Objects/Wall.cpp Objects/WindowFrame.cpp Objects/PongBall.cpp Components/Velocity.cpp Objects/Camera.cpp Components/Hittable.cpp Objects/PongPlayer.cpp Objects/PongHomebase.cpp Components/AttachableToPaddle.cpp)
 
 target_include_directories(MiniGames PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(MiniGames DYEngine)
