@@ -1,4 +1,4 @@
-#include "PeepholismLayer.h"
+#include "PongLayer.h"
 
 #include "Core/Application.h"
 #include "Util/Logger.h"
@@ -37,11 +37,11 @@
 
 namespace DYE
 {
-	PeepholismLayer::PeepholismLayer()
+	PongLayer::PongLayer()
 	{
 	}
 
-	void PeepholismLayer::OnInit()
+	void PongLayer::OnInit()
 	{
 		RenderCommand::GetInstance().SetClearColor(glm::vec4{0.5f, 0.5f, 0.5f, 0.5f});
 
@@ -56,13 +56,18 @@ namespace DYE
 		registerBoxCollider(m_PlayerPaddle2.Transform, m_PlayerPaddle2.Collider);
 
 		// Create wall objects.
-		Pong::Wall leftWall; leftWall.Transform.Position = {12, 0, 0}; leftWall.Collider.Size = {1, 16, 0};
-		Pong::Wall rightWall; rightWall.Transform.Position = {-12, 0, 0}; rightWall.Collider.Size = {1, 16, 0};
-		Pong::Wall topWall; topWall.Transform.Position = {0, 7, 0}; topWall.Collider.Size = {26, 1, 0};
-		Pong::Wall bottomWall; bottomWall.Transform.Position = {0, -7, 0}; bottomWall.Collider.Size = {26, 1, 0};
+		MiniGame::Wall leftUpperWall; leftUpperWall.Transform.Position = {12, 8, 0}; leftUpperWall.Collider.Size = {1, 8, 0};
+		MiniGame::Wall rightUpperWall; rightUpperWall.Transform.Position = {-12, 8, 0}; rightUpperWall.Collider.Size = {1, 8, 0};
+		MiniGame::Wall leftLowerWall; leftLowerWall.Transform.Position = {12, -8, 0}; leftLowerWall.Collider.Size = {1, 8, 0};
+		MiniGame::Wall rightLowerWall; rightLowerWall.Transform.Position = {-12, -8, 0}; rightLowerWall.Collider.Size = {1, 8, 0};
 
-		m_Walls.emplace_back(leftWall);
-		m_Walls.emplace_back(rightWall);
+		MiniGame::Wall topWall; topWall.Transform.Position = {0, 6.5f, 0}; topWall.Collider.Size = {26, 1, 0};
+		MiniGame::Wall bottomWall; bottomWall.Transform.Position = {0, -6.5f, 0}; bottomWall.Collider.Size = {26, 1, 0};
+
+		m_Walls.emplace_back(leftLowerWall);
+		m_Walls.emplace_back(rightLowerWall);
+		m_Walls.emplace_back(leftUpperWall);
+		m_Walls.emplace_back(rightUpperWall);
 		m_Walls.emplace_back(topWall);
 		m_Walls.emplace_back(bottomWall);
 
@@ -87,6 +92,7 @@ namespace DYE
 
 		// Create main camera.
 		auto mainWindowPtr = WindowManager::GetMainWindow();
+		mainWindowPtr->CenterWindow();
 		mainWindowPtr->SetWindowSize(1600, 900);
 
 		m_MainCamera.Transform.Position = glm::vec3 {0, 0, 10};
@@ -124,7 +130,7 @@ namespace DYE
 		ContextBase::SetVSyncCountForCurrentContext(0);
 	}
 
-	void PeepholismLayer::registerBoxCollider(Pong::Transform &transform, Pong::BoxCollider &collider)
+	void PongLayer::registerBoxCollider(MiniGame::Transform &transform, MiniGame::BoxCollider &collider)
 	{
 		if (collider.ID.has_value() && m_ColliderManager.IsColliderRegistered(collider.ID.value()))
 		{
@@ -135,7 +141,7 @@ namespace DYE
 		collider.ID = m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter(transform.Position, collider.Size));
 	}
 
-	void PeepholismLayer::unregisterBoxCollider(Pong::Transform &transform, Pong::BoxCollider &collider)
+	void PongLayer::unregisterBoxCollider(MiniGame::Transform &transform, MiniGame::BoxCollider &collider)
 	{
 		if (!collider.ID.has_value())
 		{
@@ -152,7 +158,7 @@ namespace DYE
 		m_ColliderManager.UnregisterAABB(collider.ID.value());
 	}
 
-	void PeepholismLayer::updateBoxCollider(Pong::Transform &transform, Pong::BoxCollider &collider)
+	void PongLayer::updateBoxCollider(MiniGame::Transform &transform, MiniGame::BoxCollider &collider)
 	{
 		if (!collider.ID.has_value())
 		{
@@ -169,7 +175,7 @@ namespace DYE
 		m_ColliderManager.SetAABB(collider.ID.value(), Math::AABB::CreateFromCenter(transform.Position, collider.Size));
 	}
 
-	void PeepholismLayer::OnRender()
+	void PongLayer::OnRender()
 	{
 		RenderPipelineManager::RegisterCameraForNextRender(m_MainCamera.GetTransformedProperties());
 		RenderPipelineManager::RegisterCameraForNextRender(m_DebugCamera.GetTransformedProperties());
@@ -177,7 +183,7 @@ namespace DYE
 		renderSprite(m_Ball.Transform, m_Ball.Sprite);
 
 		// Scroll tiled offset
-		float const offsetChange = TIME.DeltaTime() * 0.5f;
+		float const offsetChange = TIME.DeltaTime() * 0.5f * m_BackgroundScrollingSpeed;
 		m_BackgroundSprite.TilingOffset += glm::vec2 {offsetChange, offsetChange};
 		if (m_BackgroundSprite.TilingOffset.x > 1.0f)
 		{
@@ -187,7 +193,7 @@ namespace DYE
 		renderSprite(m_BackgroundTransform, m_BackgroundSprite);
 	}
 
-	void PeepholismLayer::renderSprite(Pong::Transform &transform, Pong::Sprite &sprite)
+	void PongLayer::renderSprite(MiniGame::Transform &transform, MiniGame::Sprite &sprite)
 	{
 		glm::mat4 modelMatrix = glm::mat4 {1.0f};
 		modelMatrix = glm::translate(modelMatrix, transform.Position);
@@ -198,15 +204,23 @@ namespace DYE
 			->SubmitTiledSprite(sprite.Texture, {transform.Scale.x * sprite.TilingScale.x, transform.Scale.y * sprite.TilingScale.y, sprite.TilingOffset}, sprite.Color, modelMatrix);
 	}
 
-	void PeepholismLayer::OnEvent(Event& event)
+	void PongLayer::OnEvent(Event& event)
 	{
 
 	}
 
-	void PeepholismLayer::OnUpdate()
+	void PongLayer::OnUpdate()
 	{
+		// Debug updates.
+		debugInput();
 		m_FPSCounter.NewFrame(TIME.DeltaTime());
-		m_ColliderManager.DrawGizmos();
+		if (m_DrawColliderGizmos)
+		{
+			m_ColliderManager.DrawGizmos();
+		}
+
+		readPaddleInput();
+
 		bool change = false;
 		if (INPUT.GetKey(KeyCode::W))
 		{
@@ -227,11 +241,6 @@ namespace DYE
 		{
 			m_WindowPosition.x -= TIME.DeltaTime() * m_WindowPixelChangePerSecond;
 			change = true;
-		}
-
-		if (INPUT.GetKeyDown(KeyCode::Space))
-		{
-			m_Ball.Velocity.Value += glm::vec2 {0, 5};
 		}
 
 		auto mainWindowPtr = WindowManager::GetMainWindow();
@@ -281,49 +290,12 @@ namespace DYE
 		{
 			m_TargetWindowWidth = 280;
 			m_TargetWindowHeight = 280;
-			//m_WindowPosition = mainWindowPtr->SetWindowSizeUsingWindowCenterAsAnchor(320, 320);
 		}
 
 		if (INPUT.GetKeyDown(KeyCode::F8))
 		{
 			m_TargetWindowWidth = 240;
 			m_TargetWindowHeight = 240;
-			//m_WindowPosition = mainWindowPtr->SetWindowSizeUsingWindowCenterAsAnchor(320, 320);
-		}
-
-		if (INPUT.GetKeyDown(KeyCode::Escape))
-		{
-			Application::GetRegisteredApplications()[0]->Shutdown();
-			return;
-		}
-
-		if (INPUT.IsGamepadConnected(0))
-		{
-			{
-				// Paddle 1
-				float const horizontal = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickHorizontal);
-				float const vertical = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickVertical);
-
-				glm::vec3 const axis = {0, -vertical, 0};
-
-				if (glm::length2(axis) > 0.01f)
-				{
-					m_PlayerPaddle1.MovementInputBuffer = axis;
-				}
-			}
-
-			{
-				// Paddle 2
-				float const horizontal = INPUT.GetGamepadAxis(0, GamepadAxis::RightStickHorizontal);
-				float const vertical = INPUT.GetGamepadAxis(0, GamepadAxis::RightStickVertical);
-
-				glm::vec3 const axis = {0, -vertical, 0};
-
-				if (glm::length2(axis) > 0.01f)
-				{
-					m_PlayerPaddle2.MovementInputBuffer = axis;
-				}
-			}
 		}
 
 		int currWidth = mainWindowPtr->GetWidth();
@@ -378,7 +350,53 @@ namespace DYE
 		m_MainCamera.Properties.OrthographicSize = 5 / sizeScalar;
 	}
 
-	void PeepholismLayer::OnFixedUpdate()
+	void PongLayer::debugInput()
+	{
+		if (INPUT.GetKeyDown(KeyCode::Space))
+		{
+			m_Ball.Velocity.Value += glm::vec2 {0, 5};
+		}
+
+		if (INPUT.GetKeyDown(KeyCode::Escape))
+		{
+			Application::GetRegisteredApplications()[0]->Shutdown();
+			return;
+		}
+	}
+
+	void PongLayer::readPaddleInput()
+	{
+		if (INPUT.IsGamepadConnected(0))
+		{
+			{
+				// Paddle 1
+				float const horizontal = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickHorizontal);
+				float const vertical = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickVertical);
+
+				glm::vec3 const axis = {0, -vertical, 0};
+
+				if (glm::length2(axis) > 0.01f)
+				{
+					m_PlayerPaddle1.MovementInputBuffer = axis;
+				}
+			}
+
+			{
+				// Paddle 2
+				float const horizontal = INPUT.GetGamepadAxis(0, GamepadAxis::RightStickHorizontal);
+				float const vertical = INPUT.GetGamepadAxis(0, GamepadAxis::RightStickVertical);
+
+				glm::vec3 const axis = {0, -vertical, 0};
+
+				if (glm::length2(axis) > 0.01f)
+				{
+					m_PlayerPaddle2.MovementInputBuffer = axis;
+				}
+			}
+		}
+	}
+
+	void PongLayer::OnFixedUpdate()
 	{
 		auto paddleVec1 = updatePaddle(m_PlayerPaddle1);
 		auto paddleVec2 = updatePaddle(m_PlayerPaddle2);
@@ -417,7 +435,7 @@ namespace DYE
 		}
 	}
 
-	glm::vec3 PeepholismLayer::updatePaddle(Pong::PlayerPaddle& paddle)
+	glm::vec3 PongLayer::updatePaddle(MiniGame::PlayerPaddle& paddle)
 	{
 		float const inputSqr = glm::length2(paddle.MovementInputBuffer);
 		glm::vec3 paddleVelocityPerSecond = glm::vec3 {0, 0, 0};
@@ -463,75 +481,96 @@ namespace DYE
 		return paddleVelocityPerSecond;
 	}
 
-	void PeepholismLayer::OnImGui()
+	void PongLayer::OnImGui()
 	{
 		// get the window size as a base for calculating widgets geometry
 		auto mainWindowPtr = WindowManager::GetMainWindow();
 
-		if (ImGui::Begin("Controls", &m_IsControlWindowOpen))
+		if (ImGui::Begin("General"))
 		{
-			ImGui::Dummy(ImVec2(0.0f, 1.0f));
-			ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "Platform");
-			ImGui::Text("%s", SDL_GetPlatform());
-			ImGui::Text("CPU cores: %d", SDL_GetCPUCount());
-			ImGui::Text("RAM: %.2f GB", (float) SDL_GetSystemRAM() / 1024.0f);
-			ImGui::Text("DeltaTime: [%f]", TIME.DeltaTime());
-			ImGui::Text("FPS: [%f]", m_FPSCounter.GetLastCalculatedFPS());
-
-			int const mainDisplayIndex = mainWindowPtr->GetDisplayIndex();
-			ImGui::Text("MainWindowDisplayIndex = %d", mainDisplayIndex);
-			std::optional<DisplayMode> const displayMode = SCREEN.GetDisplayMode(mainDisplayIndex);
-			if (displayMode.has_value())
+			if (ImGui::CollapsingHeader("System"))
 			{
-				ImGui::Text("Display %d Info = (w=%d, h=%d, r=%d)", mainDisplayIndex, displayMode->Width, displayMode->Height, displayMode->RefreshRate);
+				ImGui::Dummy(ImVec2(0.0f, 1.0f));
+				ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "Platform");
+				ImGui::Text("%s", SDL_GetPlatform());
+				ImGui::Text("CPU cores: %d", SDL_GetCPUCount());
+				ImGui::Text("RAM: %.2f GB", (float) SDL_GetSystemRAM() / 1024.0f);
+				ImGui::Text("DeltaTime: [%f]", TIME.DeltaTime());
+				ImGui::Text("FPS: [%f]", m_FPSCounter.GetLastCalculatedFPS());
 			}
 
-			ImGui::Text("Mouse Position = %d, %d", INPUT.GetGlobalMousePosition().x, INPUT.GetGlobalMousePosition().y);
-			ImGui::Text("Mouse Delta = %d, %d", INPUT.GetGlobalMouseDelta().x, INPUT.GetGlobalMouseDelta().y);
-
-			if (ImGui::Button("Quit App"))
+			if (ImGui::CollapsingHeader("Window & Mouse"))
 			{
-				for (auto const app : Application::GetRegisteredApplications())
+				int const mainDisplayIndex = mainWindowPtr->GetDisplayIndex();
+				ImGui::Text("MainWindowDisplayIndex = %d", mainDisplayIndex);
+				std::optional<DisplayMode> const displayMode = SCREEN.GetDisplayMode(mainDisplayIndex);
+				if (displayMode.has_value())
 				{
-					app->Shutdown();
+					ImGui::Text("Display %d Info = (w=%d, h=%d, r=%d)", mainDisplayIndex, displayMode->Width, displayMode->Height, displayMode->RefreshRate);
+				}
+
+				ImGui::Text("Mouse Position = %d, %d", INPUT.GetGlobalMousePosition().x, INPUT.GetGlobalMousePosition().y);
+				ImGui::Text("Mouse Delta = %d, %d", INPUT.GetGlobalMouseDelta().x, INPUT.GetGlobalMouseDelta().y);
+
+				if (ImGui::Button("Quit App"))
+				{
+					for (auto const app : Application::GetRegisteredApplications())
+					{
+						app->Shutdown();
+					}
+				}
+
+				ImGui::SameLine();
+				static bool isMainWindowBordered = true;
+				if (ImGui::Button("Toggle Window Bordered"))
+				{
+					isMainWindowBordered = !isMainWindowBordered;
+					mainWindowPtr->SetBorderedIfWindowed(isMainWindowBordered);
+				}
+
+				ImGui::SameLine();
+				if (ImGui::Button("Center Window"))
+				{
+					mainWindowPtr->CenterWindow();
+					m_WindowPosition = mainWindowPtr->GetPosition();
 				}
 			}
 
-			ImGui::SameLine();
-			static bool isMainWindowBordered = true;
-			if (ImGui::Button("Toggle Window Bordered"))
+			if (ImGui::CollapsingHeader("Rendering"))
 			{
-				isMainWindowBordered = !isMainWindowBordered;
-				mainWindowPtr->SetBorderedIfWindowed(isMainWindowBordered);
+				if (ImGui::Button("Line Mode"))
+				{
+					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Fill Mode"))
+				{
+					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				}
+
+				if (ImGui::Button("Toggle Debug Gizmos"))
+				{
+					m_DrawColliderGizmos = !m_DrawColliderGizmos;
+				}
+				ImGuiUtil::DrawFloatControl("BG Scrolling Speed", m_BackgroundScrollingSpeed, 1.0f);
 			}
 
-			ImGui::SameLine();
-			if (ImGui::Button("Center Window"))
+			if (ImGui::CollapsingHeader("World"))
 			{
-				mainWindowPtr->CenterWindow();
-				m_WindowPosition = mainWindowPtr->GetPosition();
+				ImGuiUtil::DrawCameraPropertiesControl("Main Camera Properties", m_MainCamera.Properties);
+
+				ImGui::Separator();
+				ImGuiUtil::DrawFloatControl("Camera Speed", m_WindowPixelChangePerSecond, 300);
+
+				ImGui::Separator();
+				ImGuiUtil::DrawCameraPropertiesControl("Debug Camera Properties", m_DebugCamera.Properties);
+
+				ImGui::Separator();
+				imguiSprite("Ball", m_Ball.Transform, m_Ball.Sprite);
+				ImGui::Separator();
+				imguiSprite("Background", m_BackgroundTransform, m_BackgroundSprite);
 			}
-
-			if (ImGui::Button("Line Mode"))
-			{
-				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("Fill Mode"))
-			{
-				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-			}
-
-			ImGui::Separator();
-			ImGuiUtil::DrawCameraPropertiesControl("Main Camera Properties", m_MainCamera.Properties);
-
-			ImGui::Separator();
-			ImGuiUtil::DrawFloatControl("Camera Speed", m_WindowPixelChangePerSecond, 300);
-
-			ImGui::Separator();
-			ImGuiUtil::DrawCameraPropertiesControl("Debug Camera Properties", m_DebugCamera.Properties);
 		}
-
 		ImGui::End();
 
 		m_ColliderManager.DrawImGui();
@@ -539,23 +578,25 @@ namespace DYE
 		INPUT.DrawAllConnectedDeviceDescriptorsImGui();
 	}
 
-	void PeepholismLayer::imguiSpriteObject(SpriteObject &object)
+	void PongLayer::imguiSprite(const std::string& name, MiniGame::Transform& transform, MiniGame::Sprite& sprite)
 	{
-		ImGui::PushID(object.Name.c_str());
+		ImGui::PushID(name.c_str());
 
-		ImGuiUtil::DrawVec3Control("Position##" + object.Name, object.Position);
-		ImGuiUtil::DrawVec3Control("Scale##" + object.Name, object.Scale);
+		ImGuiUtil::DrawVec3Control("Position", transform.Position);
+		ImGuiUtil::DrawVec3Control("Scale", transform.Scale);
 
-		glm::vec3 rotationInEulerAnglesDegree = glm::eulerAngles(object.Rotation);
+		glm::vec3 rotationInEulerAnglesDegree = glm::eulerAngles(transform.Rotation);
 		rotationInEulerAnglesDegree += glm::vec3(0.f);
 		rotationInEulerAnglesDegree = glm::degrees(rotationInEulerAnglesDegree);
-		if (ImGuiUtil::DrawVec3Control("Rotation##" + object.Name, rotationInEulerAnglesDegree))
+		if (ImGuiUtil::DrawVec3Control("Rotation", rotationInEulerAnglesDegree))
 		{
 			rotationInEulerAnglesDegree.y = glm::clamp(rotationInEulerAnglesDegree.y, -90.f, 90.f);
-			object.Rotation = glm::quat {glm::radians(rotationInEulerAnglesDegree)};
+			transform.Rotation = glm::quat {glm::radians(rotationInEulerAnglesDegree)};
 		}
 
-		ImGuiUtil::DrawColor4Control("_Color", object.Color);
+		ImGuiUtil::DrawVec2Control("_TilingScale", sprite.TilingScale, 1.0f);
+		ImGuiUtil::DrawVec2Control("_TilingOffset", sprite.TilingOffset, 0.0f);
+		ImGuiUtil::DrawColor4Control("_Color", sprite.Color);
 
 		ImGui::PopID();
 	}

@@ -1,6 +1,6 @@
 #include "Components/Collider.h"
 
-namespace DYE::Pong
+namespace DYE::MiniGame
 {
 
 }

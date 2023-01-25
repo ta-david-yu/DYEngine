@@ -6,7 +6,7 @@
 
 #include <optional>
 
-namespace DYE::Pong
+namespace DYE::MiniGame
 {
 	struct BoxCollider
 	{

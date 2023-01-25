@@ -11,7 +11,7 @@
 #include "Graphics/Texture.h"
 #include "Graphics/RenderCommand.h"
 
-#include "PeepholismLayer.h"
+#include "PongLayer.h"
 
 #include <glm/glm.hpp>
 #include <glad/glad.h>
@@ -19,19 +19,19 @@
 
 namespace DYE
 {
-    class PeepholismApp final : public Application
+    class MiniGamesApp final : public Application
     {
     public:
-		PeepholismApp() = delete;
-		PeepholismApp(const PeepholismApp &) = delete;
+		MiniGamesApp() = delete;
+		MiniGamesApp(const MiniGamesApp &) = delete;
 
-        explicit PeepholismApp(const std::string &windowName, int fixedFramePerSecond = 60)
+        explicit MiniGamesApp(const std::string &windowName, int fixedFramePerSecond = 60)
             : Application(windowName, fixedFramePerSecond)
         {
-			pushLayer(std::make_shared<PeepholismLayer>());
+			pushLayer(std::make_shared<PongLayer>());
         }
 
-        ~PeepholismApp() final = default;
+        ~MiniGamesApp() final = default;
     };
 }
 
@@ -39,5 +39,5 @@ namespace DYE
 /// \return a new allocated Application object
 DYE::Application * DYE::CreateApplication()
 {
-    return new PeepholismApp {"Peepholism", 60 };
+    return new MiniGamesApp {"MiniGamesDemo", 60 };
 }

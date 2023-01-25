@@ -1,6 +1,6 @@
 #include "Objects/Ball.h"
 
-namespace DYE::Pong
+namespace DYE::MiniGame
 {
 
 }

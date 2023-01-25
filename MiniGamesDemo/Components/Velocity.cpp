@@ -1,6 +1,6 @@
 #include "Components/Velocity.h"
 
-namespace DYE::Pong
+namespace DYE::MiniGame
 {
 
 }

@@ -3,7 +3,7 @@
 #include "Components/Transform.h"
 #include "Components/Collider.h"
 
-namespace DYE::Pong
+namespace DYE::MiniGame
 {
 	struct WindowFrame
 	{

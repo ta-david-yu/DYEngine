@@ -4,7 +4,7 @@
 
 #include "Components/Transform.h"
 
-namespace DYE::Pong
+namespace DYE::MiniGame
 {
 	struct Camera
 	{

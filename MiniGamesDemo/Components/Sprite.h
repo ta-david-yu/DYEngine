@@ -7,7 +7,7 @@
 
 #include <glm/glm.hpp>
 
-namespace DYE::Pong
+namespace DYE::MiniGame
 {
 	struct Sprite
 	{

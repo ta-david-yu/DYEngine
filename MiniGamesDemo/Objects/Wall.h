@@ -4,7 +4,7 @@
 #include "Components/Sprite.h"
 #include "Components/Collider.h"
 
-namespace DYE::Pong
+namespace DYE::MiniGame
 {
 	struct Wall
 	{

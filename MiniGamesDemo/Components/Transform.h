@@ -3,7 +3,7 @@
 #include "glm/glm.hpp"
 #include "glm/gtx/quaternion.hpp"
 
-namespace DYE::Pong
+namespace DYE::MiniGame
 {
 	struct Transform
 	{

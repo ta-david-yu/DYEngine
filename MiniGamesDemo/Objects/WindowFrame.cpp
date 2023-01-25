@@ -1,6 +1,6 @@
 #include "Objects/WindowFrame.h"
 
-namespace DYE::Pong
+namespace DYE::MiniGame
 {
 
 }

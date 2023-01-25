@@ -1,6 +1,6 @@
 #include "Objects/Wall.h"
 
-namespace DYE::Pong
+namespace DYE::MiniGame
 {
 
 }

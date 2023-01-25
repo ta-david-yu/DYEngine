@@ -1,6 +1,6 @@
 #include "Components/Sprite.h"
 
-namespace DYE::Pong
+namespace DYE::MiniGame
 {
 
 }

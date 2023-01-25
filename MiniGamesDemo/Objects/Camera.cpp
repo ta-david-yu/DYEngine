@@ -1,6 +1,6 @@
 #include "Objects/Camera.h"
 
-namespace DYE::Pong
+namespace DYE::MiniGame
 {
 
 }

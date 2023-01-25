@@ -26,12 +26,7 @@ namespace DYE::ImGuiUtil
 		void ResetParametersToDefaultValues();
 	}
 
-	/// Draw a glm::vec3 variable imgui handle.
-	/// \param label
-	/// \param value
-	/// \param resetValue
-	/// \param columnWidth
-	/// \return true if the value is changed.
+	bool DrawVec2Control(const std::string& label, glm::vec2& value, float resetValue = 0.0f);
 	bool DrawVec3Control(const std::string& label, glm::vec3& value, float resetValue = 0.0f);
 	bool DrawBooleanControl(const std::string& label, bool& value);
 	bool DrawFloatControl(const std::string& label, float& value, float resetValue);
