@@ -65,7 +65,7 @@ namespace DYE
 		player1.Settings.HomebaseCenter = {-14, 0, 0};	// TODO:
 		player1.Settings.HomebaseSize = {2, 16, 1}; 	// TODO:
 
-		player1.State.Health = 5;
+		player1.State.Health = MaxHealth;
 
 		MiniGame::PongPlayer player2 {};
 		player2.Settings.ID = 1;
@@ -74,7 +74,7 @@ namespace DYE
 		player2.Settings.HomebaseCenter = {14, 0, 0};	// TODO:
 		player2.Settings.HomebaseSize = {2, 16, 1}; 	// TODO:
 
-		player2.State.Health = 5;
+		player2.State.Health = MaxHealth;
 
 		m_Players.emplace_back(player1);
 		m_Players.emplace_back(player2);
@@ -150,14 +150,14 @@ namespace DYE
 		auto position = m_Player1WindowCamera.pWindow->GetPosition();
 		position.x -= 410;
 		m_Player1WindowCamera.pWindow->SetPosition(position.x, position.y);
-		m_Player1WindowCamera.pWindow->SetBorderedIfWindowed(false);
+		//m_Player1WindowCamera.pWindow->SetBorderedIfWindowed(false);
 
 		m_Player2WindowCamera.CreateWindow(m_MainWindow->GetContext(), WindowProperty("Player 2", 800, 900));
 		m_Player2WindowCamera.pWindow->CenterWindow();
 		position = m_Player2WindowCamera.pWindow->GetPosition();
 		position.x += 390;
 		m_Player2WindowCamera.pWindow->SetPosition(position.x, position.y);
-		m_Player2WindowCamera.pWindow->SetBorderedIfWindowed(false);
+		//m_Player2WindowCamera.pWindow->SetBorderedIfWindowed(false);
 
 		// Set the current context back to the main window.
 		m_MainWindow->MakeCurrent();
@@ -247,12 +247,24 @@ namespace DYE
 		// Gameplay updates
 		readPaddleInput();
 
-		m_Player1WindowCamera.UpdateWindowResizeAnimation(TIME.DeltaTime());
-		m_Player1WindowCamera.UpdateWindowMoveAnimation(TIME.DeltaTime());
-		m_Player1WindowCamera.UpdateCameraProperties();
+		auto player1WindowAnimationResult =  m_Player1WindowCamera.UpdateWindowResizeAnimation(TIME.DeltaTime());
+		auto player2WindowAnimationResult = m_Player2WindowCamera.UpdateWindowResizeAnimation(TIME.DeltaTime());
 
-		m_Player2WindowCamera.UpdateWindowResizeAnimation(TIME.DeltaTime());
-		m_Player2WindowCamera.UpdateWindowMoveAnimation(TIME.DeltaTime());
+		if (m_GameState == GameState::Intermission)
+		{
+			bool const window1Complete = player1WindowAnimationResult == MiniGame::WindowCamera::AnimationUpdateResult::Complete ||
+											player1WindowAnimationResult == MiniGame::WindowCamera::AnimationUpdateResult::Idle;
+			bool const window2Complete = player2WindowAnimationResult == MiniGame::WindowCamera::AnimationUpdateResult::Complete ||
+											player2WindowAnimationResult == MiniGame::WindowCamera::AnimationUpdateResult::Idle;
+
+			if (window1Complete && window2Complete)
+			{
+				// Resume to playing state after the intermission animation is completed.
+				m_GameState = GameState::Playing;
+			}
+		}
+
+		m_Player1WindowCamera.UpdateCameraProperties();
 		m_Player2WindowCamera.UpdateCameraProperties();
 	}
 
@@ -431,7 +443,10 @@ namespace DYE
 			updatePaddle(paddle, timeStep);
 		}
 
-		updateBall(timeStep);
+		if (m_GameState == GameState::Playing)
+		{
+			updateBall(timeStep);
+		}
 	}
 
 	void PongLayer::updatePaddle(MiniGame::PlayerPaddle& paddle, float timeStep)
@@ -571,6 +586,20 @@ namespace DYE
 			{
 				// Reduce health (earn score).
 				playerItr->State.Health--;
+
+				if (playerItr->State.Health == 0)
+				{
+					m_GameState = GameState::GameOver;
+				}
+				else
+				{
+					m_GameState = GameState::Intermission;
+
+					// Shrink the winning player's window size.
+					MiniGame::WindowCamera& windowCamera = playerID == 0? m_Player2WindowCamera : m_Player1WindowCamera;
+					auto size = m_HealthWindowSizes[(MaxHealth - 1) - playerItr->State.Health];
+					windowCamera.SmoothResize(size.x, size.y);
+				}
 			}
 
 			auto paddleItr = std::find_if(
@@ -616,6 +645,22 @@ namespace DYE
 
 			if (ImGui::CollapsingHeader("Game State"))
 			{
+				std::string state;
+				if (m_GameState == GameState::Playing)
+				{
+					state = "Playing";
+				}
+				else if (m_GameState == GameState::Intermission)
+				{
+					state = "Intermission";
+				}
+				else if (m_GameState == GameState::GameOver)
+				{
+					state = "GameOver";
+				}
+
+				ImGuiUtil::DrawReadOnlyTextWithLabel("Game State", state);
+
 				for (int i = 0; i < m_Players.size(); i++)
 				{
 					auto& player = m_Players[i];

@@ -61,6 +61,15 @@ namespace DYE
 		FPSCounter m_FPSCounter = FPSCounter(0.25);
 
 		// Game state
+		constexpr static int MaxHealth = 5;
+		const std::array<glm::vec<2, std::uint32_t>, MaxHealth - 1> m_HealthWindowSizes =
+			{
+				glm::vec<2, std::uint32_t>{650, 900},
+				glm::vec<2, std::uint32_t>{600, 700},
+				glm::vec<2, std::uint32_t>{400, 450},
+				glm::vec<2, std::uint32_t>{300, 400}
+			};
+
 		GameState m_GameState = GameState::Playing;
 
 		// Game world
