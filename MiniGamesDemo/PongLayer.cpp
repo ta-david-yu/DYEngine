@@ -129,44 +129,42 @@ namespace DYE
 		m_BackgroundTransform.Scale = {64.0f, 64.0f, 1};
 		m_BackgroundTransform.Position = {0, 0, -2};
 
-		// Create main camera.
-		auto mainWindowPtr = WindowManager::GetMainWindow();
-		mainWindowPtr->CenterWindow();
-		mainWindowPtr->SetWindowSize(1600, 900);
+		// Setup main camera for debugging purpose.
+		m_MainWindow = WindowManager::GetMainWindow();
+		m_MainWindow->CenterWindow();
+		m_MainWindow->SetSize(640, 480);
 
 		m_MainCamera.Transform.Position = glm::vec3 {0, 0, 10};
 		m_MainCamera.Properties.IsOrthographic = true;
-		m_MainCamera.Properties.OrthographicSize = 10;
+		m_MainCamera.Properties.OrthographicSize = 20;
 		m_MainCamera.Properties.TargetType = RenderTargetType::Window;
-		m_MainCamera.Properties.TargetWindowID = mainWindowPtr->GetWindowID();
+		m_MainCamera.Properties.TargetWindowID = m_MainWindow->GetWindowID();
 		m_MainCamera.Properties.UseManualAspectRatio = false;
 		m_MainCamera.Properties.ManualAspectRatio = (float) 1600 / 900;
 		m_MainCamera.Properties.ViewportValueType = ViewportValueType::RelativeDimension;
 		m_MainCamera.Properties.Viewport = { 0, 0, 1, 1 };
 
-		m_WindowPosition = mainWindowPtr->GetPosition();
+		// Create window camera.
+		m_Player1WindowCamera.CreateWindow(m_MainWindow->GetContext(), WindowProperty("Player 1", 800, 900));
+		m_Player1WindowCamera.pWindow->CenterWindow();
+		auto position = m_Player1WindowCamera.pWindow->GetPosition();
+		position.x -= 410;
+		m_Player1WindowCamera.pWindow->SetPosition(position.x, position.y);
+		m_Player1WindowCamera.pWindow->SetBorderedIfWindowed(false);
 
-		// Use the same context of the main window for the second window.
-		m_SecondWindow = WindowManager::CreateWindow(WindowProperty("SecondWindow", 640, 480));
-		auto context = mainWindowPtr->GetContext();
-		m_SecondWindow->SetContext(context);
-		m_SecondWindow->MakeCurrent();
-		ContextBase::SetVSyncCountForCurrentContext(0);
-
-		// Create debug camera.
-		m_DebugCamera.Transform.Position = {m_Ball.Transform.Position.x, m_Ball.Transform.Position.y, 10};
-		m_DebugCamera.Properties.IsOrthographic = true;
-		m_DebugCamera.Properties.OrthographicSize = 20;
-		m_DebugCamera.Properties.TargetType = RenderTargetType::Window;
-		m_DebugCamera.Properties.TargetWindowID = m_SecondWindow->GetWindowID();
-		m_DebugCamera.Properties.UseManualAspectRatio = false;
-		m_DebugCamera.Properties.ViewportValueType = ViewportValueType::RelativeDimension;
-		m_DebugCamera.Properties.Viewport = {0, 0, 1, 1};
+		m_Player2WindowCamera.CreateWindow(m_MainWindow->GetContext(), WindowProperty("Player 2", 800, 900));
+		m_Player2WindowCamera.pWindow->CenterWindow();
+		position = m_Player2WindowCamera.pWindow->GetPosition();
+		position.x += 390;
+		m_Player2WindowCamera.pWindow->SetPosition(position.x, position.y);
+		m_Player2WindowCamera.pWindow->SetBorderedIfWindowed(false);
 
 		// Set the current context back to the main window.
-		mainWindowPtr->MakeCurrent();
-		mainWindowPtr->SetBorderedIfWindowed(false);
+		m_MainWindow->MakeCurrent();
 		ContextBase::SetVSyncCountForCurrentContext(0);
+
+		// Hide the main window by default (as debug window, press F9/F10 to toggle it).
+		SDL_MinimizeWindow(m_MainWindow->GetTypedNativeWindowPtr<SDL_Window>());
 	}
 
 	void PongLayer::registerBoxCollider(MiniGame::Transform &transform, MiniGame::BoxCollider &collider)
@@ -200,7 +198,8 @@ namespace DYE
 	void PongLayer::OnRender()
 	{
 		RenderPipelineManager::RegisterCameraForNextRender(m_MainCamera.GetTransformedProperties());
-		RenderPipelineManager::RegisterCameraForNextRender(m_DebugCamera.GetTransformedProperties());
+		RenderPipelineManager::RegisterCameraForNextRender(m_Player1WindowCamera.Camera.GetTransformedProperties());
+		RenderPipelineManager::RegisterCameraForNextRender(m_Player2WindowCamera.Camera.GetTransformedProperties());
 
 		renderSprite(m_Ball.Transform, m_Ball.Sprite);
 
@@ -245,111 +244,30 @@ namespace DYE
 			}
 		}
 
+		// Gameplay updates
 		readPaddleInput();
 
-		auto mainWindowPtr = WindowManager::GetMainWindow();
-		if (INPUT.GetKeyDown(KeyCode::F1))
-		{
-			mainWindowPtr->CenterWindow();
-			m_WindowPosition = mainWindowPtr->GetPosition();
-		}
+		m_Player1WindowCamera.UpdateWindowResizeAnimation(TIME.DeltaTime());
+		m_Player1WindowCamera.UpdateWindowMoveAnimation(TIME.DeltaTime());
+		m_Player1WindowCamera.UpdateCameraProperties();
 
-		if (INPUT.GetKeyDown(KeyCode::F2))
-		{
-			m_TargetWindowWidth = 1920;
-			m_TargetWindowHeight = 1080;
-		}
-
-		if (INPUT.GetKeyDown(KeyCode::F3))
-		{
-			m_TargetWindowWidth = 1600;
-			m_TargetWindowHeight = 900;
-		}
-
-		if (INPUT.GetKeyDown(KeyCode::F4))
-		{
-			m_TargetWindowWidth = 800;
-			m_TargetWindowHeight = 640;
-		}
-
-		if (INPUT.GetKeyDown(KeyCode::F5))
-		{
-			m_TargetWindowWidth = 640;
-			m_TargetWindowHeight = 640;
-		}
-
-		if (INPUT.GetKeyDown(KeyCode::F6))
-		{
-			m_TargetWindowWidth = 320;
-			m_TargetWindowHeight = 320;
-		}
-
-		if (INPUT.GetKeyDown(KeyCode::F7))
-		{
-			m_TargetWindowWidth = 280;
-			m_TargetWindowHeight = 280;
-		}
-
-		if (INPUT.GetKeyDown(KeyCode::F8))
-		{
-			m_TargetWindowWidth = 240;
-			m_TargetWindowHeight = 240;
-		}
-
-		int currWidth = mainWindowPtr->GetWidth();
-		int currHeight = mainWindowPtr->GetHeight();
-
-		int const widthDiff = m_TargetWindowWidth - currWidth;
-		int const heightDiff = m_TargetWindowHeight - currHeight;
-		if (glm::abs(widthDiff) > 0 || glm::abs(heightDiff) > 0)
-		{
-			// TODO: Fixed precision issue because window size is int, but animation is using float!
-			//  We prolly want to use fixed animation instead (tween animation)
-			float const newWidth = Math::Lerp(currWidth, m_TargetWindowWidth, 1.0f - glm::pow(0.5f, TIME.DeltaTime() / 0.1f));
-			float const newHeight = Math::Lerp(currHeight, m_TargetWindowHeight, 1.0f - glm::pow(0.5f, TIME.DeltaTime() / 0.1f));
-
-			// Make the speed even, so SetWindowSizeUsingWindowCenterAsAnchor can properly derive precise integer position
-			int widthSpeed = glm::abs(newWidth - currWidth);
-			if (widthSpeed % 2 == 1) widthSpeed += 1;
-
-			int heightSpeed = glm::abs(newHeight - currHeight);
-			if (heightSpeed % 2 == 1) heightSpeed += 1;
-
-			currWidth += glm::sign(widthDiff) * std::min((int) widthSpeed, glm::abs(widthDiff));
-			currHeight += glm::sign(heightDiff) * std::min((int) heightSpeed, glm::abs(heightDiff));
-			m_WindowPosition = mainWindowPtr->SetWindowSizeUsingWindowCenterAsAnchor(currWidth, currHeight);
-
-			if (glm::abs(m_TargetWindowWidth - currWidth) < 5 && glm::abs(m_TargetWindowHeight - currHeight) < 5)
-			{
-				m_WindowPosition = mainWindowPtr->SetWindowSizeUsingWindowCenterAsAnchor(m_TargetWindowWidth, m_TargetWindowHeight);
-			}
-		}
-
-		glm::vec2 const windowPos = mainWindowPtr->GetPosition();
-		auto windowWidth = mainWindowPtr->GetWidth();
-		auto windowHeight = mainWindowPtr->GetHeight();
-
-		glm::vec2 normalizedWindowPos = windowPos;
-		normalizedWindowPos.x += windowWidth * 0.5f;
-		normalizedWindowPos.y += windowHeight * 0.5f;
-
-		int const mainDisplayIndex = mainWindowPtr->GetDisplayIndex();
-		std::optional<DisplayMode> const displayMode = SCREEN.GetDisplayMode(mainDisplayIndex);
-		float const screenWidth = displayMode->Width;
-		float const screenHeight = displayMode->Height;
-
-		normalizedWindowPos.y = screenHeight - normalizedWindowPos.y;
-
-		float const scalar = 0.5f; //* (320.0f / windowHeight);
-		m_MainCamera.Transform.Position.x = ((normalizedWindowPos.x - screenWidth * 0.5f) / 32.0f) * scalar;
-		m_MainCamera.Transform.Position.y = ((normalizedWindowPos.y - screenHeight * 0.5f) / 32.0f) * scalar;
-
-		float const sizeScalar = 1.0f * (320.0f / windowHeight);
-		m_MainCamera.Properties.OrthographicSize = 5 / sizeScalar;
+		m_Player2WindowCamera.UpdateWindowResizeAnimation(TIME.DeltaTime());
+		m_Player2WindowCamera.UpdateWindowMoveAnimation(TIME.DeltaTime());
+		m_Player2WindowCamera.UpdateCameraProperties();
 	}
 
 	void PongLayer::debugInput()
 	{
+		if (INPUT.GetKeyDown(KeyCode::F9))
+		{
+			SDL_MinimizeWindow(m_MainWindow->GetTypedNativeWindowPtr<SDL_Window>());
+		}
+
+		if (INPUT.GetKeyDown(KeyCode::F10))
+		{
+			SDL_RestoreWindow(m_MainWindow->GetTypedNativeWindowPtr<SDL_Window>());
+		}
+
 		if (INPUT.GetKeyDown(KeyCode::Space))
 		{
 			m_Ball.Velocity.Value += glm::vec2 {5, 0};
@@ -360,55 +278,129 @@ namespace DYE
 			Application::GetRegisteredApplications()[0]->Shutdown();
 			return;
 		}
+		auto mainWindowPtr = WindowManager::GetMainWindow();
+		if (INPUT.GetKeyDown(KeyCode::F1))
+		{
+			mainWindowPtr->CenterWindow();
+		}
+
+		if (INPUT.GetKeyDown(KeyCode::F2))
+		{
+			m_Player2WindowCamera.SmoothResize(1920, 1080);
+		}
+
+		if (INPUT.GetKeyDown(KeyCode::F3))
+		{
+			m_Player2WindowCamera.SmoothResize(1600, 900);
+		}
+
+		if (INPUT.GetKeyDown(KeyCode::F4))
+		{
+			m_Player2WindowCamera.SmoothResize(800, 640);
+		}
+
+		if (INPUT.GetKeyDown(KeyCode::F5))
+		{
+			m_Player2WindowCamera.SmoothResize(640, 640);
+		}
+
+		if (INPUT.GetKeyDown(KeyCode::F6))
+		{
+			m_Player2WindowCamera.SmoothResize(320, 320);
+		}
+
+		if (INPUT.GetKeyDown(KeyCode::F7))
+		{
+			m_Player2WindowCamera.SmoothResize(240, 240);
+		}
 	}
 
 	void PongLayer::readPaddleInput()
 	{
-		// TODO: change to using two controllers
 		if (INPUT.IsGamepadConnected(0))
 		{
+			// Paddle 1
+			auto &paddle = m_PlayerPaddles[0];
+			float const rightVertical = INPUT.GetGamepadAxis(0, GamepadAxis::RightStickVertical);
+			float const leftVertical = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickVertical);
+
+			float const combinedVertical = glm::clamp(rightVertical + leftVertical, -1.0f, 1.0f);
+			glm::vec3 const axis = {0, -combinedVertical, 0};
+
+			if (glm::length2(axis) > 0.01f)
 			{
-				// Paddle 1
-				auto& paddle = m_PlayerPaddles[0];
-
-				float const horizontal = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickHorizontal);
-				float const vertical = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickVertical);
-
-				glm::vec3 const axis = {0, -vertical, 0};
-
-				if (glm::length2(axis) > 0.01f)
-				{
-					paddle.MovementInputBuffer = axis;
-				}
-
-				if (INPUT.GetGamepadButtonDown(0, GamepadButton::LeftStick))
-				{
-					if (m_Ball.Attachable.IsAttached && m_Ball.Attachable.AttachedPaddle == &paddle)
-					{
-						m_Ball.LaunchFromAttachedPaddle();
-					}
-				}
+				paddle.MovementInputBuffer = axis;
 			}
 
+			if (INPUT.GetGamepadButtonDown(0, GamepadButton::LeftStick))
 			{
-				// Paddle 2
-				auto& paddle = m_PlayerPaddles[1];
-				float const horizontal = INPUT.GetGamepadAxis(0, GamepadAxis::RightStickHorizontal);
-				float const vertical = INPUT.GetGamepadAxis(0, GamepadAxis::RightStickVertical);
-
-				glm::vec3 const axis = {0, -vertical, 0};
-
-				if (glm::length2(axis) > 0.01f)
+				if (m_Ball.Attachable.IsAttached && m_Ball.Attachable.AttachedPaddle == &paddle)
 				{
-					paddle.MovementInputBuffer = axis;
+					m_Ball.LaunchFromAttachedPaddle();
 				}
+			}
+		}
+		else
+		{
+			auto &paddle = m_PlayerPaddles[0];
+			if (INPUT.GetKey(KeyCode::W))
+			{
+				paddle.MovementInputBuffer = glm::vec2 {0, 1};
+			}
+			else if (INPUT.GetKey(KeyCode::S))
+			{
+				paddle.MovementInputBuffer = glm::vec2 {0, -1};
+			}
 
-				if (INPUT.GetGamepadButtonDown(0, GamepadButton::RightStick))
+			if (INPUT.GetKeyDown(KeyCode::Space))
+			{
+				if (m_Ball.Attachable.IsAttached && m_Ball.Attachable.AttachedPaddle == &paddle)
 				{
-					if (m_Ball.Attachable.IsAttached && m_Ball.Attachable.AttachedPaddle == &paddle)
-					{
-						m_Ball.LaunchFromAttachedPaddle();
-					}
+					m_Ball.LaunchFromAttachedPaddle();
+				}
+			}
+		}
+
+		if (INPUT.IsGamepadConnected(1))
+		{
+			// Paddle 2
+			auto& paddle = m_PlayerPaddles[1];
+			float const rightVertical = INPUT.GetGamepadAxis(1, GamepadAxis::RightStickVertical);
+			float const leftVertical = INPUT.GetGamepadAxis(1, GamepadAxis::LeftStickVertical);
+
+			float const combinedVertical = glm::clamp(rightVertical + leftVertical, -1.0f, 1.0f);
+			glm::vec3 const axis = {0, -combinedVertical, 0};
+
+			if (glm::length2(axis) > 0.01f)
+			{
+				paddle.MovementInputBuffer = axis;
+			}
+
+			if (INPUT.GetGamepadButtonDown(1, GamepadButton::LeftStick))
+			{
+				if (m_Ball.Attachable.IsAttached && m_Ball.Attachable.AttachedPaddle == &paddle)
+				{
+					m_Ball.LaunchFromAttachedPaddle();
+				}
+			}
+		}
+		else
+		{
+			auto &paddle = m_PlayerPaddles[1];
+			if (INPUT.GetKey(KeyCode::Up))
+			{
+				paddle.MovementInputBuffer = glm::vec2 {0, 1};
+			}
+			else if (INPUT.GetKey(KeyCode::Down))
+			{
+				paddle.MovementInputBuffer = glm::vec2 {0, -1};
+			}
+
+			if (INPUT.GetKeyDown(KeyCode::Return))
+			{
+				if (m_Ball.Attachable.IsAttached && m_Ball.Attachable.AttachedPaddle == &paddle)
+				{
+					m_Ball.LaunchFromAttachedPaddle();
 				}
 			}
 		}
@@ -504,8 +496,6 @@ namespace DYE
 		paddle.Transform.Position = newPaddlePosition;
 		paddle.MovementInputBuffer = {0, 0};
 		updateBoxCollider(paddle.Transform, paddle.Collider);
-
-		return;
 	}
 
 	void PongLayer::updateBall(float timeStep)
@@ -579,7 +569,7 @@ namespace DYE
 
 			if (playerItr != m_Players.end())
 			{
-				// Reduce health
+				// Reduce health (earn score).
 				playerItr->State.Health--;
 			}
 
@@ -675,7 +665,6 @@ namespace DYE
 				if (ImGui::Button("Center Window"))
 				{
 					mainWindowPtr->CenterWindow();
-					m_WindowPosition = mainWindowPtr->GetPosition();
 				}
 			}
 
@@ -701,9 +690,6 @@ namespace DYE
 			if (ImGui::CollapsingHeader("World"))
 			{
 				ImGuiUtil::DrawCameraPropertiesControl("Main Camera Properties", m_MainCamera.Properties);
-
-				ImGui::Separator();
-				ImGuiUtil::DrawFloatControl("Camera Speed", m_WindowPixelChangePerSecond, 300);
 
 				ImGui::Separator();
 				ImGuiUtil::DrawCameraPropertiesControl("Debug Camera Properties", m_DebugCamera.Properties);

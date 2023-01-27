@@ -66,7 +66,7 @@ namespace DYE
 		m_BackgroundTileObject->Position = {0, 0, -2};
 
 		auto mainWindowPtr = WindowManager::GetMainWindow();
-		mainWindowPtr->SetWindowSize(1600, 900);
+		mainWindowPtr->SetSize(1600, 900);
 
 		m_CameraProperties = std::make_shared<CameraProperties>();
 		m_CameraProperties->Position = glm::vec3 {0, 0, 10};
@@ -269,7 +269,7 @@ namespace DYE
 		if (change)
 		{
 			m_WindowPosition = glm::round(m_WindowPosition);
-			mainWindowPtr->SetWindowPosition(m_WindowPosition.x, m_WindowPosition.y);
+			mainWindowPtr->SetPosition(m_WindowPosition.x, m_WindowPosition.y);
 		}
 
 		if (INPUT.GetKeyDown(KeyCode::F1))

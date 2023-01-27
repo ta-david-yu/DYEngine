@@ -130,12 +130,12 @@ namespace DYE
 		return true;
 	}
 
-	void SDLWindow::SetWindowSize(std::uint32_t width, std::uint32_t height)
+	void SDLWindow::SetSize(std::uint32_t width, std::uint32_t height)
 	{
 		SDL_SetWindowSize(m_pNativeWindow, width, height);
 	}
 
-	void SDLWindow::SetWindowPosition(std::int32_t x, std::int32_t y)
+	void SDLWindow::SetPosition(std::int32_t x, std::int32_t y)
 	{
 		SDL_SetWindowPosition(m_pNativeWindow, x, y);
 	}

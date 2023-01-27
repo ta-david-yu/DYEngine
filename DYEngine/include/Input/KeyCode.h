@@ -16,6 +16,7 @@ namespace DYE
 		Escape = SDL_KeyCode::SDLK_ESCAPE,
 
         Space = SDL_KeyCode::SDLK_SPACE,
+		Return = SDL_KeyCode::SDLK_RETURN,
 
 		W = SDL_KeyCode::SDLK_w,
 		A = SDL_KeyCode::SDLK_a,
@@ -34,7 +35,9 @@ namespace DYE
 		F5 = SDL_KeyCode::SDLK_F5,
 		F6 = SDL_KeyCode::SDLK_F6,
 		F7 = SDL_KeyCode::SDLK_F7,
-		F8 = SDL_KeyCode::SDLK_F8
+		F8 = SDL_KeyCode::SDLK_F8,
+		F9 = SDL_KeyCode::SDLK_F9,
+		F10 = SDL_KeyCode::SDLK_F10
     };
 
 	std::string GetKeyName(KeyCode keyCode);
