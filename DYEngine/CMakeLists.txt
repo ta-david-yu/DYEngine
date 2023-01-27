@@ -49,7 +49,7 @@ set(SOURCE_FILES
         src/Math.cpp
         src/Color.cpp
         src/PrimitiveTest.cpp
-        src/GamepadEvent.cpp src/Gamepad.cpp src/FPSCounter.cpp)
+        src/GamepadEvent.cpp src/Gamepad.cpp src/FPSCounter.cpp src/EasingFunctions.cpp)
 set(HEADER_FILES
         include/Core/Application.h
         include/Graphics/WindowBase.h
@@ -108,7 +108,7 @@ set(HEADER_FILES
         include/Math/Color.h
         include/Event/GamepadEvent.h
         include/Input/MouseButton.h
-        include/Input/Gamepad.h include/Util/FPSCounter.h)
+        include/Input/Gamepad.h include/Util/FPSCounter.h include/Math/EasingFunctions.h)
 
 message(STATUS "[DYEngine] Source Files: ${SOURCE_FILES}")
 message(STATUS "[DYEngine] Header Files: ${HEADER_FILES}")
