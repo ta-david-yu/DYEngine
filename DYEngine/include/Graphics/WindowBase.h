@@ -89,6 +89,7 @@ namespace DYE
 		/// \return the new position
 		glm::vec<2, std::int32_t> SetWindowSizeUsingWindowCenterAsAnchor(std::uint32_t width, std::uint32_t height);
 		virtual void SetPosition(std::int32_t x, std::int32_t y) = 0;
+		void SetPosition(glm::vec<2, std::int32_t> position);
 
 		/// Set the window position to the center of the screen.
 		virtual void CenterWindow() = 0;

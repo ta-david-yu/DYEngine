@@ -48,4 +48,9 @@ namespace DYE
 
 		return previousWindowPos;
 	}
+
+	void WindowBase::SetPosition(glm::vec<2, std::int32_t> position)
+	{
+		SetPosition(position.x, position.y);
+	}
 }

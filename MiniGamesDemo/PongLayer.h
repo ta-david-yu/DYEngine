@@ -46,7 +46,7 @@ namespace DYE
 		void renderSprite(MiniGame::Transform& transform, MiniGame::Sprite& sprite);
 		/// \return the velocity per second for the paddle.
 		void debugInput();
-		void readPaddleInput();
+		void readPlayerInput(float timeStep);
 		void updatePaddle(MiniGame::PlayerPaddle& paddle, float timeStep);
 		void updateBall(float timeStep);
 		void updateBoxCollider(MiniGame::Transform& transform, MiniGame::BoxCollider& collider);
@@ -62,15 +62,18 @@ namespace DYE
 
 		// Game state
 		constexpr static int MaxHealth = 5;
+		constexpr static int HealthToEnableWindowInput = 300;
 		const std::array<glm::vec<2, std::uint32_t>, MaxHealth - 1> m_HealthWindowSizes =
 			{
-				glm::vec<2, std::uint32_t>{650, 900},
+				glm::vec<2, std::uint32_t>{800, 900},
 				glm::vec<2, std::uint32_t>{600, 700},
 				glm::vec<2, std::uint32_t>{400, 450},
 				glm::vec<2, std::uint32_t>{300, 400}
 			};
 
 		GameState m_GameState = GameState::Playing;
+		MiniGame::PongPlayer* m_pNextPlayerToSpawnBall = nullptr;
+		MiniGame::PlayerPaddle* m_pNextPaddleToSpawnBallAfterIntermission = nullptr;
 
 		// Game world
 		ColliderManager m_ColliderManager;

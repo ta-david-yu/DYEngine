@@ -2,6 +2,8 @@
 
 #include "Objects/Camera.h"
 
+#include "Math/EasingFunctions.h"
+
 namespace DYE
 {
 	class WindowBase;
@@ -23,26 +25,34 @@ namespace DYE::MiniGame
 
 		Camera Camera;
 
-		WindowBase* pWindow = nullptr;
 		glm::vec<2, int> CameraOffset = {0, 0};
+		float MoveSpeed = 140;
+		float ResizeAnimationDuration = 0.5f;
+
+		WindowBase* GetWindowPtr() { return m_pWindow; }
+		void ResetCachedPosition();
 
 		void AssignWindow(WindowBase& window);
 		void CreateWindow(std::shared_ptr<ContextBase> contextBase, WindowProperty const& windowProperty);
 
 		void SmoothResize(std::uint32_t width, std::uint32_t height);
-		void SmoothMove(glm::vec<2, std::int32_t> position);
+		void Translate(glm::vec2 offset);
 
 		AnimationUpdateResult UpdateWindowResizeAnimation(float timeStep);
-		AnimationUpdateResult UpdateWindowMoveAnimation(float timeStep);
 		void UpdateCameraProperties();
 
 	private:
+		WindowBase* m_pWindow = nullptr;
+
 		bool m_IsUpdatingResizeAnimation = false;
+		float m_ResizeAnimationTimer = 0.0f;
+		float m_OriginalWindowWidth = 1600;
+		float m_OriginalWindowHeight = 900;
 		float m_TargetWindowWidth = 1600;
 		float m_TargetWindowHeight = 900;
 
-		bool m_IsUpdatingMoveAnimation = false;
+		// We need to cache window position with floats so translation offset won't get lost
+		// due to integer conversion.
 		glm::vec2 m_CachedCurrentPosition = {0, 0};
-		glm::vec2 m_TargetPosition = {0, 0};
 	};
 }

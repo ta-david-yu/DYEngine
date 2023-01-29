@@ -11,17 +11,22 @@
 
 namespace DYE::MiniGame
 {
+	void WindowCamera::ResetCachedPosition()
+	{
+		m_CachedCurrentPosition = m_pWindow->GetPosition();
+	}
+
 	void WindowCamera::AssignWindow(WindowBase &window)
 	{
-		if (pWindow != nullptr)
+		if (m_pWindow != nullptr)
 		{
 			DYE_LOG("This window camera already has an assigned window. Skip AssignWindow call");
 			return;
 		}
-		pWindow = &window;
+		m_pWindow = &window;
 
 		Camera.Properties.TargetType = RenderTargetType::Window;
-		Camera.Properties.TargetWindowID = pWindow->GetWindowID();
+		Camera.Properties.TargetWindowID = m_pWindow->GetWindowID();
 
 		Camera.Transform.Position = {0, 0, 10};
 		Camera.Properties.IsOrthographic = true;
@@ -30,23 +35,25 @@ namespace DYE::MiniGame
 		Camera.Properties.ManualAspectRatio = (float) 1600 / 900;
 		Camera.Properties.ViewportValueType = ViewportValueType::RelativeDimension;
 		Camera.Properties.Viewport = { 0, 0, 1, 1 };
+
+		ResetCachedPosition();
 	}
 
 	void WindowCamera::CreateWindow(std::shared_ptr<ContextBase> contextBase, WindowProperty const& windowProperty)
 	{
-		if (pWindow != nullptr)
+		if (m_pWindow != nullptr)
 		{
 			DYE_LOG("This window camera already has an assigned window. Skip CreateWindow call");
 			return;
 		}
 
-		pWindow = WindowManager::CreateWindow(windowProperty);
-		pWindow->SetContext(std::move(contextBase));
-		pWindow->MakeCurrent();
+		m_pWindow = WindowManager::CreateWindow(windowProperty);
+		m_pWindow->SetContext(std::move(contextBase));
+		m_pWindow->MakeCurrent();
 		ContextBase::SetVSyncCountForCurrentContext(0);
 
 		Camera.Properties.TargetType = RenderTargetType::Window;
-		Camera.Properties.TargetWindowID = pWindow->GetWindowID();
+		Camera.Properties.TargetWindowID = m_pWindow->GetWindowID();
 
 		Camera.Transform.Position = {0, 0, 10};
 		Camera.Properties.IsOrthographic = true;
@@ -55,35 +62,41 @@ namespace DYE::MiniGame
 		Camera.Properties.ManualAspectRatio = (float) 1600 / 900;
 		Camera.Properties.ViewportValueType = ViewportValueType::RelativeDimension;
 		Camera.Properties.Viewport = { 0, 0, 1, 1 };
+
+		ResetCachedPosition();
 	}
 
 	void WindowCamera::SmoothResize(std::uint32_t width, std::uint32_t height)
 	{
-		if (pWindow == nullptr)
+		if (m_pWindow == nullptr)
 		{
 			return;
 		}
 
 		m_IsUpdatingResizeAnimation = true;
+		m_ResizeAnimationTimer = 0.0f;
+
+		m_OriginalWindowWidth = m_pWindow->GetWidth();
+		m_OriginalWindowHeight = m_pWindow->GetHeight();
+
 		m_TargetWindowWidth = width;
 		m_TargetWindowHeight = height;
 	}
 
-	void WindowCamera::SmoothMove(glm::vec<2, std::int32_t> position)
+	void WindowCamera::Translate(glm::vec2 position)
 	{
-		if (pWindow == nullptr)
+		if (m_pWindow == nullptr)
 		{
 			return;
 		}
 
-		m_IsUpdatingMoveAnimation = true;
-		m_CachedCurrentPosition = pWindow->GetPosition();
-		m_TargetPosition = position;
+		m_CachedCurrentPosition += position;
+		m_pWindow->SetPosition(m_CachedCurrentPosition.x, m_CachedCurrentPosition.y);
 	}
 
 	WindowCamera::AnimationUpdateResult WindowCamera::UpdateWindowResizeAnimation(float timeStep)
 	{
-		if (pWindow == nullptr)
+		if (m_pWindow == nullptr)
 		{
 			return AnimationUpdateResult::Idle;
 		}
@@ -93,81 +106,35 @@ namespace DYE::MiniGame
 			return AnimationUpdateResult::Idle;
 		}
 
-		int currWidth = pWindow->GetWidth();
-		int currHeight = pWindow->GetHeight();
+		m_ResizeAnimationTimer += timeStep;
 
-		int const widthDiff = m_TargetWindowWidth - currWidth;
-		int const heightDiff = m_TargetWindowHeight - currHeight;
-		if (glm::abs(widthDiff) == 0 && glm::abs(heightDiff) == 0)
+		if (m_ResizeAnimationTimer >= ResizeAnimationDuration)
 		{
+			// Clamp to 1.0f
 			m_IsUpdatingResizeAnimation = false;
-			return AnimationUpdateResult::Complete;
+			m_ResizeAnimationTimer = ResizeAnimationDuration;
 		}
 
-		// TODO: Fixed precision issue because window size is int, but animation is using float!
-		//  We prolly want to use fixed animation instead (tween animation)
-		float const newWidth = Math::Lerp(currWidth, m_TargetWindowWidth, 1.0f - glm::pow(0.5f, timeStep / 0.1f));
-		float const newHeight = Math::Lerp(currHeight, m_TargetWindowHeight, 1.0f - glm::pow(0.5f, timeStep / 0.1f));
+		float const t = EaseOutExpo(m_ResizeAnimationTimer / ResizeAnimationDuration);
+		int const width = Math::Lerp(m_OriginalWindowWidth, m_TargetWindowWidth, t);
+		int const height = Math::Lerp(m_OriginalWindowHeight, m_TargetWindowHeight, t);
+		m_pWindow->SetWindowSizeUsingWindowCenterAsAnchor(width, height);
 
-		// Make the speed even, so SetWindowSizeUsingWindowCenterAsAnchor can properly derive precise integer position
-		int widthSpeed = glm::abs(newWidth - currWidth);
-		if (widthSpeed % 2 == 1) widthSpeed += 1;
-
-		int heightSpeed = glm::abs(newHeight - currHeight);
-		if (heightSpeed % 2 == 1) heightSpeed += 1;
-
-		currWidth += glm::sign(widthDiff) * std::min((int) widthSpeed, glm::abs(widthDiff));
-		currHeight += glm::sign(heightDiff) * std::min((int) heightSpeed, glm::abs(heightDiff));
-		pWindow->SetWindowSizeUsingWindowCenterAsAnchor(currWidth, currHeight);
-
-		if (glm::abs(m_TargetWindowWidth - currWidth) < 5 && glm::abs(m_TargetWindowHeight - currHeight) < 5)
-		{
-			pWindow->SetWindowSizeUsingWindowCenterAsAnchor(m_TargetWindowWidth, m_TargetWindowHeight);
-
-			m_IsUpdatingResizeAnimation = false;
-			return AnimationUpdateResult::Complete;
-		}
-
-		return AnimationUpdateResult::InProgress;
-	}
-
-	WindowCamera::AnimationUpdateResult WindowCamera::UpdateWindowMoveAnimation(float timeStep)
-	{
-		if (pWindow == nullptr)
-		{
-			return AnimationUpdateResult::Idle;
-		}
-
-		if (!m_IsUpdatingMoveAnimation)
-		{
-			return AnimationUpdateResult::Idle;
-		}
-
-		m_CachedCurrentPosition = Math::Lerp(m_CachedCurrentPosition, m_TargetPosition, 1.0f - glm::pow(0.5f, timeStep / 0.1f));
-		pWindow->SetPosition(m_CachedCurrentPosition.x, m_CachedCurrentPosition.y);
-
-		if (glm::length2(m_CachedCurrentPosition - m_TargetPosition) <= 0.01f)
-		{
-			pWindow->SetPosition(m_TargetPosition.x, m_TargetPosition.y);
-
-			m_IsUpdatingMoveAnimation = false;
-			return AnimationUpdateResult::Complete;
-		}
-
-		return AnimationUpdateResult::InProgress;
+		ResetCachedPosition();
+		return m_IsUpdatingResizeAnimation? AnimationUpdateResult::InProgress : AnimationUpdateResult::Complete;
 	}
 
 	void WindowCamera::UpdateCameraProperties()
 	{
-		glm::vec2 const windowPos = pWindow->GetPosition();
-		auto windowWidth = pWindow->GetWidth();
-		auto windowHeight = pWindow->GetHeight();
+		glm::vec2 const windowPos = m_pWindow->GetPosition();
+		auto windowWidth = m_pWindow->GetWidth();
+		auto windowHeight = m_pWindow->GetHeight();
 
 		glm::vec2 normalizedWindowPos = windowPos;
 		normalizedWindowPos.x += windowWidth * 0.5f;
 		normalizedWindowPos.y += windowHeight * 0.5f;
 
-		int const mainDisplayIndex = pWindow->GetDisplayIndex();
+		int const mainDisplayIndex = m_pWindow->GetDisplayIndex();
 		std::optional<DisplayMode> const displayMode = SCREEN.GetDisplayMode(mainDisplayIndex);
 		float const screenWidth = displayMode->Width;
 		float const screenHeight = displayMode->Height;

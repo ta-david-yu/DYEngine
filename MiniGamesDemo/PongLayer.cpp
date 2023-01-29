@@ -62,7 +62,7 @@ namespace DYE
 		player1.Settings.ID = 0;
 		player1.Settings.MainPaddleLocation = {-10, 0, 0};
 		player1.Settings.MainPaddleAttachOffset = {paddleAttachOffsetX, 0};
-		player1.Settings.HomebaseCenter = {-14, 0, 0};	// TODO:
+		player1.Settings.HomebaseCenter = {-17, 0, 0};	// TODO:
 		player1.Settings.HomebaseSize = {2, 16, 1}; 	// TODO:
 
 		player1.State.Health = MaxHealth;
@@ -71,7 +71,7 @@ namespace DYE
 		player2.Settings.ID = 1;
 		player2.Settings.MainPaddleLocation = {10, 0, 0};
 		player2.Settings.MainPaddleAttachOffset = {-paddleAttachOffsetX, 0};
-		player2.Settings.HomebaseCenter = {14, 0, 0};	// TODO:
+		player2.Settings.HomebaseCenter = {17, 0, 0};	// TODO:
 		player2.Settings.HomebaseSize = {2, 16, 1}; 	// TODO:
 
 		player2.State.Health = MaxHealth;
@@ -108,8 +108,8 @@ namespace DYE
 		MiniGame::Wall leftLowerWall; leftLowerWall.Transform.Position = {12, -8, 0}; leftLowerWall.Collider.Size = {1, 8, 0};
 		MiniGame::Wall rightLowerWall; rightLowerWall.Transform.Position = {-12, -8, 0}; rightLowerWall.Collider.Size = {1, 8, 0};
 
-		MiniGame::Wall topWall; topWall.Transform.Position = {0, 6.5f, 0}; topWall.Collider.Size = {32, 1, 0};
-		MiniGame::Wall bottomWall; bottomWall.Transform.Position = {0, -6.5f, 0}; bottomWall.Collider.Size = {32, 1, 0};
+		MiniGame::Wall topWall; topWall.Transform.Position = {0, 6.5f, 0}; topWall.Collider.Size = {36, 1, 0};
+		MiniGame::Wall bottomWall; bottomWall.Transform.Position = {0, -6.5f, 0}; bottomWall.Collider.Size = {36, 1, 0};
 
 		m_Walls.emplace_back(leftLowerWall);
 		m_Walls.emplace_back(rightLowerWall);
@@ -146,18 +146,20 @@ namespace DYE
 
 		// Create window camera.
 		m_Player1WindowCamera.CreateWindow(m_MainWindow->GetContext(), WindowProperty("Player 1", 800, 900));
-		m_Player1WindowCamera.pWindow->CenterWindow();
-		auto position = m_Player1WindowCamera.pWindow->GetPosition();
+		m_Player1WindowCamera.GetWindowPtr()->CenterWindow();
+		auto position = m_Player1WindowCamera.GetWindowPtr()->GetPosition();
 		position.x -= 410;
-		m_Player1WindowCamera.pWindow->SetPosition(position.x, position.y);
-		//m_Player1WindowCamera.pWindow->SetBorderedIfWindowed(false);
+		m_Player1WindowCamera.GetWindowPtr()->SetPosition(position.x, position.y);
+		m_Player1WindowCamera.GetWindowPtr()->SetBorderedIfWindowed(false);
+		m_Player1WindowCamera.ResetCachedPosition();
 
 		m_Player2WindowCamera.CreateWindow(m_MainWindow->GetContext(), WindowProperty("Player 2", 800, 900));
-		m_Player2WindowCamera.pWindow->CenterWindow();
-		position = m_Player2WindowCamera.pWindow->GetPosition();
+		m_Player2WindowCamera.GetWindowPtr()->CenterWindow();
+		position = m_Player2WindowCamera.GetWindowPtr()->GetPosition();
 		position.x += 390;
-		m_Player2WindowCamera.pWindow->SetPosition(position.x, position.y);
-		//m_Player2WindowCamera.pWindow->SetBorderedIfWindowed(false);
+		m_Player2WindowCamera.GetWindowPtr()->SetPosition(position.x, position.y);
+		m_Player2WindowCamera.GetWindowPtr()->SetBorderedIfWindowed(false);
+		m_Player2WindowCamera.ResetCachedPosition();
 
 		// Set the current context back to the main window.
 		m_MainWindow->MakeCurrent();
@@ -245,7 +247,7 @@ namespace DYE
 		}
 
 		// Gameplay updates
-		readPaddleInput();
+		readPlayerInput(TIME.DeltaTime());
 
 		auto player1WindowAnimationResult =  m_Player1WindowCamera.UpdateWindowResizeAnimation(TIME.DeltaTime());
 		auto player2WindowAnimationResult = m_Player2WindowCamera.UpdateWindowResizeAnimation(TIME.DeltaTime());
@@ -261,6 +263,19 @@ namespace DYE
 			{
 				// Resume to playing state after the intermission animation is completed.
 				m_GameState = GameState::Playing;
+				if (m_pNextPaddleToSpawnBallAfterIntermission != nullptr && m_pNextPlayerToSpawnBall != nullptr)
+				{
+					// Attach the ball to the paddle!
+					m_Ball.EquipToPaddle(*m_pNextPaddleToSpawnBallAfterIntermission, m_pNextPlayerToSpawnBall->Settings.MainPaddleAttachOffset);
+				}
+				else
+				{
+					DYE_LOG_ERROR("Next spawn ball paddle / player is nullptr, something is wrong.");
+
+					// Reset the ball to the center
+					m_Ball.Transform.Position = {0, 0, 0};
+					m_Ball.Velocity.Value = {5, 1}; // TODO: randomized the velocity.
+				}
 			}
 		}
 
@@ -327,17 +342,14 @@ namespace DYE
 		}
 	}
 
-	void PongLayer::readPaddleInput()
+	void PongLayer::readPlayerInput(float timeStep)
 	{
 		if (INPUT.IsGamepadConnected(0))
 		{
 			// Paddle 1
 			auto &paddle = m_PlayerPaddles[0];
-			float const rightVertical = INPUT.GetGamepadAxis(0, GamepadAxis::RightStickVertical);
-			float const leftVertical = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickVertical);
-
-			float const combinedVertical = glm::clamp(rightVertical + leftVertical, -1.0f, 1.0f);
-			glm::vec3 const axis = {0, -combinedVertical, 0};
+			float const vertical = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickVertical);
+			glm::vec3 const axis = {0, -vertical, 0};
 
 			if (glm::length2(axis) > 0.01f)
 			{
@@ -349,6 +361,25 @@ namespace DYE
 				if (m_Ball.Attachable.IsAttached && m_Ball.Attachable.AttachedPaddle == &paddle)
 				{
 					m_Ball.LaunchFromAttachedPaddle();
+				}
+			}
+
+			auto &player = m_Players[0];
+			MiniGame::WindowCamera& playerWindowCamera = m_Player1WindowCamera;
+			if (m_GameState != GameState::Intermission &&
+				player.State.Health <= HealthToEnableWindowInput)
+			{
+				float const windowRightVertical = INPUT.GetGamepadAxis(0, GamepadAxis::RightStickVertical);
+				float const windowRightHorizontal = INPUT.GetGamepadAxis(0, GamepadAxis::RightStickHorizontal);
+				glm::vec2 windowAxis = {windowRightHorizontal, windowRightVertical};
+				if (glm::length2(windowAxis) > 0.01f)
+				{
+					if (glm::length2(windowAxis) > 1.0f)
+					{
+						windowAxis = glm::normalize(windowAxis);
+					}
+					glm::vec2 const positionChange = windowAxis * playerWindowCamera.MoveSpeed * timeStep;
+					playerWindowCamera.Translate(positionChange);
 				}
 			}
 		}
@@ -377,11 +408,8 @@ namespace DYE
 		{
 			// Paddle 2
 			auto& paddle = m_PlayerPaddles[1];
-			float const rightVertical = INPUT.GetGamepadAxis(1, GamepadAxis::RightStickVertical);
-			float const leftVertical = INPUT.GetGamepadAxis(1, GamepadAxis::LeftStickVertical);
-
-			float const combinedVertical = glm::clamp(rightVertical + leftVertical, -1.0f, 1.0f);
-			glm::vec3 const axis = {0, -combinedVertical, 0};
+			float const vertical = INPUT.GetGamepadAxis(1, GamepadAxis::LeftStickVertical);
+			glm::vec3 const axis = {0, -vertical, 0};
 
 			if (glm::length2(axis) > 0.01f)
 			{
@@ -393,6 +421,25 @@ namespace DYE
 				if (m_Ball.Attachable.IsAttached && m_Ball.Attachable.AttachedPaddle == &paddle)
 				{
 					m_Ball.LaunchFromAttachedPaddle();
+				}
+			}
+
+			auto &player = m_Players[1];
+			MiniGame::WindowCamera& playerWindowCamera = m_Player2WindowCamera;
+			if (m_GameState != GameState::Intermission &&
+				player.State.Health <= HealthToEnableWindowInput)
+			{
+				float const windowRightVertical = INPUT.GetGamepadAxis(1, GamepadAxis::RightStickVertical);
+				float const windowRightHorizontal = INPUT.GetGamepadAxis(1, GamepadAxis::RightStickHorizontal);
+				glm::vec2 windowAxis = {windowRightHorizontal, windowRightVertical};
+				if (glm::length2(windowAxis) > 0.01f)
+				{
+					if (glm::length2(windowAxis) > 1.0f)
+					{
+						windowAxis = glm::normalize(windowAxis);
+					}
+					glm::vec2 const positionChange = windowAxis * playerWindowCamera.MoveSpeed * timeStep;
+					playerWindowCamera.Translate(positionChange);
 				}
 			}
 		}
@@ -584,6 +631,8 @@ namespace DYE
 
 			if (playerItr != m_Players.end())
 			{
+				m_pNextPlayerToSpawnBall = &(*playerItr);
+
 				// Reduce health (earn score).
 				playerItr->State.Health--;
 
@@ -601,6 +650,10 @@ namespace DYE
 					windowCamera.SmoothResize(size.x, size.y);
 				}
 			}
+			else
+			{
+				m_pNextPlayerToSpawnBall = nullptr;
+			}
 
 			auto paddleItr = std::find_if(
 				m_PlayerPaddles.begin(),
@@ -612,14 +665,11 @@ namespace DYE
 
 			if (paddleItr != m_PlayerPaddles.end())
 			{
-				// Attach the ball to the paddle!
-				m_Ball.EquipToPaddle(*paddleItr, playerItr->Settings.MainPaddleAttachOffset);
+				m_pNextPaddleToSpawnBallAfterIntermission = &(*paddleItr);
 			}
 			else
 			{
-				// Reset the ball to the center
-				m_Ball.Transform.Position = {0, 0, 0};
-				m_Ball.Velocity.Value = {5, 1}; // TODO: randomized the velocity.
+				m_pNextPaddleToSpawnBallAfterIntermission = nullptr;
 			}
 			break;
 		}
