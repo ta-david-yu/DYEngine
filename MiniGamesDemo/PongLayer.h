@@ -83,6 +83,9 @@ namespace DYE
 		MiniGame::Transform m_BackgroundTransform;
 		MiniGame::Sprite m_BackgroundSprite;
 
+		MiniGame::Transform m_BorderTransform;
+		MiniGame::Sprite m_BorderSprite;
+
 		MiniGame::Camera m_MainCamera;
 		MiniGame::PongBall m_Ball;
 		std::vector<MiniGame::PongPlayer> m_Players;

@@ -123,6 +123,10 @@ namespace DYE
 			registerBoxCollider(wall.Transform, wall.Collider);
 		}
 
+		m_BorderSprite.Texture = Texture2D::Create("assets\\Sprite_PongBorder.png");
+		m_BorderSprite.Texture->PixelsPerUnit = 32;
+		m_BorderTransform.Position = {0, 0, 0};
+
 		// Create background object.
 		m_BackgroundSprite.Texture = Texture2D::Create("assets\\Sprite_Grid.png");
 		m_BackgroundSprite.Texture->PixelsPerUnit = 32;
@@ -232,6 +236,9 @@ namespace DYE
 		}
 
 		renderSprite(m_BackgroundTransform, m_BackgroundSprite);
+
+		// Draw level border
+		renderSprite(m_BorderTransform, m_BorderSprite);
 
 		// Render GameOver UI sprites
 		if (m_GameState == GameState::GameOver)
