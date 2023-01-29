@@ -92,5 +92,15 @@ namespace DYE
 
 		MiniGame::WindowCamera m_Player1WindowCamera;
 		MiniGame::WindowCamera m_Player2WindowCamera;
+
+		// UI related
+		MiniGame::Transform m_GameOverUITransform;
+		MiniGame::Sprite m_GameOverUISprite;
+
+		MiniGame::Transform m_WinnerUITransform;
+		MiniGame::Sprite m_WinnerUISprite;
+
+		std::shared_ptr<Texture2D> m_P1WinsTexture;
+		std::shared_ptr<Texture2D> m_P2WinsTexture;
 	};
 }

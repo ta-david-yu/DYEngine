@@ -19,7 +19,10 @@ endif ()
 # Copy assets to the output directory
 set(ASSETS
         assets/Sprite_Pong.png
-        assets/Sprite_Grid.png)
+        assets/Sprite_Grid.png
+        assets/Sprite_GameOver.png
+        assets/Sprite_P1Wins.png
+        assets/Sprite_P2Wins.png)
 
 # set copy output directory
 if(WIN32)

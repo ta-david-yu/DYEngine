@@ -162,6 +162,20 @@ namespace DYE
 		m_Player2WindowCamera.GetWindowPtr()->SetBorderedIfWindowed(false);
 		m_Player2WindowCamera.ResetCachedPosition();
 
+		// Create UI objects.
+		m_GameOverUISprite.Texture = Texture2D::Create("assets\\Sprite_GameOver.png");
+		m_GameOverUISprite.Texture->PixelsPerUnit = 32;
+		m_GameOverUITransform.Scale = {1, 1, 1};
+		m_GameOverUITransform.Position = {0, -1.5f, -1};
+
+		m_WinnerUITransform.Scale = {1, 1, 1};
+		m_WinnerUITransform.Position = {0, 0.5f, -1};
+		m_P1WinsTexture = Texture2D::Create("assets\\Sprite_P1Wins.png");
+		m_P1WinsTexture->PixelsPerUnit = 32;
+		m_P2WinsTexture = Texture2D::Create("assets\\Sprite_P2Wins.png");
+		m_P2WinsTexture->PixelsPerUnit = 32;
+		m_WinnerUISprite.Texture = m_P1WinsTexture;
+
 		// Set the current context back to the main window.
 		m_MainWindow->MakeCurrent();
 		ContextBase::SetVSyncCountForCurrentContext(0);
@@ -218,6 +232,13 @@ namespace DYE
 		}
 
 		renderSprite(m_BackgroundTransform, m_BackgroundSprite);
+
+		// Render GameOver UI sprites
+		if (m_GameState == GameState::GameOver)
+		{
+			renderSprite(m_GameOverUITransform, m_GameOverUISprite);
+			renderSprite(m_WinnerUITransform, m_WinnerUISprite);
+		}
 	}
 
 	void PongLayer::renderSprite(MiniGame::Transform &transform, MiniGame::Sprite &sprite)
@@ -298,6 +319,18 @@ namespace DYE
 		// Animation updates
 		m_Ball.UpdateAnimation(TIME.DeltaTime());
 
+		if (m_GameState == GameState::GameOver)
+		{
+			// Slow down the scrolling if the game is over.
+			if (m_BackgroundScrollingSpeed <= 0.0f)
+			{
+				m_BackgroundScrollingSpeed = 0.0f;
+			}
+			else
+			{
+				m_BackgroundScrollingSpeed -= TIME.DeltaTime();
+			}
+		}
 	}
 
 	void PongLayer::debugInput()
@@ -718,13 +751,13 @@ namespace DYE
 				});
 
 			// Deal 1 damage to the homebase.
-			int const playerID = homebase.PlayerID;
+			int const damagedPlayerID = homebase.PlayerID;
 			auto playerItr = std::find_if(
 				m_Players.begin(),
 				m_Players.end(),
-				[playerID](MiniGame::PongPlayer const& player)
+				[damagedPlayerID](MiniGame::PongPlayer const& player)
 				{
-					return playerID == player.Settings.ID;
+					return damagedPlayerID == player.Settings.ID;
 				});
 
 			if (playerItr != m_Players.end())
@@ -738,6 +771,8 @@ namespace DYE
 				{
 					m_GameState = GameState::GameOver;
 					m_MainWindow->Restore();
+
+					m_WinnerUISprite.Texture = damagedPlayerID == 0? m_P2WinsTexture : m_P1WinsTexture;
 				}
 				else
 				{
@@ -764,9 +799,9 @@ namespace DYE
 			auto paddleItr = std::find_if(
 				m_PlayerPaddles.begin(),
 				m_PlayerPaddles.end(),
-				[playerID](MiniGame::PlayerPaddle const& paddle)
+				[damagedPlayerID](MiniGame::PlayerPaddle const& paddle)
 				{
-					return playerID == paddle.PlayerID;
+					return damagedPlayerID == paddle.PlayerID;
 				});
 
 			if (paddleItr != m_PlayerPaddles.end())
