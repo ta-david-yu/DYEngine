@@ -64,7 +64,7 @@ namespace DYE
 
 		// Game state
 		constexpr static int MaxHealth = 5;
-		constexpr static int HealthToEnableWindowInput = 300;
+		constexpr static int HealthToEnableWindowInput = 3;
 		const std::array<glm::vec<2, std::uint32_t>, MaxHealth - 1> m_HealthWindowSizes =
 			{
 				glm::vec<2, std::uint32_t>{800, 900},

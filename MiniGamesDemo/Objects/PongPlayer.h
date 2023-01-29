@@ -20,6 +20,7 @@ namespace DYE::MiniGame
 		struct State
 		{
 			int Health = 5;
+			bool CanMoveWindow = false;
 		} State;
 	};
 }

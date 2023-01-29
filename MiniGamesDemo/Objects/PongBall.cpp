@@ -24,6 +24,7 @@ namespace DYE::MiniGame
 		PlayerPaddle* paddle = Attachable.AttachedPaddle;
 		auto paddleVelocity = paddle->VelocityBuffer;
 
+		Hittable.LastHitByPlayerID = paddle->PlayerID;
 		Velocity.Value = glm::vec3 {glm::normalize(Attachable.AttachOffset) * LaunchBaseSpeed + paddleVelocity, 0};
 		Attachable.DetachFromCurrentPaddle();
 	}

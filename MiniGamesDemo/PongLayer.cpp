@@ -361,122 +361,190 @@ namespace DYE
 
 	void PongLayer::readPlayerInput(float timeStep)
 	{
-		if (INPUT.IsGamepadConnected(0))
+		// Player 1
 		{
-			// Paddle 1
 			auto &paddle = m_PlayerPaddles[0];
-			float const vertical = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickVertical);
-			glm::vec3 const axis = {0, -vertical, 0};
-
-			if (glm::length2(axis) > 0.01f)
-			{
-				paddle.MovementInputBuffer = axis;
-			}
-
-			if (INPUT.GetGamepadButtonDown(0, GamepadButton::LeftStick))
-			{
-				if (m_Ball.Attachable.IsAttached && m_Ball.Attachable.AttachedPaddle == &paddle)
-				{
-					m_Ball.LaunchFromAttachedPaddle();
-				}
-			}
-
 			auto &player = m_Players[0];
-			MiniGame::WindowCamera& playerWindowCamera = m_Player1WindowCamera;
-			if (m_GameState != GameState::Intermission &&
-				player.State.Health <= HealthToEnableWindowInput)
+			MiniGame::WindowCamera &playerWindowCamera = m_Player1WindowCamera;
+			if (INPUT.IsGamepadConnected(0))
 			{
-				float const windowRightVertical = INPUT.GetGamepadAxis(0, GamepadAxis::RightStickVertical);
-				float const windowRightHorizontal = INPUT.GetGamepadAxis(0, GamepadAxis::RightStickHorizontal);
-				glm::vec2 windowAxis = {windowRightHorizontal, windowRightVertical};
-				if (glm::length2(windowAxis) > 0.01f)
+				float const vertical = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickVertical);
+				glm::vec3 const axis = {0, -vertical, 0};
+
+				if (glm::length2(axis) > 0.01f)
 				{
-					if (glm::length2(windowAxis) > 1.0f)
+					paddle.MovementInputBuffer = axis;
+				}
+
+				if (INPUT.GetGamepadButtonDown(0, GamepadButton::LeftStick))
+				{
+					if (m_Ball.Attachable.IsAttached && m_Ball.Attachable.AttachedPaddle == &paddle)
 					{
-						windowAxis = glm::normalize(windowAxis);
+						m_Ball.LaunchFromAttachedPaddle();
 					}
-					glm::vec2 const positionChange = windowAxis * playerWindowCamera.MoveSpeed * timeStep;
-					playerWindowCamera.Translate(positionChange);
 				}
-			}
-		}
-		else
-		{
-			auto &paddle = m_PlayerPaddles[0];
-			if (INPUT.GetKey(KeyCode::W))
-			{
-				paddle.MovementInputBuffer = glm::vec2 {0, 1};
-			}
-			else if (INPUT.GetKey(KeyCode::S))
-			{
-				paddle.MovementInputBuffer = glm::vec2 {0, -1};
-			}
 
-			if (INPUT.GetKeyDown(KeyCode::Space))
-			{
-				if (m_Ball.Attachable.IsAttached && m_Ball.Attachable.AttachedPaddle == &paddle)
+				if (m_GameState != GameState::Intermission && player.State.CanMoveWindow)
 				{
-					m_Ball.LaunchFromAttachedPaddle();
-				}
-			}
-		}
-
-		if (INPUT.IsGamepadConnected(1))
-		{
-			// Paddle 2
-			auto& paddle = m_PlayerPaddles[1];
-			float const vertical = INPUT.GetGamepadAxis(1, GamepadAxis::LeftStickVertical);
-			glm::vec3 const axis = {0, -vertical, 0};
-
-			if (glm::length2(axis) > 0.01f)
-			{
-				paddle.MovementInputBuffer = axis;
-			}
-
-			if (INPUT.GetGamepadButtonDown(1, GamepadButton::LeftStick))
-			{
-				if (m_Ball.Attachable.IsAttached && m_Ball.Attachable.AttachedPaddle == &paddle)
-				{
-					m_Ball.LaunchFromAttachedPaddle();
-				}
-			}
-
-			auto &player = m_Players[1];
-			MiniGame::WindowCamera& playerWindowCamera = m_Player2WindowCamera;
-			if (m_GameState != GameState::Intermission &&
-				player.State.Health <= HealthToEnableWindowInput)
-			{
-				float const windowRightVertical = INPUT.GetGamepadAxis(1, GamepadAxis::RightStickVertical);
-				float const windowRightHorizontal = INPUT.GetGamepadAxis(1, GamepadAxis::RightStickHorizontal);
-				glm::vec2 windowAxis = {windowRightHorizontal, windowRightVertical};
-				if (glm::length2(windowAxis) > 0.01f)
-				{
-					if (glm::length2(windowAxis) > 1.0f)
+					float const windowVertical = INPUT.GetGamepadAxis(0, GamepadAxis::RightStickVertical);
+					float const windowHorizontal = INPUT.GetGamepadAxis(0, GamepadAxis::RightStickHorizontal);
+					glm::vec2 windowAxis = {windowHorizontal, windowVertical};
+					if (glm::length2(windowAxis) > 0.01f)
 					{
-						windowAxis = glm::normalize(windowAxis);
+						if (glm::length2(windowAxis) > 1.0f)
+						{
+							windowAxis = glm::normalize(windowAxis);
+						}
+						glm::vec2 const positionChange = windowAxis * playerWindowCamera.MoveSpeed * timeStep;
+						playerWindowCamera.Translate(positionChange);
 					}
-					glm::vec2 const positionChange = windowAxis * playerWindowCamera.MoveSpeed * timeStep;
-					playerWindowCamera.Translate(positionChange);
+				}
+			}
+			else
+			{
+				if (INPUT.GetKey(KeyCode::W))
+				{
+					paddle.MovementInputBuffer = glm::vec2 {0, 1};
+				}
+				else if (INPUT.GetKey(KeyCode::S))
+				{
+					paddle.MovementInputBuffer = glm::vec2 {0, -1};
+				}
+
+				if (INPUT.GetKeyDown(KeyCode::Space))
+				{
+					if (m_Ball.Attachable.IsAttached && m_Ball.Attachable.AttachedPaddle == &paddle)
+					{
+						m_Ball.LaunchFromAttachedPaddle();
+					}
+				}
+
+				if (m_GameState != GameState::Intermission && player.State.CanMoveWindow)
+				{
+					float windowVertical = 0;
+					if (INPUT.GetKey(KeyCode::T))
+					{
+						windowVertical = 1;
+					}
+					else if (INPUT.GetKey(KeyCode::G))
+					{
+						windowVertical = -1;
+					}
+
+					float windowHorizontal = 0;
+					if (INPUT.GetKey(KeyCode::H))
+					{
+						windowHorizontal = 1;
+					}
+					else if (INPUT.GetKey(KeyCode::F))
+					{
+						windowHorizontal = -1;
+					}
+
+					glm::vec2 windowAxis = {windowHorizontal, -windowVertical};
+					if (glm::length2(windowAxis) > 0.01f)
+					{
+						if (glm::length2(windowAxis) > 1.0f)
+						{
+							windowAxis = glm::normalize(windowAxis);
+						}
+						glm::vec2 const positionChange = windowAxis * playerWindowCamera.MoveSpeed * timeStep;
+						playerWindowCamera.Translate(positionChange);
+					}
 				}
 			}
 		}
-		else
+
+		// Player 2
 		{
 			auto &paddle = m_PlayerPaddles[1];
-			if (INPUT.GetKey(KeyCode::Up))
+			auto &player = m_Players[1];
+			auto &playerWindowCamera = m_Player2WindowCamera;
+			if (INPUT.IsGamepadConnected(1))
 			{
-				paddle.MovementInputBuffer = glm::vec2 {0, 1};
-			}
-			else if (INPUT.GetKey(KeyCode::Down))
-			{
-				paddle.MovementInputBuffer = glm::vec2 {0, -1};
-			}
+				float const vertical = INPUT.GetGamepadAxis(1, GamepadAxis::LeftStickVertical);
+				glm::vec3 const axis = {0, -vertical, 0};
 
-			if (INPUT.GetKeyDown(KeyCode::Return))
-			{
-				if (m_Ball.Attachable.IsAttached && m_Ball.Attachable.AttachedPaddle == &paddle)
+				if (glm::length2(axis) > 0.01f)
 				{
-					m_Ball.LaunchFromAttachedPaddle();
+					paddle.MovementInputBuffer = axis;
+				}
+
+				if (INPUT.GetGamepadButtonDown(1, GamepadButton::LeftStick))
+				{
+					if (m_Ball.Attachable.IsAttached && m_Ball.Attachable.AttachedPaddle == &paddle)
+					{
+						m_Ball.LaunchFromAttachedPaddle();
+					}
+				}
+
+				if (m_GameState != GameState::Intermission && player.State.CanMoveWindow)
+				{
+					float const windowVertical = INPUT.GetGamepadAxis(1, GamepadAxis::RightStickVertical);
+					float const windowHorizontal = INPUT.GetGamepadAxis(1, GamepadAxis::RightStickHorizontal);
+					glm::vec2 windowAxis = {windowHorizontal, windowVertical};
+					if (glm::length2(windowAxis) > 0.01f)
+					{
+						if (glm::length2(windowAxis) > 1.0f)
+						{
+							windowAxis = glm::normalize(windowAxis);
+						}
+						glm::vec2 const positionChange = windowAxis * playerWindowCamera.MoveSpeed * timeStep;
+						playerWindowCamera.Translate(positionChange);
+					}
+				}
+			}
+			else
+			{
+				if (INPUT.GetKey(KeyCode::Up))
+				{
+					paddle.MovementInputBuffer = glm::vec2 {0, 1};
+				}
+				else if (INPUT.GetKey(KeyCode::Down))
+				{
+					paddle.MovementInputBuffer = glm::vec2 {0, -1};
+				}
+
+				if (INPUT.GetKeyDown(KeyCode::Return))
+				{
+					if (m_Ball.Attachable.IsAttached && m_Ball.Attachable.AttachedPaddle == &paddle)
+					{
+						m_Ball.LaunchFromAttachedPaddle();
+					}
+				}
+
+				if (m_GameState != GameState::Intermission && player.State.CanMoveWindow)
+				{
+					float windowVertical = 0;
+					if (INPUT.GetKey(KeyCode::Numpad5))
+					{
+						windowVertical = 1;
+					}
+					else if (INPUT.GetKey(KeyCode::Numpad2))
+					{
+						windowVertical = -1;
+					}
+
+					float windowHorizontal = 0;
+					if (INPUT.GetKey(KeyCode::Numpad3))
+					{
+						windowHorizontal = 1;
+					}
+					else if (INPUT.GetKey(KeyCode::Numpad1))
+					{
+						windowHorizontal = -1;
+					}
+
+					glm::vec2 windowAxis = {windowHorizontal, -windowVertical};
+					if (glm::length2(windowAxis) > 0.01f)
+					{
+						if (glm::length2(windowAxis) > 1.0f)
+						{
+							windowAxis = glm::normalize(windowAxis);
+						}
+						glm::vec2 const positionChange = windowAxis * playerWindowCamera.MoveSpeed * timeStep;
+						playerWindowCamera.Translate(positionChange);
+					}
 				}
 			}
 		}
@@ -640,11 +708,14 @@ namespace DYE
 				continue;
 			}
 
-			// The ball hits a homebase! Reset the state.
-			m_Ball.Hittable.LastHitByPlayerID = homebase.PlayerID;
-
-			// Play animation.
-			m_Ball.PlayGoalAnimation();
+			int const hitPlayerID = m_Ball.Hittable.LastHitByPlayerID;
+			auto hitPlayerItr = std::find_if(
+				m_Players.begin(),
+				m_Players.end(),
+				[hitPlayerID](MiniGame::PongPlayer const& player)
+				{
+					return hitPlayerID == player.Settings.ID;
+				});
 
 			// Deal 1 damage to the homebase.
 			int const playerID = homebase.PlayerID;
@@ -672,9 +743,15 @@ namespace DYE
 					m_GameState = GameState::Intermission;
 
 					// Shrink the winning player's window size.
-					MiniGame::WindowCamera& windowCamera = playerID == 0? m_Player2WindowCamera : m_Player1WindowCamera;
+					MiniGame::WindowCamera& windowCamera = hitPlayerID == 0? m_Player1WindowCamera : m_Player2WindowCamera;
 					auto size = m_HealthWindowSizes[(MaxHealth - 1) - playerItr->State.Health];
 					windowCamera.SmoothResize(size.x, size.y);
+
+					// Enable window control if the window shrinks.
+					if (playerItr->State.Health <= HealthToEnableWindowInput)
+					{
+						hitPlayerItr->State.CanMoveWindow = true;
+					}
 				}
 			}
 			else
@@ -698,6 +775,10 @@ namespace DYE
 			{
 				m_pNextPaddleToSpawnBallAfterIntermission = nullptr;
 			}
+
+			// Play animations.
+			m_Ball.PlayGoalAnimation();
+
 			break;
 		}
 	}
