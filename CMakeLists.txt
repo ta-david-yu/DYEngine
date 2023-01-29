@@ -31,7 +31,7 @@ add_subdirectory(DYEngine)
 # Sandbox executable
 add_subdirectory(Sandbox)
 
-# Peepholism executable
-add_subdirectory(Peepholism)
+# MiniGamesDemo executable
+add_subdirectory(MiniGamesDemo)
 
 # TODO: Build DYEditor

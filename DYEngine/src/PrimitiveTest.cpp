@@ -40,13 +40,15 @@ namespace DYE::Math
 		return aabbToCenterSqrDistance <= radius * radius;
 	}
 
-	bool RayAABBIntersect2D(glm::vec2 rayOrigin, glm::vec2 rayDirection, Math::AABB const& aabb, float& hitTime, glm::vec2& hitPoint)
+	bool RayAABBIntersect2D(glm::vec2 rayOrigin, glm::vec2 rayDirection, Math::AABB const& aabb, DynamicTestResult2D& testResult)
 	{
-		hitTime = 0.0f; // Could also call it slab 'enter time'. We could set this to -float.max to get hit on the line instead of the ray.
+		testResult.HitTime = 0.0f;	// Could also call it slab 'enter time'. We could set this to -float.max to get hit on the line instead of the ray.
+		testResult.HitNormal = -glm::normalize(rayDirection); // Set normal to the opposite of ray direction by default.
 		float exitTime = std::numeric_limits<float>::max();
 
 		// A slab for each dimension.
 		int const numberOfDimension = 2;
+		int hitSlabDimensionIndex = -1;	// The dimension index of the slab that ray enters. We use this to calculate hit normal later.
 		for (int i = 0; i < numberOfDimension; i++)
 		{
 			bool const isRayParallelToSlab = glm::epsilonEqual(rayDirection[i], 0.0f, std::numeric_limits<float>::epsilon());
@@ -72,9 +74,10 @@ namespace DYE::Math
 			}
 
 			// Update overall slab enter / exit time interval.
-			if (firstSlabIntersectionTime > hitTime)
+			if (firstSlabIntersectionTime > testResult.HitTime)
 			{
-				hitTime = firstSlabIntersectionTime;
+				testResult.HitTime = firstSlabIntersectionTime;
+				hitSlabDimensionIndex = i;
 			}
 
 			if (secondSlabIntersectionTime < exitTime)
@@ -82,25 +85,38 @@ namespace DYE::Math
 				exitTime = secondSlabIntersectionTime;
 			}
 
-			if (hitTime > exitTime)
+			if (testResult.HitTime > exitTime)
 			{
 				// Exit with no intersection because the slab intersection has become an empty interval.
 				return false;
 			}
 		}
 
+		if (hitSlabDimensionIndex != -1)
+		{
+			// Compute hit normal.
+			for (int i = 0; i < numberOfDimension; i++)
+			{
+				float const sign = glm::sign(testResult.HitNormal[i]);
+				testResult.HitNormal[i] = (i == hitSlabDimensionIndex)? sign * 1.0f : 0.0f;
+			}
+		}
+
 		// The ray intersects with all dimension's slabs.
-		hitPoint = rayOrigin + rayDirection * hitTime;
+		testResult.HitCentroid = rayOrigin + rayDirection * testResult.HitTime;
+		testResult.HitPoint = testResult.HitCentroid;
 		return true;
 	}
 
-	bool RayAABBIntersect2D(glm::vec2 rayOrigin, glm::vec2 rayDirection, float maxDistance, Math::AABB const& aabb, float& hitTime, glm::vec2& hitPoint)
+	bool RayAABBIntersect2D(glm::vec2 rayOrigin, glm::vec2 rayDirection, float maxDistance, Math::AABB const& aabb, DynamicTestResult2D& testResult)
 	{
-		hitTime = 0.0f; // Could also call it slab 'enter time'. We could set this to -float.max to get hit on the line instead of the ray.
+		testResult.HitTime = 0.0f; // Could also call it slab 'enter time'. We could set this to -float.max to get hit on the line instead of the ray.
+		testResult.HitNormal = -glm::normalize(rayDirection); // Set normal to the opposite of ray direction by default.
 		float exitTime = maxDistance;
 
 		// A slab for each dimension.
 		int const numberOfDimension = 2;
+		int hitSlabDimensionIndex = -1;	// The dimension index of the slab that ray enters. We use this to calculate hit normal later.
 		for (int i = 0; i < numberOfDimension; i++)
 		{
 			bool const isRayParallelToSlab = glm::epsilonEqual(rayDirection[i], 0.0f, std::numeric_limits<float>::epsilon());
@@ -126,9 +142,10 @@ namespace DYE::Math
 			}
 
 			// Update overall slab enter / exit time interval.
-			if (firstSlabIntersectionTime > hitTime)
+			if (firstSlabIntersectionTime > testResult.HitTime)
 			{
-				hitTime = firstSlabIntersectionTime;
+				testResult.HitTime = firstSlabIntersectionTime;
+				hitSlabDimensionIndex = i;
 			}
 
 			if (secondSlabIntersectionTime < exitTime)
@@ -136,20 +153,33 @@ namespace DYE::Math
 				exitTime = secondSlabIntersectionTime;
 			}
 
-			if (hitTime > exitTime)
+			if (testResult.HitTime > exitTime)
 			{
 				// Exit with no intersection because the slab intersection has become an empty interval.
 				return false;
 			}
 		}
 
+		if (hitSlabDimensionIndex != -1)
+		{
+			// Compute hit normal.
+			for (int i = 0; i < numberOfDimension; i++)
+			{
+				float const sign = glm::sign(testResult.HitNormal[i]);
+				testResult.HitNormal[i] = (i == hitSlabDimensionIndex)? sign * 1.0f : 0.0f;
+			}
+		}
+
 		// The ray intersects with all dimension's slabs.
-		hitPoint = rayOrigin + rayDirection * hitTime;
+		testResult.HitCentroid = rayOrigin + rayDirection * testResult.HitTime;
+		testResult.HitPoint = testResult.HitCentroid;
 		return true;
 	}
 
-	bool RayCircleIntersect(glm::vec2 rayOrigin, glm::vec2 rayDirection, glm::vec2 center, float radius, float &hitTime, glm::vec2 &hitPoint)
+	bool RayCircleIntersect(glm::vec2 rayOrigin, glm::vec2 rayDirection, glm::vec2 center, float radius, DynamicTestResult2D& testResult)
 	{
+		testResult.HitNormal = -glm::normalize(rayDirection); // Set normal to the opposite of ray direction by default.
+
 		glm::vec2 const cp = rayOrigin - center;
 		float const a = glm::dot(rayDirection, rayDirection);
 		float const b = glm::dot(cp, rayDirection);
@@ -166,34 +196,44 @@ namespace DYE::Math
 		// Reference: Real-Time Collision Detection by Christer Ericson.
 		float const discriminant = b * b - a * c;
 
-		// A negative discriminant corresponds to ray missing sphere
+		// A negative discriminant corresponds to ray missing circle
 		if (discriminant < 0.0f)
 		{
 			return false;
 		}
 
-		// Ray now found to intersect sphere, compute smallest t value of intersection
-		hitTime = (-b - glm::sqrt(discriminant)) / a;
+		// Ray now found to intersect circle, compute smallest t value of intersection
+		testResult.HitTime = (-b - glm::sqrt(discriminant)) / a;
 
-		// If t is negative, ray started inside sphere so clamp t to zero
-		if (hitTime < 0.0f)
+		// If t is negative, ray started inside circle so clamp t to zero
+		bool const insideCircle = testResult.HitTime < 0.0f;
+		if (insideCircle)
 		{
-			hitTime = 0.0f;
+			testResult.HitTime = 0.0f;
 		}
-		hitPoint = rayOrigin + hitTime * rayDirection;
+
+		testResult.HitCentroid = rayOrigin + testResult.HitTime * rayDirection;
+		testResult.HitPoint = testResult.HitCentroid;
+		if (!insideCircle)
+		{
+			// If rayOrigin is not inside, the hit normal would be 'circle center' to 'hit point'.
+			testResult.HitNormal = testResult.HitCentroid - center;
+		}
+
 		return true;
 	}
 
-	bool MovingCircleAABBIntersect(glm::vec2 center, float radius, glm::vec2 direction, const AABB &aabb, float &hitTime)
+	bool MovingCircleAABBIntersect(glm::vec2 center, float radius, glm::vec2 direction, const AABB &aabb, DynamicTestResult2D& testResult)
 	{
+		testResult.HitNormal = -glm::normalize(direction); // Set normal to the opposite of moving direction by default.
+
 		// Compute the AABB resulting from expanding aabb by circle's radius.
 		AABB expandedAABB = aabb;
 		expandedAABB.Min.x -= radius; expandedAABB.Min.y -= radius;
 		expandedAABB.Max.x += radius; expandedAABB.Max.y += radius;
 
 		// Do a ray & expanded AABB intersect test.
-		glm::vec2 hitPoint;
-		if (!RayAABBIntersect2D(center, direction, expandedAABB, hitTime, hitPoint) || hitTime > 1.0f)
+		if (!RayAABBIntersect2D(center, direction, expandedAABB, testResult) || testResult.HitTime > 1.0f)
 		{
 			// The ray doesn't intersect with the expanded AABB
 			// OR it intersects but at a point where it's farther than direction vector.
@@ -208,20 +248,38 @@ namespace DYE::Math
 		//    c |  e  | c
 		// min
 		//       slabX
-		bool const inSlabX = hitPoint.x >= aabb.Min.x && hitPoint.x <= aabb.Max.x;
-		bool const inSlabY = hitPoint.y >= aabb.Min.y && hitPoint.y <= aabb.Max.y;
+		bool const inSlabX = testResult.HitCentroid.x >= aabb.Min.x && testResult.HitCentroid.x <= aabb.Max.x;
+		bool const inSlabY = testResult.HitCentroid.y >= aabb.Min.y && testResult.HitCentroid.y <= aabb.Max.y;
+
+		bool const isInsideAABB = inSlabX && inSlabY;
+		if (isInsideAABB)
+		{
+			return true;
+		}
 
 		bool const isEdgeRegion = inSlabX || inSlabY;
+		if (inSlabX)
+		{
+			testResult.HitNormal.x = 0.0f;
+		}
+		if (inSlabY)
+		{
+			testResult.HitNormal.y = 0.0f;
+		}
+
 		if (isEdgeRegion)
 		{
+			testResult.HitPoint = testResult.HitCentroid - glm::normalize(testResult.HitNormal) * radius;
 			return true;
 		}
 
 		// The hitPoint is inside vertex region, do a ray & circle intersect.
 		glm::vec2 corner;
-		corner.x = (hitPoint.x < aabb.Min.x)? aabb.Min.x : aabb.Max.x;
-		corner.y = (hitPoint.y < aabb.Min.y)? aabb.Min.y : aabb.Max.y;
+		corner.x = (testResult.HitCentroid.x < aabb.Min.x) ? aabb.Min.x : aabb.Max.x;
+		corner.y = (testResult.HitCentroid.y < aabb.Min.y) ? aabb.Min.y : aabb.Max.y;
 
-		return RayCircleIntersect(center, direction, corner, radius, hitTime, hitPoint);
+		bool const rayExpandedCircleIntersect = RayCircleIntersect(center, direction, corner, radius, testResult);
+		testResult.HitPoint = testResult.HitCentroid - testResult.HitNormal;
+		return rayExpandedCircleIntersect;
 	}
 }

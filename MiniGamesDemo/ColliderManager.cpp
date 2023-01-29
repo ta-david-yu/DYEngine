@@ -1,4 +1,4 @@
-#include "StaticColliderManager.h"
+#include "ColliderManager.h"
 
 #include "ImGui/ImGuiUtil.h"
 #include "Graphics/DebugDraw.h"
@@ -10,7 +10,7 @@
 namespace DYE
 {
 
-	ColliderID StaticColliderManager::RegisterAABB(Math::AABB aabb)
+	ColliderID ColliderManager::RegisterAABB(Math::AABB aabb)
 	{
 		ColliderID const id = m_AABBIdCounter;
 		m_AABBs.emplace_back(id, aabb);
@@ -18,7 +18,7 @@ namespace DYE
 		return id;
 	}
 
-	void StaticColliderManager::UnregisterAABB(ColliderID id)
+	void ColliderManager::UnregisterAABB(ColliderID id)
 	{
 		int index = binarySearchIndexOf(m_AABBs, id);
 		if (index == -1)
@@ -29,7 +29,13 @@ namespace DYE
 		m_AABBs.erase(m_AABBs.begin() + index);
 	}
 
-	std::optional<Math::AABB> StaticColliderManager::GetAABB(ColliderID id)
+	bool ColliderManager::IsColliderRegistered(ColliderID id) const
+	{
+		int const index = binarySearchIndexOf(m_AABBs, id);
+		return index != -1;
+	}
+
+	std::optional<Math::AABB> ColliderManager::GetAABB(ColliderID id)
 	{
 		int const index = binarySearchIndexOf(m_AABBs, id);
 		if (index == -1)
@@ -40,7 +46,7 @@ namespace DYE
 		return m_AABBs[index].second;
 	}
 
-	bool StaticColliderManager::SetAABB(ColliderID id, Math::AABB aabb)
+	bool ColliderManager::SetAABB(ColliderID id, Math::AABB aabb)
 	{
 		int const index = binarySearchIndexOf(m_AABBs, id);
 		if (index == -1)
@@ -52,7 +58,7 @@ namespace DYE
 		return true;
 	}
 
-	std::vector<ColliderID> StaticColliderManager::OverlapAABB(Math::AABB aabb) const
+	std::vector<ColliderID> ColliderManager::OverlapAABB(Math::AABB aabb) const
 	{
 		std::vector<ColliderID> overlappedIds;
 
@@ -69,7 +75,7 @@ namespace DYE
 		return std::move(overlappedIds);
 	}
 
-	std::vector<ColliderID> StaticColliderManager::OverlapCircle(glm::vec2 center, float radius) const
+	std::vector<ColliderID> ColliderManager::OverlapCircle(glm::vec2 center, float radius) const
 	{
 		std::vector<ColliderID> overlappedIds;
 
@@ -86,7 +92,7 @@ namespace DYE
 		return std::move(overlappedIds);
 	}
 
-	std::vector<RaycastHit2D> StaticColliderManager::RaycastAll(glm::vec2 start, glm::vec2 end) const
+	std::vector<RaycastHit2D> ColliderManager::RaycastAll(glm::vec2 start, glm::vec2 end) const
 	{
 		std::vector<RaycastHit2D> hits;
 
@@ -96,12 +102,11 @@ namespace DYE
 		// TODO: improve the performance with AABB tree OR grid broad-phase
 		for (auto const& pair : m_AABBs)
 		{
-			float hitTime;
-			glm::vec2 hitPoint;
-			bool const intersect = Math::RayAABBIntersect2D(start, direction, maxDistance, pair.second, hitTime, hitPoint);
+			Math::DynamicTestResult2D testResult;
+			bool const intersect = Math::RayAABBIntersect2D(start, direction, maxDistance, pair.second, testResult);
 			if (intersect)
 			{
-				hits.push_back(RaycastHit2D { .ColliderID = pair.first, .Time = hitTime, .Point = hitPoint });
+				hits.push_back(RaycastHit2D { .ColliderID = pair.first, .Time = testResult.HitTime, .Centroid = testResult.HitCentroid, .Point = testResult.HitPoint, .Normal = testResult.HitNormal });
 			}
 		}
 
@@ -111,19 +116,18 @@ namespace DYE
 
 	}
 
-	std::vector<RaycastHit2D> StaticColliderManager::CircleCastAll(glm::vec2 center, float radius, glm::vec2 direction) const
+	std::vector<RaycastHit2D> ColliderManager::CircleCastAll(glm::vec2 center, float radius, glm::vec2 direction) const
 	{
 		std::vector<RaycastHit2D> hits;
 
 		// TODO: improve the performance with AABB tree OR grid broad-phase
 		for (auto const& pair : m_AABBs)
 		{
-			float hitTime;
-			bool const intersect = Math::MovingCircleAABBIntersect(center, radius, direction, pair.second, hitTime);
+			Math::DynamicTestResult2D testResult;
+			bool const intersect = Math::MovingCircleAABBIntersect(center, radius, direction, pair.second, testResult);
 			if (intersect)
 			{
-				glm::vec2 const hitPoint = center + direction * hitTime;
-				hits.push_back(RaycastHit2D { .ColliderID = pair.first, .Time = hitTime, .Point = hitPoint });
+				hits.push_back(RaycastHit2D { .ColliderID = pair.first, .Time = testResult.HitTime, .Centroid = testResult.HitCentroid, .Point = testResult.HitPoint, .Normal = testResult.HitNormal });
 			}
 		}
 
@@ -132,7 +136,7 @@ namespace DYE
 		return std::move(hits);
 	}
 
-	void StaticColliderManager::DrawGizmos() const
+	void ColliderManager::DrawGizmos() const
 	{
 		for (auto const& pair : m_AABBs)
 		{
@@ -140,7 +144,7 @@ namespace DYE
 		}
 	}
 
-	void StaticColliderManager::DrawImGui()
+	void ColliderManager::DrawImGui()
 	{
 		if (ImGui::Begin("Collider Manager"))
 		{
@@ -154,7 +158,7 @@ namespace DYE
 		ImGui::End();
 	}
 
-	int StaticColliderManager::binarySearchIndexOf(std::vector<std::pair<ColliderID, Math::AABB>> const& collection, ColliderID id) const
+	int ColliderManager::binarySearchIndexOf(std::vector<std::pair<ColliderID, Math::AABB>> const& collection, ColliderID id) const
 	{
 		int left = 0;
 		int right = m_AABBs.size() - 1;

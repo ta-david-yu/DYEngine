@@ -1,4 +1,4 @@
-#include "PeepholismLayer.h"
+#include "CollisionTestLayer.h"
 
 #include "Core/Application.h"
 #include "Util/Logger.h"
@@ -37,11 +37,11 @@
 
 namespace DYE
 {
-	PeepholismLayer::PeepholismLayer()
+	CollisionTestLayer::CollisionTestLayer()
     {
     }
 
-	void PeepholismLayer::OnInit()
+	void CollisionTestLayer::OnInit()
 	{
 		RenderCommand::GetInstance().SetClearColor(glm::vec4{0.5f, 0.5f, 0.5f, 0.5f});
 
@@ -66,7 +66,7 @@ namespace DYE
 		m_BackgroundTileObject->Position = {0, 0, -2};
 
 		auto mainWindowPtr = WindowManager::GetMainWindow();
-		mainWindowPtr->SetWindowSize(1600, 900);
+		mainWindowPtr->SetSize(1600, 900);
 
 		m_CameraProperties = std::make_shared<CameraProperties>();
 		m_CameraProperties->Position = glm::vec3 {0, 0, 10};
@@ -98,7 +98,7 @@ namespace DYE
 		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({0, -3, 0}, {2, 3, 0}));
 	}
 
-	void PeepholismLayer::OnRender()
+	void CollisionTestLayer::OnRender()
 	{
 		RenderPipelineManager::RegisterCameraForNextRender(*m_CameraProperties);
 
@@ -120,7 +120,7 @@ namespace DYE
 		renderTiledSpriteObject(*m_BackgroundTileObject, {m_TileOffset, m_TileOffset});
 	}
 
-	void PeepholismLayer::renderSpriteObject(SpriteObject& object)
+	void CollisionTestLayer::renderSpriteObject(SpriteObject& object)
 	{
 		glm::mat4 modelMatrix = glm::mat4 {1.0f};
 		modelMatrix = glm::translate(modelMatrix, object.Position);
@@ -131,7 +131,7 @@ namespace DYE
 		    ->SubmitSprite(object.Texture, object.Color, modelMatrix);
 	}
 
-	void PeepholismLayer::renderTiledSpriteObject(SpriteObject& object, glm::vec2 offset)
+	void CollisionTestLayer::renderTiledSpriteObject(SpriteObject& object, glm::vec2 offset)
 	{
 		glm::mat4 modelMatrix = glm::mat4 {1.0f};
 		modelMatrix = glm::translate(modelMatrix, object.Position);
@@ -142,12 +142,12 @@ namespace DYE
 		    ->SubmitTiledSprite(object.Texture, {object.Scale.x, object.Scale.y, offset.x, offset.y}, object.Color, modelMatrix);
 	}
 
-    void PeepholismLayer::OnEvent(Event& event)
+    void CollisionTestLayer::OnEvent(Event& event)
     {
 
     }
 
-    void PeepholismLayer::OnUpdate()
+    void CollisionTestLayer::OnUpdate()
     {
 		m_ColliderManager.DrawGizmos();
 
@@ -164,15 +164,27 @@ namespace DYE
 		glm::vec2 const rayStart = m_AverageObject->Position;
 		glm::vec2 const rayEnd = m_MovingObject->Position;
 
-		//auto hits = m_ColliderManager.RaycastAll(rayStart, rayEnd);
-		auto hits = m_ColliderManager.CircleCastAll(rayStart, circleRadius, rayEnd - rayStart);
-		bool const hasIntersect = !hits.empty();
-
+		/*
+		auto hits = m_ColliderManager.RaycastAll(rayStart, rayEnd);
 		for (auto& hit : hits)
 		{
-			DebugDraw::Circle({hit.Point.x, hit.Point.y, 0}, circleRadius, {0, 0, 1}, Color::Red);
+			glm::vec3 const hitPoint3D = {hit.Point.x, hit.Point.y, 0};
+			glm::vec3 const hitNormal3D = {hit.Normal.x, hit.Normal.y, 0};
+			DebugDraw::Line(hitPoint3D, hitPoint3D + hitNormal3D, Color::Yellow);
+			DebugDraw::Circle(hitPoint3D, 0.05f, {0, 0, 1}, Color::Red);
+		}*/
+
+		auto hits = m_ColliderManager.CircleCastAll(rayStart, circleRadius, rayEnd - rayStart);
+		for (auto& hit : hits)
+		{
+			glm::vec3 const hitPoint3D = {hit.Point.x, hit.Point.y, 0};
+			glm::vec3 const hitNormal3D = {hit.Normal.x, hit.Normal.y, 0};
+			DebugDraw::Line(hitPoint3D, hitPoint3D + hitNormal3D, Color::Yellow);
+			DebugDraw::Circle(hitPoint3D, 0.05f, {0, 0, 1}, Color::Red);
+			DebugDraw::Circle({hit.Centroid.x, hit.Centroid.y, 0}, circleRadius, {0, 0, 1}, Color::Red);
 		}
 
+		bool const hasIntersect = !hits.empty();
 		DebugDraw::Line(m_MovingObject->Position, m_AverageObject->Position, hasIntersect? Color::Red : Color::Yellow);
 
 		// Scroll tiled offset
@@ -214,30 +226,22 @@ namespace DYE
 			m_MovingObject->Position.x -= TIME.DeltaTime() * m_BallSpeed;
 		}
 
-		if (INPUT.GetMouseButton(MouseButton::Left))
+		if (INPUT.GetMouseButtonDown(MouseButton::Left))
 		{
-			m_MovingObject->Position.x -= TIME.DeltaTime() * m_BallSpeed;
+			m_MovingObject->Color = Color::Yellow;
 		}
 
-		if (INPUT.GetMouseButton(MouseButton::Right))
+		if (INPUT.GetMouseButtonDown(MouseButton::Right))
 		{
-			m_MovingObject->Position.x += TIME.DeltaTime() * m_BallSpeed;
+			m_MovingObject->Color = Color::Blue;
 		}
 
 		if (INPUT.GetMouseButtonDown(MouseButton::Middle))
 		{
-			m_MovingObject->Position.y += m_BallSpeed;
+			m_MovingObject->Color = Color::Red;
 		}
-
-		if (INPUT.GetMouseButtonUp(MouseButton::Middle))
-		{
-			m_MovingObject->Position.y -= m_BallSpeed;
-		}
-
-
 
 		m_AverageObject->Position = (m_MovingObject->Position + m_OriginObject->Position) * 0.5f;
-
 
 		bool change = false;
 		if (INPUT.GetKey(KeyCode::W))
@@ -265,7 +269,7 @@ namespace DYE
 		if (change)
 		{
 			m_WindowPosition = glm::round(m_WindowPosition);
-			mainWindowPtr->SetWindowPosition(m_WindowPosition.x, m_WindowPosition.y);
+			mainWindowPtr->SetPosition(m_WindowPosition.x, m_WindowPosition.y);
 		}
 
 		if (INPUT.GetKeyDown(KeyCode::F1))
@@ -329,14 +333,20 @@ namespace DYE
 			return;
 		}
 
-		float const horizontal = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickHorizontal);
-		float const vertical = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickVertical);
+		if (INPUT.IsGamepadConnected(0))
+		{
+			float const horizontal = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickHorizontal);
+			float const vertical = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickVertical);
 
-		glm::vec3 const axis = { horizontal, vertical, 0 };
-		float const magnitude = glm::length(axis);
-		glm::vec3 const direction = glm::normalize(axis);
-		m_MovingObject->Position += direction * (magnitude * (float) TIME.DeltaTime());
+			glm::vec3 const axis = {horizontal, vertical, 0};
 
+			if (glm::length2(axis) > 0.01f)
+			{
+				float const magnitude = glm::length(axis);
+				glm::vec3 const direction = glm::normalize(axis);
+				m_MovingObject->Position += direction * (magnitude * (float) TIME.DeltaTime());
+			}
+		}
 
 		int currWidth = mainWindowPtr->GetWidth();
 		int currHeight = mainWindowPtr->GetHeight();
@@ -390,13 +400,13 @@ namespace DYE
     	m_CameraProperties->OrthographicSize = 5 / sizeScalar;
 	}
 
-    void PeepholismLayer::OnFixedUpdate()
+    void CollisionTestLayer::OnFixedUpdate()
     {
         m_FixedUpdateCounter++;
         //SDL_Log("FixedDeltaTime - %f", TIME.FixedDeltaTime());
     }
 
-    void PeepholismLayer::OnImGui()
+    void CollisionTestLayer::OnImGui()
     {
         // get the window size as a base for calculating widgets geometry
 		auto mainWindowPtr = WindowManager::GetMainWindow();
@@ -504,7 +514,7 @@ namespace DYE
 		INPUT.DrawAllConnectedDeviceDescriptorsImGui();
     }
 
-	void PeepholismLayer::imguiSpriteObject(SpriteObject &object)
+	void CollisionTestLayer::imguiSpriteObject(SpriteObject &object)
 	{
 		ImGui::PushID(object.Name.c_str());
 

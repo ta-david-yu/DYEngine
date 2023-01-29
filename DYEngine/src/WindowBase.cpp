@@ -39,13 +39,18 @@ namespace DYE
 		int const previousHeight = GetHeight();
 		glm::vec2 previousWindowPos = GetPosition();
 
-		SetWindowSize(width, height);
+		SetSize(width, height);
 		previousWindowPos.x -= ((int) width - previousWidth) * 0.5f;
 		previousWindowPos.y -= ((int) height - previousHeight) * 0.5f;
 
 		previousWindowPos = glm::round(previousWindowPos);
-		SetWindowPosition(previousWindowPos.x, previousWindowPos.y);
+		SetPosition(previousWindowPos.x, previousWindowPos.y);
 
 		return previousWindowPos;
+	}
+
+	void WindowBase::SetPosition(glm::vec<2, std::int32_t> position)
+	{
+		SetPosition(position.x, position.y);
 	}
 }

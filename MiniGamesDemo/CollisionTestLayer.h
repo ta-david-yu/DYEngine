@@ -3,7 +3,7 @@
 #include "Core/LayerBase.h"
 #include "Event/KeyEvent.h"
 
-#include "StaticColliderManager.h"
+#include "ColliderManager.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -29,11 +29,11 @@ namespace DYE
 		glm::vec4 Color {1, 1, 1, 1};
 	};
 
-    class PeepholismLayer : public LayerBase
+    class CollisionTestLayer : public LayerBase
     {
     public:
-        PeepholismLayer();
-		PeepholismLayer(PeepholismLayer const& other) = delete;
+        CollisionTestLayer();
+		CollisionTestLayer(CollisionTestLayer const& other) = delete;
 
 		void OnInit() override;
         void OnEvent(Event& event) override;
@@ -70,7 +70,7 @@ namespace DYE
 		std::shared_ptr<SpriteObject> m_MovingObject;
 		std::shared_ptr<SpriteObject> m_BackgroundTileObject;
 
-		StaticColliderManager m_ColliderManager;
+		ColliderManager m_ColliderManager;
 
 		std::shared_ptr<CameraProperties> m_CameraProperties;
 	};

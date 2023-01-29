@@ -14,15 +14,25 @@ namespace DYE
 	{
 		ColliderID ColliderID;
 		float Time;
+		glm::vec2 Centroid;
 		glm::vec2 Point;
+		glm::vec2 Normal;
 	};
 
-	class StaticColliderManager
+	class ColliderManager
 	{
+	private:
+		struct Collider
+		{
+			Math::AABB AABB;
+			glm::vec2 Velocity;
+		};
+
 	public:
 		ColliderID RegisterAABB(Math::AABB aabb);
 		void UnregisterAABB(ColliderID id);
 
+		bool IsColliderRegistered(ColliderID id) const;
 		std::optional<Math::AABB> GetAABB(ColliderID id);
 		bool SetAABB(ColliderID id, Math::AABB aabb);
 
