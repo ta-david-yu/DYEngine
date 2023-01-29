@@ -132,12 +132,12 @@ namespace DYE
 
 		// Setup main camera for debugging purpose.
 		m_MainWindow = WindowManager::GetMainWindow();
+		m_MainWindow->SetSize(1600, 900);
 		m_MainWindow->CenterWindow();
-		m_MainWindow->SetSize(640, 480);
 
 		m_MainCamera.Transform.Position = glm::vec3 {0, 0, 10};
 		m_MainCamera.Properties.IsOrthographic = true;
-		m_MainCamera.Properties.OrthographicSize = 20;
+		m_MainCamera.Properties.OrthographicSize = 14;
 		m_MainCamera.Properties.TargetType = RenderTargetType::Window;
 		m_MainCamera.Properties.TargetWindowID = m_MainWindow->GetWindowID();
 		m_MainCamera.Properties.UseManualAspectRatio = false;
@@ -146,7 +146,7 @@ namespace DYE
 		m_MainCamera.Properties.Viewport = { 0, 0, 1, 1 };
 
 		// Create window camera.
-		m_Player1WindowCamera.CreateWindow(m_MainWindow->GetContext(), WindowProperty("Player 1", 800, 900));
+		m_Player1WindowCamera.CreateWindow(m_MainWindow->GetContext(), WindowProperty("Player 1 - Use Right Analog Stick To Move Window", 800, 900));
 		m_Player1WindowCamera.GetWindowPtr()->CenterWindow();
 		auto position = m_Player1WindowCamera.GetWindowPtr()->GetPosition();
 		position.x -= 410;
@@ -154,7 +154,7 @@ namespace DYE
 		m_Player1WindowCamera.GetWindowPtr()->SetBorderedIfWindowed(false);
 		m_Player1WindowCamera.ResetCachedPosition();
 
-		m_Player2WindowCamera.CreateWindow(m_MainWindow->GetContext(), WindowProperty("Player 2", 800, 900));
+		m_Player2WindowCamera.CreateWindow(m_MainWindow->GetContext(), WindowProperty("Player 2 - Use Right Analog Stick To Move Window", 800, 900));
 		m_Player2WindowCamera.GetWindowPtr()->CenterWindow();
 		position = m_Player2WindowCamera.GetWindowPtr()->GetPosition();
 		position.x += 390;
@@ -169,8 +169,8 @@ namespace DYE
 		// Equip the ball to the first paddle.
 		m_Ball.EquipToPaddle(m_PlayerPaddles[0], m_Players[0].Settings.MainPaddleAttachOffset);
 
-		// Hide the main window by default (as debug window, press F9/F10 to toggle it).
-		SDL_MinimizeWindow(m_MainWindow->GetTypedNativeWindowPtr<SDL_Window>());
+		// Hide the main window by default (for debugging, press F9/F10 to toggle it).
+		m_MainWindow->Minimize();
 	}
 
 	void PongLayer::registerBoxCollider(MiniGame::Transform &transform, MiniGame::BoxCollider &collider)
@@ -287,7 +287,7 @@ namespace DYE
 
 					// Reset the ball to the center
 					m_Ball.Transform.Position = {0, 0, 0};
-					m_Ball.Velocity.Value = {5, 1}; // TODO: randomized the velocity.
+					m_Ball.Velocity.Value = {5, 1};
 				}
 			}
 		}
@@ -304,12 +304,12 @@ namespace DYE
 	{
 		if (INPUT.GetKeyDown(KeyCode::F9))
 		{
-			SDL_MinimizeWindow(m_MainWindow->GetTypedNativeWindowPtr<SDL_Window>());
+			m_MainWindow->Minimize();
 		}
 
 		if (INPUT.GetKeyDown(KeyCode::F10))
 		{
-			SDL_RestoreWindow(m_MainWindow->GetTypedNativeWindowPtr<SDL_Window>());
+			m_MainWindow->Restore();
 		}
 
 		if (INPUT.GetKeyDown(KeyCode::Space))
@@ -737,6 +737,7 @@ namespace DYE
 				if (playerItr->State.Health == 0)
 				{
 					m_GameState = GameState::GameOver;
+					m_MainWindow->Restore();
 				}
 				else
 				{
@@ -747,9 +748,10 @@ namespace DYE
 					auto size = m_HealthWindowSizes[(MaxHealth - 1) - playerItr->State.Health];
 					windowCamera.SmoothResize(size.x, size.y);
 
-					// Enable window control if the window shrinks.
+					// Enable window control/show border if the window shrinks.
 					if (playerItr->State.Health <= HealthToEnableWindowInput)
 					{
+						windowCamera.GetWindowPtr()->SetBorderedIfWindowed(true);
 						hitPlayerItr->State.CanMoveWindow = true;
 					}
 				}

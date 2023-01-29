@@ -81,6 +81,10 @@ namespace DYE
 		void SetContext(std::shared_ptr<ContextBase> context);
 		virtual bool SetFullScreenMode(FullScreenMode mode) = 0;
 		virtual bool SetBorderedIfWindowed(bool isBordered) = 0;
+		/// Minimize the window to the taskbar.
+		virtual void Minimize() = 0;
+		/// Restore the window to the size/position before minimizing or maximizing.
+		virtual void Restore() = 0;
 		virtual void SetSize(std::uint32_t width, std::uint32_t height) = 0;
 
 		/// Set the size of the window and set the position of it as if the window's position is the same if its anchor is the center of the window.

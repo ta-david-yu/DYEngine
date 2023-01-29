@@ -84,7 +84,6 @@ namespace DYE
 		MiniGame::Sprite m_BackgroundSprite;
 
 		MiniGame::Camera m_MainCamera;
-		MiniGame::Camera m_DebugCamera;
 		MiniGame::PongBall m_Ball;
 		std::vector<MiniGame::PongPlayer> m_Players;
 		std::vector<MiniGame::PlayerPaddle> m_PlayerPaddles;
