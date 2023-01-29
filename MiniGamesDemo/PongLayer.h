@@ -44,11 +44,13 @@ namespace DYE
 		void registerBoxCollider(MiniGame::Transform& transform, MiniGame::BoxCollider& collider);
 		void unregisterBoxCollider(MiniGame::Transform& transform, MiniGame::BoxCollider& collider);
 		void renderSprite(MiniGame::Transform& transform, MiniGame::Sprite& sprite);
+
 		/// \return the velocity per second for the paddle.
 		void debugInput();
 		void readPlayerInput(float timeStep);
 		void updatePaddle(MiniGame::PlayerPaddle& paddle, float timeStep);
 		void updateBall(float timeStep);
+		void checkIfBallHasReachedGoal(float timeStep);
 		void updateBoxCollider(MiniGame::Transform& transform, MiniGame::BoxCollider& collider);
 
 		void imguiSprite(const std::string& name, MiniGame::Transform& transform, MiniGame::Sprite& sprite);

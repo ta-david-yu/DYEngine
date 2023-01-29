@@ -6,6 +6,7 @@ namespace DYE
 {
 	enum class Ease
 	{
+		Linear,
 		EaseInSine,
 		EaseOutSine,
 		EaseInOutSine,
@@ -30,6 +31,8 @@ namespace DYE
 		EaseInBack,
 		EaseOutBack,
 		EaseInOutBack,
+		EaseInBackDouble,
+		EaseOutBackDouble,
 		EaseInElastic,
 		EaseOutElastic,
 		EaseInOutElastic,
@@ -62,6 +65,8 @@ namespace DYE
 	float EaseInBack(float t);
 	float EaseOutBack(float t);
 	float EaseInOutBack(float t);
+	float EaseInBackDouble(float t);
+	float EaseOutBackDouble(float t);
 	float EaseInElastic(float t);
 	float EaseOutElastic(float t);
 	float EaseInOutElastic(float t);

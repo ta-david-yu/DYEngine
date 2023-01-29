@@ -8,6 +8,11 @@
 
 namespace DYE
 {
+	float EaseLinear(float t)
+	{
+		return t;
+	}
+
 	float EaseInSine(float t)
 	{
 		return sin(1.5707963 * t);
@@ -172,6 +177,28 @@ namespace DYE
 		}
 	}
 
+	float EaseInBackDouble(float t)
+	{
+		float const s = 1.70158f * 1.5f;
+
+		float end = 1.0f;
+		float const start = 0.0f;
+		end -= start;
+		t /= 1;
+		return end * (t) * t * ((s + 1) * t - s) + start;
+	}
+
+	float EaseOutBackDouble(float t)
+	{
+		float const s = 1.70158f * 1.5f;
+
+		float end = 1.0f;
+		float const start = 0.0f;
+		end -= start;
+		t = (t) - 1;
+		return end * ((t) * t * ((s + 1) * t + s) + 1) + start;
+	}
+
 	float EaseInElastic(float t)
 	{
 		float const t2 = t * t;
@@ -229,6 +256,8 @@ namespace DYE
 	{
 		switch (ease)
 		{
+			case Ease::Linear:
+				return EaseLinear;
 			case Ease::EaseInSine:
 				return EaseInSine;
 			case Ease::EaseOutSine:
@@ -277,6 +306,10 @@ namespace DYE
 				return EaseOutBack;
 			case Ease::EaseInOutBack:
 				return EaseInOutBack;
+			case Ease::EaseInBackDouble:
+				return EaseInBackDouble;
+			case Ease::EaseOutBackDouble:
+				return EaseOutBackDouble;
 			case Ease::EaseInElastic:
 				return EaseInElastic;
 			case Ease::EaseOutElastic:
@@ -290,5 +323,7 @@ namespace DYE
 			case Ease::EaseInOutBounce:
 				return EaseInOutBounce;
 		}
+
+		return EaseLinear;
 	}
 }

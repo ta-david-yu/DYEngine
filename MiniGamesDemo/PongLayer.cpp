@@ -62,7 +62,7 @@ namespace DYE
 		player1.Settings.ID = 0;
 		player1.Settings.MainPaddleLocation = {-10, 0, 0};
 		player1.Settings.MainPaddleAttachOffset = {paddleAttachOffsetX, 0};
-		player1.Settings.HomebaseCenter = {-17, 0, 0};	// TODO:
+		player1.Settings.HomebaseCenter = {-14, 0, 0};	// TODO:
 		player1.Settings.HomebaseSize = {2, 16, 1}; 	// TODO:
 
 		player1.State.Health = MaxHealth;
@@ -71,7 +71,7 @@ namespace DYE
 		player2.Settings.ID = 1;
 		player2.Settings.MainPaddleLocation = {10, 0, 0};
 		player2.Settings.MainPaddleAttachOffset = {-paddleAttachOffsetX, 0};
-		player2.Settings.HomebaseCenter = {17, 0, 0};	// TODO:
+		player2.Settings.HomebaseCenter = {14, 0, 0};	// TODO:
 		player2.Settings.HomebaseSize = {2, 16, 1}; 	// TODO:
 
 		player2.State.Health = MaxHealth;
@@ -126,6 +126,7 @@ namespace DYE
 		// Create background object.
 		m_BackgroundSprite.Texture = Texture2D::Create("assets\\Sprite_Grid.png");
 		m_BackgroundSprite.Texture->PixelsPerUnit = 32;
+		m_BackgroundSprite.IsTiled = true;
 		m_BackgroundTransform.Scale = {64.0f, 64.0f, 1};
 		m_BackgroundTransform.Position = {0, 0, -2};
 
@@ -164,6 +165,9 @@ namespace DYE
 		// Set the current context back to the main window.
 		m_MainWindow->MakeCurrent();
 		ContextBase::SetVSyncCountForCurrentContext(0);
+
+		// Equip the ball to the first paddle.
+		m_Ball.EquipToPaddle(m_PlayerPaddles[0], m_Players[0].Settings.MainPaddleAttachOffset);
 
 		// Hide the main window by default (as debug window, press F9/F10 to toggle it).
 		SDL_MinimizeWindow(m_MainWindow->GetTypedNativeWindowPtr<SDL_Window>());
@@ -223,8 +227,16 @@ namespace DYE
 		modelMatrix = modelMatrix * glm::toMat4(transform.Rotation);
 		modelMatrix = glm::scale(modelMatrix, transform.Scale);
 
-		RenderPipelineManager::GetTypedActiveRenderPipelinePtr<RenderPipeline2D>()
-			->SubmitTiledSprite(sprite.Texture, {transform.Scale.x * sprite.TilingScale.x, transform.Scale.y * sprite.TilingScale.y, sprite.TilingOffset}, sprite.Color, modelMatrix);
+		if (sprite.IsTiled)
+		{
+			RenderPipelineManager::GetTypedActiveRenderPipelinePtr<RenderPipeline2D>()
+				->SubmitTiledSprite(sprite.Texture, {transform.Scale.x * sprite.TilingScale.x, transform.Scale.y * sprite.TilingScale.y, sprite.TilingOffset}, sprite.Color, modelMatrix);
+		}
+		else
+		{
+			RenderPipelineManager::GetTypedActiveRenderPipelinePtr<RenderPipeline2D>()
+				->SubmitSprite(sprite.Texture, sprite.Color, modelMatrix);
+		}
 	}
 
 	void PongLayer::OnEvent(Event& event)
@@ -263,6 +275,7 @@ namespace DYE
 			{
 				// Resume to playing state after the intermission animation is completed.
 				m_GameState = GameState::Playing;
+				m_Ball.PlayRespawnAnimation();
 				if (m_pNextPaddleToSpawnBallAfterIntermission != nullptr && m_pNextPlayerToSpawnBall != nullptr)
 				{
 					// Attach the ball to the paddle!
@@ -281,6 +294,10 @@ namespace DYE
 
 		m_Player1WindowCamera.UpdateCameraProperties();
 		m_Player2WindowCamera.UpdateCameraProperties();
+
+		// Animation updates
+		m_Ball.UpdateAnimation(TIME.DeltaTime());
+
 	}
 
 	void PongLayer::debugInput()
@@ -489,10 +506,11 @@ namespace DYE
 		{
 			updatePaddle(paddle, timeStep);
 		}
+		updateBall(timeStep);
 
 		if (m_GameState == GameState::Playing)
 		{
-			updateBall(timeStep);
+			checkIfBallHasReachedGoal(timeStep);
 		}
 	}
 
@@ -550,8 +568,10 @@ namespace DYE
 			}
 
 			// Move the ball away from the paddle to avoid tunneling
+			m_Ball.Velocity.Value.x += glm::sign(m_Ball.Velocity.Value.x) * paddle.HorizontalBallSpeedIncreasePerHit;
 			m_Ball.Transform.Position += actualPositionOffset;
 			m_Ball.Hittable.LastHitByPlayerID = paddle.PlayerID;
+			m_Ball.PlayHitAnimation();
 		}
 
 		// Actually update the paddle and its collider.
@@ -599,6 +619,7 @@ namespace DYE
 				m_Ball.Velocity.Value += glm::vec2 {paddleVelocity.x, paddleVelocity.y};
 
 				m_Ball.Hittable.LastHitByPlayerID = paddle.PlayerID;
+				m_Ball.PlayHitAnimation();
 
 				break;
 			}
@@ -607,7 +628,10 @@ namespace DYE
 		{
 			m_Ball.Transform.Position += glm::vec3(positionChange, 0);
 		}
+	}
 
+	void PongLayer::checkIfBallHasReachedGoal(float timeStep)
+	{
 		// Check if it's a goal.
 		for (auto const& homebase : m_Homebases)
 		{
@@ -619,15 +643,18 @@ namespace DYE
 			// The ball hits a homebase! Reset the state.
 			m_Ball.Hittable.LastHitByPlayerID = homebase.PlayerID;
 
+			// Play animation.
+			m_Ball.PlayGoalAnimation();
+
 			// Deal 1 damage to the homebase.
 			int const playerID = homebase.PlayerID;
 			auto playerItr = std::find_if(
-								m_Players.begin(),
-								m_Players.end(),
-								[playerID](MiniGame::PongPlayer const& player)
-								{
-									return playerID == player.Settings.ID;
-								});
+				m_Players.begin(),
+				m_Players.end(),
+				[playerID](MiniGame::PongPlayer const& player)
+				{
+					return playerID == player.Settings.ID;
+				});
 
 			if (playerItr != m_Players.end())
 			{
@@ -775,6 +802,23 @@ namespace DYE
 					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 				}
 
+				if (ImGui::Button("Play Ball Respawn Animation"))
+				{
+					m_Ball.PlayRespawnAnimation();
+				}
+
+				ImGui::SameLine();
+				if (ImGui::Button("Play Ball Hit Animation"))
+				{
+					m_Ball.PlayHitAnimation();
+				}
+
+				ImGui::SameLine();
+				if (ImGui::Button("Play Ball Goal Animation"))
+				{
+					m_Ball.PlayGoalAnimation();
+				}
+
 				if (ImGui::Button("Toggle Debug Gizmos"))
 				{
 					m_DrawColliderGizmos = !m_DrawColliderGizmos;
@@ -785,9 +829,6 @@ namespace DYE
 			if (ImGui::CollapsingHeader("World"))
 			{
 				ImGuiUtil::DrawCameraPropertiesControl("Main Camera Properties", m_MainCamera.Properties);
-
-				ImGui::Separator();
-				ImGuiUtil::DrawCameraPropertiesControl("Debug Camera Properties", m_DebugCamera.Properties);
 
 				ImGui::Separator();
 				imguiSprite("PongBall", m_Ball.Transform, m_Ball.Sprite);
