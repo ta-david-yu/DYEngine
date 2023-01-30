@@ -80,11 +80,14 @@ namespace DYE
 		m_Players.emplace_back(player2);
 
 		// Create paddle objects.
+		auto paddleTexture = Texture2D::Create("assets\\Sprite_PongPaddle.png");
 		for (auto const& player : m_Players)
 		{
 			MiniGame::PlayerPaddle paddle;
 			paddle.PlayerID = player.Settings.ID;
 			paddle.Transform.Position = player.Settings.MainPaddleLocation;
+			paddle.Sprite.Texture = paddleTexture;
+			paddle.Sprite.Texture->PixelsPerUnit = 32;
 			paddle.Collider.Size = {mainPaddleWidth, 3, 1};
 
 			registerBoxCollider(paddle.Transform, paddle.Collider);
@@ -226,6 +229,11 @@ namespace DYE
 		RenderPipelineManager::RegisterCameraForNextRender(m_Player2WindowCamera.Camera.GetTransformedProperties());
 
 		renderSprite(m_Ball.Transform, m_Ball.Sprite);
+		renderSprite(m_BorderTransform, m_BorderSprite);
+		for (auto& paddle : m_PlayerPaddles)
+		{
+			renderSprite(paddle.Transform, paddle.Sprite);
+		}
 
 		// Scroll tiled offset
 		float const offsetChange = TIME.DeltaTime() * 0.5f * m_BackgroundScrollingSpeed;
@@ -236,9 +244,6 @@ namespace DYE
 		}
 
 		renderSprite(m_BackgroundTransform, m_BackgroundSprite);
-
-		// Draw level border
-		renderSprite(m_BorderTransform, m_BorderSprite);
 
 		// Render GameOver UI sprites
 		if (m_GameState == GameState::GameOver)

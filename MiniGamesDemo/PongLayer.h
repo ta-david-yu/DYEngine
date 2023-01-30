@@ -58,7 +58,7 @@ namespace DYE
 	private:
 		// Debug settings
 		WindowBase* m_MainWindow;
-		bool m_DrawColliderGizmos = true;
+		bool m_DrawColliderGizmos = false;
 		float m_BackgroundScrollingSpeed = 1.0f;
 		FPSCounter m_FPSCounter = FPSCounter(0.25);
 

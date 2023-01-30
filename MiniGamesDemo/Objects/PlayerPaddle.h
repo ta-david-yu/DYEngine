@@ -10,6 +10,7 @@ namespace DYE::MiniGame
 	{
 		int PlayerID;
 		Transform Transform;
+		Sprite Sprite;
 		BoxCollider Collider;
 
 		float Speed = 8.0f;
