@@ -14,6 +14,20 @@
 
 namespace DYE
 {
+	struct ApplicationLayerOperation
+	{
+		enum class OperationType
+		{
+			PushLayer,
+			PopLayer,
+			PushOverlay,
+			PopOverlay
+		};
+
+		OperationType Type;
+		std::shared_ptr<LayerBase> Layer;
+	};
+
     class Application : public EventHandler
     {
     public:
@@ -29,14 +43,19 @@ namespace DYE
 
         /// App Entrypoint
         void Run();
-
         void Handle(Event& event) override;
-
 		void Shutdown();
 
+		void PushLayer(std::shared_ptr<LayerBase> &layer);
+		void PopLayer(std::shared_ptr<LayerBase> &layer);
+		void PushOverlay(std::shared_ptr<LayerBase> &overlay);
+		void PopOverlay(std::shared_ptr<LayerBase> &overlay);
+
     protected:
-        void pushLayer(std::shared_ptr<LayerBase> layer);
-        void pushOverlay(std::shared_ptr<LayerBase> overlay);
+        void pushLayerImmediate(const std::shared_ptr<LayerBase> &layer);
+		void popLayerImmediate(std::shared_ptr<LayerBase> layer);
+        void pushOverlayImmediate(const std::shared_ptr<LayerBase> &overlay);
+		void popOverlayImmediate(std::shared_ptr<LayerBase> overlay);
 
         /// Called after ForEach.layer.OnUpdate(), before ForEach.layer.OnRender()
         virtual void onPreRenderLayers() { }
@@ -54,6 +73,7 @@ namespace DYE
 
     private:
         LayerStack m_LayerStack;
+		std::vector<ApplicationLayerOperation> m_LayerOperations;
 
         /// A Flag to show if the game is still running, when WindowCloseEvent is fired, it's set to false
         bool m_IsRunning = false;

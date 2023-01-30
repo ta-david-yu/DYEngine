@@ -1,5 +1,7 @@
 #include "PongLayer.h"
 
+#include "MiniGamesApp.h"
+
 #include "Core/Application.h"
 #include "Util/Logger.h"
 #include "Util/Macro.h"
@@ -42,6 +44,11 @@ namespace DYE
 	}
 
 	void PongLayer::OnInit()
+	{
+
+	}
+
+	void PongLayer::OnAttach()
 	{
 		RenderCommand::GetInstance().SetClearColor(glm::vec4{0.5f, 0.5f, 0.5f, 0.5f});
 
@@ -198,6 +205,11 @@ namespace DYE
 
 		// Hide the main window by default (for debugging, press F9/F10 to toggle it).
 		m_MainWindow->Minimize();
+	}
+
+	void PongLayer::OnDetach()
+	{
+		// TODO: remove window
 	}
 
 	void PongLayer::registerBoxCollider(MiniGame::Transform &transform, MiniGame::BoxCollider &collider)
@@ -875,7 +887,23 @@ namespace DYE
 					m_Application.Shutdown();
 				}
 
+				auto& miniGamesApp = static_cast<MiniGamesApp&>(m_Application);
 				ImGui::SameLine();
+				if (ImGui::Button("Main Menu"))
+				{
+					miniGamesApp.LoadMainMenuLayer();
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Pong"))
+				{
+					miniGamesApp.LoadPongLayer();
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Land Ball"))
+				{
+					miniGamesApp.LoadLandBallLayer();
+				}
+
 				static bool isMainWindowBordered = true;
 				if (ImGui::Button("Toggle Window Bordered"))
 				{

@@ -35,6 +35,8 @@ namespace DYE
 		PongLayer(PongLayer const& other) = delete;
 
 		void OnInit() override;
+		void OnAttach() override;
+		void OnDetach() override;
 		void OnEvent(Event& event) override;
 		void OnUpdate() override;
 		void OnFixedUpdate() override;
@@ -60,7 +62,7 @@ namespace DYE
 		Application& m_Application;
 
 		// Debug settings
-		WindowBase* m_MainWindow;
+		WindowBase* m_MainWindow = nullptr;
 		bool m_DrawImGui = false;
 		bool m_DrawColliderGizmos = false;
 		FPSCounter m_FPSCounter = FPSCounter(0.25);

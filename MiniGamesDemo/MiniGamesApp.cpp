@@ -1,38 +1,38 @@
+#include "MiniGamesDemo/MiniGamesApp.h"
+
 #include "AppEntryPoint.h"
-#include "Core/Application.h"
-#include "Scene/Entity.h"
-#include "Scene/Transform.h"
-#include "Util/TypeUtil.h"
-
-#include "Graphics/OpenGL.h"
-#include "Graphics/Shader.h"
-#include "Graphics/Buffer.h"
-#include "Graphics/VertexArray.h"
-#include "Graphics/Texture.h"
-#include "Graphics/RenderCommand.h"
-
-#include "PongLayer.h"
-
-#include <glm/glm.hpp>
-#include <glad/glad.h>
-#include <yaml-cpp/yaml.h>
+#include "MiniGamesDemo/PongLayer.h"
+#include "MiniGamesDemo/CollisionTestLayer.h"
 
 namespace DYE
 {
-    class MiniGamesApp final : public Application
-    {
-    public:
-		MiniGamesApp() = delete;
-		MiniGamesApp(const MiniGamesApp &) = delete;
+	MiniGamesApp::MiniGamesApp(const std::string &windowName, int fixedFramePerSecond)
+		: Application(windowName, fixedFramePerSecond)
+	{
+		m_CurrentMainLayer = std::make_shared<CollisionTestLayer>(*this);
+		pushLayerImmediate(m_CurrentMainLayer);
+	}
 
-        explicit MiniGamesApp(const std::string &windowName, int fixedFramePerSecond = 60)
-            : Application(windowName, fixedFramePerSecond)
-        {
-			pushLayer(std::make_shared<PongLayer>(*this));
-        }
+	void MiniGamesApp::LoadMainMenuLayer()
+	{
+		PopLayer(m_CurrentMainLayer);
+		m_CurrentMainLayer = std::make_shared<PongLayer>(*this);
+		PushLayer(m_CurrentMainLayer);
+	}
 
-        ~MiniGamesApp() final = default;
-    };
+	void MiniGamesApp::LoadPongLayer()
+	{
+		PopLayer(m_CurrentMainLayer);
+		m_CurrentMainLayer = std::make_shared<PongLayer>(*this);
+		PushLayer(m_CurrentMainLayer);
+	}
+
+	void MiniGamesApp::LoadLandBallLayer()
+	{
+		PopLayer(m_CurrentMainLayer);
+		m_CurrentMainLayer = std::make_shared<PongLayer>(*this);
+		PushLayer(m_CurrentMainLayer);
+	}
 }
 
 ///

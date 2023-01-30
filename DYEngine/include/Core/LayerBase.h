@@ -17,13 +17,13 @@ namespace DYE
         explicit LayerBase(std::string name = "Layer");
         virtual ~LayerBase() = default;
 
-        /// Called by LayerStack
+        /// Use this to initialize layer states after entering Application.Run loop.
         virtual void OnAttach() {}
 
-        /// Called by LayerStack
+        /// Use this to release resources owned by the layer.
         virtual void OnDetach() {}
 
-        /// Called before Application.Run loop
+        /// Called before Application.Run loop.
         virtual void OnInit() {}
 
         virtual void OnFixedUpdate() {}

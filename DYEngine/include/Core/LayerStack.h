@@ -24,7 +24,7 @@ namespace DYE
 
         /// call overlay->OnAttach, push layer on the top of the stack (overlay)
         /// \param overlay
-        void PushOverlay(std::shared_ptr<LayerBase> overlay);
+        void PushOverlay(const std::shared_ptr<LayerBase>& overlay);
 
         /// call overlay->OnDetach, pop layer
         /// \param overlay
