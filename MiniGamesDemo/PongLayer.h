@@ -30,7 +30,8 @@ namespace DYE
 			GameOver
 		};
 
-		PongLayer(Application& application);
+		explicit PongLayer(Application& application);
+		PongLayer() = delete;
 		PongLayer(PongLayer const& other) = delete;
 
 		void OnInit() override;
