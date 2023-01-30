@@ -391,6 +391,19 @@ namespace DYE
 
 	void PongLayer::readPlayerInput(float timeStep)
 	{
+		if (m_GameState == GameState::GameOver)
+		{
+			auto& miniGameApp = static_cast<MiniGamesApp&>(m_Application);
+			if (INPUT.IsGamepadConnected(0) && INPUT.GetGamepadButton(0, GamepadButton::South))
+			{
+				miniGameApp.LoadMainMenuLayer();
+			}
+			else if (INPUT.IsGamepadConnected(1) && INPUT.GetGamepadButton(1, GamepadButton::South))
+			{
+				miniGameApp.LoadMainMenuLayer();
+			}
+		}
+
 		// Player 1
 		{
 			auto &paddle = m_PlayerPaddles[0];
