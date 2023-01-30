@@ -12,6 +12,7 @@
 #include "Objects/PongBall.h"
 #include "Objects/PongHomebase.h"
 #include "Objects/WindowCamera.h"
+#include "Objects/SpriteUnsignedNumber.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/quaternion.hpp"
@@ -71,18 +72,18 @@ namespace DYE
 		// Game state
 		constexpr static int MaxHealth = 10;
 		constexpr static int WindowSizesCount = MaxHealth - 1;
-		constexpr static int HealthToEnableWindowInput = 7;
+		constexpr static int HealthToEnableWindowInput = 8;
 		constexpr static std::array<glm::vec<2, std::uint32_t>, WindowSizesCount> HealthWindowSizes =
 			{
-				glm::vec<2, std::uint32_t>{800, 900},
-				glm::vec<2, std::uint32_t>{800, 900},
-				glm::vec<2, std::uint32_t>{700, 800},
-				glm::vec<2, std::uint32_t>{700, 800},
-				glm::vec<2, std::uint32_t>{550, 600},
-				glm::vec<2, std::uint32_t>{550, 600},
-				glm::vec<2, std::uint32_t>{350, 400},
-				glm::vec<2, std::uint32_t>{350, 400},
-				glm::vec<2, std::uint32_t>{250, 300}
+				glm::vec<2, std::uint32_t>{800, 900},	// 9
+				glm::vec<2, std::uint32_t>{700, 800},	// 8
+				glm::vec<2, std::uint32_t>{700, 800},	// 7
+				glm::vec<2, std::uint32_t>{550, 600},	// 6
+				glm::vec<2, std::uint32_t>{550, 600},	// 5
+				glm::vec<2, std::uint32_t>{350, 400},	// 4
+				glm::vec<2, std::uint32_t>{350, 400},	// 3
+				glm::vec<2, std::uint32_t>{250, 300},	// 2
+				glm::vec<2, std::uint32_t>{250, 300}	// 1
 			};
 
 		GameState m_GameState = GameState::Playing;
@@ -112,6 +113,9 @@ namespace DYE
 		MiniGame::WindowCamera m_Player2WindowCamera;
 
 		// UI related
+		MiniGame::SpriteUnsignedNumber m_Player1Number;
+		MiniGame::SpriteUnsignedNumber m_Player2Number;
+
 		MiniGame::Transform m_GameOverUITransform;
 		MiniGame::Sprite m_GameOverUISprite;
 

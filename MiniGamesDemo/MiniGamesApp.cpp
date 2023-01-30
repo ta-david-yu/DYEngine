@@ -3,8 +3,8 @@
 #include "AppEntryPoint.h"
 
 #include "Layers/MainMenuLayer.h"
+#include "Layers/LandTheBallLayer.h"
 #include "Layers/PongLayer.h"
-#include "Layers/CollisionTestLayer.h"
 
 namespace DYE
 {
@@ -32,7 +32,7 @@ namespace DYE
 	void MiniGamesApp::LoadLandBallLayer()
 	{
 		PopLayer(m_CurrentMainLayer);
-		m_CurrentMainLayer = std::make_shared<CollisionTestLayer>(*this);
+		m_CurrentMainLayer = std::make_shared<LandTheBallLayer>(*this);
 		PushLayer(m_CurrentMainLayer);
 	}
 }
