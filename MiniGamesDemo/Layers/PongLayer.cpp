@@ -178,6 +178,16 @@ namespace DYE
 		m_Player2WindowCamera.ResetCachedPosition();
 
 		// Create UI objects.
+		m_Player1Number.LoadTexture();
+		m_Player1Number.SetValue(0);
+		m_Player1Number.Transform.Position = {1, 5, -1};
+		m_Player1Number.DigitDistanceOffset = 0.5f;
+
+		m_Player2Number.LoadTexture();
+		m_Player2Number.SetValue(0);
+		m_Player2Number.Transform.Position = {-1, 5, -1};
+		m_Player2Number.DigitDistanceOffset = 0.5f;
+
 		m_GameOverUISprite.Texture = Texture2D::Create("assets\\Sprite_GameOver.png");
 		m_GameOverUISprite.Texture->PixelsPerUnit = 32;
 		m_GameOverUITransform.Scale = {1, 1, 1};
@@ -267,7 +277,10 @@ namespace DYE
 		}
 		renderSprite(m_CenterLineTransform, m_CenterLineSprite);
 
-		// Render GameOver UI sprites
+		// Render UI sprites
+		m_Player1Number.Render();
+		m_Player2Number.Render();
+
 		if (m_GameState == GameState::GameOver)
 		{
 			renderSprite(m_GameOverUITransform, m_GameOverUISprite);
@@ -378,6 +391,19 @@ namespace DYE
 
 	void PongLayer::readPlayerInput(float timeStep)
 	{
+		if (m_GameState == GameState::GameOver)
+		{
+			auto& miniGameApp = static_cast<MiniGamesApp&>(m_Application);
+			if (INPUT.IsGamepadConnected(0) && INPUT.GetGamepadButton(0, GamepadButton::South))
+			{
+				miniGameApp.LoadMainMenuLayer();
+			}
+			else if (INPUT.IsGamepadConnected(1) && INPUT.GetGamepadButton(1, GamepadButton::South))
+			{
+				miniGameApp.LoadMainMenuLayer();
+			}
+		}
+
 		// Player 1
 		{
 			auto &paddle = m_PlayerPaddles[0];
@@ -769,6 +795,15 @@ namespace DYE
 
 				// Reduce health (earn score).
 				playerItr->State.Health--;
+
+				if (damagedPlayerID == 0)
+				{
+					m_Player1Number.SetValue(MaxHealth - playerItr->State.Health);
+				}
+				else
+				{
+					m_Player2Number.SetValue(MaxHealth - playerItr->State.Health);
+				}
 
 				if (playerItr->State.Health == 0)
 				{

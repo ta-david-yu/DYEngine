@@ -6,7 +6,7 @@ add_executable(MiniGames
         Layers/CollisionTestLayer.cpp
         Layers/PongLayer.cpp
         Objects/PlayerPaddle.cpp
-        Components/Transform.cpp Components/Sprite.cpp Components/Collider.cpp Objects/Wall.cpp Objects/PongBall.cpp Components/Velocity.cpp Objects/Camera.cpp Components/Hittable.cpp Objects/PongPlayer.cpp Objects/PongHomebase.cpp Components/AttachableToPaddle.cpp Objects/WindowCamera.cpp Layers/MainMenuLayer.cpp Objects/SpriteButton.cpp)
+        Components/Transform.cpp Components/Sprite.cpp Components/Collider.cpp Objects/Wall.cpp Objects/PongBall.cpp Components/Velocity.cpp Objects/Camera.cpp Components/Hittable.cpp Objects/PongPlayer.cpp Objects/PongHomebase.cpp Components/AttachableToPaddle.cpp Objects/WindowCamera.cpp Layers/MainMenuLayer.cpp Objects/SpriteButton.cpp Objects/SpriteUnsignedNumber.cpp Layers/LandTheBallLayer.cpp)
 
 target_include_directories(MiniGames PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(MiniGames DYEngine)
@@ -30,6 +30,17 @@ set(ASSETS
         assets/Sprite_ButtonExit_Selected.png
         assets/Sprite_ButtonExit_Deselected.png
         assets/Sprite_MenuButtonPrompt.png
+
+        assets/Sprite_Digit_0.png
+        assets/Sprite_Digit_1.png
+        assets/Sprite_Digit_2.png
+        assets/Sprite_Digit_3.png
+        assets/Sprite_Digit_4.png
+        assets/Sprite_Digit_5.png
+        assets/Sprite_Digit_6.png
+        assets/Sprite_Digit_7.png
+        assets/Sprite_Digit_8.png
+        assets/Sprite_Digit_9.png
 
         assets/Sprite_Pong.png
         assets/Sprite_PongBorder.png
