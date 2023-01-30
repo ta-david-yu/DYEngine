@@ -209,7 +209,8 @@ namespace DYE
 
 	void PongLayer::OnDetach()
 	{
-		// TODO: remove window
+		WindowManager::CloseWindow(m_Player1WindowCamera.GetWindowPtr()->GetWindowID());
+		WindowManager::CloseWindow(m_Player2WindowCamera.GetWindowPtr()->GetWindowID());
 	}
 
 	void PongLayer::registerBoxCollider(MiniGame::Transform &transform, MiniGame::BoxCollider &collider)
@@ -775,8 +776,13 @@ namespace DYE
 
 					// Shrink the winning player's window size.
 					MiniGame::WindowCamera& windowCamera = hitPlayerID == 0? m_Player1WindowCamera : m_Player2WindowCamera;
-					auto size = m_HealthWindowSizes[(MaxHealth - 1) - playerItr->State.Health];
-					windowCamera.SmoothResize(size.x, size.y);
+
+					int const sizeIndex = WindowSizesCount - playerItr->State.Health;
+					if (sizeIndex >= 0 && sizeIndex < HealthWindowSizes.size())
+					{
+						auto size = HealthWindowSizes[sizeIndex];
+						windowCamera.SmoothResize(size.x, size.y);
+					}
 
 					// Enable window control/show border if the window shrinks.
 					if (playerItr->State.Health <= HealthToEnableWindowInput)

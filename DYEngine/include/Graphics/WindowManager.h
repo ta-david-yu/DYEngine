@@ -22,6 +22,7 @@ namespace DYE
 		/// \param windowProperty
 		/// \return a raw pointer to the new window
 		static WindowBase* CreateWindow(WindowProperty const& windowProperty);
+		static bool CloseWindow(WindowID id);
 		static void SetMainWindow(WindowID id);
 		static WindowBase* GetWindowFromID(WindowID id);
 		static bool HasWindowWithID(WindowID id);
