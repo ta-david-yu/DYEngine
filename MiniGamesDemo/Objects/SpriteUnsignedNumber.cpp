@@ -3,6 +3,9 @@
 #include "Graphics/RenderPipelineManager.h"
 #include "Graphics/RenderPipeline2D.h"
 
+#include "Math/Math.h"
+#include "Math/EasingFunctions.h"
+
 namespace DYE::MiniGame
 {
 	void SpriteUnsignedNumber::LoadTexture()
@@ -32,6 +35,29 @@ namespace DYE::MiniGame
 			numberOfDigits++;
 			m_Digits.push_back(digit);
 		}
+	}
+
+	void SpriteUnsignedNumber::PlayPopAnimation()
+	{
+		m_PopAnimationTimer = PopAnimationDuration;
+	}
+
+	void SpriteUnsignedNumber::UpdateAnimation(float timeStep)
+	{
+		if (m_PopAnimationTimer <= 0)
+		{
+			return;
+		}
+
+		m_PopAnimationTimer -= timeStep;
+		if (m_PopAnimationTimer < 0.0f)
+		{
+			m_PopAnimationTimer = 0.0f;
+		}
+
+		float const t = EaseOutCubic((PopAnimationDuration - m_PopAnimationTimer) / PopAnimationDuration);
+		float const scale = Math::Lerp(1.5f, 1.0f, t);
+		Transform.Scale = {scale, scale, scale};
 	}
 
 	void SpriteUnsignedNumber::Render()

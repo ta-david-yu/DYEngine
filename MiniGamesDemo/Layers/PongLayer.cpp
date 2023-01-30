@@ -359,6 +359,9 @@ namespace DYE
 		m_Player2WindowCamera.UpdateCameraProperties();
 
 		// Animation updates
+		m_Player1Number.UpdateAnimation(TIME.DeltaTime());
+		m_Player2Number.UpdateAnimation(TIME.DeltaTime());
+
 		m_Ball.UpdateAnimation(TIME.DeltaTime());
 
 		if (m_GameState == GameState::GameOver)
@@ -799,10 +802,12 @@ namespace DYE
 				if (damagedPlayerID == 0)
 				{
 					m_Player1Number.SetValue(MaxHealth - playerItr->State.Health);
+					m_Player1Number.PlayPopAnimation();
 				}
 				else
 				{
 					m_Player2Number.SetValue(MaxHealth - playerItr->State.Health);
+					m_Player2Number.PlayPopAnimation();
 				}
 
 				if (playerItr->State.Health == 0)
