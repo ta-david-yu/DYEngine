@@ -1,0 +1,266 @@
+#include "Layers/MainMenuLayer.h"
+
+#include "MiniGamesApp.h"
+
+#include "Core/Application.h"
+#include "Util/Logger.h"
+#include "Util/Macro.h"
+#include "Util/Time.h"
+#include "Input/InputManager.h"
+
+#include "Graphics/RenderCommand.h"
+#include "Graphics/RenderPipelineManager.h"
+#include "Graphics/RenderPipeline2D.h"
+
+#include "imgui.h"
+
+namespace DYE
+{
+	MainMenuLayer::MainMenuLayer(Application &application) : m_Application(application)
+	{
+
+	}
+
+	void MainMenuLayer::OnAttach()
+	{
+		// Create background object.
+		m_BackgroundSprite.Texture = Texture2D::Create("assets\\Sprite_Grid.png");
+		m_BackgroundSprite.Texture->PixelsPerUnit = 32;
+		m_BackgroundSprite.IsTiled = true;
+		m_BackgroundTransform.Scale = {64.0f, 64.0f, 1};
+		m_BackgroundTransform.Position = {0, 0, -2};
+
+		// Create UI objects.
+		MiniGame::SpriteButton landTheBallButton;
+		landTheBallButton.Transform.Position = {0, -1.5f, 0};
+		landTheBallButton.SelectedTexture = Texture2D::Create("assets\\Sprite_ButtonLandTB_Selected.png");
+		landTheBallButton.SelectedTexture->PixelsPerUnit = 32;
+		landTheBallButton.DeselectedTexture = Texture2D::Create("assets\\Sprite_ButtonLandTB_Deselected.png");
+		landTheBallButton.DeselectedTexture->PixelsPerUnit = 32;
+		landTheBallButton.SetDeselectAppearance();
+		m_MenuButtons.push_back(std::move(landTheBallButton));
+
+		MiniGame::SpriteButton pongButton;
+		pongButton.Transform.Position = {0, -3, 0};
+		pongButton.SelectedTexture = Texture2D::Create("assets\\Sprite_ButtonPong_Selected.png");
+		pongButton.SelectedTexture->PixelsPerUnit = 32;
+		pongButton.DeselectedTexture = Texture2D::Create("assets\\Sprite_ButtonPong_Deselected.png");
+		pongButton.DeselectedTexture->PixelsPerUnit = 32;
+		pongButton.SetDeselectAppearance();
+		m_MenuButtons.push_back(std::move(pongButton));
+
+		MiniGame::SpriteButton exitButton;
+		exitButton.Transform.Position = {0, -4.5f, 0};
+		exitButton.SelectedTexture = Texture2D::Create("assets\\Sprite_ButtonExit_Selected.png");
+		exitButton.SelectedTexture->PixelsPerUnit = 32;
+		exitButton.DeselectedTexture = Texture2D::Create("assets\\Sprite_ButtonExit_Deselected.png");
+		exitButton.DeselectedTexture->PixelsPerUnit = 32;
+		exitButton.SetDeselectAppearance();
+		m_MenuButtons.push_back(std::move(exitButton));
+
+		// Set window location and size.
+		m_MainWindow = WindowManager::GetMainWindow();
+		m_MainWindow->SetSize(1600, 900);
+		m_MainWindow->CenterWindow();
+		m_MainWindow->Restore();
+
+		// Set camera properties
+		m_MainCamera.Transform.Position = glm::vec3 {0, 0, 10};
+		m_MainCamera.Properties.IsOrthographic = true;
+		m_MainCamera.Properties.OrthographicSize = 15;
+		m_MainCamera.Properties.TargetType = RenderTargetType::Window;
+		m_MainCamera.Properties.TargetWindowID = m_MainWindow->GetWindowID();
+		m_MainCamera.Properties.UseManualAspectRatio = false;
+		m_MainCamera.Properties.ManualAspectRatio = (float) 1600 / 900;
+		m_MainCamera.Properties.ViewportValueType = ViewportValueType::RelativeDimension;
+		m_MainCamera.Properties.Viewport = { 0, 0, 1, 1 };
+
+		// Set initial selected button index: 0
+		m_SelectedButtonIndex = 0;
+		m_MenuButtons[m_SelectedButtonIndex].SetSelectAppearance();
+	}
+
+	void MainMenuLayer::registerBoxCollider(MiniGame::Transform &transform, MiniGame::BoxCollider &collider)
+	{
+		if (collider.ID.has_value() && m_ColliderManager.IsColliderRegistered(collider.ID.value()))
+		{
+			// The collider has already been registered to the manager.
+			return;
+		}
+
+		collider.ID = m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter(transform.Position, collider.Size));
+	}
+
+	void MainMenuLayer::unregisterBoxCollider(MiniGame::Transform &transform, MiniGame::BoxCollider &collider)
+	{
+		if (!collider.ID.has_value())
+		{
+			// The collider doesn't have an ID.
+			return;
+		}
+
+		if (!m_ColliderManager.IsColliderRegistered(collider.ID.value()))
+		{
+			// The collider is not registered to this manager.
+			return;
+		}
+
+		m_ColliderManager.UnregisterAABB(collider.ID.value());
+	}
+
+
+	void MainMenuLayer::OnDetach()
+	{
+	}
+
+	void MainMenuLayer::OnUpdate()
+	{
+		debugInput();
+
+		// UI menu input.
+		int const prevSelectedButtonIndex = m_SelectedButtonIndex;
+		if (INPUT.GetKeyDown(KeyCode::Up))
+		{
+			m_SelectedButtonIndex--;
+		}
+		else if (INPUT.GetKeyDown(KeyCode::Down))
+		{
+			m_SelectedButtonIndex++;
+		}
+
+		if (m_SelectedButtonIndex < 0)
+		{
+			m_SelectedButtonIndex = m_MenuButtons.size() - 1;
+		}
+		else if (m_SelectedButtonIndex == m_MenuButtons.size())
+		{
+			m_SelectedButtonIndex = 0;
+		}
+
+		if (m_SelectedButtonIndex != prevSelectedButtonIndex)
+		{
+			m_MenuButtons[prevSelectedButtonIndex].SetDeselectAppearance();
+			m_MenuButtons[m_SelectedButtonIndex].SetSelectAppearance();
+
+			onSelect(m_SelectedButtonIndex);
+		}
+
+		if (INPUT.GetKeyDown(KeyCode::Return))
+		{
+			onConfirm(m_SelectedButtonIndex);
+		}
+	}
+
+	void MainMenuLayer::onSelect(int index)
+	{
+		// TODO: show explain text
+	}
+
+	void MainMenuLayer::onConfirm(int index)
+	{
+		auto &miniGamesApp = static_cast<MiniGamesApp &>(m_Application);
+		if (index == 0)
+		{
+			miniGamesApp.LoadLandBallLayer();
+		}
+		else if (index == 1)
+		{
+			miniGamesApp.LoadPongLayer();
+		}
+		else if (index == 2)
+		{
+			DYE_MSG_BOX(SDL_MESSAGEBOX_INFORMATION, "WHAT DO YOU THINK YOU ARE DOING?", "DON'T CLOSE THE GAME DURING THE SHOWCASE :)");
+			// miniGamesApp.Shutdown();
+		}
+	}
+
+	void MainMenuLayer::debugInput()
+	{
+		if (INPUT.GetKeyDown(KeyCode::F9))
+		{
+			m_DrawImGui = !m_DrawImGui;
+		}
+
+		if (INPUT.GetKeyDown(KeyCode::Escape))
+		{
+			m_Application.Shutdown();
+		}
+	}
+
+	void MainMenuLayer::OnFixedUpdate()
+	{
+	}
+
+	void MainMenuLayer::OnRender()
+	{
+		RenderPipelineManager::RegisterCameraForNextRender(m_MainCamera.GetTransformedProperties());
+
+		// Scroll background texture.
+		float const backgroundTilingOffsetChange = TIME.DeltaTime() * m_BackgroundScrollingSpeed;
+		m_BackgroundSprite.TilingOffset += glm::vec2 {backgroundTilingOffsetChange, backgroundTilingOffsetChange};
+		if (m_BackgroundSprite.TilingOffset.x > 1.0f)
+		{
+			m_BackgroundSprite.TilingOffset -= glm::vec2 {1.0f, 1.0f};
+		}
+		renderSprite(m_BackgroundTransform, m_BackgroundSprite);
+
+		// Buttons.
+		for (auto& button : m_MenuButtons)
+		{
+			renderSprite(button.Transform, button.Sprite);
+		}
+	}
+
+	void MainMenuLayer::renderSprite(MiniGame::Transform &transform, MiniGame::Sprite &sprite)
+	{
+		glm::mat4 modelMatrix = glm::mat4 {1.0f};
+		modelMatrix = glm::translate(modelMatrix, transform.Position);
+		modelMatrix = modelMatrix * glm::toMat4(transform.Rotation);
+		modelMatrix = glm::scale(modelMatrix, transform.Scale);
+
+		if (sprite.IsTiled)
+		{
+			RenderPipelineManager::GetTypedActiveRenderPipelinePtr<RenderPipeline2D>()
+				->SubmitTiledSprite(sprite.Texture, {transform.Scale.x * sprite.TilingScale.x, transform.Scale.y * sprite.TilingScale.y, sprite.TilingOffset}, sprite.Color, modelMatrix);
+		}
+		else
+		{
+			RenderPipelineManager::GetTypedActiveRenderPipelinePtr<RenderPipeline2D>()
+				->SubmitSprite(sprite.Texture, sprite.Color, modelMatrix);
+		}
+	}
+
+	void MainMenuLayer::OnImGui()
+	{
+		if (!m_DrawImGui)
+		{
+			return;
+		}
+
+		if (ImGui::Begin("Menu"))
+		{
+			auto &miniGamesApp = static_cast<MiniGamesApp &>(m_Application);
+			ImGui::SameLine();
+			if (ImGui::Button("Main Menu"))
+			{
+				miniGamesApp.LoadMainMenuLayer();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Pong"))
+			{
+				miniGamesApp.LoadPongLayer();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Land Ball"))
+			{
+				miniGamesApp.LoadLandBallLayer();
+			}
+		}
+		ImGui::End();
+	}
+
+	void MainMenuLayer::imguiSprite(const std::string &name, MiniGame::Transform &transform, MiniGame::Sprite &sprite)
+	{
+
+	}
+}

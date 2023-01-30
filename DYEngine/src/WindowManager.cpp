@@ -51,7 +51,7 @@ namespace DYE
 			return windowPair.second.get();
 		}
 
-		DYE_ASSERT_RELEASE(false && "There is no window with the given id!");
+		DYE_LOG_ERROR("GetWindowFromID: There is no window with the given id - %d.", id);
 		return nullptr;
 
 	}

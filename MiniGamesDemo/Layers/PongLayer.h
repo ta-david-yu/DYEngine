@@ -13,8 +13,8 @@
 #include "Objects/PongHomebase.h"
 #include "Objects/WindowCamera.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/quaternion.hpp>
+#include "glm/glm.hpp"
+#include "glm/gtc/quaternion.hpp"
 
 namespace DYE
 {
@@ -34,10 +34,8 @@ namespace DYE
 		PongLayer() = delete;
 		PongLayer(PongLayer const& other) = delete;
 
-		void OnInit() override;
 		void OnAttach() override;
 		void OnDetach() override;
-		void OnEvent(Event& event) override;
 		void OnUpdate() override;
 		void OnFixedUpdate() override;
 		void OnRender() override;
@@ -48,7 +46,6 @@ namespace DYE
 		void unregisterBoxCollider(MiniGame::Transform& transform, MiniGame::BoxCollider& collider);
 		void renderSprite(MiniGame::Transform& transform, MiniGame::Sprite& sprite);
 
-		/// \return the velocity per second for the paddle.
 		void debugInput();
 		void readPlayerInput(float timeStep);
 		void updatePaddle(MiniGame::PlayerPaddle& paddle, float timeStep);

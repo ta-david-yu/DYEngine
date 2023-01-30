@@ -1,4 +1,4 @@
-#include "PongLayer.h"
+#include "Layers/PongLayer.h"
 
 #include "MiniGamesApp.h"
 
@@ -33,19 +33,14 @@
 
 #include "Event/ApplicationEvent.h"
 
-#include <imgui.h>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/quaternion.hpp>
+#include "imgui.h"
+#include "glm/gtc/type_ptr.hpp"
+#include "glm/gtx/quaternion.hpp"
 
 namespace DYE
 {
 	PongLayer::PongLayer(Application& application) : m_Application(application)
 	{
-	}
-
-	void PongLayer::OnInit()
-	{
-
 	}
 
 	void PongLayer::OnAttach()
@@ -299,11 +294,6 @@ namespace DYE
 		}
 	}
 
-	void PongLayer::OnEvent(Event& event)
-	{
-
-	}
-
 	void PongLayer::OnUpdate()
 	{
 		// Debug updates.
@@ -381,8 +371,8 @@ namespace DYE
 
 		if (INPUT.GetKeyDown(KeyCode::Escape))
 		{
-			m_Application.Shutdown();
-			return;
+			auto& miniGameApp = static_cast<MiniGamesApp&>(m_Application);
+			miniGameApp.LoadMainMenuLayer();
 		}
 	}
 

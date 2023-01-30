@@ -33,9 +33,9 @@
 
 #include "Event/ApplicationEvent.h"
 
-#include <imgui.h>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/quaternion.hpp>
+#include "imgui.h"
+#include "glm/gtc/type_ptr.hpp"
+#include "glm/gtx/quaternion.hpp"
 
 namespace DYE
 {
@@ -43,7 +43,7 @@ namespace DYE
     {
     }
 
-	void CollisionTestLayer::OnInit()
+	void CollisionTestLayer::OnAttach()
 	{
 		RenderCommand::GetInstance().SetClearColor(glm::vec4{0.5f, 0.5f, 0.5f, 0.5f});
 
@@ -121,11 +121,6 @@ namespace DYE
 		RenderPipelineManager::GetTypedActiveRenderPipelinePtr<RenderPipeline2D>()
 		    ->SubmitTiledSprite(object.Texture, {object.Scale.x, object.Scale.y, offset.x, offset.y}, object.Color, modelMatrix);
 	}
-
-    void CollisionTestLayer::OnEvent(Event& event)
-    {
-
-    }
 
     void CollisionTestLayer::OnUpdate()
     {

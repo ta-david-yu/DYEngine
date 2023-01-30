@@ -5,8 +5,8 @@
 
 #include "ColliderManager.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/quaternion.hpp>
+#include "glm/glm.hpp"
+#include "glm/gtc/quaternion.hpp"
 
 namespace DYE
 {
@@ -36,8 +36,7 @@ namespace DYE
         CollisionTestLayer() = delete;
 		CollisionTestLayer(CollisionTestLayer const& other) = delete;
 
-		void OnInit() override;
-        void OnEvent(Event& event) override;
+		void OnAttach() override;
         void OnUpdate() override;
         void OnFixedUpdate() override;
 		void OnRender() override;
