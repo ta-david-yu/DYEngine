@@ -31,8 +31,12 @@ namespace DYE
 		m_BackgroundTransform.Position = {0, 0, -2};
 
 		// Create UI objects.
+		m_LogoSprite.Texture = Texture2D::Create("assets\\Sprite_DYELogo.png");
+		m_LogoSprite.Texture->PixelsPerUnit = 12;
+		m_LogoTransform.Position = {-6, 3.0f, 0};
+
 		MiniGame::SpriteButton landTheBallButton;
-		landTheBallButton.Transform.Position = {0, -1.5f, 0};
+		landTheBallButton.Transform.Position = {-5, -1.5f, 0};
 		landTheBallButton.SelectedTexture = Texture2D::Create("assets\\Sprite_ButtonLandTB_Selected.png");
 		landTheBallButton.SelectedTexture->PixelsPerUnit = 32;
 		landTheBallButton.DeselectedTexture = Texture2D::Create("assets\\Sprite_ButtonLandTB_Deselected.png");
@@ -41,7 +45,7 @@ namespace DYE
 		m_MenuButtons.push_back(std::move(landTheBallButton));
 
 		MiniGame::SpriteButton pongButton;
-		pongButton.Transform.Position = {0, -3, 0};
+		pongButton.Transform.Position = {-5, -3, 0};
 		pongButton.SelectedTexture = Texture2D::Create("assets\\Sprite_ButtonPong_Selected.png");
 		pongButton.SelectedTexture->PixelsPerUnit = 32;
 		pongButton.DeselectedTexture = Texture2D::Create("assets\\Sprite_ButtonPong_Deselected.png");
@@ -50,7 +54,7 @@ namespace DYE
 		m_MenuButtons.push_back(std::move(pongButton));
 
 		MiniGame::SpriteButton exitButton;
-		exitButton.Transform.Position = {0, -4.5f, 0};
+		exitButton.Transform.Position = {-5, -4.5f, 0};
 		exitButton.SelectedTexture = Texture2D::Create("assets\\Sprite_ButtonExit_Selected.png");
 		exitButton.SelectedTexture->PixelsPerUnit = 32;
 		exitButton.DeselectedTexture = Texture2D::Create("assets\\Sprite_ButtonExit_Deselected.png");
@@ -203,6 +207,9 @@ namespace DYE
 			m_BackgroundSprite.TilingOffset -= glm::vec2 {1.0f, 1.0f};
 		}
 		renderSprite(m_BackgroundTransform, m_BackgroundSprite);
+
+		// Title logo.
+		renderSprite(m_LogoTransform, m_LogoSprite);
 
 		// Buttons.
 		for (auto& button : m_MenuButtons)

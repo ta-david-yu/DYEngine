@@ -55,6 +55,9 @@ namespace DYE
 		ColliderManager m_ColliderManager;
 		MiniGame::Camera m_MainCamera;
 
+		MiniGame::Transform m_LogoTransform;
+		MiniGame::Sprite m_LogoSprite;
+
 		MiniGame::Transform m_BackgroundTransform;
 		MiniGame::Sprite m_BackgroundSprite;
 

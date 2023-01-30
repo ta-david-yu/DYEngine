@@ -23,6 +23,7 @@ set(ASSETS
         assets/Sprite_DottedLine.png
         assets/Sprite_PongPaddle.png
         assets/Sprite_Grid.png
+        assets/Sprite_DYELogo.png
         assets/Sprite_ButtonLandTB_Selected.png
         assets/Sprite_ButtonLandTB_Deselected.png
         assets/Sprite_ButtonPong_Selected.png
