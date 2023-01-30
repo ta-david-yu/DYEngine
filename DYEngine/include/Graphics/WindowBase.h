@@ -85,6 +85,8 @@ namespace DYE
 		virtual void Minimize() = 0;
 		/// Restore the window to the size/position before minimizing or maximizing.
 		virtual void Restore() = 0;
+		/// Raise the window above other windows and set input focus to it.
+		virtual void Raise() = 0;
 		virtual void SetSize(std::uint32_t width, std::uint32_t height) = 0;
 
 		/// Set the size of the window and set the position of it as if the window's position is the same if its anchor is the center of the window.

@@ -20,6 +20,7 @@ endif ()
 set(ASSETS
         assets/Sprite_Pong.png
         assets/Sprite_PongBorder.png
+        assets/Sprite_DottedLine.png
         assets/Sprite_PongPaddle.png
         assets/Sprite_Grid.png
         assets/Sprite_GameOver.png
