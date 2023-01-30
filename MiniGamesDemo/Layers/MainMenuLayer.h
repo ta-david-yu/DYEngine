@@ -55,11 +55,17 @@ namespace DYE
 		ColliderManager m_ColliderManager;
 		MiniGame::Camera m_MainCamera;
 
+		MiniGame::Transform m_BackgroundTransform;
+		MiniGame::Sprite m_BackgroundSprite;
+
 		MiniGame::Transform m_LogoTransform;
 		MiniGame::Sprite m_LogoSprite;
 
-		MiniGame::Transform m_BackgroundTransform;
-		MiniGame::Sprite m_BackgroundSprite;
+		MiniGame::Transform m_SubtitleTransform;
+		MiniGame::Sprite m_SubtitleSprite;
+		std::shared_ptr<Texture2D> m_LandTheBallSubtitleTexture;
+		std::shared_ptr<Texture2D> m_PongSubtitleTexture;
+		std::shared_ptr<Texture2D> m_ExitSubtitleTexture;
 
 		// UIs
 		std::vector<MiniGame::SpriteButton> m_MenuButtons;

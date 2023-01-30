@@ -69,15 +69,20 @@ namespace DYE
 		float m_CenterDottedLineScrollingSpeed = 0.4f;
 
 		// Game state
-		constexpr static int MaxHealth = 5;
+		constexpr static int MaxHealth = 10;
 		constexpr static int WindowSizesCount = MaxHealth - 1;
-		constexpr static int HealthToEnableWindowInput = 3;
+		constexpr static int HealthToEnableWindowInput = 7;
 		const std::array<glm::vec<2, std::uint32_t>, WindowSizesCount> HealthWindowSizes =
 			{
 				glm::vec<2, std::uint32_t>{800, 900},
-				glm::vec<2, std::uint32_t>{600, 700},
-				glm::vec<2, std::uint32_t>{400, 450},
-				glm::vec<2, std::uint32_t>{400, 450}
+				glm::vec<2, std::uint32_t>{800, 900},
+				glm::vec<2, std::uint32_t>{700, 800},
+				glm::vec<2, std::uint32_t>{700, 800},
+				glm::vec<2, std::uint32_t>{550, 600},
+				glm::vec<2, std::uint32_t>{550, 600},
+				glm::vec<2, std::uint32_t>{350, 400},
+				glm::vec<2, std::uint32_t>{350, 400},
+				glm::vec<2, std::uint32_t>{250, 300}
 			};
 
 		GameState m_GameState = GameState::Playing;

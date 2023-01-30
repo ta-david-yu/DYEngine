@@ -393,7 +393,7 @@ namespace DYE
 					paddle.MovementInputBuffer = axis;
 				}
 
-				if (INPUT.GetGamepadButtonDown(0, GamepadButton::LeftStick))
+				if (INPUT.GetGamepadButtonDown(0, GamepadButton::South))
 				{
 					if (m_Ball.Attachable.IsAttached && m_Ball.Attachable.AttachedPaddle == &paddle)
 					{
@@ -487,7 +487,7 @@ namespace DYE
 					paddle.MovementInputBuffer = axis;
 				}
 
-				if (INPUT.GetGamepadButtonDown(1, GamepadButton::LeftStick))
+				if (INPUT.GetGamepadButtonDown(1, GamepadButton::South))
 				{
 					if (m_Ball.Attachable.IsAttached && m_Ball.Attachable.AttachedPaddle == &paddle)
 					{

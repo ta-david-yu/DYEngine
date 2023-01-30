@@ -35,6 +35,18 @@ namespace DYE
 		m_LogoSprite.Texture->PixelsPerUnit = 12;
 		m_LogoTransform.Position = {-6, 3.0f, 0};
 
+		m_LandTheBallSubtitleTexture = Texture2D::Create("assets\\Sprite_RulePong.png");
+		m_LandTheBallSubtitleTexture->PixelsPerUnit = 20;
+
+		m_PongSubtitleTexture = Texture2D::Create("assets\\Sprite_RulePong.png");
+		m_PongSubtitleTexture->PixelsPerUnit = 20;
+
+		m_ExitSubtitleTexture = Texture2D::Create("assets\\Sprite_SubtitleExit.png");
+		m_ExitSubtitleTexture->PixelsPerUnit = 20;
+
+		m_SubtitleSprite.Texture = m_LandTheBallSubtitleTexture;
+		m_SubtitleTransform.Position = {6, -3, 0};
+
 		MiniGame::SpriteButton landTheBallButton;
 		landTheBallButton.Transform.Position = {-5, -1.5f, 0};
 		landTheBallButton.SelectedTexture = Texture2D::Create("assets\\Sprite_ButtonLandTB_Selected.png");
@@ -157,7 +169,18 @@ namespace DYE
 
 	void MainMenuLayer::onSelect(int index)
 	{
-		// TODO: show explain text
+		if (index == 0)
+		{
+			m_SubtitleSprite.Texture = m_LandTheBallSubtitleTexture;
+		}
+		else if (index == 1)
+		{
+			m_SubtitleSprite.Texture = m_PongSubtitleTexture;
+		}
+		else if (index == 2)
+		{
+			m_SubtitleSprite.Texture = m_ExitSubtitleTexture;
+		}
 	}
 
 	void MainMenuLayer::onConfirm(int index)
@@ -173,7 +196,7 @@ namespace DYE
 		}
 		else if (index == 2)
 		{
-			DYE_MSG_BOX(SDL_MESSAGEBOX_INFORMATION, "WHAT DO YOU THINK YOU ARE DOING?", "DON'T CLOSE THE GAME DURING THE SHOWCASE :)");
+			DYE_MSG_BOX(SDL_MESSAGEBOX_INFORMATION, "I WANT TO SAY GOODBYE BUT...", "DON'T CLOSE THE GAME DURING THE SHOWCASE :)");
 			// miniGamesApp.Shutdown();
 		}
 	}
@@ -216,6 +239,9 @@ namespace DYE
 		{
 			renderSprite(button.Transform, button.Sprite);
 		}
+
+		// Subtitles.
+		renderSprite(m_SubtitleTransform, m_SubtitleSprite);
 	}
 
 	void MainMenuLayer::renderSprite(MiniGame::Transform &transform, MiniGame::Sprite &sprite)
