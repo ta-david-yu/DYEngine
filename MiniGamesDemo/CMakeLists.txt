@@ -19,6 +19,9 @@ endif ()
 # Copy assets to the output directory
 set(ASSETS
         assets/Sprite_Pong.png
+        assets/Sprite_PongBorder.png
+        assets/Sprite_DottedLine.png
+        assets/Sprite_PongPaddle.png
         assets/Sprite_Grid.png
         assets/Sprite_GameOver.png
         assets/Sprite_P1Wins.png

@@ -29,6 +29,7 @@ namespace DYE
 		bool SetBorderedIfWindowed(bool isBordered) override;
 		void Minimize() override;
 		void Restore() override;
+		void Raise() override;
 		void SetSize(std::uint32_t width, std::uint32_t height) override;
 		void SetPosition(std::int32_t x, std::int32_t y) override;
 		void CenterWindow() override;

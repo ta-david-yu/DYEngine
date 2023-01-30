@@ -58,9 +58,13 @@ namespace DYE
 	private:
 		// Debug settings
 		WindowBase* m_MainWindow;
-		bool m_DrawColliderGizmos = true;
-		float m_BackgroundScrollingSpeed = 1.0f;
+		bool m_DrawImGui = false;
+		bool m_DrawColliderGizmos = false;
 		FPSCounter m_FPSCounter = FPSCounter(0.25);
+
+		// Animation state/settings
+		float m_BackgroundScrollingSpeed = 0.5f;
+		float m_CenterDottedLineScrollingSpeed = 0.4f;
 
 		// Game state
 		constexpr static int MaxHealth = 5;
@@ -70,7 +74,7 @@ namespace DYE
 				glm::vec<2, std::uint32_t>{800, 900},
 				glm::vec<2, std::uint32_t>{600, 700},
 				glm::vec<2, std::uint32_t>{400, 450},
-				glm::vec<2, std::uint32_t>{300, 400}
+				glm::vec<2, std::uint32_t>{400, 450}
 			};
 
 		GameState m_GameState = GameState::Playing;
@@ -82,6 +86,12 @@ namespace DYE
 
 		MiniGame::Transform m_BackgroundTransform;
 		MiniGame::Sprite m_BackgroundSprite;
+
+		MiniGame::Transform m_BorderTransform;
+		MiniGame::Sprite m_BorderSprite;
+
+		MiniGame::Transform m_CenterLineTransform;
+		MiniGame::Sprite m_CenterLineSprite;
 
 		MiniGame::Camera m_MainCamera;
 		MiniGame::PongBall m_Ball;

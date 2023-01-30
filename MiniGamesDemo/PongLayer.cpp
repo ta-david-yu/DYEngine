@@ -80,11 +80,14 @@ namespace DYE
 		m_Players.emplace_back(player2);
 
 		// Create paddle objects.
+		auto paddleTexture = Texture2D::Create("assets\\Sprite_PongPaddle.png");
 		for (auto const& player : m_Players)
 		{
 			MiniGame::PlayerPaddle paddle;
 			paddle.PlayerID = player.Settings.ID;
 			paddle.Transform.Position = player.Settings.MainPaddleLocation;
+			paddle.Sprite.Texture = paddleTexture;
+			paddle.Sprite.Texture->PixelsPerUnit = 32;
 			paddle.Collider.Size = {mainPaddleWidth, 3, 1};
 
 			registerBoxCollider(paddle.Transform, paddle.Collider);
@@ -123,12 +126,22 @@ namespace DYE
 			registerBoxCollider(wall.Transform, wall.Collider);
 		}
 
+		m_BorderSprite.Texture = Texture2D::Create("assets\\Sprite_PongBorder.png");
+		m_BorderSprite.Texture->PixelsPerUnit = 32;
+		m_BorderTransform.Position = {0, 0, 0};
+
 		// Create background object.
 		m_BackgroundSprite.Texture = Texture2D::Create("assets\\Sprite_Grid.png");
 		m_BackgroundSprite.Texture->PixelsPerUnit = 32;
 		m_BackgroundSprite.IsTiled = true;
 		m_BackgroundTransform.Scale = {64.0f, 64.0f, 1};
 		m_BackgroundTransform.Position = {0, 0, -2};
+
+		m_CenterLineSprite.Texture = Texture2D::Create("assets\\Sprite_DottedLine.png");
+		m_CenterLineSprite.Texture->PixelsPerUnit = 32;
+		m_CenterLineSprite.IsTiled = true;
+		m_CenterLineTransform.Scale = {1, 14.0f, 1};
+		m_CenterLineTransform.Position = {0, 0, -1.5f};
 
 		// Setup main camera for debugging purpose.
 		m_MainWindow = WindowManager::GetMainWindow();
@@ -137,7 +150,7 @@ namespace DYE
 
 		m_MainCamera.Transform.Position = glm::vec3 {0, 0, 10};
 		m_MainCamera.Properties.IsOrthographic = true;
-		m_MainCamera.Properties.OrthographicSize = 14;
+		m_MainCamera.Properties.OrthographicSize = 14.07f;
 		m_MainCamera.Properties.TargetType = RenderTargetType::Window;
 		m_MainCamera.Properties.TargetWindowID = m_MainWindow->GetWindowID();
 		m_MainCamera.Properties.UseManualAspectRatio = false;
@@ -147,19 +160,19 @@ namespace DYE
 
 		// Create window camera.
 		m_Player1WindowCamera.CreateWindow(m_MainWindow->GetContext(), WindowProperty("Player 1 - Use Right Analog Stick To Move Window", 800, 900));
+		m_Player1WindowCamera.GetWindowPtr()->SetBorderedIfWindowed(false);
 		m_Player1WindowCamera.GetWindowPtr()->CenterWindow();
 		auto position = m_Player1WindowCamera.GetWindowPtr()->GetPosition();
-		position.x -= 410;
+		position.x -= 400;
 		m_Player1WindowCamera.GetWindowPtr()->SetPosition(position.x, position.y);
-		m_Player1WindowCamera.GetWindowPtr()->SetBorderedIfWindowed(false);
 		m_Player1WindowCamera.ResetCachedPosition();
 
 		m_Player2WindowCamera.CreateWindow(m_MainWindow->GetContext(), WindowProperty("Player 2 - Use Right Analog Stick To Move Window", 800, 900));
+		m_Player2WindowCamera.GetWindowPtr()->SetBorderedIfWindowed(false);
 		m_Player2WindowCamera.GetWindowPtr()->CenterWindow();
 		position = m_Player2WindowCamera.GetWindowPtr()->GetPosition();
-		position.x += 390;
+		position.x += 400;
 		m_Player2WindowCamera.GetWindowPtr()->SetPosition(position.x, position.y);
-		m_Player2WindowCamera.GetWindowPtr()->SetBorderedIfWindowed(false);
 		m_Player2WindowCamera.ResetCachedPosition();
 
 		// Create UI objects.
@@ -222,16 +235,29 @@ namespace DYE
 		RenderPipelineManager::RegisterCameraForNextRender(m_Player2WindowCamera.Camera.GetTransformedProperties());
 
 		renderSprite(m_Ball.Transform, m_Ball.Sprite);
+		renderSprite(m_BorderTransform, m_BorderSprite);
+		for (auto& paddle : m_PlayerPaddles)
+		{
+			renderSprite(paddle.Transform, paddle.Sprite);
+		}
 
-		// Scroll tiled offset
-		float const offsetChange = TIME.DeltaTime() * 0.5f * m_BackgroundScrollingSpeed;
-		m_BackgroundSprite.TilingOffset += glm::vec2 {offsetChange, offsetChange};
+		// Scroll background texture.
+		float const backgroundTilingOffsetChange = TIME.DeltaTime() * m_BackgroundScrollingSpeed;
+		m_BackgroundSprite.TilingOffset += glm::vec2 {backgroundTilingOffsetChange, backgroundTilingOffsetChange};
 		if (m_BackgroundSprite.TilingOffset.x > 1.0f)
 		{
 			m_BackgroundSprite.TilingOffset -= glm::vec2 {1.0f, 1.0f};
 		}
-
 		renderSprite(m_BackgroundTransform, m_BackgroundSprite);
+
+		// Scroll center dotted line texture.
+		float const dottedLineTilingOffsetChange = TIME.DeltaTime() * m_CenterDottedLineScrollingSpeed;
+		m_CenterLineSprite.TilingOffset -= glm::vec2 {0, dottedLineTilingOffsetChange};
+		if (m_CenterLineSprite.TilingOffset.y < 0.0f)
+		{
+			m_CenterLineSprite.TilingOffset += glm::vec2 {0, 1.0f};
+		}
+		renderSprite(m_CenterLineTransform, m_CenterLineSprite);
 
 		// Render GameOver UI sprites
 		if (m_GameState == GameState::GameOver)
@@ -337,58 +363,13 @@ namespace DYE
 	{
 		if (INPUT.GetKeyDown(KeyCode::F9))
 		{
-			m_MainWindow->Minimize();
-		}
-
-		if (INPUT.GetKeyDown(KeyCode::F10))
-		{
-			m_MainWindow->Restore();
-		}
-
-		if (INPUT.GetKeyDown(KeyCode::Space))
-		{
-			m_Ball.Velocity.Value += glm::vec2 {5, 0};
+			m_DrawImGui = !m_DrawImGui;
 		}
 
 		if (INPUT.GetKeyDown(KeyCode::Escape))
 		{
 			Application::GetRegisteredApplications()[0]->Shutdown();
 			return;
-		}
-		auto mainWindowPtr = WindowManager::GetMainWindow();
-		if (INPUT.GetKeyDown(KeyCode::F1))
-		{
-			mainWindowPtr->CenterWindow();
-		}
-
-		if (INPUT.GetKeyDown(KeyCode::F2))
-		{
-			m_Player2WindowCamera.SmoothResize(1920, 1080);
-		}
-
-		if (INPUT.GetKeyDown(KeyCode::F3))
-		{
-			m_Player2WindowCamera.SmoothResize(1600, 900);
-		}
-
-		if (INPUT.GetKeyDown(KeyCode::F4))
-		{
-			m_Player2WindowCamera.SmoothResize(800, 640);
-		}
-
-		if (INPUT.GetKeyDown(KeyCode::F5))
-		{
-			m_Player2WindowCamera.SmoothResize(640, 640);
-		}
-
-		if (INPUT.GetKeyDown(KeyCode::F6))
-		{
-			m_Player2WindowCamera.SmoothResize(320, 320);
-		}
-
-		if (INPUT.GetKeyDown(KeyCode::F7))
-		{
-			m_Player2WindowCamera.SmoothResize(240, 240);
 		}
 	}
 
@@ -771,6 +752,8 @@ namespace DYE
 				{
 					m_GameState = GameState::GameOver;
 					m_MainWindow->Restore();
+					m_Player1WindowCamera.GetWindowPtr()->Raise();
+					m_Player2WindowCamera.GetWindowPtr()->Raise();
 
 					m_WinnerUISprite.Texture = damagedPlayerID == 0? m_P2WinsTexture : m_P1WinsTexture;
 				}
@@ -822,8 +805,10 @@ namespace DYE
 
 	void PongLayer::OnImGui()
 	{
-		// get the window size as a base for calculating widgets geometry
-		auto mainWindowPtr = WindowManager::GetMainWindow();
+		if (!m_DrawImGui)
+		{
+			return;
+		}
 
 		if (ImGui::Begin("General"))
 		{
@@ -874,7 +859,7 @@ namespace DYE
 
 			if (ImGui::CollapsingHeader("Window & Mouse"))
 			{
-				int const mainDisplayIndex = mainWindowPtr->GetDisplayIndex();
+				int const mainDisplayIndex = m_MainWindow->GetDisplayIndex();
 				ImGui::Text("MainWindowDisplayIndex = %d", mainDisplayIndex);
 				std::optional<DisplayMode> const displayMode = SCREEN.GetDisplayMode(mainDisplayIndex);
 				if (displayMode.has_value())
@@ -898,13 +883,23 @@ namespace DYE
 				if (ImGui::Button("Toggle Window Bordered"))
 				{
 					isMainWindowBordered = !isMainWindowBordered;
-					mainWindowPtr->SetBorderedIfWindowed(isMainWindowBordered);
+					m_MainWindow->SetBorderedIfWindowed(isMainWindowBordered);
 				}
 
 				ImGui::SameLine();
 				if (ImGui::Button("Center Window"))
 				{
-					mainWindowPtr->CenterWindow();
+					m_MainWindow->CenterWindow();
+				}
+
+				if (ImGui::Button("Minimize Window"))
+				{
+					m_MainWindow->Minimize();
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Restore Window"))
+				{
+					m_MainWindow->Restore();
 				}
 			}
 

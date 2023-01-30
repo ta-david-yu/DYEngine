@@ -140,6 +140,11 @@ namespace DYE
 		SDL_RestoreWindow(m_pNativeWindow);
 	}
 
+	void SDLWindow::Raise()
+	{
+		SDL_RaiseWindow(m_pNativeWindow);
+	}
+
 	void SDLWindow::SetSize(std::uint32_t width, std::uint32_t height)
 	{
 		SDL_SetWindowSize(m_pNativeWindow, width, height);
