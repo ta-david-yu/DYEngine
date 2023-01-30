@@ -51,6 +51,9 @@ namespace DYE
 		// Animation state/settings
 		float m_BackgroundScrollingSpeed = 0.5f;
 
+		// Input state
+		float m_LeftStickAutoShiftTimer = 0;
+
 		// Game world
 		ColliderManager m_ColliderManager;
 		MiniGame::Camera m_MainCamera;
@@ -60,6 +63,9 @@ namespace DYE
 
 		MiniGame::Transform m_LogoTransform;
 		MiniGame::Sprite m_LogoSprite;
+
+		MiniGame::Transform m_ButtonPromptTransform;
+		MiniGame::Sprite m_ButtonPromptSprite;
 
 		MiniGame::Transform m_SubtitleTransform;
 		MiniGame::Sprite m_SubtitleSprite;

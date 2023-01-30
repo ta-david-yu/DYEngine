@@ -35,6 +35,10 @@ namespace DYE
 		m_LogoSprite.Texture->PixelsPerUnit = 12;
 		m_LogoTransform.Position = {-6, 3.0f, 0};
 
+		m_ButtonPromptSprite.Texture = Texture2D::Create("assets\\Sprite_MenuButtonPrompt.png");
+		m_ButtonPromptSprite.Texture->PixelsPerUnit = 32;
+		m_ButtonPromptTransform.Position = {-5, -6.0f, 0};
+
 		m_LandTheBallSubtitleTexture = Texture2D::Create("assets\\Sprite_RulePong.png");
 		m_LandTheBallSubtitleTexture->PixelsPerUnit = 20;
 
@@ -45,7 +49,7 @@ namespace DYE
 		m_ExitSubtitleTexture->PixelsPerUnit = 20;
 
 		m_SubtitleSprite.Texture = m_LandTheBallSubtitleTexture;
-		m_SubtitleTransform.Position = {6, -3, 0};
+		m_SubtitleTransform.Position = {8, -3, 0};
 
 		MiniGame::SpriteButton landTheBallButton;
 		landTheBallButton.Transform.Position = {-5, -1.5f, 0};
@@ -135,11 +139,20 @@ namespace DYE
 
 		// UI menu input.
 		int const prevSelectedButtonIndex = m_SelectedButtonIndex;
-		if (INPUT.GetKeyDown(KeyCode::Up))
+		if (INPUT.GetKeyDown(KeyCode::Up) || INPUT.GetKeyDown(KeyCode::W))
 		{
 			m_SelectedButtonIndex--;
 		}
-		else if (INPUT.GetKeyDown(KeyCode::Down))
+		else if (INPUT.GetKeyDown(KeyCode::Down) || INPUT.GetKeyDown(KeyCode::S))
+		{
+			m_SelectedButtonIndex++;
+		}
+
+		if (INPUT.GetGamepadButtonDown(0, GamepadButton::DPadUp))
+		{
+			m_SelectedButtonIndex--;
+		}
+		else if (INPUT.GetGamepadButtonDown(0, GamepadButton::DPadDown))
 		{
 			m_SelectedButtonIndex++;
 		}
@@ -162,6 +175,11 @@ namespace DYE
 		}
 
 		if (INPUT.GetKeyDown(KeyCode::Return))
+		{
+			onConfirm(m_SelectedButtonIndex);
+		}
+
+		if (INPUT.GetGamepadButtonDown(0, GamepadButton::South))
 		{
 			onConfirm(m_SelectedButtonIndex);
 		}
@@ -239,6 +257,9 @@ namespace DYE
 		{
 			renderSprite(button.Transform, button.Sprite);
 		}
+
+		// Button Prompt.
+		renderSprite(m_ButtonPromptTransform, m_ButtonPromptSprite);
 
 		// Subtitles.
 		renderSprite(m_SubtitleTransform, m_SubtitleSprite);

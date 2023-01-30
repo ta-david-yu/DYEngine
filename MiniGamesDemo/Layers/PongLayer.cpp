@@ -385,7 +385,16 @@ namespace DYE
 			MiniGame::WindowCamera &playerWindowCamera = m_Player1WindowCamera;
 			if (INPUT.IsGamepadConnected(0))
 			{
-				float const vertical = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickVertical);
+				float vertical = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickVertical);
+				if (INPUT.GetGamepadButton(0, GamepadButton::DPadUp))
+				{
+					vertical = -1.0f;
+				}
+				else if (INPUT.GetGamepadButton(0, GamepadButton::DPadDown))
+				{
+					vertical = 1.0f;
+				}
+
 				glm::vec3 const axis = {0, -vertical, 0};
 
 				if (glm::length2(axis) > 0.01f)
@@ -405,6 +414,7 @@ namespace DYE
 				{
 					float const windowVertical = INPUT.GetGamepadAxis(0, GamepadAxis::RightStickVertical);
 					float const windowHorizontal = INPUT.GetGamepadAxis(0, GamepadAxis::RightStickHorizontal);
+
 					glm::vec2 windowAxis = {windowHorizontal, windowVertical};
 					if (glm::length2(windowAxis) > 0.01f)
 					{
@@ -479,7 +489,16 @@ namespace DYE
 			auto &playerWindowCamera = m_Player2WindowCamera;
 			if (INPUT.IsGamepadConnected(1))
 			{
-				float const vertical = INPUT.GetGamepadAxis(1, GamepadAxis::LeftStickVertical);
+				float vertical = INPUT.GetGamepadAxis(1, GamepadAxis::LeftStickVertical);
+				if (INPUT.GetGamepadButton(1, GamepadButton::DPadUp))
+				{
+					vertical = -1.0f;
+				}
+				else if (INPUT.GetGamepadButton(1, GamepadButton::DPadDown))
+				{
+					vertical = 1.0f;
+				}
+
 				glm::vec3 const axis = {0, -vertical, 0};
 
 				if (glm::length2(axis) > 0.01f)

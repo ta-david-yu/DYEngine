@@ -72,7 +72,7 @@ namespace DYE
 		constexpr static int MaxHealth = 10;
 		constexpr static int WindowSizesCount = MaxHealth - 1;
 		constexpr static int HealthToEnableWindowInput = 7;
-		const std::array<glm::vec<2, std::uint32_t>, WindowSizesCount> HealthWindowSizes =
+		constexpr static std::array<glm::vec<2, std::uint32_t>, WindowSizesCount> HealthWindowSizes =
 			{
 				glm::vec<2, std::uint32_t>{800, 900},
 				glm::vec<2, std::uint32_t>{800, 900},
