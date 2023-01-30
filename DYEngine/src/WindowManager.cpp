@@ -23,6 +23,17 @@ namespace DYE
 		return cachePtr;
 	}
 
+	bool WindowManager::CloseWindow(WindowID id)
+	{
+		auto numberOfErasedWindows = erase_if(s_Windows,
+											 [id](std::pair<WindowID, std::unique_ptr<WindowBase>> &windowPair)
+											 {
+												 return windowPair.first == id;
+											 });
+
+		return numberOfErasedWindows >= 1;
+	}
+
 	void WindowManager::SetMainWindow(WindowID id)
 	{
 		s_MainWindowID = id;
@@ -40,7 +51,7 @@ namespace DYE
 			return windowPair.second.get();
 		}
 
-		DYE_ASSERT_RELEASE(false && "There is no window with the given id!");
+		DYE_LOG_ERROR("GetWindowFromID: There is no window with the given id - %d.", id);
 		return nullptr;
 
 	}

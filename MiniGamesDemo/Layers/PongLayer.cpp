@@ -1,4 +1,6 @@
-#include "PongLayer.h"
+#include "Layers/PongLayer.h"
+
+#include "MiniGamesApp.h"
 
 #include "Core/Application.h"
 #include "Util/Logger.h"
@@ -31,9 +33,9 @@
 
 #include "Event/ApplicationEvent.h"
 
-#include <imgui.h>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/quaternion.hpp>
+#include "imgui.h"
+#include "glm/gtc/type_ptr.hpp"
+#include "glm/gtx/quaternion.hpp"
 
 namespace DYE
 {
@@ -41,7 +43,7 @@ namespace DYE
 	{
 	}
 
-	void PongLayer::OnInit()
+	void PongLayer::OnAttach()
 	{
 		RenderCommand::GetInstance().SetClearColor(glm::vec4{0.5f, 0.5f, 0.5f, 0.5f});
 
@@ -200,6 +202,12 @@ namespace DYE
 		m_MainWindow->Minimize();
 	}
 
+	void PongLayer::OnDetach()
+	{
+		WindowManager::CloseWindow(m_Player1WindowCamera.GetWindowPtr()->GetWindowID());
+		WindowManager::CloseWindow(m_Player2WindowCamera.GetWindowPtr()->GetWindowID());
+	}
+
 	void PongLayer::registerBoxCollider(MiniGame::Transform &transform, MiniGame::BoxCollider &collider)
 	{
 		if (collider.ID.has_value() && m_ColliderManager.IsColliderRegistered(collider.ID.value()))
@@ -286,11 +294,6 @@ namespace DYE
 		}
 	}
 
-	void PongLayer::OnEvent(Event& event)
-	{
-
-	}
-
 	void PongLayer::OnUpdate()
 	{
 		// Debug updates.
@@ -368,8 +371,8 @@ namespace DYE
 
 		if (INPUT.GetKeyDown(KeyCode::Escape))
 		{
-			m_Application.Shutdown();
-			return;
+			auto& miniGameApp = static_cast<MiniGamesApp&>(m_Application);
+			miniGameApp.LoadMainMenuLayer();
 		}
 	}
 
@@ -382,7 +385,16 @@ namespace DYE
 			MiniGame::WindowCamera &playerWindowCamera = m_Player1WindowCamera;
 			if (INPUT.IsGamepadConnected(0))
 			{
-				float const vertical = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickVertical);
+				float vertical = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickVertical);
+				if (INPUT.GetGamepadButton(0, GamepadButton::DPadUp))
+				{
+					vertical = -1.0f;
+				}
+				else if (INPUT.GetGamepadButton(0, GamepadButton::DPadDown))
+				{
+					vertical = 1.0f;
+				}
+
 				glm::vec3 const axis = {0, -vertical, 0};
 
 				if (glm::length2(axis) > 0.01f)
@@ -390,7 +402,7 @@ namespace DYE
 					paddle.MovementInputBuffer = axis;
 				}
 
-				if (INPUT.GetGamepadButtonDown(0, GamepadButton::LeftStick))
+				if (INPUT.GetGamepadButtonDown(0, GamepadButton::South))
 				{
 					if (m_Ball.Attachable.IsAttached && m_Ball.Attachable.AttachedPaddle == &paddle)
 					{
@@ -402,6 +414,7 @@ namespace DYE
 				{
 					float const windowVertical = INPUT.GetGamepadAxis(0, GamepadAxis::RightStickVertical);
 					float const windowHorizontal = INPUT.GetGamepadAxis(0, GamepadAxis::RightStickHorizontal);
+
 					glm::vec2 windowAxis = {windowHorizontal, windowVertical};
 					if (glm::length2(windowAxis) > 0.01f)
 					{
@@ -476,7 +489,16 @@ namespace DYE
 			auto &playerWindowCamera = m_Player2WindowCamera;
 			if (INPUT.IsGamepadConnected(1))
 			{
-				float const vertical = INPUT.GetGamepadAxis(1, GamepadAxis::LeftStickVertical);
+				float vertical = INPUT.GetGamepadAxis(1, GamepadAxis::LeftStickVertical);
+				if (INPUT.GetGamepadButton(1, GamepadButton::DPadUp))
+				{
+					vertical = -1.0f;
+				}
+				else if (INPUT.GetGamepadButton(1, GamepadButton::DPadDown))
+				{
+					vertical = 1.0f;
+				}
+
 				glm::vec3 const axis = {0, -vertical, 0};
 
 				if (glm::length2(axis) > 0.01f)
@@ -484,7 +506,7 @@ namespace DYE
 					paddle.MovementInputBuffer = axis;
 				}
 
-				if (INPUT.GetGamepadButtonDown(1, GamepadButton::LeftStick))
+				if (INPUT.GetGamepadButtonDown(1, GamepadButton::South))
 				{
 					if (m_Ball.Attachable.IsAttached && m_Ball.Attachable.AttachedPaddle == &paddle)
 					{
@@ -763,8 +785,13 @@ namespace DYE
 
 					// Shrink the winning player's window size.
 					MiniGame::WindowCamera& windowCamera = hitPlayerID == 0? m_Player1WindowCamera : m_Player2WindowCamera;
-					auto size = m_HealthWindowSizes[(MaxHealth - 1) - playerItr->State.Health];
-					windowCamera.SmoothResize(size.x, size.y);
+
+					int const sizeIndex = WindowSizesCount - playerItr->State.Health;
+					if (sizeIndex >= 0 && sizeIndex < HealthWindowSizes.size())
+					{
+						auto size = HealthWindowSizes[sizeIndex];
+						windowCamera.SmoothResize(size.x, size.y);
+					}
 
 					// Enable window control/show border if the window shrinks.
 					if (playerItr->State.Health <= HealthToEnableWindowInput)
@@ -875,7 +902,23 @@ namespace DYE
 					m_Application.Shutdown();
 				}
 
+				auto& miniGamesApp = static_cast<MiniGamesApp&>(m_Application);
 				ImGui::SameLine();
+				if (ImGui::Button("Main Menu"))
+				{
+					miniGamesApp.LoadMainMenuLayer();
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Pong"))
+				{
+					miniGamesApp.LoadPongLayer();
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Land Ball"))
+				{
+					miniGamesApp.LoadLandBallLayer();
+				}
+
 				static bool isMainWindowBordered = true;
 				if (ImGui::Button("Toggle Window Bordered"))
 				{

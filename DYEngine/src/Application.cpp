@@ -88,7 +88,7 @@ namespace DYE
 
         // Push ImGuiLayer as overlay, initialzied with the main window
         m_ImGuiLayer = std::make_shared<ImGuiLayer>(mainWindowPtr);
-        pushOverlay(m_ImGuiLayer);
+		pushOverlayImmediate(m_ImGuiLayer);
     }
 
     Application::~Application()
@@ -104,7 +104,7 @@ namespace DYE
 
         double deltaTimeAccumulator = 0;
 
-        // Init layers
+        // Init layers that were added before the game loop starts.
         for (auto& layer : m_LayerStack)
         {
             layer->OnInit();
@@ -171,6 +171,29 @@ namespace DYE
 			// For now, it does nothing.
 			WindowManager::UpdateWindows();
 
+			// Execute delayed layer operations.
+			// We do this after tickUpdate because we don't want the time spent on layer operations to be
+			// taken into account for the delta time between this frame and the next frame.
+			for (auto& layerOperation : m_LayerOperations)
+			{
+				switch (layerOperation.Type)
+				{
+					case ApplicationLayerOperation::OperationType::PushLayer:
+						pushLayerImmediate(layerOperation.Layer);
+						break;
+					case ApplicationLayerOperation::OperationType::PopLayer:
+						popLayerImmediate(layerOperation.Layer);
+						break;
+					case ApplicationLayerOperation::OperationType::PushOverlay:
+						pushOverlayImmediate(layerOperation.Layer);
+						break;
+					case ApplicationLayerOperation::OperationType::PopOverlay:
+						popOverlayImmediate(layerOperation.Layer);
+						break;
+				}
+			}
+			m_LayerOperations.clear();
+
 			TIME.tickUpdate();
         }
 
@@ -213,15 +236,65 @@ namespace DYE
 
     }
 
-    void Application::pushLayer(std::shared_ptr<LayerBase> layer)
+	void Application::PushLayer(std::shared_ptr<LayerBase> &layer)
+	{
+		m_LayerOperations.push_back(
+			ApplicationLayerOperation
+				{
+					.Type = ApplicationLayerOperation::OperationType::PushLayer,
+					.Layer = layer
+				});
+	}
+
+	void Application::PopLayer(std::shared_ptr<LayerBase> &layer)
+	{
+		m_LayerOperations.push_back(
+			ApplicationLayerOperation
+				{
+					.Type = ApplicationLayerOperation::OperationType::PopLayer,
+					.Layer = layer
+				});
+	}
+
+	void Application::PushOverlay(std::shared_ptr<LayerBase> &overlay)
+	{
+		m_LayerOperations.push_back(
+			ApplicationLayerOperation
+				{
+					.Type = ApplicationLayerOperation::OperationType::PushOverlay,
+					.Layer = overlay
+				});
+	}
+
+	void Application::PopOverlay(std::shared_ptr<LayerBase> &overlay)
+	{
+		m_LayerOperations.push_back(
+			ApplicationLayerOperation
+				{
+					.Type = ApplicationLayerOperation::OperationType::PopOverlay,
+					.Layer = overlay
+				});
+	}
+
+    void Application::pushLayerImmediate(const std::shared_ptr<LayerBase> &layer)
     {
-        m_LayerStack.PushLayer(std::move(layer));
+        m_LayerStack.PushLayer(layer);
     }
 
-    void Application::pushOverlay(std::shared_ptr<LayerBase> overlay)
+	void Application::popLayerImmediate(std::shared_ptr<LayerBase> layer)
+	{
+		m_LayerStack.PopLayer(layer);
+	}
+
+    void Application::pushOverlayImmediate(const std::shared_ptr<LayerBase>& overlay)
     {
-        m_LayerStack.PushOverlay(std::move(overlay));
+        m_LayerStack.PushOverlay(overlay);
     }
+
+	void Application::popOverlayImmediate(std::shared_ptr<LayerBase> overlay)
+	{
+		m_LayerStack.PopOverlay(overlay);
+	}
 
 	void Application::handleOnApplicationQuit(ApplicationQuitEvent const& event)
 	{

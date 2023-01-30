@@ -1,5 +1,7 @@
 #include "CollisionTestLayer.h"
 
+#include "MiniGamesDemo/MiniGamesApp.h"
+
 #include "Core/Application.h"
 #include "Util/Logger.h"
 #include "Util/Macro.h"
@@ -31,17 +33,17 @@
 
 #include "Event/ApplicationEvent.h"
 
-#include <imgui.h>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/quaternion.hpp>
+#include "imgui.h"
+#include "glm/gtc/type_ptr.hpp"
+#include "glm/gtx/quaternion.hpp"
 
 namespace DYE
 {
-	CollisionTestLayer::CollisionTestLayer()
+	CollisionTestLayer::CollisionTestLayer(Application& application) : m_Application(application)
     {
     }
 
-	void CollisionTestLayer::OnInit()
+	void CollisionTestLayer::OnAttach()
 	{
 		RenderCommand::GetInstance().SetClearColor(glm::vec4{0.5f, 0.5f, 0.5f, 0.5f});
 
@@ -81,17 +83,6 @@ namespace DYE
 
 		m_WindowPosition = mainWindowPtr->GetPosition();
 
-
-		// Use the same context of the main window for the second window
-		m_SecondWindow = WindowManager::CreateWindow(WindowProperty("SecondWindow", 640, 480));
-		auto context = mainWindowPtr->GetContext();
-		m_SecondWindow->SetContext(context);
-		m_SecondWindow->MakeCurrent();
-		ContextBase::SetVSyncCountForCurrentContext(0);
-
-		// Set the current context back to the main window.
-		mainWindowPtr->MakeCurrent();
-
 		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({2, 0, 0}, {1, 1, 0}));
 		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({-2, 0, 0}, {1, 1, 0}));
 		m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({0, 2, 0}, {1, 1, 0}));
@@ -101,17 +92,6 @@ namespace DYE
 	void CollisionTestLayer::OnRender()
 	{
 		RenderPipelineManager::RegisterCameraForNextRender(*m_CameraProperties);
-
-		CameraProperties cameraRenderToSecondWindow {};
-		cameraRenderToSecondWindow.Position = {0, 0, 10};
-		cameraRenderToSecondWindow.IsOrthographic = true;
-		cameraRenderToSecondWindow.OrthographicSize = 10;
-		cameraRenderToSecondWindow.TargetType = RenderTargetType::Window;
-		cameraRenderToSecondWindow.TargetWindowID = m_SecondWindow->GetWindowID();
-		cameraRenderToSecondWindow.UseManualAspectRatio = false;
-		cameraRenderToSecondWindow.ViewportValueType = ViewportValueType::RelativeDimension;
-		cameraRenderToSecondWindow.Viewport = {0, 0, 1, 1};
-		RenderPipelineManager::RegisterCameraForNextRender(cameraRenderToSecondWindow);
 
 		renderSpriteObject(*m_OriginObject);
 		renderSpriteObject(*m_MovingObject);
@@ -141,11 +121,6 @@ namespace DYE
 		RenderPipelineManager::GetTypedActiveRenderPipelinePtr<RenderPipeline2D>()
 		    ->SubmitTiledSprite(object.Texture, {object.Scale.x, object.Scale.y, offset.x, offset.y}, object.Color, modelMatrix);
 	}
-
-    void CollisionTestLayer::OnEvent(Event& event)
-    {
-
-    }
 
     void CollisionTestLayer::OnUpdate()
     {
@@ -449,7 +424,6 @@ namespace DYE
 			ImGui::Text("Mouse Position = %d, %d", INPUT.GetGlobalMousePosition().x, INPUT.GetGlobalMousePosition().y);
 			ImGui::Text("Mouse Delta = %d, %d", INPUT.GetGlobalMouseDelta().x, INPUT.GetGlobalMouseDelta().y);
 
-			ImGui::SameLine();
 			static bool isMainWindowBordered = true;
 			if (ImGui::Button("Toggle Window Bordered"))
 			{
@@ -462,6 +436,22 @@ namespace DYE
 			{
 				mainWindowPtr->CenterWindow();
 				m_WindowPosition = mainWindowPtr->GetPosition();
+			}
+
+			auto& miniGamesApp = static_cast<MiniGamesApp&>(m_Application);
+			if (ImGui::Button("Main Menu"))
+			{
+				miniGamesApp.LoadMainMenuLayer();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Pong"))
+			{
+				miniGamesApp.LoadPongLayer();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Land Ball"))
+			{
+				miniGamesApp.LoadLandBallLayer();
 			}
 
 			if (ImGui::Button("Line Mode"))

@@ -85,6 +85,13 @@ namespace DYE
 				// If the camera is rendering to a window other than the current one,
 				// Swap to the render target window and make the context current.
 				pCurrentWindow = WindowManager::GetWindowFromID(camera.TargetWindowID);
+
+				if (pCurrentWindow == nullptr)
+				{
+					DYE_LOG("The camera render window target (%d) doesn't exist. Skip the camera rendering.", camera.TargetWindowID);
+					continue;
+				}
+
 				pCurrentWindow->MakeCurrent();
 
 				RenderCommand::GetInstance().Clear();
@@ -103,7 +110,7 @@ namespace DYE
 			DebugDraw::renderDebugDrawOnCamera(camera);
 		}
 
-		if (!WindowManager::IsMainWindow(*pCurrentWindow))
+		if (pCurrentWindow != nullptr && !WindowManager::IsMainWindow(*pCurrentWindow))
 		{
 			// Swap the final rendered window if it's not the main window.
 			// Note that we only swap buffers of non-main windows because we want to render

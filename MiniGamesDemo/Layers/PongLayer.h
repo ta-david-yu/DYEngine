@@ -13,8 +13,8 @@
 #include "Objects/PongHomebase.h"
 #include "Objects/WindowCamera.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/quaternion.hpp>
+#include "glm/glm.hpp"
+#include "glm/gtc/quaternion.hpp"
 
 namespace DYE
 {
@@ -30,11 +30,12 @@ namespace DYE
 			GameOver
 		};
 
-		PongLayer(Application& application);
+		explicit PongLayer(Application& application);
+		PongLayer() = delete;
 		PongLayer(PongLayer const& other) = delete;
 
-		void OnInit() override;
-		void OnEvent(Event& event) override;
+		void OnAttach() override;
+		void OnDetach() override;
 		void OnUpdate() override;
 		void OnFixedUpdate() override;
 		void OnRender() override;
@@ -45,7 +46,6 @@ namespace DYE
 		void unregisterBoxCollider(MiniGame::Transform& transform, MiniGame::BoxCollider& collider);
 		void renderSprite(MiniGame::Transform& transform, MiniGame::Sprite& sprite);
 
-		/// \return the velocity per second for the paddle.
 		void debugInput();
 		void readPlayerInput(float timeStep);
 		void updatePaddle(MiniGame::PlayerPaddle& paddle, float timeStep);
@@ -59,7 +59,7 @@ namespace DYE
 		Application& m_Application;
 
 		// Debug settings
-		WindowBase* m_MainWindow;
+		WindowBase* m_MainWindow = nullptr;
 		bool m_DrawImGui = false;
 		bool m_DrawColliderGizmos = false;
 		FPSCounter m_FPSCounter = FPSCounter(0.25);
@@ -69,14 +69,20 @@ namespace DYE
 		float m_CenterDottedLineScrollingSpeed = 0.4f;
 
 		// Game state
-		constexpr static int MaxHealth = 5;
-		constexpr static int HealthToEnableWindowInput = 3;
-		const std::array<glm::vec<2, std::uint32_t>, MaxHealth - 1> m_HealthWindowSizes =
+		constexpr static int MaxHealth = 10;
+		constexpr static int WindowSizesCount = MaxHealth - 1;
+		constexpr static int HealthToEnableWindowInput = 7;
+		constexpr static std::array<glm::vec<2, std::uint32_t>, WindowSizesCount> HealthWindowSizes =
 			{
 				glm::vec<2, std::uint32_t>{800, 900},
-				glm::vec<2, std::uint32_t>{600, 700},
-				glm::vec<2, std::uint32_t>{400, 450},
-				glm::vec<2, std::uint32_t>{400, 450}
+				glm::vec<2, std::uint32_t>{800, 900},
+				glm::vec<2, std::uint32_t>{700, 800},
+				glm::vec<2, std::uint32_t>{700, 800},
+				glm::vec<2, std::uint32_t>{550, 600},
+				glm::vec<2, std::uint32_t>{550, 600},
+				glm::vec<2, std::uint32_t>{350, 400},
+				glm::vec<2, std::uint32_t>{350, 400},
+				glm::vec<2, std::uint32_t>{250, 300}
 			};
 
 		GameState m_GameState = GameState::Playing;

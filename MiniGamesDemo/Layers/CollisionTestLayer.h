@@ -5,8 +5,8 @@
 
 #include "ColliderManager.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/quaternion.hpp>
+#include "glm/glm.hpp"
+#include "glm/gtc/quaternion.hpp"
 
 namespace DYE
 {
@@ -32,11 +32,11 @@ namespace DYE
     class CollisionTestLayer : public LayerBase
     {
     public:
-        CollisionTestLayer();
+		explicit CollisionTestLayer(Application& application);
+        CollisionTestLayer() = delete;
 		CollisionTestLayer(CollisionTestLayer const& other) = delete;
 
-		void OnInit() override;
-        void OnEvent(Event& event) override;
+		void OnAttach() override;
         void OnUpdate() override;
         void OnFixedUpdate() override;
 		void OnRender() override;
@@ -48,14 +48,14 @@ namespace DYE
 		void imguiSpriteObject(SpriteObject& object);
 
     private:
+		Application& m_Application;
+
 		bool m_IsControlWindowOpen = false;
         double m_FpsAccumulator = 0;
         int m_FramesCounter = 0;
         int m_FixedUpdateCounter = 0;
 
-		WindowBase* m_SecondWindow = nullptr;
-
-		glm::vec2 m_WindowPosition;
+		glm::vec2 m_WindowPosition {0, 0};
 		float m_TargetWindowWidth = 1600;
 		float m_TargetWindowHeight = 900;
 

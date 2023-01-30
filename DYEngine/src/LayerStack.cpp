@@ -34,7 +34,7 @@ namespace DYE
         }
     }
 
-    void LayerStack::PushOverlay(std::shared_ptr<LayerBase> overlay)
+    void LayerStack::PushOverlay(const std::shared_ptr<LayerBase>& overlay)
     {
         overlay->OnAttach();
         m_Layers.emplace_back(overlay);

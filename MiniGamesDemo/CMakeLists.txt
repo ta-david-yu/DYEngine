@@ -3,10 +3,10 @@ project(MiniGames)
 add_executable(MiniGames
         MiniGamesApp.cpp
         ColliderManager.cpp
-        CollisionTestLayer.cpp
-        PongLayer.cpp
+        Layers/CollisionTestLayer.cpp
+        Layers/PongLayer.cpp
         Objects/PlayerPaddle.cpp
-        Components/Transform.cpp Components/Sprite.cpp Components/Collider.cpp Objects/Wall.cpp Objects/PongBall.cpp Components/Velocity.cpp Objects/Camera.cpp Components/Hittable.cpp Objects/PongPlayer.cpp Objects/PongHomebase.cpp Components/AttachableToPaddle.cpp Objects/WindowCamera.cpp)
+        Components/Transform.cpp Components/Sprite.cpp Components/Collider.cpp Objects/Wall.cpp Objects/PongBall.cpp Components/Velocity.cpp Objects/Camera.cpp Components/Hittable.cpp Objects/PongPlayer.cpp Objects/PongHomebase.cpp Components/AttachableToPaddle.cpp Objects/WindowCamera.cpp Layers/MainMenuLayer.cpp Objects/SpriteButton.cpp)
 
 target_include_directories(MiniGames PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(MiniGames DYEngine)
@@ -18,11 +18,23 @@ endif ()
 
 # Copy assets to the output directory
 set(ASSETS
+        assets/Sprite_Grid.png
+
+        assets/Sprite_DYELogo.png
+        assets/Sprite_RulePong.png
+        assets/Sprite_SubtitleExit.png
+        assets/Sprite_ButtonLandTB_Selected.png
+        assets/Sprite_ButtonLandTB_Deselected.png
+        assets/Sprite_ButtonPong_Selected.png
+        assets/Sprite_ButtonPong_Deselected.png
+        assets/Sprite_ButtonExit_Selected.png
+        assets/Sprite_ButtonExit_Deselected.png
+        assets/Sprite_MenuButtonPrompt.png
+
         assets/Sprite_Pong.png
         assets/Sprite_PongBorder.png
         assets/Sprite_DottedLine.png
         assets/Sprite_PongPaddle.png
-        assets/Sprite_Grid.png
         assets/Sprite_GameOver.png
         assets/Sprite_P1Wins.png
         assets/Sprite_P2Wins.png)
