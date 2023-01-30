@@ -14,18 +14,6 @@
 
 namespace DYE
 {
-	std::vector<Application*> Application::s_RegisteredApplications = {};
-
-	void Application::RegisterApplication(Application* application)
-	{
-		s_RegisteredApplications.push_back(application);
-	}
-
-	std::vector<Application *> const &Application::GetRegisteredApplications()
-	{
-		return s_RegisteredApplications;
-	}
-
     Application::Application(const std::string &windowName, int fixedFramePerSecond)
     {
         SDL_Init(0);

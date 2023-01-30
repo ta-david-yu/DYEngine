@@ -37,7 +37,7 @@
 
 namespace DYE
 {
-	PongLayer::PongLayer()
+	PongLayer::PongLayer(Application& application) : m_Application(application)
 	{
 	}
 
@@ -368,7 +368,7 @@ namespace DYE
 
 		if (INPUT.GetKeyDown(KeyCode::Escape))
 		{
-			Application::GetRegisteredApplications()[0]->Shutdown();
+			m_Application.Shutdown();
 			return;
 		}
 	}
@@ -872,10 +872,7 @@ namespace DYE
 
 				if (ImGui::Button("Quit App"))
 				{
-					for (auto const app : Application::GetRegisteredApplications())
-					{
-						app->Shutdown();
-					}
+					m_Application.Shutdown();
 				}
 
 				ImGui::SameLine();

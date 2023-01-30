@@ -327,12 +327,6 @@ namespace DYE
 			//m_WindowPosition = mainWindowPtr->SetWindowSizeUsingWindowCenterAsAnchor(320, 320);
 		}
 
-		if (INPUT.GetKeyDown(KeyCode::Escape))
-		{
-			Application::GetRegisteredApplications()[0]->Shutdown();
-			return;
-		}
-
 		if (INPUT.IsGamepadConnected(0))
 		{
 			float const horizontal = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickHorizontal);
@@ -454,14 +448,6 @@ namespace DYE
 
 			ImGui::Text("Mouse Position = %d, %d", INPUT.GetGlobalMousePosition().x, INPUT.GetGlobalMousePosition().y);
 			ImGui::Text("Mouse Delta = %d, %d", INPUT.GetGlobalMouseDelta().x, INPUT.GetGlobalMouseDelta().y);
-
-			if (ImGui::Button("Quit App"))
-			{
-				for (auto const app : Application::GetRegisteredApplications())
-				{
-					app->Shutdown();
-				}
-			}
 
 			ImGui::SameLine();
 			static bool isMainWindowBordered = true;
