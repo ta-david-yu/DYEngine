@@ -28,7 +28,7 @@ namespace DYE
         explicit MiniGamesApp(const std::string &windowName, int fixedFramePerSecond = 60)
             : Application(windowName, fixedFramePerSecond)
         {
-			pushLayer(std::make_shared<PongLayer>());
+			pushLayer(std::make_shared<PongLayer>(*this));
         }
 
         ~MiniGamesApp() final = default;

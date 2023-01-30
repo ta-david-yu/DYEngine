@@ -16,13 +16,7 @@ namespace DYE
 {
     class Application : public EventHandler
     {
-	private:
-		static std::vector<Application*> s_RegisteredApplications;
-
     public:
-		static void RegisterApplication(Application* application);
-		static std::vector<Application*> const& GetRegisteredApplications();
-
         Application() = delete;
 
         Application(const Application &) = delete;

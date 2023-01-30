@@ -30,7 +30,7 @@ namespace DYE
 			GameOver
 		};
 
-		PongLayer();
+		PongLayer(Application& application);
 		PongLayer(PongLayer const& other) = delete;
 
 		void OnInit() override;
@@ -56,6 +56,8 @@ namespace DYE
 		void imguiSprite(const std::string& name, MiniGame::Transform& transform, MiniGame::Sprite& sprite);
 
 	private:
+		Application& m_Application;
+
 		// Debug settings
 		WindowBase* m_MainWindow;
 		bool m_DrawImGui = false;
