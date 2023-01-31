@@ -138,20 +138,26 @@ namespace DYE
 		}
 
 		// Keyboard
-		if (m_GameState == GameState::WaitingForBallRelease &&
-			(INPUT.GetKeyDown(KeyCode::Return) || INPUT.GetKeyDown(KeyCode::Space)))
+		if (m_GameState == GameState::WaitingForBallRelease)
 		{
-			// Release the ball.
-			m_GameState = GameState::Playing;
+			if ((INPUT.GetKeyDown(KeyCode::Return) || INPUT.GetKeyDown(KeyCode::Space)))
+			{
+				// Release the ball.
+				m_GameState = GameState::Playing;
+			}
 		}
+		else if (m_GameState == GameState::Playing)
+		{
+			m_ActivateSlowMotion = INPUT.GetKey(KeyCode::Return) || INPUT.GetKey(KeyCode::Space);
 
-		if (INPUT.GetKey(KeyCode::Right) || INPUT.GetKey(KeyCode::D))
-		{
-			m_LandBall.HorizontalMovementBuffer = 1;
-		}
-		else if (INPUT.GetKey(KeyCode::Left) || INPUT.GetKey(KeyCode::A))
-		{
-			m_LandBall.HorizontalMovementBuffer = -1;
+			if (INPUT.GetKey(KeyCode::Right) || INPUT.GetKey(KeyCode::D))
+			{
+				m_LandBall.HorizontalMovementBuffer = 1;
+			}
+			else if (INPUT.GetKey(KeyCode::Left) || INPUT.GetKey(KeyCode::A))
+			{
+				m_LandBall.HorizontalMovementBuffer = -1;
+			}
 		}
 
 		// Controller
@@ -161,26 +167,33 @@ namespace DYE
 			return;
 		}
 
-		if (m_GameState == GameState::WaitingForBallRelease && INPUT.GetGamepadButton(0, GamepadButton::South))
+		if (m_GameState == GameState::WaitingForBallRelease)
 		{
-			// Release the ball.
-			m_GameState = GameState::Playing;
+			if (INPUT.GetGamepadButtonDown(0, GamepadButton::South))
+			{
+				// Release the ball.
+				m_GameState = GameState::Playing;
+			}
 		}
+		else if (m_GameState == GameState::Playing)
+		{
+			m_ActivateSlowMotion = INPUT.GetGamepadButton(0, GamepadButton::South);
 
-		float const horizontal = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickHorizontal);
-		if (glm::abs(horizontal) > 0.1f)
-		{
-			// Manual dead zone (to avoid analog stick drifting).
-			m_LandBall.HorizontalMovementBuffer = horizontal;
-		}
+			float const horizontal = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickHorizontal);
+			if (glm::abs(horizontal) > 0.1f)
+			{
+				// Manual dead zone (to avoid analog stick drifting).
+				m_LandBall.HorizontalMovementBuffer = horizontal;
+			}
 
-		if (INPUT.GetGamepadButton(0, GamepadButton::DPadRight))
-		{
-			m_LandBall.HorizontalMovementBuffer = 1;
-		}
-		else if (INPUT.GetGamepadButton(0, GamepadButton::DPadLeft))
-		{
-			m_LandBall.HorizontalMovementBuffer = -1;
+			if (INPUT.GetGamepadButton(0, GamepadButton::DPadRight))
+			{
+				m_LandBall.HorizontalMovementBuffer = 1;
+			}
+			else if (INPUT.GetGamepadButton(0, GamepadButton::DPadLeft))
+			{
+				m_LandBall.HorizontalMovementBuffer = -1;
+			}
 		}
 	}
 
@@ -212,7 +225,28 @@ namespace DYE
 			return;
 		}
 
-		float const timeStep = TIME.FixedDeltaTime();
+		if (m_ActivateSlowMotion)
+		{
+			// Use slow motion timer.
+			m_SlowMotionTimer -= TIME.FixedDeltaTime();
+			if (m_SlowMotionTimer < 0.0f)
+			{
+				m_SlowMotionTimer = 0.0f;
+			}
+		}
+		else
+		{
+			if (m_SlowMotionTimer < MaxSlowMotionDuration)
+			{
+				// Regen slow motion timer.
+				m_SlowMotionTimer += (MaxSlowMotionDuration / SlowMotionFullyRecoveryTime) * TIME.FixedDeltaTime();
+				m_SlowMotionTimer = (m_SlowMotionTimer > MaxSlowMotionDuration)? MaxSlowMotionDuration : m_SlowMotionTimer;
+			}
+		}
+
+		bool const isInSlowMotion = m_ActivateSlowMotion && m_SlowMotionTimer > 0.0f;
+
+		float const timeStep = TIME.FixedDeltaTime() * (isInSlowMotion ? SlowMotionMultiplier : 1.0f);
 
 		m_LandBall.Velocity.Value.x = m_LandBall.HorizontalMovementBuffer * m_LandBall.HorizontalMoveSpeed;
 		m_LandBall.HorizontalMovementBuffer = 0.0f;
@@ -408,6 +442,7 @@ namespace DYE
 					m_ScoreNumber.SetValue(value);
 				}
 
+				ImGuiUtil::DrawFloatControl("Slow Motion Timer", m_SlowMotionTimer, MaxSlowMotionDuration);
 				ImGuiUtil::DrawFloatControl("Time To Reach Apex", m_LandBall.TimeToReachApex, MiniGame::LandBall::InitialTimeToReachApex);
 				ImGuiUtil::DrawFloatControl("Percentage Loss Per Bounce", m_LandBall.TimePercentageLossPerBounce, 0.015f);
 				ImGuiUtil::DrawFloatControl("Minimum Time To Reach Apex", m_LandBall.MinimumTimeToReachApex, 0.4f);

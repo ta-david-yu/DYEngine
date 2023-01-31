@@ -78,6 +78,12 @@ namespace DYE
 		WindowBase* m_pBallWindow = nullptr;
 		MiniGame::Camera m_BallCamera;
 
+		constexpr static float MaxSlowMotionDuration = 0.75f;
+		constexpr static float SlowMotionFullyRecoveryTime = 3.0f;
+		constexpr static float SlowMotionMultiplier = 0.5f;
+		float m_SlowMotionTimer = MaxSlowMotionDuration;
+		bool m_ActivateSlowMotion = false;
+
 		constexpr static float MinPlatformX = -10.0f;
 		constexpr static float MaxPlatformX = 10.0f;
 		constexpr static float PlatformY = -5.0f;
