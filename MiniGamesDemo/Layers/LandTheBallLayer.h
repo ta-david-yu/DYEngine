@@ -42,6 +42,9 @@ namespace DYE
 	private:
 		void renderSprite(MiniGame::Transform& transform, MiniGame::Sprite& sprite);
 
+		void updateBallWindowPosition();
+		void updatePlatformWindowPosition();
+
 		void debugDraw();
 		void debugInput();
 
@@ -51,6 +54,7 @@ namespace DYE
 		// Debug settings
 		WindowBase* m_pMainWindow = nullptr;
 		bool m_DrawImGui = false;
+		bool m_DrawDebugGizmos = false;
 
 		// Animation state/settings
 		float m_BackgroundScrollingSpeed = 0.0f;
@@ -65,7 +69,7 @@ namespace DYE
 
 		glm::vec<2, uint32_t> m_ScreenDimensions;
 		std::uint32_t m_ScreenPixelPerUnit = 76;
-		bool m_HasBallWindowBeenSetToBordered = false;
+		bool m_HasGameObjectWindowBeenSetToBordered = false;
 
 		ColliderManager m_ColliderManager;
 		MiniGame::Camera m_MainCamera;
@@ -81,6 +85,7 @@ namespace DYE
 		float m_PlatformWidth = 7.0f;
 		float m_PlatformHeight = 0.1f;
 
+		WindowBase* m_pPlatformWindow = nullptr;
 		float m_PlatformX = 0.0f;
 
 		MiniGame::Transform m_BackgroundTransform;

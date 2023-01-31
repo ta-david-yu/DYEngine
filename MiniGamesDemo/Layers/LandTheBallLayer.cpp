@@ -44,12 +44,12 @@ namespace DYE
 		m_ScoreNumber.LoadTexture();
 		m_ScoreNumber.SetValue(0);
 
-		m_pScoreWindow = WindowManager::CreateWindow(WindowProperty("Score", 256, 128));
+		m_pScoreWindow = WindowManager::CreateWindow(WindowProperty("Score", 256, 96));
 		m_pScoreWindow->SetSize(256, 128);
 		m_pScoreWindow->SetContext(m_pMainWindow->GetContext());
 		m_pScoreWindow->CenterWindow();
 		auto scoreWindowPosition = m_pScoreWindow->GetPosition();
-		scoreWindowPosition.y = 20.0f;
+		scoreWindowPosition.y = 30.0f;
 		m_pScoreWindow->SetPosition(scoreWindowPosition);
 
 		// Create game objects.
@@ -61,6 +61,11 @@ namespace DYE
 		m_pBallWindow->SetSize(m_ScreenPixelPerUnit, m_ScreenPixelPerUnit);
 		m_pBallWindow->CenterWindow();
 		m_pBallWindow->SetBorderedIfWindowed(false);
+
+		m_pPlatformWindow = WindowManager::CreateWindow(WindowProperty("Platform"));
+		m_pPlatformWindow->SetSize(m_ScreenPixelPerUnit * m_PlatformWidth, m_ScreenPixelPerUnit * m_PlatformHeight);
+		m_pPlatformWindow->CenterWindow();
+		m_pPlatformWindow->SetBorderedIfWindowed(false);
 
 		// Create background object.
 		m_BackgroundSprite.Texture = Texture2D::Create("assets\\Sprite_Grid.png");
@@ -82,24 +87,35 @@ namespace DYE
 
 		m_BallCamera = m_MainCamera;
 		m_BallCamera.Properties.TargetWindowID = m_pBallWindow->GetWindowID();
+
+
+		// Hide the main window by default
+		m_pMainWindow->Minimize();
+		updatePlatformWindowPosition();
 	}
 
 	void LandTheBallLayer::OnDetach()
 	{
 		WindowManager::CloseWindow(m_pScoreWindow->GetWindowID());
 		WindowManager::CloseWindow(m_pBallWindow->GetWindowID());
+		WindowManager::CloseWindow(m_pPlatformWindow->GetWindowID());
 	}
 
 	void LandTheBallLayer::OnUpdate()
 	{
-		debugDraw();
+		if (m_DrawDebugGizmos)
+		{
+			debugDraw();
+		}
+
 		debugInput();
 
-		// We delay the set window border call to here to avoid weird window bug.
-		if (!m_HasBallWindowBeenSetToBordered)
+		// We delay the set window border call here to avoid weird window bug.
+		if (!m_HasGameObjectWindowBeenSetToBordered)
 		{
-			m_HasBallWindowBeenSetToBordered = true;
+			m_HasGameObjectWindowBeenSetToBordered = true;
 			m_pBallWindow->SetBorderedIfWindowed(true);
+			m_pPlatformWindow->SetBorderedIfWindowed(true);
 		}
 
 		if (m_GameState == GameState::Preparing)
@@ -181,21 +197,6 @@ namespace DYE
 			m_DrawImGui = !m_DrawImGui;
 		}
 
-		auto value = m_ScoreNumber.GetValue();
-		if (INPUT.GetKey(KeyCode::Numpad3))
-		{
-			value++;
-			m_ScoreNumber.SetValue(value);
-		}
-		if (INPUT.GetKey(KeyCode::Numpad1))
-		{
-			if (value > 0)
-			{
-				value--;
-			}
-			m_ScoreNumber.SetValue(value);
-		}
-
 		if (INPUT.GetKeyDown(KeyCode::Escape))
 		{
 			auto &miniGamesApp = static_cast<MiniGamesApp &>(m_Application);
@@ -227,6 +228,7 @@ namespace DYE
 		if (newBallY < GameOverY)
 		{
 			m_GameState = GameState::GameOver;
+			m_pMainWindow->Restore();
 		}
 		else if (prevBallY >= PlatformY && newBallY < PlatformY)
 		{
@@ -271,7 +273,13 @@ namespace DYE
 		m_LandBall.Transform.Position.x = newBallX;
 		m_LandBall.Transform.Position.y = newBallY;
 
-		// Move window to match the location of the real ball.
+		updateBallWindowPosition();
+		updatePlatformWindowPosition();
+	}
+
+	void LandTheBallLayer::updateBallWindowPosition()
+	{
+		// Move ball window to match the location of the real ball.
 		std::int32_t ballScreenPositionX = m_LandBall.Transform.Position.x * m_ScreenPixelPerUnit;
 		std::int32_t ballScreenPositionY = m_LandBall.Transform.Position.y * m_ScreenPixelPerUnit;
 		ballScreenPositionY = m_ScreenDimensions.y - ballScreenPositionY;
@@ -285,6 +293,27 @@ namespace DYE
 		ballScreenPositionY -= m_ScreenDimensions.y * 0.5f;
 
 		m_pBallWindow->SetPosition(ballScreenPositionX, ballScreenPositionY);
+	}
+
+	void LandTheBallLayer::updatePlatformWindowPosition()
+	{
+		// Move platform window to match the location of the real platform.
+		std::int32_t platformScreenPositionX = m_PlatformX * m_ScreenPixelPerUnit;
+		std::int32_t platformScreenPositionY = PlatformY * m_ScreenPixelPerUnit;
+		platformScreenPositionY = m_ScreenDimensions.y - platformScreenPositionY;
+
+		// Offset based on the size of the platform (because the origin of a window is at top-left corner).
+		platformScreenPositionX -= m_ScreenPixelPerUnit * m_PlatformWidth * 0.5f;
+
+		// Offset based on screen dimensions (because screen space origin is at top-left corner).
+		platformScreenPositionX += m_ScreenDimensions.x * 0.5f;
+		platformScreenPositionY -= m_ScreenDimensions.y * 0.5f;
+
+		// Lower the window a bit so the top of the window (border/menubar) matches with the real platform
+		// Yeah, magic number, sorry :P
+		platformScreenPositionY += m_ScreenPixelPerUnit * 0.5;
+
+		m_pPlatformWindow->SetPosition(platformScreenPositionX, platformScreenPositionY);
 	}
 
 	void LandTheBallLayer::OnRender()
@@ -330,9 +359,9 @@ namespace DYE
 			return;
 		}
 
-		if (ImGui::Begin("Debug"))
+		if (ImGui::Begin("Menu"))
 		{
-			if (ImGui::CollapsingHeader("Menu", ImGuiTreeNodeFlags_DefaultOpen))
+			if (ImGui::CollapsingHeader("Load", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				auto &miniGamesApp = static_cast<MiniGamesApp &>(m_Application);
 				if (ImGui::Button("Main Menu"))
@@ -351,22 +380,31 @@ namespace DYE
 				}
 			}
 
+			if (ImGui::CollapsingHeader("Debug", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				if (ImGui::Button("Toggle Gizmos"))
+				{
+					m_DrawDebugGizmos = !m_DrawDebugGizmos;
+				}
+			}
+
 			if (ImGui::CollapsingHeader("Game State", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				auto value = m_ScoreNumber.GetValue();
-				if (ImGui::Button("+"))
-				{
-					value++;
-					m_ScoreNumber.SetValue(value);
-				}
 
-				ImGui::SameLine();
-				if (ImGui::Button("-"))
+				if (ImGui::Button("-3"))
 				{
 					if (value > 0)
 					{
 						value--;
 					}
+					m_ScoreNumber.SetValue(value);
+				}
+
+				ImGui::SameLine();
+				if (ImGui::Button("+3"))
+				{
+					value++;
 					m_ScoreNumber.SetValue(value);
 				}
 
