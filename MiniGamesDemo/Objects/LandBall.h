@@ -15,7 +15,7 @@ namespace DYE::MiniGame
 		constexpr static float InitialTimeToReachApex = 1.1f;
 		float TimePercentageLossPerBounce = 0.015f;
 		float MinimumTimeToReachApex = 0.4f;
-		float HorizontalMoveSpeed = 12.0f;
+		float HorizontalMoveSpeed = 18.0f;
 
 		// Game settings/states
 		float TimeToReachApex = InitialTimeToReachApex;

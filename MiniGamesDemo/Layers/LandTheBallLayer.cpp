@@ -15,7 +15,8 @@
 #include "Graphics/RenderPipeline2D.h"
 #include "Screen.h"
 
-#include "imgui.h"
+#include <imgui.h>
+#include <glm/gtc/random.hpp>
 
 namespace DYE
 {
@@ -169,7 +170,7 @@ namespace DYE
 
 	void LandTheBallLayer::debugDraw()
 	{
-		DebugDraw::Cube({0, PlatformY - m_LandBall.Transform.Scale.y * 0.5f, 0}, {m_PlatformWidth, m_PlatformHeight, 1}, Color::Blue);
+		DebugDraw::Cube({m_PlatformX, PlatformY - m_LandBall.Transform.Scale.y * 0.5f, 0}, {m_PlatformWidth, m_PlatformHeight, 1}, Color::Blue);
 		DebugDraw::Cube(m_LandBall.Transform.Position, m_LandBall.Transform.Scale, Color::Yellow);
 	}
 
@@ -236,17 +237,27 @@ namespace DYE
 			float const ballMinX = newBallX - m_LandBall.Transform.Scale.x * 0.5f;
 			float const ballMaxX = newBallX + m_LandBall.Transform.Scale.x * 0.5f;
 
-			bool noOverlap = (maxX < ballMinX || ballMaxX < minX);
+			bool const noOverlap = (maxX < ballMinX || ballMaxX < minX);
 			if (!noOverlap)
 			{
-				// Calculate new vertical launch speed and apply it to the position.
+				// Calculate new vertical launch speed and apply it.
 
-				// How deep the newBallY is below the ground.
-				float const overflowDistance = PlatformY - newBallY;
+				// Move platform.
+				float newPlatformX = glm::linearRand(MinPlatformX, MaxPlatformX);
+				float const currentPlatformLeft = m_PlatformX - m_PlatformWidth * 0.5f;
+				float const currentPlatformRight = m_PlatformX + m_PlatformWidth * 0.5f;
 
-				// How much time the ball is spent below the ground.
-				// We will it as the time step to bounce up.
-				//float const overflowTimeStep = overflowDistance / m_LandBall.Velocity.Value.y;
+				int numberOfTriesAvailable = 2;
+
+				while (numberOfTriesAvailable > 0 &&
+					   newPlatformX >= currentPlatformLeft && newPlatformX <= currentPlatformRight)
+				{
+					// The new platform position is located within the current platform bound,
+					// Re-generate one to reduce the number of similar platform spawns.
+					newPlatformX = glm::linearRand(MinPlatformX, MaxPlatformX);
+					numberOfTriesAvailable--;
+				}
+				m_PlatformX = newPlatformX;
 
 				// TODO: Play VFX/animation etc.
 				m_LandBall.OnBounce();
@@ -254,10 +265,6 @@ namespace DYE
 
 				m_LandBall.Velocity.Value.y = m_LandBall.GetLaunchVerticalSpeed();
 				newBallY = PlatformY;
-				/*
-				m_LandBall.Velocity.Value.y = m_LandBall.GetLaunchVerticalSpeed() - m_LandBall.GetGravity() * overflowTimeStep;
-				newBallY = PlatformY + m_LandBall.Velocity.Value.y * overflowTimeStep;
-				 */
 			}
 		}
 

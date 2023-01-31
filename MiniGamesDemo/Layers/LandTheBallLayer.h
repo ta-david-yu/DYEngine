@@ -61,7 +61,7 @@ namespace DYE
 
 		// Game world
 		GameState m_GameState = GameState::Preparing;
-		float m_PreparingTimer = 1.0f;
+		float m_PreparingTimer = 0.5f;
 
 		glm::vec<2, uint32_t> m_ScreenDimensions;
 		std::uint32_t m_ScreenPixelPerUnit = 76;
@@ -74,11 +74,14 @@ namespace DYE
 		WindowBase* m_pBallWindow = nullptr;
 		MiniGame::Camera m_BallCamera;
 
-		float m_PlatformX = 0.0f;
-		float m_PlatformWidth = 15.0f;
-		float m_PlatformHeight = 0.1f;
+		constexpr static float MinPlatformX = -10.0f;
+		constexpr static float MaxPlatformX = 10.0f;
 		constexpr static float PlatformY = -5.0f;
 		constexpr static float GameOverY = -15.0f;
+		float m_PlatformWidth = 7.0f;
+		float m_PlatformHeight = 0.1f;
+
+		float m_PlatformX = 0.0f;
 
 		MiniGame::Transform m_BackgroundTransform;
 		MiniGame::Sprite m_BackgroundSprite;
