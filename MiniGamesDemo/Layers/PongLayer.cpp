@@ -924,7 +924,7 @@ namespace DYE
 				}
 			}
 
-			if (ImGui::CollapsingHeader("Window & Mouse"))
+			if (ImGui::CollapsingHeader("Window & Mouse", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				int const mainDisplayIndex = m_MainWindow->GetDisplayIndex();
 				ImGui::Text("MainWindowDisplayIndex = %d", mainDisplayIndex);

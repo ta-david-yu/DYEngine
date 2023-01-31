@@ -1,8 +1,34 @@
-//
-// Created by d3660 on 2023/1/31.
-//
+#pragma once
 
-#ifndef DYENGINEROOT_LANDBALL_H
-#define DYENGINEROOT_LANDBALL_H
+#include "Components/Transform.h"
+#include "Components/Velocity.h"
+#include "Components/Collider.h"
+#include "Components/Sprite.h"
 
-#endif //DYENGINEROOT_LANDBALL_H
+namespace DYE::MiniGame
+{
+	struct LandBall
+	{
+	public:
+		// Constant settings.
+		constexpr static float Apex = 10;
+		constexpr static float InitialTimeToReachApex = 1.1f;
+		float TimePercentageLossPerBounce = 0.015f;
+		float MinimumTimeToReachApex = 0.4f;
+		float HorizontalMoveSpeed = 12.0f;
+
+		// Game settings/states
+		float TimeToReachApex = InitialTimeToReachApex;
+		float HorizontalMovementBuffer = 0.0f;
+
+		Transform Transform;
+		Velocity Velocity;
+		BoxCollider Collider;
+		Sprite Sprite;
+
+		float GetGravity() const { return -Apex / (TimeToReachApex * TimeToReachApex * 0.5f); }
+		float GetLaunchVerticalSpeed() const { return glm::abs(GetGravity()) * TimeToReachApex; }
+
+		void OnBounce();
+	};
+}

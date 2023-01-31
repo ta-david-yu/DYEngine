@@ -1,3 +1,13 @@
-//
-// Created by d3660 on 2023/1/31.
-//
+#include "Objects/LandBall.h"
+
+namespace DYE::MiniGame
+{
+	void LandBall::OnBounce()
+	{
+		TimeToReachApex = TimeToReachApex * (1.0f - TimePercentageLossPerBounce);
+		if (TimeToReachApex <= MinimumTimeToReachApex)
+		{
+			TimeToReachApex = MinimumTimeToReachApex;
+		}
+	}
+}

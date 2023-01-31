@@ -19,6 +19,14 @@ namespace DYE
 
 	class LandTheBallLayer : public LayerBase
 	{
+		enum class GameState
+		{
+			Preparing, 				// A preparing buffer time to prevent input from the main menu
+			WaitingForBallRelease, 	// Wait for player's input to drop the ball
+			Playing,
+			GameOver
+		};
+
 	public:
 		explicit LandTheBallLayer(Application& application);
 		LandTheBallLayer() = delete;
@@ -34,26 +42,43 @@ namespace DYE
 	private:
 		void renderSprite(MiniGame::Transform& transform, MiniGame::Sprite& sprite);
 
+		void debugDraw();
 		void debugInput();
 
 	private:
 		Application& m_Application;
 
 		// Debug settings
-		WindowBase* m_MainWindow = nullptr;
+		WindowBase* m_pMainWindow = nullptr;
 		bool m_DrawImGui = false;
 
 		// Animation state/settings
 		float m_BackgroundScrollingSpeed = 0.0f;
 
 		// UI
-		MiniGame::SpriteUnsignedNumber m_Number;
+		WindowBase* m_pScoreWindow = nullptr;
+		MiniGame::SpriteUnsignedNumber m_ScoreNumber;
 
 		// Game world
-		float m_GroundHeight = -5.0f;
-		MiniGame::LandBall m_LandBall;
+		GameState m_GameState = GameState::Preparing;
+		float m_PreparingTimer = 1.0f;
+
+		glm::vec<2, uint32_t> m_ScreenDimensions;
+		std::uint32_t m_ScreenPixelPerUnit = 76;
+		bool m_HasBallWindowBeenSetToBordered = false;
+
 		ColliderManager m_ColliderManager;
 		MiniGame::Camera m_MainCamera;
+
+		MiniGame::LandBall m_LandBall;
+		WindowBase* m_pBallWindow = nullptr;
+		MiniGame::Camera m_BallCamera;
+
+		float m_PlatformX = 0.0f;
+		float m_PlatformWidth = 15.0f;
+		float m_PlatformHeight = 0.1f;
+		constexpr static float PlatformY = -5.0f;
+		constexpr static float GameOverY = -15.0f;
 
 		MiniGame::Transform m_BackgroundTransform;
 		MiniGame::Sprite m_BackgroundSprite;

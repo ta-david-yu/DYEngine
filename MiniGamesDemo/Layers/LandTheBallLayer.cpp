@@ -6,11 +6,14 @@
 #include "Util/Logger.h"
 #include "Util/Macro.h"
 #include "Util/Time.h"
+#include "ImGui/ImGuiUtil.h"
+#include "Graphics/DebugDraw.h"
 #include "Input/InputManager.h"
 
 #include "Graphics/RenderCommand.h"
 #include "Graphics/RenderPipelineManager.h"
 #include "Graphics/RenderPipeline2D.h"
+#include "Screen.h"
 
 #include "imgui.h"
 
@@ -23,6 +26,41 @@ namespace DYE
 
 	void LandTheBallLayer::OnAttach()
 	{
+		// Set main window location and size.
+		m_pMainWindow = WindowManager::GetMainWindow();
+		m_pMainWindow->SetSize(1600, 900);
+		m_pMainWindow->CenterWindow();
+		m_pMainWindow->Restore();
+
+		// Initialize screen parameters.
+		auto displayMode = Screen::GetInstance().GetDisplayMode(0);
+		m_ScreenDimensions = {displayMode->Width, displayMode->Height };
+
+		// Score number UI.
+		m_ScoreNumber.Transform.Scale = {6, 6, 1};
+		m_ScoreNumber.Transform.Position = {0, 1, 0};
+		m_ScoreNumber.DigitDistanceOffset = 0.5f;
+		m_ScoreNumber.LoadTexture();
+		m_ScoreNumber.SetValue(0);
+
+		m_pScoreWindow = WindowManager::CreateWindow(WindowProperty("Score", 256, 128));
+		m_pScoreWindow->SetSize(256, 128);
+		m_pScoreWindow->SetContext(m_pMainWindow->GetContext());
+		m_pScoreWindow->CenterWindow();
+		auto scoreWindowPosition = m_pScoreWindow->GetPosition();
+		scoreWindowPosition.y = 20.0f;
+		m_pScoreWindow->SetPosition(scoreWindowPosition);
+
+		// Create game objects.
+		m_LandBall.Transform.Position = {0, 0, 0};
+		m_LandBall.Velocity.Value = {0, 0};
+
+		m_pBallWindow = WindowManager::CreateWindow(WindowProperty("Ball"));
+		m_pBallWindow->SetContext(m_pMainWindow->GetContext());
+		m_pBallWindow->SetSize(m_ScreenPixelPerUnit, m_ScreenPixelPerUnit);
+		m_pBallWindow->CenterWindow();
+		m_pBallWindow->SetBorderedIfWindowed(false);
+
 		// Create background object.
 		m_BackgroundSprite.Texture = Texture2D::Create("assets\\Sprite_Grid.png");
 		m_BackgroundSprite.Texture->PixelsPerUnit = 32;
@@ -30,67 +68,109 @@ namespace DYE
 		m_BackgroundTransform.Scale = {64.0f, 64.0f, 1};
 		m_BackgroundTransform.Position = {0, 0, -2};
 
-		// Number
-		m_Number.Transform.Scale = {2, 2, 1};
-		m_Number.Transform.Position = {0, 1, 0};
-		m_Number.DigitDistanceOffset = 0.5f;
-		m_Number.LoadTexture();
-		m_Number.SetValue(1598);
-
-		// Set window location and size.
-		m_MainWindow = WindowManager::GetMainWindow();
-		m_MainWindow->SetSize(1600, 900);
-		m_MainWindow->CenterWindow();
-		m_MainWindow->Restore();
-
 		// Set camera properties
 		m_MainCamera.Transform.Position = glm::vec3 {0, 0, 10};
 		m_MainCamera.Properties.IsOrthographic = true;
-		m_MainCamera.Properties.OrthographicSize = 15;
+		m_MainCamera.Properties.OrthographicSize = 12;
 		m_MainCamera.Properties.TargetType = RenderTargetType::Window;
-		m_MainCamera.Properties.TargetWindowID = m_MainWindow->GetWindowID();
+		m_MainCamera.Properties.TargetWindowID = m_pMainWindow->GetWindowID();
 		m_MainCamera.Properties.UseManualAspectRatio = false;
 		m_MainCamera.Properties.ManualAspectRatio = (float) 1600 / 900;
 		m_MainCamera.Properties.ViewportValueType = ViewportValueType::RelativeDimension;
 		m_MainCamera.Properties.Viewport = { 0, 0, 1, 1 };
+
+		m_BallCamera = m_MainCamera;
+		m_BallCamera.Properties.TargetWindowID = m_pBallWindow->GetWindowID();
 	}
-
-	void LandTheBallLayer::registerBoxCollider(MiniGame::Transform &transform, MiniGame::BoxCollider &collider)
-	{
-		if (collider.ID.has_value() && m_ColliderManager.IsColliderRegistered(collider.ID.value()))
-		{
-			// The collider has already been registered to the manager.
-			return;
-		}
-
-		collider.ID = m_ColliderManager.RegisterAABB(Math::AABB::CreateFromCenter(transform.Position, collider.Size));
-	}
-
-	void LandTheBallLayer::unregisterBoxCollider(MiniGame::Transform &transform, MiniGame::BoxCollider &collider)
-	{
-		if (!collider.ID.has_value())
-		{
-			// The collider doesn't have an ID.
-			return;
-		}
-
-		if (!m_ColliderManager.IsColliderRegistered(collider.ID.value()))
-		{
-			// The collider is not registered to this manager.
-			return;
-		}
-
-		m_ColliderManager.UnregisterAABB(collider.ID.value());
-	}
-
 
 	void LandTheBallLayer::OnDetach()
 	{
+		WindowManager::CloseWindow(m_pScoreWindow->GetWindowID());
+		WindowManager::CloseWindow(m_pBallWindow->GetWindowID());
 	}
 
 	void LandTheBallLayer::OnUpdate()
 	{
+		debugDraw();
 		debugInput();
+
+		// We delay the set window border call to here to avoid weird window bug.
+		if (!m_HasBallWindowBeenSetToBordered)
+		{
+			m_HasBallWindowBeenSetToBordered = true;
+			m_pBallWindow->SetBorderedIfWindowed(true);
+		}
+
+		if (m_GameState == GameState::Preparing)
+		{
+			m_PreparingTimer -= TIME.DeltaTime();
+			if (m_PreparingTimer > 0.0f)
+			{
+				return;
+			}
+
+			// Time is up. Go to the next state.
+			m_GameState = GameState::WaitingForBallRelease;
+		}
+
+		// In-game input
+		if (m_GameState == GameState::GameOver)
+		{
+			// Game over, no more in-game input.
+			return;
+		}
+
+		// Keyboard
+		if (m_GameState == GameState::WaitingForBallRelease &&
+			(INPUT.GetKeyDown(KeyCode::Return) || INPUT.GetKeyDown(KeyCode::Space)))
+		{
+			// Release the ball.
+			m_GameState = GameState::Playing;
+		}
+
+		if (INPUT.GetKey(KeyCode::Right) || INPUT.GetKey(KeyCode::D))
+		{
+			m_LandBall.HorizontalMovementBuffer = 1;
+		}
+		else if (INPUT.GetKey(KeyCode::Left) || INPUT.GetKey(KeyCode::A))
+		{
+			m_LandBall.HorizontalMovementBuffer = -1;
+		}
+
+		// Controller
+		if (!INPUT.IsGamepadConnected(0))
+		{
+			// Controller not connected, skip it.
+			return;
+		}
+
+		if (m_GameState == GameState::WaitingForBallRelease && INPUT.GetGamepadButton(0, GamepadButton::South))
+		{
+			// Release the ball.
+			m_GameState = GameState::Playing;
+		}
+
+		float const horizontal = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickHorizontal);
+		if (glm::abs(horizontal) > 0.1f)
+		{
+			// Manual dead zone (to avoid analog stick drifting).
+			m_LandBall.HorizontalMovementBuffer = horizontal;
+		}
+
+		if (INPUT.GetGamepadButton(0, GamepadButton::DPadRight))
+		{
+			m_LandBall.HorizontalMovementBuffer = 1;
+		}
+		else if (INPUT.GetGamepadButton(0, GamepadButton::DPadLeft))
+		{
+			m_LandBall.HorizontalMovementBuffer = -1;
+		}
+	}
+
+	void LandTheBallLayer::debugDraw()
+	{
+		DebugDraw::Cube({0, PlatformY - m_LandBall.Transform.Scale.y * 0.5f, 0}, {m_PlatformWidth, m_PlatformHeight, 1}, Color::Blue);
+		DebugDraw::Cube(m_LandBall.Transform.Position, m_LandBall.Transform.Scale, Color::Yellow);
 	}
 
 	void LandTheBallLayer::debugInput()
@@ -100,11 +180,11 @@ namespace DYE
 			m_DrawImGui = !m_DrawImGui;
 		}
 
-		auto value = m_Number.GetValue();
+		auto value = m_ScoreNumber.GetValue();
 		if (INPUT.GetKey(KeyCode::Numpad3))
 		{
 			value++;
-			m_Number.SetValue(value);
+			m_ScoreNumber.SetValue(value);
 		}
 		if (INPUT.GetKey(KeyCode::Numpad1))
 		{
@@ -112,22 +192,98 @@ namespace DYE
 			{
 				value--;
 			}
-			m_Number.SetValue(value);
+			m_ScoreNumber.SetValue(value);
 		}
 
 		if (INPUT.GetKeyDown(KeyCode::Escape))
 		{
-			m_Application.Shutdown();
+			auto &miniGamesApp = static_cast<MiniGamesApp &>(m_Application);
+			miniGamesApp.LoadMainMenuLayer();
 		}
 	}
 
 	void LandTheBallLayer::OnFixedUpdate()
 	{
+		if (m_GameState != GameState::Playing)
+		{
+			// Skip any ball movement if it's not in Playing state
+			return;
+		}
+
+		float const timeStep = TIME.FixedDeltaTime();
+
+		m_LandBall.Velocity.Value.x = m_LandBall.HorizontalMovementBuffer * m_LandBall.HorizontalMoveSpeed;
+		m_LandBall.HorizontalMovementBuffer = 0.0f;
+		m_LandBall.Velocity.Value.y += m_LandBall.GetGravity() * timeStep;
+
+		float const xChange = m_LandBall.Velocity.Value.x * timeStep;
+		float const yChange = m_LandBall.Velocity.Value.y * timeStep;
+
+		float const prevBallY = m_LandBall.Transform.Position.y;
+		float newBallY = m_LandBall.Transform.Position.y + yChange;
+		float const newBallX = m_LandBall.Transform.Position.x + xChange;
+
+		if (newBallY < GameOverY)
+		{
+			m_GameState = GameState::GameOver;
+		}
+		else if (prevBallY >= PlatformY && newBallY < PlatformY)
+		{
+			// Reach the platform height! Check if the ball hits the platform.
+			float const minX = m_PlatformX - m_PlatformWidth * 0.5f;
+			float const maxX = m_PlatformX + m_PlatformWidth * 0.5f;
+
+			float const ballMinX = newBallX - m_LandBall.Transform.Scale.x * 0.5f;
+			float const ballMaxX = newBallX + m_LandBall.Transform.Scale.x * 0.5f;
+
+			bool noOverlap = (maxX < ballMinX || ballMaxX < minX);
+			if (!noOverlap)
+			{
+				// Calculate new vertical launch speed and apply it to the position.
+
+				// How deep the newBallY is below the ground.
+				float const overflowDistance = PlatformY - newBallY;
+
+				// How much time the ball is spent below the ground.
+				// We will it as the time step to bounce up.
+				//float const overflowTimeStep = overflowDistance / m_LandBall.Velocity.Value.y;
+
+				// TODO: Play VFX/animation etc.
+				m_LandBall.OnBounce();
+				m_ScoreNumber.SetValue(m_ScoreNumber.GetValue() + 1);
+
+				m_LandBall.Velocity.Value.y = m_LandBall.GetLaunchVerticalSpeed();
+				newBallY = PlatformY;
+				/*
+				m_LandBall.Velocity.Value.y = m_LandBall.GetLaunchVerticalSpeed() - m_LandBall.GetGravity() * overflowTimeStep;
+				newBallY = PlatformY + m_LandBall.Velocity.Value.y * overflowTimeStep;
+				 */
+			}
+		}
+
+		m_LandBall.Transform.Position.x = newBallX;
+		m_LandBall.Transform.Position.y = newBallY;
+
+		// Move window to match the location of the real ball.
+		std::int32_t ballScreenPositionX = m_LandBall.Transform.Position.x * m_ScreenPixelPerUnit;
+		std::int32_t ballScreenPositionY = m_LandBall.Transform.Position.y * m_ScreenPixelPerUnit;
+		ballScreenPositionY = m_ScreenDimensions.y - ballScreenPositionY;
+
+		// Offset based on the size of the window ball (because the origin of a window is at top-left corner).
+		ballScreenPositionX -= m_ScreenPixelPerUnit * m_LandBall.Transform.Scale.x * 0.5f;
+		ballScreenPositionY -= m_ScreenPixelPerUnit * m_LandBall.Transform.Scale.y * 0.5f;
+
+		// Offset based on screen dimensions (because screen space origin is at top-left corner).
+		ballScreenPositionX += m_ScreenDimensions.x * 0.5f;
+		ballScreenPositionY -= m_ScreenDimensions.y * 0.5f;
+
+		m_pBallWindow->SetPosition(ballScreenPositionX, ballScreenPositionY);
 	}
 
 	void LandTheBallLayer::OnRender()
 	{
 		RenderPipelineManager::RegisterCameraForNextRender(m_MainCamera.GetTransformedProperties());
+		RenderPipelineManager::RegisterCameraForNextRender(m_BallCamera.GetTransformedProperties());
 
 		// Scroll background texture.
 		float const backgroundTilingOffsetChange = TIME.DeltaTime() * m_BackgroundScrollingSpeed;
@@ -138,7 +294,7 @@ namespace DYE
 		}
 		renderSprite(m_BackgroundTransform, m_BackgroundSprite);
 
-		m_Number.Render();
+		m_ScoreNumber.Render();
 	}
 
 	void LandTheBallLayer::renderSprite(MiniGame::Transform &transform, MiniGame::Sprite &sprite)
@@ -167,39 +323,59 @@ namespace DYE
 			return;
 		}
 
-		if (ImGui::Begin("Menu"))
+		if (ImGui::Begin("Debug"))
 		{
-			auto &miniGamesApp = static_cast<MiniGamesApp &>(m_Application);
-			ImGui::SameLine();
-			if (ImGui::Button("Main Menu"))
+			if (ImGui::CollapsingHeader("Menu", ImGuiTreeNodeFlags_DefaultOpen))
 			{
-				miniGamesApp.LoadMainMenuLayer();
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("Pong"))
-			{
-				miniGamesApp.LoadPongLayer();
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("Land Ball"))
-			{
-				miniGamesApp.LoadLandBallLayer();
-			}
-
-			auto value = m_Number.GetValue();
-			if (ImGui::Button("+"))
-			{
-				value++;
-				m_Number.SetValue(value);
-			}
-
-			if (ImGui::Button("-"))
-			{
-				if (value > 0)
+				auto &miniGamesApp = static_cast<MiniGamesApp &>(m_Application);
+				if (ImGui::Button("Main Menu"))
 				{
-					value--;
+					miniGamesApp.LoadMainMenuLayer();
 				}
-				m_Number.SetValue(value);
+				ImGui::SameLine();
+				if (ImGui::Button("Pong"))
+				{
+					miniGamesApp.LoadPongLayer();
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Land Ball"))
+				{
+					miniGamesApp.LoadLandBallLayer();
+				}
+			}
+
+			if (ImGui::CollapsingHeader("Game State", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				auto value = m_ScoreNumber.GetValue();
+				if (ImGui::Button("+"))
+				{
+					value++;
+					m_ScoreNumber.SetValue(value);
+				}
+
+				ImGui::SameLine();
+				if (ImGui::Button("-"))
+				{
+					if (value > 0)
+					{
+						value--;
+					}
+					m_ScoreNumber.SetValue(value);
+				}
+
+				ImGuiUtil::DrawFloatControl("Time To Reach Apex", m_LandBall.TimeToReachApex, MiniGame::LandBall::InitialTimeToReachApex);
+				ImGuiUtil::DrawFloatControl("Percentage Loss Per Bounce", m_LandBall.TimePercentageLossPerBounce, 0.015f);
+				ImGuiUtil::DrawFloatControl("Minimum Time To Reach Apex", m_LandBall.MinimumTimeToReachApex, 0.4f);
+
+				ImGuiUtil::DrawReadOnlyTextWithLabel("Current Gravity", std::to_string(m_LandBall.GetGravity()));
+
+				ImGui::Spacing();
+				static bool isBallWindowBorderless = true;
+				if (ImGui::Button("Ball Borderless"))
+				{
+					m_pBallWindow->SetBorderedIfWindowed(!isBallWindowBorderless);
+					isBallWindowBorderless = !isBallWindowBorderless;
+				}
 			}
 		}
 		ImGui::End();

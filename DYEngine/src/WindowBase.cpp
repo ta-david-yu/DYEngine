@@ -1,6 +1,8 @@
 #include "Graphics/WindowBase.h"
 #include "Graphics/SDLWindow.h"
 
+#include "Util/Logger.h"
+
 #include <SDL.h>
 
 namespace DYE
@@ -30,6 +32,11 @@ namespace DYE
 
 	void WindowBase::MakeCurrent()
 	{
+		if (m_Context == nullptr)
+		{
+			DYE_LOG_ERROR("MakeCurrent: Make current failed because m_Context is null.");
+		}
+
 		m_Context->MakeCurrentForWindow(*this);
 	}
 
