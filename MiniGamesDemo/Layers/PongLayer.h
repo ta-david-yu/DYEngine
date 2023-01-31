@@ -78,12 +78,12 @@ namespace DYE
 				glm::vec<2, std::uint32_t>{800, 900},	// 9
 				glm::vec<2, std::uint32_t>{700, 800},	// 8
 				glm::vec<2, std::uint32_t>{700, 800},	// 7
-				glm::vec<2, std::uint32_t>{550, 600},	// 6
-				glm::vec<2, std::uint32_t>{550, 600},	// 5
-				glm::vec<2, std::uint32_t>{350, 400},	// 4
-				glm::vec<2, std::uint32_t>{350, 400},	// 3
-				glm::vec<2, std::uint32_t>{250, 300},	// 2
-				glm::vec<2, std::uint32_t>{250, 300}	// 1
+				glm::vec<2, std::uint32_t>{550, 800},	// 6
+				glm::vec<2, std::uint32_t>{550, 800},	// 5
+				glm::vec<2, std::uint32_t>{350, 500},	// 4
+				glm::vec<2, std::uint32_t>{350, 500},	// 3
+				glm::vec<2, std::uint32_t>{250, 500},	// 2
+				glm::vec<2, std::uint32_t>{250, 500}	// 1
 			};
 
 		GameState m_GameState = GameState::Playing;

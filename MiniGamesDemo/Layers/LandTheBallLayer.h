@@ -7,8 +7,8 @@
 #include "Components/Transform.h"
 #include "Components/Collider.h"
 #include "Objects/Camera.h"
-#include "Objects/SpriteButton.h"
 #include "Objects/SpriteUnsignedNumber.h"
+#include "Objects/LandBall.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/quaternion.hpp"
@@ -32,8 +32,6 @@ namespace DYE
 		void OnImGui() override;
 
 	private:
-		void registerBoxCollider(MiniGame::Transform& transform, MiniGame::BoxCollider& collider);
-		void unregisterBoxCollider(MiniGame::Transform& transform, MiniGame::BoxCollider& collider);
 		void renderSprite(MiniGame::Transform& transform, MiniGame::Sprite& sprite);
 
 		void debugInput();
@@ -46,15 +44,19 @@ namespace DYE
 		bool m_DrawImGui = false;
 
 		// Animation state/settings
-		float m_BackgroundScrollingSpeed = 0.5f;
+		float m_BackgroundScrollingSpeed = 0.0f;
+
+		// UI
+		MiniGame::SpriteUnsignedNumber m_Number;
 
 		// Game world
+		float m_GroundHeight = -5.0f;
+		MiniGame::LandBall m_LandBall;
 		ColliderManager m_ColliderManager;
 		MiniGame::Camera m_MainCamera;
 
 		MiniGame::Transform m_BackgroundTransform;
 		MiniGame::Sprite m_BackgroundSprite;
 
-		MiniGame::SpriteUnsignedNumber m_Number;
 	};
 }
