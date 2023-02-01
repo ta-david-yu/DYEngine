@@ -18,6 +18,9 @@ namespace DYE
 		float EndSize = 5;
 		float InitialMinSpeed = 550;
 		float InitialMaxSpeed = 750;
+
+		bool HasFixedInitialVelocityDirectionY = false;
+		float FixedInitialVelocityDirectionY = -1;
 	};
 
 	// Screen space window particles manager
@@ -42,7 +45,6 @@ namespace DYE
 			WindowBase* pWindow;
 		};
 
-		constexpr static int InitialPoolSize = 20;
 		std::vector<WindowParticle> m_Particles;
 		bool m_ShowParticle = false;
 
@@ -52,7 +54,7 @@ namespace DYE
 		void ShowParticles();
 		void HideParticles();
 
-		void Initialize();
+		void Initialize(int initialPoolSize);
 		void OnUpdate(float timeStep);
 		void Shutdown();
 

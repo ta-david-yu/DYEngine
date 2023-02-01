@@ -5,6 +5,9 @@
 #include "Util/FPSCounter.h"
 
 #include "ColliderManager.h"
+#include "WindowParticlesManager.h"
+#include "GizmosRippleEffectManager.h"
+
 #include "Objects/Wall.h"
 #include "Objects/Camera.h"
 #include "Objects/PongPlayer.h"
@@ -92,6 +95,8 @@ namespace DYE
 
 		// Game world
 		ColliderManager m_ColliderManager;
+		GizmosRippleEffectManager m_RippleEffectManager;
+		WindowParticlesManager m_WindowParticleManager;
 
 		MiniGame::Transform m_BackgroundTransform;
 		MiniGame::Sprite m_BackgroundSprite;

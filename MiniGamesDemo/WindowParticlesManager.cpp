@@ -30,8 +30,10 @@ namespace DYE
 
 				particle.Position = center;
 				glm::vec2 direction = glm::circularRand(1.0f);
-				// Notice that negative is up because it's in screen coordinate (which the origin is at top-left corner).
-				direction.y = -1;
+				if (params.HasFixedInitialVelocityDirectionY)
+				{
+					direction.y = params.FixedInitialVelocityDirectionY;
+				}
 
 				float const speed = glm::linearRand(params.InitialMinSpeed, params.InitialMaxSpeed);
 				particle.Velocity = direction * speed;
@@ -66,8 +68,10 @@ namespace DYE
 
 			newParticle.Position = center;
 			glm::vec2 direction = glm::circularRand(1.0f);
-			// Notice that negative is up because it's in screen coordinate (which the origin is at top-left corner).
-			direction.y = -1;
+			if (params.HasFixedInitialVelocityDirectionY)
+			{
+				direction.y = params.FixedInitialVelocityDirectionY;
+			}
 
 			float const speed = glm::linearRand(params.InitialMinSpeed, params.InitialMaxSpeed);
 			newParticle.Velocity = direction * speed;
@@ -94,9 +98,9 @@ namespace DYE
 		}
 	}
 
-	void WindowParticlesManager::Initialize()
+	void WindowParticlesManager::Initialize(int initialPoolSize)
 	{
-		for (int i = 0; i < InitialPoolSize; ++i)
+		for (int i = 0; i < initialPoolSize; ++i)
 		{
 			WindowParticle particle;
 			particle.pWindow = WindowManager::CreateWindow(WindowProperty("Particle " + std::to_string(i), 0, 0));

@@ -27,6 +27,9 @@ namespace DYE
 
 	void LandTheBallLayer::OnAttach()
 	{
+		RenderCommand::GetInstance().SetClearColor(glm::vec4{0.5f, 0.5f, 0.5f, 0.5f});
+		RenderCommand::GetInstance().SetLinePrimitiveWidth(3);
+
 		// Set main window location and size.
 		m_pMainWindow = WindowManager::GetMainWindow();
 		m_pMainWindow->SetSize(1600, 900);
@@ -90,7 +93,7 @@ namespace DYE
 		updatePlatformWindowPosition();
 		switchToNormalMode();
 
-		m_WindowParticlesManager.Initialize();
+		m_WindowParticlesManager.Initialize(12);
 	}
 
 	void LandTheBallLayer::OnDetach()
@@ -334,7 +337,9 @@ namespace DYE
 						{contactScreenPosX, contactScreenPosY},
 						CircleEmitParams
 							{
-								.NumberOfParticles = 6
+								.NumberOfParticles = 6,
+								.HasFixedInitialVelocityDirectionY = true,
+								.FixedInitialVelocityDirectionY = -1
 							}
 					);
 				}

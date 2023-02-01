@@ -46,6 +46,7 @@ namespace DYE
 	void PongLayer::OnAttach()
 	{
 		RenderCommand::GetInstance().SetClearColor(glm::vec4{0.5f, 0.5f, 0.5f, 0.5f});
+		RenderCommand::GetInstance().SetLinePrimitiveWidth(3);
 
 		// Create ball objects.
 		m_Ball.Transform.Position = {0, 0, 0};
@@ -210,12 +211,16 @@ namespace DYE
 
 		// Hide the main window by default (for debugging, press F9/F10 to toggle it).
 		m_MainWindow->Minimize();
+
+		m_WindowParticleManager.Initialize(0);
 	}
 
 	void PongLayer::OnDetach()
 	{
 		WindowManager::CloseWindow(m_Player1WindowCamera.GetWindowPtr()->GetWindowID());
 		WindowManager::CloseWindow(m_Player2WindowCamera.GetWindowPtr()->GetWindowID());
+
+		m_WindowParticleManager.Shutdown();
 	}
 
 	void PongLayer::registerBoxCollider(MiniGame::Transform &transform, MiniGame::BoxCollider &collider)
@@ -359,6 +364,9 @@ namespace DYE
 		m_Player2WindowCamera.UpdateCameraProperties();
 
 		// Animation updates
+		m_RippleEffectManager.OnUpdate(TIME.DeltaTime());
+		m_WindowParticleManager.OnUpdate(TIME.DeltaTime());
+
 		m_Player1Number.UpdateAnimation(TIME.DeltaTime());
 		m_Player2Number.UpdateAnimation(TIME.DeltaTime());
 
@@ -705,6 +713,17 @@ namespace DYE
 			m_Ball.Transform.Position += actualPositionOffset;
 			m_Ball.Hittable.LastHitByPlayerID = paddle.PlayerID;
 			m_Ball.PlayHitAnimation();
+			m_RippleEffectManager.SpawnRippleAt(
+				result2D.HitPoint,
+				RippleEffectParameters
+					{
+						.LifeTime = 1.0f,
+						.StartRadius = 0.25f,
+						.EndRadius = 0.75f,
+						.StartColor = Color::Black,
+						.EndColor = {0, 0, 0, 0}
+					}
+			);
 		}
 
 		// Actually update the paddle and its collider.
@@ -756,6 +775,18 @@ namespace DYE
 
 				break;
 			}
+
+			m_RippleEffectManager.SpawnRippleAt(
+				hit.Point,
+				RippleEffectParameters
+					{
+						.LifeTime = 1.0f,
+						.StartRadius = 0.25f,
+						.EndRadius = 0.75f,
+						.StartColor = Color::Black,
+						.EndColor = {0, 0, 0, 0}
+					}
+			);
 		}
 		else
 		{
@@ -824,20 +855,21 @@ namespace DYE
 					m_GameState = GameState::Intermission;
 
 					// Shrink the winning player's window size.
-					MiniGame::WindowCamera& windowCamera = hitPlayerID == 0? m_Player1WindowCamera : m_Player2WindowCamera;
+					MiniGame::WindowCamera& windowCameraToShrink = damagedPlayerID == 0? m_Player2WindowCamera : m_Player1WindowCamera;
+					MiniGame::PongPlayer& shrunkPlayer = damagedPlayerID == 0 ? m_Players[1] : m_Players[0];
 
 					int const sizeIndex = WindowSizesCount - playerItr->State.Health;
 					if (sizeIndex >= 0 && sizeIndex < HealthWindowSizes.size())
 					{
 						auto size = HealthWindowSizes[sizeIndex];
-						windowCamera.SmoothResize(size.x, size.y);
+						windowCameraToShrink.SmoothResize(size.x, size.y);
 					}
 
 					// Enable window control/show border if the window shrinks.
 					if (playerItr->State.Health <= HealthToEnableWindowInput)
 					{
-						windowCamera.GetWindowPtr()->SetBorderedIfWindowed(true);
-						hitPlayerItr->State.CanMoveWindow = true;
+						windowCameraToShrink.GetWindowPtr()->SetBorderedIfWindowed(true);
+						shrunkPlayer.State.CanMoveWindow = true;
 					}
 				}
 			}
