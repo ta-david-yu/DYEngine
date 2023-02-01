@@ -77,6 +77,11 @@ namespace DYE
 		// UI
 		MiniGame::SpriteUnsignedNumber m_ScoreNumber;
 
+		MiniGame::Transform m_HintUITransform;
+		MiniGame::Sprite m_HintUISprite;
+		std::shared_ptr<Texture2D> m_PressToDropBallTexture;
+		std::shared_ptr<Texture2D> m_GameOverTexture;
+
 		// Game states
 		GameState m_GameState = GameState::WaitingForBallRelease;
 		Mode m_Mode = Mode::Normal;

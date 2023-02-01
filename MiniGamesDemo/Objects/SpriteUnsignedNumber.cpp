@@ -70,7 +70,7 @@ namespace DYE::MiniGame
 		if (m_Digits.empty())
 		{
 			RenderPipelineManager::GetTypedActiveRenderPipelinePtr<RenderPipeline2D>()
-				->SubmitSprite(m_DigitTextures[0], {1, 1, 1, 1}, modelMatrix);
+				->SubmitSprite(m_DigitTextures[0], Color, modelMatrix);
 			return;
 		}
 
@@ -86,7 +86,7 @@ namespace DYE::MiniGame
 			glm::mat4 const digitModelMatrix = glm::translate(modelMatrix, digitPosition);
 
 			RenderPipelineManager::GetTypedActiveRenderPipelinePtr<RenderPipeline2D>()
-				->SubmitSprite(m_DigitTextures[digit], {1, 1, 1, 1}, digitModelMatrix);
+				->SubmitSprite(m_DigitTextures[digit], Color, digitModelMatrix);
 		}
 	}
 }

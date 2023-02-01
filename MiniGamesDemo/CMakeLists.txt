@@ -45,11 +45,13 @@ set(ASSETS
         assets/Sprite_Digit_8.png
         assets/Sprite_Digit_9.png
 
+        assets/Sprite_GameOver.png
+        assets/Sprite_PressToDropBall.png
+
         assets/Sprite_Pong.png
         assets/Sprite_PongBorder.png
         assets/Sprite_DottedLine.png
         assets/Sprite_PongPaddle.png
-        assets/Sprite_GameOver.png
         assets/Sprite_P1Wins.png
         assets/Sprite_P2Wins.png)
 

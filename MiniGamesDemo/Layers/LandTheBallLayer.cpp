@@ -40,12 +40,19 @@ namespace DYE
 		auto displayMode = Screen::GetInstance().GetDisplayMode(0);
 		m_ScreenDimensions = {displayMode->Width, displayMode->Height };
 
-		// Score number UI.
-		m_ScoreNumber.Transform.Scale = {5, 5, 1};
+		// UI.
+		m_ScoreNumber.Transform.Scale = {1, 1, 1};
 		m_ScoreNumber.Transform.Position = {0, 0, 0};
 		m_ScoreNumber.DigitDistanceOffset = 0.5f;
 		m_ScoreNumber.LoadTexture();
 		m_ScoreNumber.SetValue(0);
+
+		m_HintUITransform.Position = {0, -3, 0};
+		m_PressToDropBallTexture = Texture2D::Create("assets\\Sprite_PressToDropBall.png");
+		m_PressToDropBallTexture->PixelsPerUnit = 32;
+		m_GameOverTexture = Texture2D::Create("assets\\Sprite_GameOver.png");
+		m_GameOverTexture->PixelsPerUnit = 32;
+		m_HintUISprite.Texture = m_PressToDropBallTexture;
 
 		// Create game objects.
 		m_LandBall.Transform.Position = {0, 0, 0};
@@ -86,7 +93,7 @@ namespace DYE
 
 		m_BallCamera = m_MainCamera;
 		m_BallCamera.Properties.TargetWindowID = m_pBallWindow->GetWindowID();
-		m_BallCamera.Properties.OrthographicSize = 6;
+		m_BallCamera.Properties.OrthographicSize = 1.5f;
 
 
 		// Hide the object windows by default.
@@ -108,6 +115,8 @@ namespace DYE
 	void LandTheBallLayer::OnUpdate()
 	{
 		debugInput();
+
+		m_ScoreNumber.UpdateAnimation(TIME.DeltaTime());
 
 		// Draw platform.
 		DebugDraw::Cube({m_PlatformX, PlatformY - m_LandBall.Transform.Scale.y * 0.5f, 0}, {m_PlatformWidth, m_PlatformHeight, 1}, Color::Blue);
@@ -133,13 +142,6 @@ namespace DYE
 			m_pPlatformWindow->SetBorderedIfWindowed(true);
 		}
 
-		// In-game input
-		if (m_GameState == GameState::GameOver)
-		{
-			// Game over, no more in-game input.
-			return;
-		}
-
 		// Keyboard
 		if (m_GameState == GameState::WaitingForBallRelease)
 		{
@@ -160,6 +162,14 @@ namespace DYE
 			else if (INPUT.GetKey(KeyCode::Left) || INPUT.GetKey(KeyCode::A))
 			{
 				m_LandBall.HorizontalMovementBuffer = -1;
+			}
+		}
+		else if (m_GameState == GameState::GameOver)
+		{
+			if (INPUT.GetKeyDown(KeyCode::Return))
+			{
+				auto &miniGamesApp = static_cast<MiniGamesApp &>(m_Application);
+				miniGamesApp.LoadMainMenuLayer();
 			}
 		}
 
@@ -196,6 +206,14 @@ namespace DYE
 			else if (INPUT.GetGamepadButton(0, GamepadButton::DPadLeft))
 			{
 				m_LandBall.HorizontalMovementBuffer = -1;
+			}
+		}
+		else if (m_GameState == GameState::GameOver)
+		{
+			if (INPUT.GetGamepadButtonDown(0, GamepadButton::South))
+			{
+				auto &miniGamesApp = static_cast<MiniGamesApp &>(m_Application);
+				miniGamesApp.LoadMainMenuLayer();
 			}
 		}
 	}
@@ -345,6 +363,7 @@ namespace DYE
 				}
 
 				m_LandBall.OnBounce();
+				m_ScoreNumber.PlayPopAnimation();
 				m_ScoreNumber.SetValue(m_ScoreNumber.GetValue() + 1);
 
 				if (m_ScoreNumber.GetValue() == ScoreToSwitchToWindowsMode)
@@ -447,7 +466,19 @@ namespace DYE
 		}
 		renderSprite(m_BackgroundTransform, m_BackgroundSprite);
 
+		// Render UI.
 		m_ScoreNumber.Render();
+
+		if (m_GameState == GameState::WaitingForBallRelease)
+		{
+			m_HintUISprite.Texture = m_PressToDropBallTexture;
+			renderSprite(m_HintUITransform, m_HintUISprite);
+		}
+		else if (m_GameState == GameState::GameOver)
+		{
+			m_HintUISprite.Texture = m_GameOverTexture;
+			renderSprite(m_HintUITransform, m_HintUISprite);
+		}
 	}
 
 	void LandTheBallLayer::renderSprite(MiniGame::Transform &transform, MiniGame::Sprite &sprite)

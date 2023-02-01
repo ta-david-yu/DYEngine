@@ -11,6 +11,7 @@ namespace DYE::MiniGame
 		Transform Transform;
 		float DigitDistanceOffset = 1.0f;
 		float PopAnimationDuration = 0.5f;
+		glm::vec4 Color = {1, 1, 1, 1};
 
 		void LoadTexture();
 		void SetValue(unsigned int value);
