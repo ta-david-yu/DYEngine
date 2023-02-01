@@ -18,6 +18,7 @@ namespace DYE
 		float EndSize = 5;
 		float InitialMinSpeed = 550;
 		float InitialMaxSpeed = 750;
+		float DecelerationPerSecond = 0.0f;
 
 		bool HasFixedInitialVelocityDirectionY = false;
 		float FixedInitialVelocityDirectionY = -1;
@@ -36,6 +37,7 @@ namespace DYE
 
 			float LifeTime = 1.0f;
 			float Gravity = 50;
+			float DecelerationPerSecond = 0.0f;
 			Ease SizeEaseType = Ease::EaseInCubic;
 			float StartSize = 50;
 			float EndSize = 50;

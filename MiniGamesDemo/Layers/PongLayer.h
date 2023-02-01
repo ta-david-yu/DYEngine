@@ -71,6 +71,7 @@ namespace DYE
 		// Animation state/settings
 		float m_BackgroundScrollingSpeed = 0.5f;
 		float m_CenterDottedLineScrollingSpeed = 0.4f;
+		glm::vec<2, uint32_t> m_ScreenDimensions;
 
 		// Game state
 		constexpr static int MaxHealth = 10;
@@ -96,7 +97,7 @@ namespace DYE
 		// Game world
 		ColliderManager m_ColliderManager;
 		GizmosRippleEffectManager m_RippleEffectManager;
-		WindowParticlesManager m_WindowParticleManager;
+		WindowParticlesManager m_WindowParticlesManager;
 
 		MiniGame::Transform m_BackgroundTransform;
 		MiniGame::Sprite m_BackgroundSprite;

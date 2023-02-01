@@ -40,6 +40,7 @@ namespace DYE
 
 				particle.LifeTime = params.LifeTime;
 				particle.Gravity = params.Gravity;
+				particle.DecelerationPerSecond = params.DecelerationPerSecond;
 				particle.SizeEaseType = params.SizeEaseType;
 				particle.StartSize = params.StartSize;
 				particle.EndSize = params.EndSize;
@@ -78,6 +79,7 @@ namespace DYE
 
 			newParticle.LifeTime = params.LifeTime;
 			newParticle.Gravity = params.Gravity;
+			newParticle.DecelerationPerSecond = params.DecelerationPerSecond;
 			newParticle.SizeEaseType = params.SizeEaseType;
 			newParticle.StartSize = params.StartSize;
 			newParticle.EndSize = params.EndSize;
@@ -145,6 +147,17 @@ namespace DYE
 			{
 				particle.Timer = particle.LifeTime;
 				particle.IsPlaying = false;
+			}
+
+			if (particle.DecelerationPerSecond > 0.0f)
+			{
+				float const speed = glm::length(particle.Velocity);
+				if (speed > 0.0f)
+				{
+					float newSpeed = speed - particle.DecelerationPerSecond * timeStep;
+					if (newSpeed < 0.0f) newSpeed = 0.0f;
+					particle.Velocity = glm::normalize(particle.Velocity) * newSpeed;
+				}
 			}
 
 			particle.Velocity += timeStep * glm::vec2 {0, particle.Gravity};

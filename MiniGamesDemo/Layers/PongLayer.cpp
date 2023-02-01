@@ -48,6 +48,10 @@ namespace DYE
 		RenderCommand::GetInstance().SetClearColor(glm::vec4{0.5f, 0.5f, 0.5f, 0.5f});
 		RenderCommand::GetInstance().SetLinePrimitiveWidth(3);
 
+		// Initialize screen parameters.
+		auto displayMode = Screen::GetInstance().GetDisplayMode(0);
+		m_ScreenDimensions = {displayMode->Width, displayMode->Height };
+
 		// Create ball objects.
 		m_Ball.Transform.Position = {0, 0, 0};
 		m_Ball.Collider.Radius = 0.25f;
@@ -212,7 +216,7 @@ namespace DYE
 		// Hide the main window by default (for debugging, press F9/F10 to toggle it).
 		m_MainWindow->Minimize();
 
-		m_WindowParticleManager.Initialize(0);
+		m_WindowParticlesManager.Initialize(12);
 	}
 
 	void PongLayer::OnDetach()
@@ -220,7 +224,7 @@ namespace DYE
 		WindowManager::CloseWindow(m_Player1WindowCamera.GetWindowPtr()->GetWindowID());
 		WindowManager::CloseWindow(m_Player2WindowCamera.GetWindowPtr()->GetWindowID());
 
-		m_WindowParticleManager.Shutdown();
+		m_WindowParticlesManager.Shutdown();
 	}
 
 	void PongLayer::registerBoxCollider(MiniGame::Transform &transform, MiniGame::BoxCollider &collider)
@@ -365,7 +369,7 @@ namespace DYE
 
 		// Animation updates
 		m_RippleEffectManager.OnUpdate(TIME.DeltaTime());
-		m_WindowParticleManager.OnUpdate(TIME.DeltaTime());
+		m_WindowParticlesManager.OnUpdate(TIME.DeltaTime());
 
 		m_Player1Number.UpdateAnimation(TIME.DeltaTime());
 		m_Player2Number.UpdateAnimation(TIME.DeltaTime());
@@ -804,15 +808,6 @@ namespace DYE
 				continue;
 			}
 
-			int const hitPlayerID = m_Ball.Hittable.LastHitByPlayerID;
-			auto hitPlayerItr = std::find_if(
-				m_Players.begin(),
-				m_Players.end(),
-				[hitPlayerID](MiniGame::PongPlayer const& player)
-				{
-					return hitPlayerID == player.Settings.ID;
-				});
-
 			// Deal 1 damage to the homebase.
 			int const damagedPlayerID = homebase.PlayerID;
 			auto playerItr = std::find_if(
@@ -897,6 +892,24 @@ namespace DYE
 
 			// Play animations.
 			m_Ball.PlayGoalAnimation();
+
+			auto const contactPoint = m_Ball.Transform.Position;
+			std::int32_t contactScreenPosX = contactPoint.x * 64;
+			std::int32_t contactScreenPosY = contactPoint.y * 64;
+			contactScreenPosY = m_ScreenDimensions.y - contactScreenPosY;
+
+			contactScreenPosX += m_ScreenDimensions.x * 0.5f;
+			contactScreenPosY -= m_ScreenDimensions.y * 0.5f;
+
+			m_WindowParticlesManager.CircleEmitParticlesAt(
+				{contactScreenPosX, contactScreenPosY},
+				CircleEmitParams
+					{
+						.NumberOfParticles = 12,
+						.Gravity = 0,
+						.DecelerationPerSecond = 900
+					}
+			);
 
 			break;
 		}
