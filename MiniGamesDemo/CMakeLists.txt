@@ -21,8 +21,11 @@ set(ASSETS
         assets/Sprite_Grid.png
 
         assets/Sprite_DYELogo.png
+
         assets/Sprite_RulePong.png
+        assets/Sprite_RuleLandTheBall.png
         assets/Sprite_SubtitleExit.png
+
         assets/Sprite_ButtonLandTB_Selected.png
         assets/Sprite_ButtonLandTB_Deselected.png
         assets/Sprite_ButtonPong_Selected.png

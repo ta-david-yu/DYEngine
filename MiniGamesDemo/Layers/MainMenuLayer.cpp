@@ -39,7 +39,7 @@ namespace DYE
 		m_ButtonPromptSprite.Texture->PixelsPerUnit = 32;
 		m_ButtonPromptTransform.Position = {-5, -6.0f, 0};
 
-		m_LandTheBallSubtitleTexture = Texture2D::Create("assets\\Sprite_RulePong.png");
+		m_LandTheBallSubtitleTexture = Texture2D::Create("assets\\Sprite_RuleLandTheBall.png");
 		m_LandTheBallSubtitleTexture->PixelsPerUnit = 20;
 
 		m_PongSubtitleTexture = Texture2D::Create("assets\\Sprite_RulePong.png");
@@ -49,7 +49,7 @@ namespace DYE
 		m_ExitSubtitleTexture->PixelsPerUnit = 20;
 
 		m_SubtitleSprite.Texture = m_LandTheBallSubtitleTexture;
-		m_SubtitleTransform.Position = {8, -3, 0};
+		m_SubtitleTransform.Position = {5, -3, 0};
 
 		MiniGame::SpriteButton landTheBallButton;
 		landTheBallButton.Transform.Position = {-5, -1.5f, 0};
