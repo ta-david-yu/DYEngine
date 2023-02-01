@@ -95,7 +95,6 @@ namespace DYE
 		m_BallCamera.Properties.TargetWindowID = m_pBallWindow->GetWindowID();
 		m_BallCamera.Properties.OrthographicSize = 1.5f;
 
-
 		// Hide the object windows by default.
 		updatePlatformWindowPosition();
 		switchToNormalMode();
@@ -121,8 +120,16 @@ namespace DYE
 		// Draw platform.
 		DebugDraw::Cube({m_PlatformX, PlatformY - m_LandBall.Transform.Scale.y * 0.5f, 0}, {m_PlatformWidth, m_PlatformHeight, 1}, Color::Blue);
 
-		// Draw 'ball'
+		// Draw 'ball'.
 		DebugDraw::Cube(m_LandBall.Transform.Position, m_LandBall.Transform.Scale, Color::Yellow);
+
+		// Draw bullet-time / slow motion bar.
+		float const leftX = -10.75f;
+		float const rightX = 10.75f;
+		float const fullLength = rightX - leftX;
+		float const percentage = m_SlowMotionTimer / MaxSlowMotionDuration;
+		float const barEndX = leftX + percentage * fullLength;
+		DebugDraw::AABB({leftX, -5.75f, 0}, {barEndX, -6, 0}, Color::Red);
 
 		// We call this here instead of Fixed update is because there is DebugDraw call.
 		bool const isInSlowMotion = m_ActivateSlowMotion && m_SlowMotionTimer > 0.0f;
