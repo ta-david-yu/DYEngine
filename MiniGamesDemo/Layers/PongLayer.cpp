@@ -217,6 +217,8 @@ namespace DYE
 		m_MainWindow->Minimize();
 
 		m_WindowParticlesManager.Initialize(12);
+		m_WindowParticlesManager.HasMaxParticlesLimit = true;
+		m_WindowParticlesManager.MaxParticlesLimit = 12;
 	}
 
 	void PongLayer::OnDetach()
@@ -717,17 +719,8 @@ namespace DYE
 			m_Ball.Transform.Position += actualPositionOffset;
 			m_Ball.Hittable.LastHitByPlayerID = paddle.PlayerID;
 			m_Ball.PlayHitAnimation();
-			m_RippleEffectManager.SpawnRippleAt(
-				result2D.HitPoint,
-				RippleEffectParameters
-					{
-						.LifeTime = 1.0f,
-						.StartRadius = 0.25f,
-						.EndRadius = 0.75f,
-						.StartColor = Color::Black,
-						.EndColor = {0, 0, 0, 0}
-					}
-			);
+
+			playOnBounceEffect(result2D.HitPoint);
 		}
 
 		// Actually update the paddle and its collider.
@@ -780,22 +773,46 @@ namespace DYE
 				break;
 			}
 
-			m_RippleEffectManager.SpawnRippleAt(
-				hit.Point,
-				RippleEffectParameters
-					{
-						.LifeTime = 1.0f,
-						.StartRadius = 0.25f,
-						.EndRadius = 0.75f,
-						.StartColor = Color::Black,
-						.EndColor = {0, 0, 0, 0}
-					}
-			);
+			playOnBounceEffect(hit.Point);
 		}
 		else
 		{
 			m_Ball.Transform.Position += glm::vec3(positionChange, 0);
 		}
+	}
+
+	void PongLayer::playOnBounceEffect(glm::vec2 worldPos)
+	{
+		m_RippleEffectManager.SpawnRippleAt(
+			worldPos,
+			RippleEffectParameters
+				{
+					.LifeTime = 1.0f,
+					.StartRadius = 0.25f,
+					.EndRadius = 0.75f,
+					.StartColor = Color::Black,
+					.EndColor = {0, 0, 0, 0}
+				}
+		);
+
+		auto const contactPoint = worldPos;
+		std::int32_t contactScreenPosX = contactPoint.x * 64;
+		std::int32_t contactScreenPosY = contactPoint.y * 64;
+		contactScreenPosY = m_ScreenDimensions.y - contactScreenPosY;
+
+		contactScreenPosX += m_ScreenDimensions.x * 0.5f;
+		contactScreenPosY -= m_ScreenDimensions.y * 0.5f;
+		m_WindowParticlesManager.CircleEmitParticlesAt(
+			{contactScreenPosX, contactScreenPosY},
+			CircleEmitParams
+				{
+					.NumberOfParticles = 3,
+					.Gravity = 0,
+					.InitialMinSpeed = 250,
+					.InitialMaxSpeed = 400,
+					.DecelerationPerSecond = 450,
+				}
+		);
 	}
 
 	void PongLayer::checkIfBallHasReachedGoal(float timeStep)

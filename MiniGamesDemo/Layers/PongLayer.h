@@ -57,6 +57,8 @@ namespace DYE
 		void checkIfBallHasReachedGoal(float timeStep);
 		void updateBoxCollider(MiniGame::Transform& transform, MiniGame::BoxCollider& collider);
 
+		void playOnBounceEffect(glm::vec2 worldPos);
+
 		void imguiSprite(const std::string& name, MiniGame::Transform& transform, MiniGame::Sprite& sprite);
 
 	private:

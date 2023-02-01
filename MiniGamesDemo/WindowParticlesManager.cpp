@@ -64,6 +64,13 @@ namespace DYE
 				continue;
 			}
 
+			if (HasMaxParticlesLimit && m_Particles.size() >= MaxParticlesLimit)
+			{
+				// We have reached the max number of particles,
+				// Don't spawn new ones even if it hasn't fulfilled the requested count.
+				break;
+			}
+
 			// No available ripples in the pool, spawn a new one.
 			WindowParticle newParticle;
 

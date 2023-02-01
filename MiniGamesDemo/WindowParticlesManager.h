@@ -51,6 +51,9 @@ namespace DYE
 		bool m_ShowParticle = false;
 
 	public:
+		bool HasMaxParticlesLimit = false;
+		int MaxParticlesLimit = 20;
+
 		void CircleEmitParticlesAt(glm::vec2 center, CircleEmitParams params);
 
 		void ShowParticles();
