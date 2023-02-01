@@ -11,13 +11,13 @@ namespace DYE
 	struct CircleEmitParams
 	{
 		int NumberOfParticles = 2;
-		float LifeTime = 1.0f;
-		float Gravity = 50;
+		float LifeTime = 0.75f;
+		float Gravity = 2500;
 		Ease SizeEaseType = Ease::EaseInCubic;
-		float StartSize = 50;
-		float EndSize = 0;
-		float InitialMinSpeed = 50;
-		float InitialMaxSpeed = 75;
+		float StartSize = 25;
+		float EndSize = 5;
+		float InitialMinSpeed = 550;
+		float InitialMaxSpeed = 750;
 	};
 
 	// Screen space window particles manager
@@ -35,7 +35,7 @@ namespace DYE
 			float Gravity = 50;
 			Ease SizeEaseType = Ease::EaseInCubic;
 			float StartSize = 50;
-			float EndSize = 0;
+			float EndSize = 50;
 
 			float GetSize() const;
 

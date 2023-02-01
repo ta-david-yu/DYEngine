@@ -29,13 +29,9 @@ namespace DYE
 				}
 
 				particle.Position = center;
-				glm::vec2 direction = glm::circularRand(1);
-				if (direction.y > 0)
-				{
-					// Flip the y direction so all the particles are moving upwards initially.
-					// Notice that negative is up because it's in screen coordinate (which the origin is at top-left corner).
-					direction.y = -direction.y;
-				}
+				glm::vec2 direction = glm::circularRand(1.0f);
+				// Notice that negative is up because it's in screen coordinate (which the origin is at top-left corner).
+				direction.y = -1;
 
 				float const speed = glm::linearRand(params.InitialMinSpeed, params.InitialMaxSpeed);
 				particle.Velocity = direction * speed;
@@ -53,7 +49,7 @@ namespace DYE
 				{
 					particle.pWindow->SetPosition(particle.Position);
 					particle.pWindow->SetSize(particle.StartSize, particle.StartSize);
-					particle.pWindow->Restore();
+					particle.pWindow->Raise();
 				}
 
 				foundAParticle = true;
@@ -69,7 +65,10 @@ namespace DYE
 			WindowParticle newParticle;
 
 			newParticle.Position = center;
-			glm::vec2 const direction = glm::circularRand(1);
+			glm::vec2 direction = glm::circularRand(1.0f);
+			// Notice that negative is up because it's in screen coordinate (which the origin is at top-left corner).
+			direction.y = -1;
+
 			float const speed = glm::linearRand(params.InitialMinSpeed, params.InitialMaxSpeed);
 			newParticle.Velocity = direction * speed;
 
@@ -88,6 +87,7 @@ namespace DYE
 			{
 				newParticle.pWindow->SetPosition(newParticle.Position);
 				newParticle.pWindow->SetSize(newParticle.StartSize, newParticle.StartSize);
+				newParticle.pWindow->Raise();
 			}
 
 			m_Particles.emplace_back(newParticle);

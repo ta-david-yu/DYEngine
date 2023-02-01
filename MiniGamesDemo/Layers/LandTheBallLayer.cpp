@@ -113,7 +113,14 @@ namespace DYE
 		DebugDraw::Cube(m_LandBall.Transform.Position, m_LandBall.Transform.Scale, Color::Yellow);
 
 		// We call this here instead of Fixed update is because there is DebugDraw call.
-		m_GizmosRippleEffectManager.OnUpdate(TIME.DeltaTime());
+		bool const isInSlowMotion = m_ActivateSlowMotion && m_SlowMotionTimer > 0.0f;
+		float const vfxTimeStep = TIME.DeltaTime() * (isInSlowMotion? 0.5f : 1.0f);
+
+		m_GizmosRippleEffectManager.OnUpdate(vfxTimeStep);
+		if (m_Mode == Mode::Windows)
+		{
+			m_WindowParticlesManager.OnUpdate(vfxTimeStep);
+		}
 
 		// We delay the set window border call here to avoid weird window bug.
 		if (!m_HasGameObjectWindowBeenSetToBordered)
@@ -327,7 +334,7 @@ namespace DYE
 						{contactScreenPosX, contactScreenPosY},
 						CircleEmitParams
 							{
-								.NumberOfParticles = 3
+								.NumberOfParticles = 6
 							}
 					);
 				}
@@ -352,7 +359,6 @@ namespace DYE
 		{
 			updateBallWindowPosition();
 			updatePlatformWindowPosition();
-			m_WindowParticlesManager.OnUpdate(timeStep);
 		}
 	}
 
