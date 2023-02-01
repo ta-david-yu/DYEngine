@@ -38,19 +38,11 @@ namespace DYE
 		m_ScreenDimensions = {displayMode->Width, displayMode->Height };
 
 		// Score number UI.
-		m_ScoreNumber.Transform.Scale = {6, 6, 1};
-		m_ScoreNumber.Transform.Position = {0, 1, 0};
+		m_ScoreNumber.Transform.Scale = {5, 5, 1};
+		m_ScoreNumber.Transform.Position = {0, 0, 0};
 		m_ScoreNumber.DigitDistanceOffset = 0.5f;
 		m_ScoreNumber.LoadTexture();
 		m_ScoreNumber.SetValue(0);
-
-		m_pScoreWindow = WindowManager::CreateWindow(WindowProperty("Score", 256, 96));
-		m_pScoreWindow->SetSize(256, 128);
-		m_pScoreWindow->SetContext(m_pMainWindow->GetContext());
-		m_pScoreWindow->CenterWindow();
-		auto scoreWindowPosition = m_pScoreWindow->GetPosition();
-		scoreWindowPosition.y = 30.0f;
-		m_pScoreWindow->SetPosition(scoreWindowPosition);
 
 		// Create game objects.
 		m_LandBall.Transform.Position = {0, 0, 0};
@@ -66,6 +58,10 @@ namespace DYE
 		m_pPlatformWindow->SetSize(m_ScreenPixelPerUnit * m_PlatformWidth, m_ScreenPixelPerUnit * m_PlatformHeight);
 		m_pPlatformWindow->CenterWindow();
 		m_pPlatformWindow->SetBorderedIfWindowed(false);
+
+		m_pSlowMotionTimerBarWindow = WindowManager::CreateWindow(WindowProperty("Bullet Time Energy"));
+		m_pSlowMotionTimerBarWindow->SetSize(m_ScreenDimensions.x, 40);
+		m_pSlowMotionTimerBarWindow->SetPosition(0, m_ScreenDimensions.y - 80);
 
 		// Create background object.
 		m_BackgroundSprite.Texture = Texture2D::Create("assets\\Sprite_Grid.png");
@@ -89,26 +85,25 @@ namespace DYE
 		m_BallCamera.Properties.TargetWindowID = m_pBallWindow->GetWindowID();
 
 
-		// Hide the main window by default
-		m_pMainWindow->Minimize();
+		// Hide the object windows by default.
 		updatePlatformWindowPosition();
+		switchToNormalMode();
 	}
 
 	void LandTheBallLayer::OnDetach()
 	{
-		WindowManager::CloseWindow(m_pScoreWindow->GetWindowID());
 		WindowManager::CloseWindow(m_pBallWindow->GetWindowID());
 		WindowManager::CloseWindow(m_pPlatformWindow->GetWindowID());
+		WindowManager::CloseWindow(m_pSlowMotionTimerBarWindow->GetWindowID());
 	}
 
 	void LandTheBallLayer::OnUpdate()
 	{
-		if (m_DrawDebugGizmos)
-		{
-			debugDraw();
-		}
-
 		debugInput();
+
+		// Draw normal mode objects.
+		DebugDraw::Cube({m_PlatformX, PlatformY - m_LandBall.Transform.Scale.y * 0.5f, 0}, {m_PlatformWidth, m_PlatformHeight, 1}, Color::Blue);
+		DebugDraw::Cube(m_LandBall.Transform.Position, m_LandBall.Transform.Scale, Color::Yellow);
 
 		// We delay the set window border call here to avoid weird window bug.
 		if (!m_HasGameObjectWindowBeenSetToBordered)
@@ -197,17 +192,23 @@ namespace DYE
 		}
 	}
 
-	void LandTheBallLayer::debugDraw()
-	{
-		DebugDraw::Cube({m_PlatformX, PlatformY - m_LandBall.Transform.Scale.y * 0.5f, 0}, {m_PlatformWidth, m_PlatformHeight, 1}, Color::Blue);
-		DebugDraw::Cube(m_LandBall.Transform.Position, m_LandBall.Transform.Scale, Color::Yellow);
-	}
-
 	void LandTheBallLayer::debugInput()
 	{
 		if (INPUT.GetKeyDown(KeyCode::F9))
 		{
 			m_DrawImGui = !m_DrawImGui;
+		}
+
+		if (INPUT.GetKeyDown(KeyCode::F10))
+		{
+			if (m_Mode == Mode::Normal)
+			{
+				switchToWindowsMode();
+			}
+			else
+			{
+				switchToNormalMode();
+			}
 		}
 
 		if (INPUT.GetKeyDown(KeyCode::Escape))
@@ -243,6 +244,9 @@ namespace DYE
 				m_SlowMotionTimer = (m_SlowMotionTimer > MaxSlowMotionDuration)? MaxSlowMotionDuration : m_SlowMotionTimer;
 			}
 		}
+
+		// Update slow motion timer bar window width.
+		m_pSlowMotionTimerBarWindow->SetSize(m_ScreenDimensions.x * (m_SlowMotionTimer / MaxSlowMotionDuration), 40);
 
 		bool const isInSlowMotion = m_ActivateSlowMotion && m_SlowMotionTimer > 0.0f;
 
@@ -307,8 +311,34 @@ namespace DYE
 		m_LandBall.Transform.Position.x = newBallX;
 		m_LandBall.Transform.Position.y = newBallY;
 
-		updateBallWindowPosition();
-		updatePlatformWindowPosition();
+		if (m_Mode == Mode::Windows)
+		{
+			updateBallWindowPosition();
+			updatePlatformWindowPosition();
+		}
+	}
+
+	void LandTheBallLayer::switchToNormalMode()
+	{
+		m_Mode = Mode::Normal;
+
+		m_pMainWindow->Restore();
+		m_pMainWindow->CenterWindow();
+
+		m_pBallWindow->Minimize();
+		m_pPlatformWindow->Minimize();
+		m_pSlowMotionTimerBarWindow->Minimize();
+	}
+
+	void LandTheBallLayer::switchToWindowsMode()
+	{
+		m_Mode = Mode::Windows;
+
+		m_pMainWindow->Minimize();
+
+		m_pBallWindow->Restore();
+		m_pPlatformWindow->Restore();
+		m_pSlowMotionTimerBarWindow->Restore();
 	}
 
 	void LandTheBallLayer::updateBallWindowPosition()

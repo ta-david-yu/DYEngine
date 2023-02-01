@@ -27,6 +27,12 @@ namespace DYE
 			GameOver
 		};
 
+		enum class Mode
+		{
+			Normal,
+			Windows
+		};
+
 	public:
 		explicit LandTheBallLayer(Application& application);
 		LandTheBallLayer() = delete;
@@ -40,6 +46,9 @@ namespace DYE
 		void OnImGui() override;
 
 	private:
+		void switchToNormalMode();
+		void switchToWindowsMode();
+
 		void renderSprite(MiniGame::Transform& transform, MiniGame::Sprite& sprite);
 
 		void updateBallWindowPosition();
@@ -54,35 +63,37 @@ namespace DYE
 		// Debug settings
 		WindowBase* m_pMainWindow = nullptr;
 		bool m_DrawImGui = false;
-		bool m_DrawDebugGizmos = false;
+		bool m_DrawDebugGizmos = true;
 
 		// Animation state/settings
 		float m_BackgroundScrollingSpeed = 0.0f;
-
-		// UI
-		WindowBase* m_pScoreWindow = nullptr;
-		MiniGame::SpriteUnsignedNumber m_ScoreNumber;
-
-		// Game world
-		GameState m_GameState = GameState::Preparing;
-		float m_PreparingTimer = 0.5f;
-
 		glm::vec<2, uint32_t> m_ScreenDimensions;
 		std::uint32_t m_ScreenPixelPerUnit = 76;
 		bool m_HasGameObjectWindowBeenSetToBordered = false;
 
-		ColliderManager m_ColliderManager;
+		// UI
+		MiniGame::SpriteUnsignedNumber m_ScoreNumber;
+
+		// Game states
+		GameState m_GameState = GameState::Preparing;
+		float m_PreparingTimer = 0.5f;
+		Mode m_Mode = Mode::Normal;
+
+		// Game world
 		MiniGame::Camera m_MainCamera;
 
+		// Ball
 		MiniGame::LandBall m_LandBall;
 		WindowBase* m_pBallWindow = nullptr;
 		MiniGame::Camera m_BallCamera;
 
+		// Bullet time
 		constexpr static float MaxSlowMotionDuration = 0.75f;
 		constexpr static float SlowMotionFullyRecoveryTime = 3.0f;
 		constexpr static float SlowMotionMultiplier = 0.5f;
 		float m_SlowMotionTimer = MaxSlowMotionDuration;
 		bool m_ActivateSlowMotion = false;
+		WindowBase* m_pSlowMotionTimerBarWindow = nullptr;
 
 		constexpr static float MinPlatformX = -10.0f;
 		constexpr static float MaxPlatformX = 10.0f;
