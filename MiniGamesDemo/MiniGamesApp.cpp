@@ -41,5 +41,5 @@ namespace DYE
 /// \return a new allocated Application object
 DYE::Application * DYE::CreateApplication()
 {
-    return new MiniGamesApp {"MiniGamesDemo", 60 };
+    return new MiniGamesApp {"DYE Tech Demo", 60};
 }

@@ -130,6 +130,7 @@ namespace DYE
 
 		MiniGame::Transform m_BackgroundTransform;
 		MiniGame::Sprite m_BackgroundSprite;
-
+		constexpr static float m_BackgroundSlowMotionTransitionSpeed = 8.0f;
+		float m_BackgroundSlowMotionAnimationTimer; // Ranging from 0 ~ 1: 0 means no slow-motion, 1 means fully slow-motion.
 	};
 }

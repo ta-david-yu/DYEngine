@@ -9,6 +9,7 @@
 #include "ImGui/ImGuiUtil.h"
 #include "Graphics/DebugDraw.h"
 #include "Input/InputManager.h"
+#include "Math/Math.h"
 
 #include "Graphics/RenderCommand.h"
 #include "Graphics/RenderPipelineManager.h"
@@ -30,6 +31,11 @@ namespace DYE
 		std::filesystem::path const path(".\\high_score.data");
 		std::fstream fileStream;
 		fileStream.open(path, std::fstream::in);
+
+		if (!fileStream)
+		{
+			fileStream.open(path, std::fstream::in | std::fstream::app);
+		}
 
 		std::string line;
 		std::getline(fileStream, line);
@@ -199,7 +205,20 @@ namespace DYE
 		}
 		else if (m_GameState == GameState::Playing)
 		{
-			m_ActivateSlowMotion = INPUT.GetKey(KeyCode::Return) || INPUT.GetKey(KeyCode::Space);
+			if (!m_ActivateSlowMotion)
+			{
+				if (INPUT.GetKeyDown(KeyCode::Return) || INPUT.GetKeyDown(KeyCode::Space))
+				{
+					m_ActivateSlowMotion = true;
+				}
+			}
+			else
+			{
+				if (INPUT.GetKeyUp(KeyCode::Return) || INPUT.GetKeyUp(KeyCode::Space))
+				{
+					m_ActivateSlowMotion = false;
+				}
+			}
 
 			if (INPUT.GetKey(KeyCode::Right) || INPUT.GetKey(KeyCode::D))
 			{
@@ -236,7 +255,20 @@ namespace DYE
 		}
 		else if (m_GameState == GameState::Playing)
 		{
-			m_ActivateSlowMotion = INPUT.GetGamepadButton(0, GamepadButton::South);
+			if (!m_ActivateSlowMotion)
+			{
+				if (INPUT.GetGamepadButtonDown(0, GamepadButton::South))
+				{
+					m_ActivateSlowMotion = true;
+				}
+			}
+			else
+			{
+				if (INPUT.GetGamepadButtonUp(0, GamepadButton::South))
+				{
+					m_ActivateSlowMotion = false;
+				}
+			}
 
 			float const horizontal = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickHorizontal);
 			if (glm::abs(horizontal) > 0.1f)
@@ -518,6 +550,18 @@ namespace DYE
 		RenderPipelineManager::RegisterCameraForNextRender(m_BallCamera.GetTransformedProperties());
 
 		// Scroll background texture.
+		bool const isInSlowMotion = m_ActivateSlowMotion && m_SlowMotionTimer > 0.0f;
+		if (isInSlowMotion)
+		{
+			m_BackgroundSlowMotionAnimationTimer += TIME.DeltaTime() * m_BackgroundSlowMotionTransitionSpeed;
+		}
+		else
+		{
+			m_BackgroundSlowMotionAnimationTimer -= TIME.DeltaTime() * m_BackgroundSlowMotionTransitionSpeed;
+		}
+		m_BackgroundSlowMotionAnimationTimer = glm::clamp(m_BackgroundSlowMotionAnimationTimer, 0.0f, 1.0f);
+		m_BackgroundSprite.Color = Math::Lerp(Color::White, Color::Gray, m_BackgroundSlowMotionAnimationTimer);
+
 		float const backgroundTilingOffsetChange = TIME.DeltaTime() * m_BackgroundScrollingSpeed;
 		m_BackgroundSprite.TilingOffset += glm::vec2 {backgroundTilingOffsetChange, backgroundTilingOffsetChange};
 		if (m_BackgroundSprite.TilingOffset.x > 1.0f)
