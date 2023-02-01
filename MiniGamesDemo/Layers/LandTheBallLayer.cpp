@@ -20,6 +20,8 @@
 
 namespace DYE
 {
+	std::uint32_t LandTheBallLayer::HighScore = 0;
+
 	LandTheBallLayer::LandTheBallLayer(Application &application) : m_Application(application)
 	{
 
@@ -53,6 +55,19 @@ namespace DYE
 		m_GameOverTexture = Texture2D::Create("assets\\Sprite_GameOver.png");
 		m_GameOverTexture->PixelsPerUnit = 32;
 		m_HintUISprite.Texture = m_PressToDropBallTexture;
+
+		m_ScoreCommentTransform.Position = {0, -1, 0};
+		m_PreviousHighScoreTexture = Texture2D::Create("assets\\Sprite_PreviousHighScoreText.png");
+		m_PreviousHighScoreTexture->PixelsPerUnit = 32;
+		m_NewHighScoreTexture = Texture2D::Create("assets\\Sprite_NewHighScoreText.png");
+		m_NewHighScoreTexture->PixelsPerUnit = 32;
+		m_ScoreCommentSprite.Texture = m_PreviousHighScoreTexture;
+
+		m_PreviousHighScoreNumber.Transform.Scale = {0.5f, 0.5f, 1};
+		m_PreviousHighScoreNumber.Transform.Position = {2.5f, -1, 0};
+		m_PreviousHighScoreNumber.DigitDistanceOffset = 0.5f;
+		m_PreviousHighScoreNumber.LoadTexture();
+		m_PreviousHighScoreNumber.SetValue(HighScore);
 
 		// Create game objects.
 		m_LandBall.Transform.Position = {0, 0, 0};
@@ -298,8 +313,16 @@ namespace DYE
 
 		if (newBallY < GameOverY)
 		{
+			// Game-over logic.
 			m_GameState = GameState::GameOver;
 			m_pMainWindow->Restore();
+
+			int const previousHighScore = HighScore;
+			if (m_ScoreNumber.GetValue() > previousHighScore)
+			{
+				HighScore = m_ScoreNumber.GetValue();
+				m_HasNewHighScore = true;
+			}
 		}
 		else if (prevBallY >= PlatformY && newBallY < PlatformY)
 		{
@@ -362,7 +385,7 @@ namespace DYE
 						{contactScreenPosX, contactScreenPosY},
 						CircleEmitParams
 							{
-								.NumberOfParticles = 6,
+								.NumberOfParticles = 4,
 								.HasFixedInitialVelocityDirectionY = true,
 								.FixedInitialVelocityDirectionY = -1
 							}
@@ -485,6 +508,17 @@ namespace DYE
 		{
 			m_HintUISprite.Texture = m_GameOverTexture;
 			renderSprite(m_HintUITransform, m_HintUISprite);
+
+			if (m_HasNewHighScore)
+			{
+				m_ScoreCommentSprite.Texture = m_NewHighScoreTexture;
+			}
+			else
+			{
+				m_ScoreCommentSprite.Texture = m_PreviousHighScoreTexture;
+				m_PreviousHighScoreNumber.Render();
+			}
+			renderSprite(m_ScoreCommentTransform, m_ScoreCommentSprite);
 		}
 	}
 
@@ -569,6 +603,7 @@ namespace DYE
 				ImGuiUtil::DrawFloatControl("Minimum Time To Reach Apex", m_LandBall.MinimumTimeToReachApex, 0.4f);
 
 				ImGuiUtil::DrawReadOnlyTextWithLabel("Current Gravity", std::to_string(m_LandBall.GetGravity()));
+				ImGuiUtil::DrawReadOnlyTextWithLabel("High Score", std::to_string(HighScore));
 
 				ImGui::Spacing();
 				static bool isBallWindowBorderless = true;

@@ -58,6 +58,9 @@ namespace DYE
 		void debugDraw();
 		void debugInput();
 
+	public:
+		static std::uint32_t HighScore;
+
 	private:
 		Application& m_Application;
 
@@ -70,7 +73,7 @@ namespace DYE
 		WindowParticlesManager m_WindowParticlesManager;
 		GizmosRippleEffectManager m_GizmosRippleEffectManager;
 		float m_BackgroundScrollingSpeed = 0.0f;
-		glm::vec<2, uint32_t> m_ScreenDimensions;
+		glm::vec<2, uint32_t> m_ScreenDimensions {0, 0};
 		std::uint32_t m_ScreenPixelPerUnit = 76;
 		bool m_HasGameObjectWindowBeenSetToBordered = false;
 
@@ -82,10 +85,17 @@ namespace DYE
 		std::shared_ptr<Texture2D> m_PressToDropBallTexture;
 		std::shared_ptr<Texture2D> m_GameOverTexture;
 
+		MiniGame::Transform m_ScoreCommentTransform;
+		MiniGame::Sprite m_ScoreCommentSprite;
+		std::shared_ptr<Texture2D> m_NewHighScoreTexture;
+		std::shared_ptr<Texture2D> m_PreviousHighScoreTexture;
+		MiniGame::SpriteUnsignedNumber m_PreviousHighScoreNumber;
+
 		// Game states
+		constexpr static int ScoreToSwitchToWindowsMode = 20;
 		GameState m_GameState = GameState::WaitingForBallRelease;
 		Mode m_Mode = Mode::Normal;
-		constexpr static int ScoreToSwitchToWindowsMode = 20;
+		bool m_HasNewHighScore = false;
 
 		// Game world
 		MiniGame::Camera m_MainCamera;

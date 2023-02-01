@@ -47,6 +47,8 @@ set(ASSETS
 
         assets/Sprite_GameOver.png
         assets/Sprite_PressToDropBall.png
+        assets/Sprite_PreviousHighScoreText.png
+        assets/Sprite_NewHighScoreText.png
 
         assets/Sprite_Pong.png
         assets/Sprite_PongBorder.png
