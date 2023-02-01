@@ -24,6 +24,8 @@ namespace DYE
 
 	void MainMenuLayer::OnAttach()
 	{
+		LandTheBallLayer::LoadHighScore();
+
 		// Create background object.
 		m_BackgroundSprite.Texture = Texture2D::Create("assets\\Sprite_Grid.png");
 		m_BackgroundSprite.Texture->PixelsPerUnit = 32;

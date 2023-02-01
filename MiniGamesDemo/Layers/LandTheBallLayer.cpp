@@ -18,9 +18,33 @@
 #include <imgui.h>
 #include <glm/gtc/random.hpp>
 
+#include <filesystem>
+#include <fstream>
+
 namespace DYE
 {
 	std::uint32_t LandTheBallLayer::HighScore = 0;
+
+	void LandTheBallLayer::LoadHighScore()
+	{
+		std::filesystem::path const path(".\\high_score.data");
+		std::fstream fileStream;
+		fileStream.open(path, std::fstream::in);
+
+		std::string line;
+		std::getline(fileStream, line);
+		std::stringstream lineStream(line);
+
+		lineStream >> HighScore;
+	}
+
+	void LandTheBallLayer::SaveHighScore(std::uint32_t highScore)
+	{
+		std::filesystem::path const path(".\\high_score.data");
+		std::fstream fileStream;
+		fileStream.open(path, std::fstream::out | std::fstream::trunc);
+		fileStream << highScore;
+	}
 
 	LandTheBallLayer::LandTheBallLayer(Application &application) : m_Application(application)
 	{
@@ -313,16 +337,7 @@ namespace DYE
 
 		if (newBallY < GameOverY)
 		{
-			// Game-over logic.
-			m_GameState = GameState::GameOver;
-			m_pMainWindow->Restore();
-
-			int const previousHighScore = HighScore;
-			if (m_ScoreNumber.GetValue() > previousHighScore)
-			{
-				HighScore = m_ScoreNumber.GetValue();
-				m_HasNewHighScore = true;
-			}
+			gameOver();
 		}
 		else if (prevBallY >= PlatformY && newBallY < PlatformY)
 		{
@@ -413,6 +428,21 @@ namespace DYE
 		{
 			updateBallWindowPosition();
 			updatePlatformWindowPosition();
+		}
+	}
+
+	void LandTheBallLayer::gameOver()
+	{
+		// Game-over logic.
+		m_GameState = GameState::GameOver;
+		m_pMainWindow->Restore();
+
+		int const previousHighScore = HighScore;
+		if (m_ScoreNumber.GetValue() > previousHighScore)
+		{
+			HighScore = m_ScoreNumber.GetValue();
+			m_HasNewHighScore = true;
+			SaveHighScore(HighScore);
 		}
 	}
 

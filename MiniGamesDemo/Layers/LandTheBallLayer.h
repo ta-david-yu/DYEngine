@@ -35,6 +35,9 @@ namespace DYE
 		};
 
 	public:
+		static void LoadHighScore();
+		static void SaveHighScore(std::uint32_t highScore);
+
 		explicit LandTheBallLayer(Application& application);
 		LandTheBallLayer() = delete;
 		LandTheBallLayer(LandTheBallLayer const& other) = delete;
@@ -57,6 +60,8 @@ namespace DYE
 
 		void debugDraw();
 		void debugInput();
+
+		void gameOver();
 
 	public:
 		static std::uint32_t HighScore;
