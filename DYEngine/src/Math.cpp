@@ -12,6 +12,16 @@ namespace DYE::Math
 		return { Lerp(start.x, end.x, t), Lerp(start.y, end.y, t) };
 	}
 
+	glm::vec3 Lerp(glm::vec3 start, glm::vec3 end, float t)
+	{
+		return { Lerp(start.x, end.x, t), Lerp(start.y, end.y, t), Lerp(start.z, end.z, t) };
+	}
+
+	glm::vec4 Lerp(glm::vec4 start, glm::vec4 end, float t)
+	{
+		return { Lerp(start.x, end.x, t), Lerp(start.y, end.y, t), Lerp(start.z, end.z, t), Lerp(start.w, end.w, t) };
+	}
+
 	glm::quat FromToRotation(glm::vec3 from, glm::vec3 to)
 	{
 		/// Implementation from: https://github.com/opengl-tutorials/ogl/blob/master/common/quaternion_utils.cpp

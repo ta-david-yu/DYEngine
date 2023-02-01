@@ -2,7 +2,7 @@
 
 #include "Core/LayerBase.h"
 
-#include "ColliderManager.h"
+#include "GizmosRippleEffectManager.h"
 #include "Components/Sprite.h"
 #include "Components/Transform.h"
 #include "Components/Collider.h"
@@ -21,7 +21,6 @@ namespace DYE
 	{
 		enum class GameState
 		{
-			Preparing, 				// A preparing buffer time to prevent input from the main menu
 			WaitingForBallRelease, 	// Wait for player's input to drop the ball
 			Playing,
 			GameOver
@@ -66,6 +65,7 @@ namespace DYE
 		bool m_DrawDebugGizmos = true;
 
 		// Animation state/settings
+		GizmosRippleEffectManager m_GimzosRippleEffectManager;
 		float m_BackgroundScrollingSpeed = 0.0f;
 		glm::vec<2, uint32_t> m_ScreenDimensions;
 		std::uint32_t m_ScreenPixelPerUnit = 76;
@@ -75,9 +75,9 @@ namespace DYE
 		MiniGame::SpriteUnsignedNumber m_ScoreNumber;
 
 		// Game states
-		GameState m_GameState = GameState::Preparing;
-		float m_PreparingTimer = 0.5f;
+		GameState m_GameState = GameState::WaitingForBallRelease;
 		Mode m_Mode = Mode::Normal;
+		constexpr static int ScoreToSwitchToWindowsMode = 20;
 
 		// Game world
 		MiniGame::Camera m_MainCamera;

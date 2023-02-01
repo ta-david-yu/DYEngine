@@ -12,7 +12,7 @@ namespace DYE::MiniGame
 	public:
 		// Constant settings.
 		constexpr static float Apex = 10;
-		constexpr static float InitialTimeToReachApex = 1.1f;
+		constexpr static float InitialTimeToReachApex = 1;
 		float TimePercentageLossPerBounce = 0.015f;
 		float MinimumTimeToReachApex = 0.4f;
 		float HorizontalMoveSpeed = 18.0f;

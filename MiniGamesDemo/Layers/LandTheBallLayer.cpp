@@ -83,6 +83,7 @@ namespace DYE
 
 		m_BallCamera = m_MainCamera;
 		m_BallCamera.Properties.TargetWindowID = m_pBallWindow->GetWindowID();
+		m_BallCamera.Properties.OrthographicSize = 6;
 
 
 		// Hide the object windows by default.
@@ -101,9 +102,14 @@ namespace DYE
 	{
 		debugInput();
 
-		// Draw normal mode objects.
+		// Draw platform.
 		DebugDraw::Cube({m_PlatformX, PlatformY - m_LandBall.Transform.Scale.y * 0.5f, 0}, {m_PlatformWidth, m_PlatformHeight, 1}, Color::Blue);
+
+		// Draw 'ball'
 		DebugDraw::Cube(m_LandBall.Transform.Position, m_LandBall.Transform.Scale, Color::Yellow);
+
+		// We call this here instead of Fixed update is because there is DebugDraw call.
+		m_GimzosRippleEffectManager.OnUpdate(TIME.DeltaTime());
 
 		// We delay the set window border call here to avoid weird window bug.
 		if (!m_HasGameObjectWindowBeenSetToBordered)
@@ -111,18 +117,6 @@ namespace DYE
 			m_HasGameObjectWindowBeenSetToBordered = true;
 			m_pBallWindow->SetBorderedIfWindowed(true);
 			m_pPlatformWindow->SetBorderedIfWindowed(true);
-		}
-
-		if (m_GameState == GameState::Preparing)
-		{
-			m_PreparingTimer -= TIME.DeltaTime();
-			if (m_PreparingTimer > 0.0f)
-			{
-				return;
-			}
-
-			// Time is up. Go to the next state.
-			m_GameState = GameState::WaitingForBallRelease;
 		}
 
 		// In-game input
@@ -299,9 +293,35 @@ namespace DYE
 				}
 				m_PlatformX = newPlatformX;
 
-				// TODO: Play VFX/animation etc.
+				glm::vec2 contactPoint = m_LandBall.Transform.Position;
+				contactPoint.y -= m_LandBall.Transform.Scale.y * 0.5f;
+
+				if (m_Mode == Mode::Normal)
+				{
+					m_GimzosRippleEffectManager.SpawnRippleAt(
+						contactPoint,
+						RippleEffectParameters
+							{
+								.LifeTime = 1.0f,
+								.StartRadius = 0.5f,
+								.EndRadius = 1.5f,
+								.StartColor = Color::Yellow,
+								.EndColor = {1, 0.92f, 0.016f, 0}
+							}
+					);
+				}
+				else
+				{
+					// TODO: Play window particles
+				}
+
 				m_LandBall.OnBounce();
 				m_ScoreNumber.SetValue(m_ScoreNumber.GetValue() + 1);
+
+				if (m_ScoreNumber.GetValue() == ScoreToSwitchToWindowsMode)
+				{
+					switchToWindowsMode();
+				}
 
 				m_LandBall.Velocity.Value.y = m_LandBall.GetLaunchVerticalSpeed();
 				newBallY = PlatformY;
