@@ -91,7 +91,7 @@ namespace DYE
 		MiniGame::Camera m_BallCamera;
 
 		// Bullet time
-		constexpr static float MaxSlowMotionDuration = 0.75f;
+		constexpr static float MaxSlowMotionDuration = 1;
 		constexpr static float SlowMotionFullyRecoveryTime = 3.0f;
 		constexpr static float SlowMotionMultiplier = 0.5f;
 		float m_SlowMotionTimer = MaxSlowMotionDuration;
