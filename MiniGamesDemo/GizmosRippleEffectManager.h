@@ -2,8 +2,8 @@
 
 #include "Math/EasingFunctions.h"
 
-#include <glm/glm.hpp>
 #include <vector>
+#include <glm/glm.hpp>
 
 namespace DYE
 {

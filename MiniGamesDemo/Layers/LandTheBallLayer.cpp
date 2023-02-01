@@ -89,6 +89,8 @@ namespace DYE
 		// Hide the object windows by default.
 		updatePlatformWindowPosition();
 		switchToNormalMode();
+
+		m_WindowParticlesManager.Initialize();
 	}
 
 	void LandTheBallLayer::OnDetach()
@@ -96,6 +98,8 @@ namespace DYE
 		WindowManager::CloseWindow(m_pBallWindow->GetWindowID());
 		WindowManager::CloseWindow(m_pPlatformWindow->GetWindowID());
 		WindowManager::CloseWindow(m_pSlowMotionTimerBarWindow->GetWindowID());
+
+		m_WindowParticlesManager.Shutdown();
 	}
 
 	void LandTheBallLayer::OnUpdate()
@@ -109,7 +113,7 @@ namespace DYE
 		DebugDraw::Cube(m_LandBall.Transform.Position, m_LandBall.Transform.Scale, Color::Yellow);
 
 		// We call this here instead of Fixed update is because there is DebugDraw call.
-		m_GimzosRippleEffectManager.OnUpdate(TIME.DeltaTime());
+		m_GizmosRippleEffectManager.OnUpdate(TIME.DeltaTime());
 
 		// We delay the set window border call here to avoid weird window bug.
 		if (!m_HasGameObjectWindowBeenSetToBordered)
@@ -298,7 +302,7 @@ namespace DYE
 
 				if (m_Mode == Mode::Normal)
 				{
-					m_GimzosRippleEffectManager.SpawnRippleAt(
+					m_GizmosRippleEffectManager.SpawnRippleAt(
 						contactPoint,
 						RippleEffectParameters
 							{
@@ -312,7 +316,20 @@ namespace DYE
 				}
 				else
 				{
-					// TODO: Play window particles
+					std::int32_t contactScreenPosX = contactPoint.x * m_ScreenPixelPerUnit;
+					std::int32_t contactScreenPosY = contactPoint.y * m_ScreenPixelPerUnit;
+					contactScreenPosY = m_ScreenDimensions.y - contactScreenPosY;
+
+					contactScreenPosX += m_ScreenDimensions.x * 0.5f;
+					contactScreenPosY -= m_ScreenDimensions.y * 0.5f;
+
+					m_WindowParticlesManager.CircleEmitParticlesAt(
+						{contactScreenPosX, contactScreenPosY},
+						CircleEmitParams
+							{
+								.NumberOfParticles = 3
+							}
+					);
 				}
 
 				m_LandBall.OnBounce();
@@ -335,6 +352,7 @@ namespace DYE
 		{
 			updateBallWindowPosition();
 			updatePlatformWindowPosition();
+			m_WindowParticlesManager.OnUpdate(timeStep);
 		}
 	}
 
@@ -348,6 +366,8 @@ namespace DYE
 		m_pBallWindow->Minimize();
 		m_pPlatformWindow->Minimize();
 		m_pSlowMotionTimerBarWindow->Minimize();
+
+		m_WindowParticlesManager.HideParticles();
 	}
 
 	void LandTheBallLayer::switchToWindowsMode()
@@ -359,6 +379,8 @@ namespace DYE
 		m_pBallWindow->Restore();
 		m_pPlatformWindow->Restore();
 		m_pSlowMotionTimerBarWindow->Restore();
+
+		m_WindowParticlesManager.ShowParticles();
 	}
 
 	void LandTheBallLayer::updateBallWindowPosition()
@@ -509,5 +531,7 @@ namespace DYE
 			}
 		}
 		ImGui::End();
+
+		m_WindowParticlesManager.OnImGui();
 	}
 }

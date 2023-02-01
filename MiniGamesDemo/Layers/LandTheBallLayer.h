@@ -3,6 +3,8 @@
 #include "Core/LayerBase.h"
 
 #include "GizmosRippleEffectManager.h"
+#include "WindowParticlesManager.h"
+
 #include "Components/Sprite.h"
 #include "Components/Transform.h"
 #include "Components/Collider.h"
@@ -65,7 +67,8 @@ namespace DYE
 		bool m_DrawDebugGizmos = true;
 
 		// Animation state/settings
-		GizmosRippleEffectManager m_GimzosRippleEffectManager;
+		WindowParticlesManager m_WindowParticlesManager;
+		GizmosRippleEffectManager m_GizmosRippleEffectManager;
 		float m_BackgroundScrollingSpeed = 0.0f;
 		glm::vec<2, uint32_t> m_ScreenDimensions;
 		std::uint32_t m_ScreenPixelPerUnit = 76;
