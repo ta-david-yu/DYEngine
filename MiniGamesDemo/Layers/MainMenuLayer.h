@@ -71,11 +71,14 @@ namespace DYE
 		std::shared_ptr<Texture2D> m_PongSubtitleTexture;
 		std::shared_ptr<Texture2D> m_ExitSubtitleTexture;
 
-		// UIs
 		std::vector<MiniGame::SpriteButton> m_MenuButtons;
 		int m_SelectedButtonIndex = 0;
 
 		MiniGame::SpriteButton m_LandTheBallButton;
 		MiniGame::SpriteButton m_PongButton;
+
+		MiniGame::Transform m_HighScoreTextTransform;
+		MiniGame::Sprite m_HighScoreTextSprite;
+		MiniGame::SpriteUnsignedNumber m_LandTheBallHighScoreNumber;
 	};
 }

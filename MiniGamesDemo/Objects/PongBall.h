@@ -18,7 +18,7 @@ namespace DYE::MiniGame
 		Hittable Hittable;
 		AttachableToPaddle Attachable;
 		Sprite Sprite;
-		float LaunchBaseSpeed;
+		float LaunchBaseSpeed = 7;
 
 		float RespawnAnimationDuration = 0.5f;
 		float HitAnimationDuration = 0.25f;

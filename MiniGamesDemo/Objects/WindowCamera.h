@@ -27,7 +27,7 @@ namespace DYE::MiniGame
 
 		glm::vec<2, int> CameraOffset = {0, 0};
 		float MoveSpeed = 140;
-		float ResizeAnimationDuration = 0.5f;
+		float ResizeAnimationDuration = 0.75f;
 
 		WindowBase* GetWindowPtr() { return m_pWindow; }
 		void ResetCachedPosition();

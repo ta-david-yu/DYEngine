@@ -3,6 +3,9 @@
 #include "Graphics/RenderPipelineManager.h"
 #include "Graphics/RenderPipeline2D.h"
 
+#include "Math/Math.h"
+#include "Math/EasingFunctions.h"
+
 namespace DYE::MiniGame
 {
 	void SpriteUnsignedNumber::LoadTexture()
@@ -34,6 +37,29 @@ namespace DYE::MiniGame
 		}
 	}
 
+	void SpriteUnsignedNumber::PlayPopAnimation()
+	{
+		m_PopAnimationTimer = PopAnimationDuration;
+	}
+
+	void SpriteUnsignedNumber::UpdateAnimation(float timeStep)
+	{
+		if (m_PopAnimationTimer <= 0)
+		{
+			return;
+		}
+
+		m_PopAnimationTimer -= timeStep;
+		if (m_PopAnimationTimer < 0.0f)
+		{
+			m_PopAnimationTimer = 0.0f;
+		}
+
+		float const t = EaseOutCubic((PopAnimationDuration - m_PopAnimationTimer) / PopAnimationDuration);
+		float const scale = Math::Lerp(1.5f, 1.0f, t);
+		Transform.Scale = {scale, scale, scale};
+	}
+
 	void SpriteUnsignedNumber::Render()
 	{
 		glm::mat4 modelMatrix = glm::mat4 {1.0f};
@@ -44,7 +70,7 @@ namespace DYE::MiniGame
 		if (m_Digits.empty())
 		{
 			RenderPipelineManager::GetTypedActiveRenderPipelinePtr<RenderPipeline2D>()
-				->SubmitSprite(m_DigitTextures[0], {1, 1, 1, 1}, modelMatrix);
+				->SubmitSprite(m_DigitTextures[0], Color, modelMatrix);
 			return;
 		}
 
@@ -60,7 +86,7 @@ namespace DYE::MiniGame
 			glm::mat4 const digitModelMatrix = glm::translate(modelMatrix, digitPosition);
 
 			RenderPipelineManager::GetTypedActiveRenderPipelinePtr<RenderPipeline2D>()
-				->SubmitSprite(m_DigitTextures[digit], {1, 1, 1, 1}, digitModelMatrix);
+				->SubmitSprite(m_DigitTextures[digit], Color, digitModelMatrix);
 		}
 	}
 }

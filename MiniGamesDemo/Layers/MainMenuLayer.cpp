@@ -1,6 +1,7 @@
 #include "Layers/MainMenuLayer.h"
 
 #include "MiniGamesApp.h"
+#include "LandTheBallLayer.h"
 
 #include "Core/Application.h"
 #include "Util/Logger.h"
@@ -23,6 +24,8 @@ namespace DYE
 
 	void MainMenuLayer::OnAttach()
 	{
+		LandTheBallLayer::LoadHighScore();
+
 		// Create background object.
 		m_BackgroundSprite.Texture = Texture2D::Create("assets\\Sprite_Grid.png");
 		m_BackgroundSprite.Texture->PixelsPerUnit = 32;
@@ -39,7 +42,7 @@ namespace DYE
 		m_ButtonPromptSprite.Texture->PixelsPerUnit = 32;
 		m_ButtonPromptTransform.Position = {-5, -6.0f, 0};
 
-		m_LandTheBallSubtitleTexture = Texture2D::Create("assets\\Sprite_RulePong.png");
+		m_LandTheBallSubtitleTexture = Texture2D::Create("assets\\Sprite_RuleLandTheBall.png");
 		m_LandTheBallSubtitleTexture->PixelsPerUnit = 20;
 
 		m_PongSubtitleTexture = Texture2D::Create("assets\\Sprite_RulePong.png");
@@ -49,7 +52,7 @@ namespace DYE
 		m_ExitSubtitleTexture->PixelsPerUnit = 20;
 
 		m_SubtitleSprite.Texture = m_LandTheBallSubtitleTexture;
-		m_SubtitleTransform.Position = {8, -3, 0};
+		m_SubtitleTransform.Position = {5, -3, 0};
 
 		MiniGame::SpriteButton landTheBallButton;
 		landTheBallButton.Transform.Position = {-5, -1.5f, 0};
@@ -77,6 +80,17 @@ namespace DYE
 		exitButton.DeselectedTexture->PixelsPerUnit = 32;
 		exitButton.SetDeselectAppearance();
 		m_MenuButtons.push_back(std::move(exitButton));
+
+		// Initialize high score.
+		m_HighScoreTextTransform.Position = {1.2f, -6, 0};
+		m_HighScoreTextSprite.Texture = Texture2D::Create("assets\\Sprite_HighScoreText.png");
+		m_HighScoreTextSprite.Texture->PixelsPerUnit = 32;
+
+		m_LandTheBallHighScoreNumber.Transform.Position = {2.5f, -6, 0};
+		m_LandTheBallHighScoreNumber.Transform.Scale = {0.5f, 0.5f, 1};
+		m_LandTheBallHighScoreNumber.DigitDistanceOffset = 0.5f;
+		m_LandTheBallHighScoreNumber.LoadTexture();
+		m_LandTheBallHighScoreNumber.SetValue(LandTheBallLayer::HighScore);
 
 		// Set window location and size.
 		m_MainWindow = WindowManager::GetMainWindow();
@@ -263,6 +277,13 @@ namespace DYE
 
 		// Subtitles.
 		renderSprite(m_SubtitleTransform, m_SubtitleSprite);
+
+		// Land the ball high score.
+		if (m_SelectedButtonIndex == 0)
+		{
+			m_LandTheBallHighScoreNumber.Render();
+			renderSprite(m_HighScoreTextTransform, m_HighScoreTextSprite);
+		}
 	}
 
 	void MainMenuLayer::renderSprite(MiniGame::Transform &transform, MiniGame::Sprite &sprite)

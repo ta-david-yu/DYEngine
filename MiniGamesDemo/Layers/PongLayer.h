@@ -5,6 +5,9 @@
 #include "Util/FPSCounter.h"
 
 #include "ColliderManager.h"
+#include "WindowParticlesManager.h"
+#include "GizmosRippleEffectManager.h"
+
 #include "Objects/Wall.h"
 #include "Objects/Camera.h"
 #include "Objects/PongPlayer.h"
@@ -54,6 +57,8 @@ namespace DYE
 		void checkIfBallHasReachedGoal(float timeStep);
 		void updateBoxCollider(MiniGame::Transform& transform, MiniGame::BoxCollider& collider);
 
+		void playOnBounceEffect(glm::vec2 worldPos);
+
 		void imguiSprite(const std::string& name, MiniGame::Transform& transform, MiniGame::Sprite& sprite);
 
 	private:
@@ -68,6 +73,7 @@ namespace DYE
 		// Animation state/settings
 		float m_BackgroundScrollingSpeed = 0.5f;
 		float m_CenterDottedLineScrollingSpeed = 0.4f;
+		glm::vec<2, uint32_t> m_ScreenDimensions;
 
 		// Game state
 		constexpr static int MaxHealth = 10;
@@ -78,12 +84,12 @@ namespace DYE
 				glm::vec<2, std::uint32_t>{800, 900},	// 9
 				glm::vec<2, std::uint32_t>{700, 800},	// 8
 				glm::vec<2, std::uint32_t>{700, 800},	// 7
-				glm::vec<2, std::uint32_t>{550, 600},	// 6
-				glm::vec<2, std::uint32_t>{550, 600},	// 5
-				glm::vec<2, std::uint32_t>{350, 400},	// 4
-				glm::vec<2, std::uint32_t>{350, 400},	// 3
-				glm::vec<2, std::uint32_t>{250, 300},	// 2
-				glm::vec<2, std::uint32_t>{250, 300}	// 1
+				glm::vec<2, std::uint32_t>{550, 800},	// 6
+				glm::vec<2, std::uint32_t>{550, 800},	// 5
+				glm::vec<2, std::uint32_t>{350, 500},	// 4
+				glm::vec<2, std::uint32_t>{350, 500},	// 3
+				glm::vec<2, std::uint32_t>{250, 500},	// 2
+				glm::vec<2, std::uint32_t>{250, 500}	// 1
 			};
 
 		GameState m_GameState = GameState::Playing;
@@ -92,6 +98,8 @@ namespace DYE
 
 		// Game world
 		ColliderManager m_ColliderManager;
+		GizmosRippleEffectManager m_RippleEffectManager;
+		WindowParticlesManager m_WindowParticlesManager;
 
 		MiniGame::Transform m_BackgroundTransform;
 		MiniGame::Sprite m_BackgroundSprite;

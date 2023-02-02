@@ -46,6 +46,11 @@ namespace DYE
 	void PongLayer::OnAttach()
 	{
 		RenderCommand::GetInstance().SetClearColor(glm::vec4{0.5f, 0.5f, 0.5f, 0.5f});
+		RenderCommand::GetInstance().SetLinePrimitiveWidth(3);
+
+		// Initialize screen parameters.
+		auto displayMode = Screen::GetInstance().GetDisplayMode(0);
+		m_ScreenDimensions = {displayMode->Width, displayMode->Height };
 
 		// Create ball objects.
 		m_Ball.Transform.Position = {0, 0, 0};
@@ -210,12 +215,18 @@ namespace DYE
 
 		// Hide the main window by default (for debugging, press F9/F10 to toggle it).
 		m_MainWindow->Minimize();
+
+		m_WindowParticlesManager.Initialize(12);
+		m_WindowParticlesManager.HasMaxParticlesLimit = true;
+		m_WindowParticlesManager.MaxParticlesLimit = 12;
 	}
 
 	void PongLayer::OnDetach()
 	{
 		WindowManager::CloseWindow(m_Player1WindowCamera.GetWindowPtr()->GetWindowID());
 		WindowManager::CloseWindow(m_Player2WindowCamera.GetWindowPtr()->GetWindowID());
+
+		m_WindowParticlesManager.Shutdown();
 	}
 
 	void PongLayer::registerBoxCollider(MiniGame::Transform &transform, MiniGame::BoxCollider &collider)
@@ -359,6 +370,12 @@ namespace DYE
 		m_Player2WindowCamera.UpdateCameraProperties();
 
 		// Animation updates
+		m_RippleEffectManager.OnUpdate(TIME.DeltaTime());
+		m_WindowParticlesManager.OnUpdate(TIME.DeltaTime());
+
+		m_Player1Number.UpdateAnimation(TIME.DeltaTime());
+		m_Player2Number.UpdateAnimation(TIME.DeltaTime());
+
 		m_Ball.UpdateAnimation(TIME.DeltaTime());
 
 		if (m_GameState == GameState::GameOver)
@@ -702,6 +719,8 @@ namespace DYE
 			m_Ball.Transform.Position += actualPositionOffset;
 			m_Ball.Hittable.LastHitByPlayerID = paddle.PlayerID;
 			m_Ball.PlayHitAnimation();
+
+			playOnBounceEffect(result2D.HitPoint);
 		}
 
 		// Actually update the paddle and its collider.
@@ -753,11 +772,47 @@ namespace DYE
 
 				break;
 			}
+
+			playOnBounceEffect(hit.Point);
 		}
 		else
 		{
 			m_Ball.Transform.Position += glm::vec3(positionChange, 0);
 		}
+	}
+
+	void PongLayer::playOnBounceEffect(glm::vec2 worldPos)
+	{
+		m_RippleEffectManager.SpawnRippleAt(
+			worldPos,
+			RippleEffectParameters
+				{
+					.LifeTime = 1.0f,
+					.StartRadius = 0.25f,
+					.EndRadius = 0.75f,
+					.StartColor = Color::Black,
+					.EndColor = {0, 0, 0, 0}
+				}
+		);
+
+		auto const contactPoint = worldPos;
+		std::int32_t contactScreenPosX = contactPoint.x * 64;
+		std::int32_t contactScreenPosY = contactPoint.y * 64;
+		contactScreenPosY = m_ScreenDimensions.y - contactScreenPosY;
+
+		contactScreenPosX += m_ScreenDimensions.x * 0.5f;
+		contactScreenPosY -= m_ScreenDimensions.y * 0.5f;
+		m_WindowParticlesManager.CircleEmitParticlesAt(
+			{contactScreenPosX, contactScreenPosY},
+			CircleEmitParams
+				{
+					.NumberOfParticles = 3,
+					.Gravity = 0,
+					.InitialMinSpeed = 250,
+					.InitialMaxSpeed = 400,
+					.DecelerationPerSecond = 450,
+				}
+		);
 	}
 
 	void PongLayer::checkIfBallHasReachedGoal(float timeStep)
@@ -769,15 +824,6 @@ namespace DYE
 			{
 				continue;
 			}
-
-			int const hitPlayerID = m_Ball.Hittable.LastHitByPlayerID;
-			auto hitPlayerItr = std::find_if(
-				m_Players.begin(),
-				m_Players.end(),
-				[hitPlayerID](MiniGame::PongPlayer const& player)
-				{
-					return hitPlayerID == player.Settings.ID;
-				});
 
 			// Deal 1 damage to the homebase.
 			int const damagedPlayerID = homebase.PlayerID;
@@ -799,10 +845,12 @@ namespace DYE
 				if (damagedPlayerID == 0)
 				{
 					m_Player1Number.SetValue(MaxHealth - playerItr->State.Health);
+					m_Player1Number.PlayPopAnimation();
 				}
 				else
 				{
 					m_Player2Number.SetValue(MaxHealth - playerItr->State.Health);
+					m_Player2Number.PlayPopAnimation();
 				}
 
 				if (playerItr->State.Health == 0)
@@ -819,20 +867,21 @@ namespace DYE
 					m_GameState = GameState::Intermission;
 
 					// Shrink the winning player's window size.
-					MiniGame::WindowCamera& windowCamera = hitPlayerID == 0? m_Player1WindowCamera : m_Player2WindowCamera;
+					MiniGame::WindowCamera& windowCameraToShrink = damagedPlayerID == 0? m_Player2WindowCamera : m_Player1WindowCamera;
+					MiniGame::PongPlayer& shrunkPlayer = damagedPlayerID == 0 ? m_Players[1] : m_Players[0];
 
 					int const sizeIndex = WindowSizesCount - playerItr->State.Health;
 					if (sizeIndex >= 0 && sizeIndex < HealthWindowSizes.size())
 					{
 						auto size = HealthWindowSizes[sizeIndex];
-						windowCamera.SmoothResize(size.x, size.y);
+						windowCameraToShrink.SmoothResize(size.x, size.y);
 					}
 
 					// Enable window control/show border if the window shrinks.
 					if (playerItr->State.Health <= HealthToEnableWindowInput)
 					{
-						windowCamera.GetWindowPtr()->SetBorderedIfWindowed(true);
-						hitPlayerItr->State.CanMoveWindow = true;
+						windowCameraToShrink.GetWindowPtr()->SetBorderedIfWindowed(true);
+						shrunkPlayer.State.CanMoveWindow = true;
 					}
 				}
 			}
@@ -860,6 +909,24 @@ namespace DYE
 
 			// Play animations.
 			m_Ball.PlayGoalAnimation();
+
+			auto const contactPoint = m_Ball.Transform.Position;
+			std::int32_t contactScreenPosX = contactPoint.x * 64;
+			std::int32_t contactScreenPosY = contactPoint.y * 64;
+			contactScreenPosY = m_ScreenDimensions.y - contactScreenPosY;
+
+			contactScreenPosX += m_ScreenDimensions.x * 0.5f;
+			contactScreenPosY -= m_ScreenDimensions.y * 0.5f;
+
+			m_WindowParticlesManager.CircleEmitParticlesAt(
+				{contactScreenPosX, contactScreenPosY},
+				CircleEmitParams
+					{
+						.NumberOfParticles = 12,
+						.Gravity = 0,
+						.DecelerationPerSecond = 900
+					}
+			);
 
 			break;
 		}
@@ -919,7 +986,7 @@ namespace DYE
 				}
 			}
 
-			if (ImGui::CollapsingHeader("Window & Mouse"))
+			if (ImGui::CollapsingHeader("Window & Mouse", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				int const mainDisplayIndex = m_MainWindow->GetDisplayIndex();
 				ImGui::Text("MainWindowDisplayIndex = %d", mainDisplayIndex);
