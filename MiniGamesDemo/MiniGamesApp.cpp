@@ -6,6 +6,8 @@
 #include "Layers/LandTheBallLayer.h"
 #include "Layers/PongLayer.h"
 
+#include "Input/InputManager.h"
+
 namespace DYE
 {
 	MiniGamesApp::MiniGamesApp(const std::string &windowName, int fixedFramePerSecond)
@@ -13,6 +15,8 @@ namespace DYE
 	{
 		m_CurrentMainLayer = std::make_shared<MainMenuLayer>(*this);
 		pushLayerImmediate(m_CurrentMainLayer);
+
+		INPUT.EnableGamepadInputEventInBackground();
 	}
 
 	void MiniGamesApp::LoadMainMenuLayer()
