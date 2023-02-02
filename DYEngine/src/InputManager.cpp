@@ -223,6 +223,16 @@ namespace DYE
 		return m_RegisteredDeviceDescriptors[deviceId];
 	}
 
+	void InputManager::EnableGamepadInputEventInBackground()
+	{
+		SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
+	}
+
+	void InputManager::DisableGamepadInputEventInBackground()
+	{
+		SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "0");
+	}
+
 	void InputManager::DrawAllRegisteredDeviceDescriptorsImGui() const
 	{
 		if (ImGui::Begin("InputManager - Registered Device Descriptor"))

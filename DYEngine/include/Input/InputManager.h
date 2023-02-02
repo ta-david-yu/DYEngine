@@ -85,6 +85,9 @@ namespace DYE
 		float GetGamepadAxis(DeviceID deviceId, GamepadAxis axis) const;
 		std::optional<DeviceDescriptor> GetGamepadDeviceDescriptor(DeviceID deviceId) const;
 
+		void EnableGamepadInputEventInBackground();
+		void DisableGamepadInputEventInBackground();
+
 		void DrawAllRegisteredDeviceDescriptorsImGui() const;
 		void DrawAllConnectedDeviceDescriptorsImGui() const;
 
