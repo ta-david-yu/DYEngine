@@ -228,8 +228,8 @@ namespace DYE
 		}
 		else if (index == 2)
 		{
-			DYE_MSG_BOX(SDL_MESSAGEBOX_INFORMATION, "I WANT TO SAY GOODBYE BUT...", "DON'T CLOSE THE GAME DURING THE SHOWCASE :)");
-			// miniGamesApp.Shutdown();
+			//DYE_MSG_BOX(SDL_MESSAGEBOX_INFORMATION, "I WANT TO SAY GOODBYE BUT...", "DON'T CLOSE THE GAME DURING THE SHOWCASE :)");
+			miniGamesApp.Shutdown();
 		}
 	}
 

@@ -1,19 +1,40 @@
-project(MiniGames)
+project(DYETechDemo)
 
-add_executable(MiniGames
+set(APP_ICON_RESOURCE_WINDOWS "${CMAKE_CURRENT_SOURCE_DIR}/appicon.rc")
+
+add_executable(DYETechDemo
         MiniGamesApp.cpp
         ColliderManager.cpp
+        GizmosRippleEffectManager.cpp
+        WindowParticlesManager.cpp
         Layers/CollisionTestLayer.cpp
         Layers/PongLayer.cpp
+        Layers/MainMenuLayer.cpp
+        Layers/LandTheBallLayer.cpp
+        Components/Transform.cpp
+        Components/Sprite.cpp
+        Components/Collider.cpp
+        Components/Velocity.cpp
+        Components/Hittable.cpp
+        Components/AttachableToPaddle.cpp
         Objects/PlayerPaddle.cpp
-        Components/Transform.cpp Components/Sprite.cpp Components/Collider.cpp Objects/Wall.cpp Objects/PongBall.cpp Components/Velocity.cpp Objects/Camera.cpp Components/Hittable.cpp Objects/PongPlayer.cpp Objects/PongHomebase.cpp Components/AttachableToPaddle.cpp Objects/WindowCamera.cpp Layers/MainMenuLayer.cpp Objects/SpriteButton.cpp Objects/SpriteUnsignedNumber.cpp Layers/LandTheBallLayer.cpp Objects/LandBall.cpp GizmosRippleEffectManager.cpp WindowParticlesManager.cpp)
+        Objects/Camera.cpp
+        Objects/PongPlayer.cpp
+        Objects/PongHomebase.cpp
+        Objects/WindowCamera.cpp
+        Objects/SpriteButton.cpp
+        Objects/SpriteUnsignedNumber.cpp
+        Objects/Wall.cpp
+        Objects/PongBall.cpp
+        Objects/LandBall.cpp
+        ${APP_ICON_RESOURCE_WINDOWS})
 
-target_include_directories(MiniGames PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(MiniGames DYEngine)
+target_include_directories(DYETechDemo PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(DYETechDemo DYEngine)
 
 if(CMAKE_BUILD_TYPE MATCHES Release)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive")
-    target_link_libraries(MiniGames -static-libgcc)
+    target_link_libraries(DYETechDemo -static-libgcc)
 endif ()
 
 # Copy assets to the output directory
@@ -70,7 +91,7 @@ foreach(ASSET ${ASSETS})
     get_filename_component(ASSET_FILENAME ${ASSET} NAME)
 
     set(ASSET_INPUT_PATH ${PROJECT_SOURCE_DIR}/${ASSET})
-    message(STATUS "[MiniGames] copy asset: '${ASSET_INPUT_PATH}' -> '${ASSET_OUTPUT_PATH}'")
+    message(STATUS "[DYETechDemo] copy asset: '${ASSET_INPUT_PATH}' -> '${ASSET_OUTPUT_PATH}'")
     file(COPY ${ASSET_INPUT_PATH}
          DESTINATION ${ASSET_OUTPUT_PATH})
     # configure_file(${ASSET_INPUT_PATH} ${ASSET_OUTPUT_PATH} COPYONLY)
