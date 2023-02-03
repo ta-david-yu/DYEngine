@@ -48,12 +48,24 @@ namespace DYE
 		// Do nothing.
     }
 
+	std::string SDLWindow::GetTitle() const
+	{
+		return SDL_GetWindowTitle(m_pNativeWindow);
+	}
+
     uint32_t SDLWindow::GetWidth() const
     {
         uint32_t width, height;
         SDL_GetWindowSize(m_pNativeWindow, reinterpret_cast<int *>(&width), reinterpret_cast<int *>(&height));
         return width;
     }
+
+	glm::vec<2, std::uint32_t> SDLWindow::GetSize() const
+	{
+		uint32_t width, height;
+		SDL_GetWindowSize(m_pNativeWindow, reinterpret_cast<int *>(&width), reinterpret_cast<int *>(&height));
+		return {width, height};
+	}
 
     uint32_t SDLWindow::GetHeight() const
     {
@@ -143,6 +155,11 @@ namespace DYE
 	void SDLWindow::Raise()
 	{
 		SDL_RaiseWindow(m_pNativeWindow);
+	}
+
+	void SDLWindow::SetTitle(const std::string &name)
+	{
+		SDL_SetWindowTitle(m_pNativeWindow, name.c_str());
 	}
 
 	void SDLWindow::SetSize(std::uint32_t width, std::uint32_t height)

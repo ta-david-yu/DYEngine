@@ -54,8 +54,10 @@ namespace DYE
 
         virtual void OnUpdate() = 0;
 
+		virtual std::string GetTitle() const = 0;
         virtual uint32_t GetWidth() const = 0;
         virtual uint32_t GetHeight() const = 0;
+		virtual glm::vec<2, std::uint32_t> GetSize() const = 0;
 		virtual glm::vec<2, std::int32_t> GetPosition() const = 0;
 		virtual FullScreenMode GetFullScreenMode() const = 0;
 		virtual int GetDisplayIndex() const = 0;
@@ -78,24 +80,21 @@ namespace DYE
             return static_cast<T*>(GetNativeWindowPtr());
         }
 
-		void SetContext(std::shared_ptr<ContextBase> context);
-		virtual bool SetFullScreenMode(FullScreenMode mode) = 0;
-		virtual bool SetBorderedIfWindowed(bool isBordered) = 0;
 		/// Minimize the window to the taskbar.
 		virtual void Minimize() = 0;
 		/// Restore the window to the size/position before minimizing or maximizing.
 		virtual void Restore() = 0;
 		/// Raise the window above other windows and set input focus to it.
 		virtual void Raise() = 0;
+		virtual void SetTitle(std::string const& name) = 0;
 		virtual void SetSize(std::uint32_t width, std::uint32_t height) = 0;
-
 		/// Set the size of the window and set the position of it as if the window's position is the same if its anchor is the center of the window.
-		/// \param width
-		/// \param height
-		/// \return the new position
 		glm::vec<2, std::int32_t> SetWindowSizeUsingWindowCenterAsAnchor(std::uint32_t width, std::uint32_t height);
 		virtual void SetPosition(std::int32_t x, std::int32_t y) = 0;
 		void SetPosition(glm::vec<2, std::int32_t> position);
+		void SetContext(std::shared_ptr<ContextBase> context);
+		virtual bool SetFullScreenMode(FullScreenMode mode) = 0;
+		virtual bool SetBorderedIfWindowed(bool isBordered) = 0;
 
 		/// Set the window position to the center of the screen.
 		virtual void CenterWindow() = 0;

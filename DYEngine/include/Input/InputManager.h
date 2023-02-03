@@ -88,8 +88,7 @@ namespace DYE
 		void EnableGamepadInputEventInBackground();
 		void DisableGamepadInputEventInBackground();
 
-		void DrawAllRegisteredDeviceDescriptorsImGui() const;
-		void DrawAllConnectedDeviceDescriptorsImGui() const;
+		void DrawInputManagerImGui() const;
 
 	private:
 		void handleOnGamepadConnected(GamepadConnectEvent const& connectEvent);
@@ -99,6 +98,8 @@ namespace DYE
 		/// 1. Indicate invalid parameter (i.e. device with the id not connected)
 		/// 2. But still be able to reference the gamepad state without copying
 		GamepadState const* getGamepadState(DeviceID deviceId) const;
+
+		void drawDevicesInspectorImGui(std::vector<DeviceDescriptor> const& devices) const;
 
 	private:
 		static std::unique_ptr<InputManager> s_Instance;

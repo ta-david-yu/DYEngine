@@ -7,8 +7,6 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <imgui.h>
-#include <imgui_internal.h>
 
 namespace DYE::ImGuiUtil
 {

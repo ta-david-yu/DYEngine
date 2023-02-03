@@ -486,8 +486,7 @@ namespace DYE
         ImGui::End();
 
 		m_ColliderManager.DrawImGui();
-		INPUT.DrawAllRegisteredDeviceDescriptorsImGui();
-		INPUT.DrawAllConnectedDeviceDescriptorsImGui();
+		INPUT.DrawInputManagerImGui();
     }
 
 	void CollisionTestLayer::imguiSpriteObject(SpriteObject &object)

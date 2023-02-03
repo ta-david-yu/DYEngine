@@ -1106,8 +1106,8 @@ namespace DYE
 		ImGui::End();
 
 		m_ColliderManager.DrawImGui();
-		INPUT.DrawAllRegisteredDeviceDescriptorsImGui();
-		INPUT.DrawAllConnectedDeviceDescriptorsImGui();
+		INPUT.DrawInputManagerImGui();
+		WindowManager::DrawWindowManagerImGui();
 	}
 
 	void PongLayer::imguiSprite(const std::string& name, MiniGame::Transform& transform, MiniGame::Sprite& sprite)

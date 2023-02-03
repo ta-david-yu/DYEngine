@@ -15,7 +15,6 @@ namespace DYE
 
 	WindowID WindowBase::GetMouseFocusedWindowID()
 	{
-		// TODO: add other window types. For instance, GLFWWindow
 		SDL_Window* pSDLWindow = SDL_GetMouseFocus();
 		return SDL_GetWindowID(pSDLWindow);
 	}
@@ -34,7 +33,8 @@ namespace DYE
 	{
 		if (m_Context == nullptr)
 		{
-			DYE_LOG_ERROR("MakeCurrent: Make current failed because m_Context is null.");
+			DYE_LOG_ERROR("WindowBase::MakeCurrent: Make current failed because m_Context is null. "
+						  "You might have forget to call SetContext() for window %d.", GetWindowID());
 		}
 
 		m_Context->MakeCurrentForWindow(*this);

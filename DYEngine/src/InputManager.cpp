@@ -233,43 +233,6 @@ namespace DYE
 		SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "0");
 	}
 
-	void InputManager::DrawAllRegisteredDeviceDescriptorsImGui() const
-	{
-		if (ImGui::Begin("InputManager - Registered Device Descriptor"))
-		{
-			for (auto const& descriptor : m_RegisteredDeviceDescriptors)
-			{
-				ImGuiUtil::DrawReadOnlyTextWithLabel(descriptor.Name, descriptor.ToString());
-			}
-		}
-
-		ImGui::End();
-	}
-
-	void InputManager::DrawAllConnectedDeviceDescriptorsImGui() const
-	{
-		if (ImGui::Begin("InputManager - Connected Device Descriptor"))
-		{
-			for (int i = 0; i < m_NumberOfConnectedGamepads; i++)
-			{
-				GamepadState const& gamepadState = m_GamepadStates[i];
-				DeviceDescriptor const descriptor = GetGamepadDeviceDescriptor(gamepadState.DeviceID).value();
-				ImGuiUtil::DrawReadOnlyTextWithLabel(descriptor.Name, descriptor.ToString());
-
-				for (int axisIndex = 0; axisIndex < NumberOfGamepadAxes; ++axisIndex)
-				{
-					float const axisValue = gamepadState.Axes[axisIndex];
-					auto axisName = GetGamepadAxisName(static_cast<GamepadAxis>(axisIndex));
-					ImGuiUtil::DrawReadOnlyTextWithLabel(axisName, std::to_string(axisValue));
-				}
-
-				ImGui::Separator();
-			}
-		}
-
-		ImGui::End();
-	}
-
 	void InputManager::handleOnGamepadConnected(const GamepadConnectEvent &connectEvent)
 	{
 		std::int32_t const deviceIndex = connectEvent.GetDeviceIndex();
@@ -420,5 +383,129 @@ namespace DYE
 		}
 
 		return &m_GamepadStates[denseArrayIndex];
+	}
+
+	void InputManager::DrawInputManagerImGui() const
+	{
+		// Set a default size for the window in case it has never been opened before.
+		const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
+
+		if (!ImGui::Begin("Input Manager"))
+		{
+			ImGui::End();
+			return;
+		}
+
+		if (ImGui::BeginTabBar("##InputManagerTabs", ImGuiTabBarFlags_Reorderable))
+		{
+			if (ImGui::BeginTabItem("Registered Devices"))
+			{
+				drawDevicesInspectorImGui(m_RegisteredDeviceDescriptors);
+				ImGui::EndTabItem();
+			}
+			ImGui::EndTabBar();
+		}
+
+		ImGui::End();
+	}
+
+	void InputManager::drawDevicesInspectorImGui(std::vector<DeviceDescriptor> const& devices) const
+	{
+		// Left - registered devices list.
+		static int selectedDevicesIndex = 0;
+		{
+			const float windowWidth = 225;
+			ImGui::TextDisabled("(?)");
+			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
+			{
+				ImGui::BeginTooltip();
+				ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+				ImGui::TextUnformatted("Yellow text means the device is connected.");
+				ImGui::PopTextWrapPos();
+				ImGui::EndTooltip();
+			}
+
+			ImGui::BeginChild("Registered Devices List", ImVec2(windowWidth, 0), true);
+			for (int i = 0; i < devices.size(); ++i)
+			{
+				auto& descriptor = devices[i];
+				char label[128]; sprintf(label, "%03d: %s", descriptor.ID, descriptor.Name.c_str());
+				label[127] = 0;	// Set the last character to 0 to avoid longer names overflowing the buffer.
+
+				// Color the text based on the connection state: yellow - connected, white - not connected.
+				ImGui::PushStyleColor(ImGuiCol_Text, (IsGamepadConnected(descriptor.ID))? ImVec4{1, 1, 0, 1} : ImVec4{ 1, 1, 1, 1 });
+				if (ImGui::Selectable(label, selectedDevicesIndex == i))
+				{
+					selectedDevicesIndex = i;
+				}
+				ImGui::PopStyleColor(1);
+			}
+			ImGui::EndChild();
+		}
+		ImGui::SameLine();
+
+		if (selectedDevicesIndex >= devices.size())
+		{
+			// Nothing is selected.
+			ImGui::Text("No device is selected.");
+			return;
+		}
+
+		// Right - selected device info.
+		{
+			auto& selectedDeviceDescriptor = devices[selectedDevicesIndex];
+
+			auto const originalControlLabelWidth = ImGuiUtil::Parameters::ControlLabelWidth;
+			ImGuiUtil::Parameters::ControlLabelWidth = 100;
+
+			ImGui::BeginGroup();
+			ImGui::BeginChild("Selected Device Info", ImVec2(0, -ImGui::GetFrameHeightWithSpacing())); // Leave room for 1 line below us
+
+			ImGui::Text("%03d: %s", selectedDeviceDescriptor.ID, selectedDeviceDescriptor.Name.c_str());
+
+			ImGui::Separator();
+			ImGui::TextDisabled("(?)");
+			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
+			{
+				ImGui::BeginTooltip();
+				ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+				ImGui::TextUnformatted("DeviceID - unique per joystick device in the same application session. "
+									   "You could use this to identify the same device in the same application session. "
+									   "i.e. a controller will still have the same DeviceID after re-plugging. The same goes to GUID.");
+				ImGui::PopTextWrapPos();
+				ImGui::EndTooltip();
+			}
+
+			ImGuiUtil::DrawReadOnlyTextWithLabel("DeviceID", std::to_string(selectedDeviceDescriptor.ID));
+			ImGuiUtil::DrawReadOnlyTextWithLabel("Name", selectedDeviceDescriptor.Name);
+			ImGuiUtil::DrawReadOnlyTextWithLabel("GUID", selectedDeviceDescriptor.GUID);
+			ImGuiUtil::DrawReadOnlyTextWithLabel("InstanceID", std::to_string(selectedDeviceDescriptor.InstanceID));
+
+			ImGui::Separator();
+			if (IsGamepadConnected(selectedDeviceDescriptor.ID))
+			{
+				GamepadState const* pGamepadState = getGamepadState(selectedDeviceDescriptor.ID);
+				if (pGamepadState != nullptr)
+				{
+					ImGui::Text("Gamepad Input State");
+					ImGui::Separator();
+
+					// Axes
+					for (int axisIndex = 0; axisIndex < NumberOfGamepadAxes; ++axisIndex)
+					{
+						float const axisValue = pGamepadState->Axes[axisIndex];
+						auto axisName = GetGamepadAxisName(static_cast<GamepadAxis>(axisIndex));
+						ImGuiUtil::DrawReadOnlyTextWithLabel(axisName, std::to_string(axisValue));
+					}
+				}
+			}
+
+			ImGui::EndChild();
+			ImGui::EndGroup();
+
+			ImGuiUtil::Parameters::ControlLabelWidth = originalControlLabelWidth;
+		}
 	}
 }

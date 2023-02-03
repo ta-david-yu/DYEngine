@@ -332,6 +332,10 @@ namespace DYE
 			}
 		}
 		ImGui::End();
+
+		WindowManager::DrawWindowManagerImGui();
+
+		ImGui::ShowDemoWindow();
 	}
 
 	void MainMenuLayer::imguiSprite(const std::string &name, MiniGame::Transform &transform, MiniGame::Sprite &sprite)
