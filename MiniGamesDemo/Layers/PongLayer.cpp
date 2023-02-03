@@ -716,6 +716,12 @@ namespace DYE
 
 			// Move the ball away from the paddle to avoid tunneling
 			m_Ball.Velocity.Value.x += glm::sign(m_Ball.Velocity.Value.x) * paddle.HorizontalBallSpeedIncreasePerHit;
+			if (glm::length2(m_Ball.Velocity.Value) > m_Ball.MaxBallSpeed * m_Ball.MaxBallSpeed)
+			{
+				// Cap the ball speed to the max speed.
+				m_Ball.Velocity.Value = glm::normalize(m_Ball.Velocity.Value) * m_Ball.MaxBallSpeed;
+			}
+
 			m_Ball.Transform.Position += actualPositionOffset;
 			m_Ball.Hittable.LastHitByPlayerID = paddle.PlayerID;
 			m_Ball.PlayHitAnimation();
@@ -766,6 +772,12 @@ namespace DYE
 
 				// Add paddle velocity to the ball.
 				m_Ball.Velocity.Value += glm::vec2 {paddleVelocity.x, paddleVelocity.y};
+
+				if (glm::length2(m_Ball.Velocity.Value) > m_Ball.MaxBallSpeed * m_Ball.MaxBallSpeed)
+				{
+					// Cap the ball speed to the max speed.
+					m_Ball.Velocity.Value = glm::normalize(m_Ball.Velocity.Value) * m_Ball.MaxBallSpeed;
+				}
 
 				m_Ball.Hittable.LastHitByPlayerID = paddle.PlayerID;
 				m_Ball.PlayHitAnimation();

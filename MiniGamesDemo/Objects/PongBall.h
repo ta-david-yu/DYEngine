@@ -19,6 +19,7 @@ namespace DYE::MiniGame
 		AttachableToPaddle Attachable;
 		Sprite Sprite;
 		float LaunchBaseSpeed = 7;
+		float MaxBallSpeed = 40;
 
 		float RespawnAnimationDuration = 0.5f;
 		float HitAnimationDuration = 0.25f;
