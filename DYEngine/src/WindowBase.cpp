@@ -23,7 +23,7 @@ namespace DYE
 	{
 		if (m_Context == nullptr)
 		{
-			DYE_LOG_WARN("WindowBase::GetContext: m_Context is null but you are still trying to get it."
+			DYE_LOG_WARN("WindowBase::GetContext: m_Context has not been assigned therefore the return value is invalid."
 						  "You might have forget to call SetContext() for window %d.", GetWindowID());
 		}
 
