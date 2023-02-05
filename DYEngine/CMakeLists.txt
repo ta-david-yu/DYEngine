@@ -172,23 +172,10 @@ target_link_libraries(DYEngine
 # ===========================================================================================
 # Copy default assets to the output directory
 set(DEFAULT_ASSETS
-        assets/DebugLineGizmo.shader
-        assets/DebugGeometryGizmo.shader
-        assets/SpriteDefault.shader
-        assets/SpriteUnlit.shader)
+        assets/default/DebugLineGizmo.shader
+        assets/default/DebugGeometryGizmo.shader
+        assets/default/SpriteDefault.shader
+        assets/default/SpriteUnlit.shader)
 
-foreach(ASSET ${DEFAULT_ASSETS})
-    # extract filename
-    get_filename_component(ASSET_FILENAME ${ASSET} NAME)
-
-    # set copy output directory
-    if(WIN32)
-        set(ASSET_OUTPUT_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets/default/${ASSET_FILENAME})
-    else()
-        set(ASSET_OUTPUT_PATH ${EXECUTABLE_OUTPUT_PATH}/assets/default/${ASSET_FILENAME})
-    endif(WIN32)
-
-    set(ASSET_INPUT_PATH ${PROJECT_SOURCE_DIR}/${ASSET})
-    message(STATUS "[DYEngine] copy asset: '${ASSET_INPUT_PATH}' -> '${ASSET_OUTPUT_PATH}'")
-    configure_file(${ASSET} ${ASSET_OUTPUT_PATH} COPYONLY)
-endforeach()
+include(../cmake/Macros/CopyAssets.cmake)
+CopyTextAssets(${DEFAULT_ASSETS})

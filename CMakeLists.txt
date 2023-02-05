@@ -28,10 +28,10 @@ endif ()
 # DYEngine
 add_subdirectory(DYEngine)
 
+# TODO: Build DYEditor
+
 # Sandbox executable
 add_subdirectory(Sandbox)
 
 # MiniGamesDemo executable
 add_subdirectory(MiniGamesDemo)
-
-# TODO: Build DYEditor
