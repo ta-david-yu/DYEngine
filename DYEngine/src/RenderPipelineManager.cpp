@@ -56,7 +56,6 @@ namespace DYE
 		// Make the main window's context current!
 		WindowBase* pCurrentWindow = WindowManager::GetMainWindow();
 		pCurrentWindow->MakeCurrent();
-		RenderCommand::GetInstance().Clear();
 
 		for (auto& camera : s_CameraProperties)
 		{
@@ -93,9 +92,10 @@ namespace DYE
 				}
 
 				pCurrentWindow->MakeCurrent();
-
-				RenderCommand::GetInstance().Clear();
 			}
+
+			RenderCommand::GetInstance().SetClearColor(camera.ClearColor);
+			RenderCommand::GetInstance().Clear();
 
 			// Update camera's aspect ratio and set viewport.
 			auto targetDimension = camera.GetTargetDimension();

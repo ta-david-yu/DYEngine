@@ -28,6 +28,8 @@ namespace DYE
 	public:
 		glm::vec3 Position{0, 0, 0};
 
+		glm::vec4 ClearColor = {0, 0, 0, 0};
+
 		/// The vertical field of view of the Camera, in degrees. The value is when IsOrthographic is true.
 		float FieldOfView = 45;
 		bool IsOrthographic = false;
