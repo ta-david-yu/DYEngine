@@ -139,7 +139,7 @@ namespace DYE
 		static int selectedWindowIndex = 0;
 		{
 			const float windowWidth = 175;
-			ImGui::BeginChild("Registered Windows List", ImVec2(windowWidth, 0), true);
+			ImGui::BeginChild("Registered Windows List", ImVec2(windowWidth, 0), true, ImGuiWindowFlags_HorizontalScrollbar);
 			for (int i = 0; i < s_Windows.size(); ++i)
 			{
 				auto& windowPair = s_Windows[i];
@@ -163,7 +163,7 @@ namespace DYE
 			ImGuiUtil::Parameters::ControlLabelWidth = 100;
 
 			ImGui::BeginGroup();
-			ImGui::BeginChild("Selected Window Info", ImVec2(0, -ImGui::GetFrameHeightWithSpacing())); // Leave room for 1 line below us
+			ImGui::BeginChild("Selected Window Info", ImVec2(0, -ImGui::GetFrameHeightWithSpacing()), false, ImGuiWindowFlags_HorizontalScrollbar); // Leave room for 1 line below us
 
 			if (IsMainWindow(*pWindow))
 			{

@@ -334,6 +334,7 @@ namespace DYE
 		ImGui::End();
 
 		WindowManager::DrawWindowManagerImGui();
+		INPUT.DrawInputManagerImGui();
 
 		ImGui::ShowDemoWindow();
 	}

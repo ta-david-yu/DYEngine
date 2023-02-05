@@ -422,7 +422,7 @@ namespace DYE
 		// Left - registered devices list.
 		static int selectedDevicesIndex = 0;
 		{
-			const float windowWidth = 225;
+			const float windowWidth = 175;
 			ImGui::TextDisabled("(?)");
 			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
 			{
@@ -433,7 +433,7 @@ namespace DYE
 				ImGui::EndTooltip();
 			}
 
-			ImGui::BeginChild("Registered Devices List", ImVec2(windowWidth, 0), true);
+			ImGui::BeginChild("Registered Devices List", ImVec2(windowWidth, 0), true, ImGuiWindowFlags_HorizontalScrollbar);
 			for (int i = 0; i < devices.size(); ++i)
 			{
 				auto& descriptor = devices[i];
@@ -467,7 +467,7 @@ namespace DYE
 			ImGuiUtil::Parameters::ControlLabelWidth = 100;
 
 			ImGui::BeginGroup();
-			ImGui::BeginChild("Selected Device Info", ImVec2(0, -ImGui::GetFrameHeightWithSpacing())); // Leave room for 1 line below us
+			ImGui::BeginChild("Selected Device Info", ImVec2(0, -ImGui::GetFrameHeightWithSpacing()), false, ImGuiWindowFlags_HorizontalScrollbar); // Leave room for 1 line below us
 
 			ImGui::Text("%03d: %s", selectedDeviceDescriptor.ID, selectedDeviceDescriptor.Name.c_str());
 
@@ -505,6 +505,69 @@ namespace DYE
 						auto axisName = GetGamepadAxisName(static_cast<GamepadAxis>(axisIndex));
 						ImGuiUtil::DrawReadOnlyTextWithLabel(axisName, std::to_string(axisValue));
 					}
+
+					ImDrawList* drawList = ImGui::GetWindowDrawList();
+					const float axisRadius = 72;
+					const float lineThickness = 1.0f;
+					const float spacing = 10;
+					const ImVec4 color = ImVec4(1, 1, 0.4f, 1);
+
+					ImVec2 drawPosition = ImGui::GetCursorScreenPos();
+					drawPosition.x += spacing;
+					drawPosition.y += spacing;
+
+					// Draw left stick axis.
+					{
+						ImVec2 const center = ImVec2(drawPosition.x + axisRadius, drawPosition.y + axisRadius);
+						drawList->AddCircle(center, axisRadius, ImColor(color), 0, lineThickness);
+						drawList->AddRect(drawPosition,
+										  ImVec2(drawPosition.x + axisRadius * 2, drawPosition.y + axisRadius * 2),
+										  ImColor(color), 0, 0, lineThickness);
+						drawList->AddLine(ImVec2(drawPosition.x, drawPosition.y + axisRadius),
+										  ImVec2(drawPosition.x + axisRadius * 2, drawPosition.y + axisRadius),
+										  ImColor(color), lineThickness);
+						drawList->AddLine(ImVec2(drawPosition.x + axisRadius, drawPosition.y),
+										  ImVec2(drawPosition.x + axisRadius, drawPosition.y +  + axisRadius * 2),
+										  ImColor(color), lineThickness);
+
+						ImVec4 const backgroundColor = ImVec4(color.x, color.y, color.z, 0.5f);
+						drawList->AddCircleFilled(center, axisRadius, ImColor(backgroundColor), 0);
+
+						float const horizontal = GetGamepadAxis(selectedDevicesIndex, GamepadAxis::LeftStickHorizontal);
+						float const vertical = GetGamepadAxis(selectedDevicesIndex, GamepadAxis::LeftStickVertical);
+
+						ImVec4 const axisValuePositionColor = ImVec4(1, 1, 1, 1);
+						ImVec2 const axisValuePosition = ImVec2(center.x + horizontal * axisRadius, center.y + -vertical * axisRadius);
+						drawList->AddCircleFilled(axisValuePosition, 5, ImColor(axisValuePositionColor));
+					}
+
+					drawPosition.x += axisRadius * 2 + spacing;
+
+					// Draw right stick axis.
+					{
+						ImVec2 const center = ImVec2(drawPosition.x + axisRadius, drawPosition.y + axisRadius);
+						drawList->AddCircle(center, axisRadius, ImColor(color), 0, lineThickness);
+						drawList->AddRect(drawPosition,
+										  ImVec2(drawPosition.x + axisRadius * 2, drawPosition.y + axisRadius * 2),
+										  ImColor(color), 0, 0, lineThickness);
+						drawList->AddLine(ImVec2(drawPosition.x, drawPosition.y + axisRadius),
+										  ImVec2(drawPosition.x + axisRadius * 2, drawPosition.y + axisRadius),
+										  ImColor(color), lineThickness);
+						drawList->AddLine(ImVec2(drawPosition.x + axisRadius, drawPosition.y),
+										  ImVec2(drawPosition.x + axisRadius, drawPosition.y +  + axisRadius * 2),
+										  ImColor(color), lineThickness);
+
+						ImVec4 const backgroundColor = ImVec4(color.x, color.y, color.z, 0.5f);
+						drawList->AddCircleFilled(center, axisRadius, ImColor(backgroundColor), 0);
+
+						float const horizontal = GetGamepadAxis(selectedDevicesIndex, GamepadAxis::RightStickHorizontal);
+						float const vertical = GetGamepadAxis(selectedDevicesIndex, GamepadAxis::RightStickVertical);
+
+						ImVec4 const axisValuePositionColor = ImVec4(1, 1, 1, 1);
+						ImVec2 const axisValuePosition = ImVec2(center.x + horizontal * axisRadius, center.y + -vertical * axisRadius);
+						drawList->AddCircleFilled(axisValuePosition, 5, ImColor(axisValuePositionColor));
+					}
+
 				}
 			}
 
