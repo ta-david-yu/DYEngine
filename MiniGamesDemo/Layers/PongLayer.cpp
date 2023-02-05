@@ -431,14 +431,14 @@ namespace DYE
 				float vertical = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickVertical);
 				if (INPUT.GetGamepadButton(0, GamepadButton::DPadUp))
 				{
-					vertical = -1.0f;
+					vertical = 1.0f;
 				}
 				else if (INPUT.GetGamepadButton(0, GamepadButton::DPadDown))
 				{
-					vertical = 1.0f;
+					vertical = -1.0f;
 				}
 
-				glm::vec3 const axis = {0, -vertical, 0};
+				glm::vec3 const axis = {0, vertical, 0};
 
 				if (glm::length2(axis) > 0.01f)
 				{
@@ -465,7 +465,8 @@ namespace DYE
 						{
 							windowAxis = glm::normalize(windowAxis);
 						}
-						glm::vec2 const positionChange = windowAxis * playerWindowCamera.MoveSpeed * timeStep;
+						glm::vec2 positionChange = windowAxis * playerWindowCamera.MoveSpeed * timeStep;
+						positionChange.y = -positionChange.y;
 						playerWindowCamera.Translate(positionChange);
 					}
 				}
@@ -511,14 +512,15 @@ namespace DYE
 						windowHorizontal = -1;
 					}
 
-					glm::vec2 windowAxis = {windowHorizontal, -windowVertical};
+					glm::vec2 windowAxis = {windowHorizontal, windowVertical};
 					if (glm::length2(windowAxis) > 0.01f)
 					{
 						if (glm::length2(windowAxis) > 1.0f)
 						{
 							windowAxis = glm::normalize(windowAxis);
 						}
-						glm::vec2 const positionChange = windowAxis * playerWindowCamera.MoveSpeed * timeStep;
+						glm::vec2 positionChange = windowAxis * playerWindowCamera.MoveSpeed * timeStep;
+						positionChange.y = -positionChange.y;
 						playerWindowCamera.Translate(positionChange);
 					}
 				}
@@ -535,14 +537,14 @@ namespace DYE
 				float vertical = INPUT.GetGamepadAxis(1, GamepadAxis::LeftStickVertical);
 				if (INPUT.GetGamepadButton(1, GamepadButton::DPadUp))
 				{
-					vertical = -1.0f;
+					vertical = 1.0f;
 				}
 				else if (INPUT.GetGamepadButton(1, GamepadButton::DPadDown))
 				{
-					vertical = 1.0f;
+					vertical = -1.0f;
 				}
 
-				glm::vec3 const axis = {0, -vertical, 0};
+				glm::vec3 const axis = {0, vertical, 0};
 
 				if (glm::length2(axis) > 0.01f)
 				{
@@ -568,7 +570,8 @@ namespace DYE
 						{
 							windowAxis = glm::normalize(windowAxis);
 						}
-						glm::vec2 const positionChange = windowAxis * playerWindowCamera.MoveSpeed * timeStep;
+						glm::vec2 positionChange = windowAxis * playerWindowCamera.MoveSpeed * timeStep;
+						positionChange.y = -positionChange.y;
 						playerWindowCamera.Translate(positionChange);
 					}
 				}
@@ -614,14 +617,15 @@ namespace DYE
 						windowHorizontal = -1;
 					}
 
-					glm::vec2 windowAxis = {windowHorizontal, -windowVertical};
+					glm::vec2 windowAxis = {windowHorizontal, windowVertical};
 					if (glm::length2(windowAxis) > 0.01f)
 					{
 						if (glm::length2(windowAxis) > 1.0f)
 						{
 							windowAxis = glm::normalize(windowAxis);
 						}
-						glm::vec2 const positionChange = windowAxis * playerWindowCamera.MoveSpeed * timeStep;
+						glm::vec2 positionChange = windowAxis * playerWindowCamera.MoveSpeed * timeStep;
+						positionChange.y = -positionChange.y;
 						playerWindowCamera.Translate(positionChange);
 					}
 				}

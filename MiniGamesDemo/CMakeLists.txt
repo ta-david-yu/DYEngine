@@ -77,9 +77,7 @@ set(BINARY_ASSETS
         assets/Sprite_DottedLine.png
         assets/Sprite_PongPaddle.png
         assets/Sprite_P1Wins.png
-        assets/Sprite_P2Wins.png
-
-        assets/audio/Audio_Test.png)
+        assets/Sprite_P2Wins.png)
 
 include(../cmake/Macros/CopyAssets.cmake)
 CopyBinaryAssets(${BINARY_ASSETS})

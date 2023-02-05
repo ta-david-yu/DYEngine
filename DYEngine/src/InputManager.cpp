@@ -209,6 +209,12 @@ namespace DYE
 			return 0;
 		}
 
+		if (axis == GamepadAxis::LeftStickVertical || axis == GamepadAxis::RightStickVertical)
+		{
+			// Invert the value if it's vertical stick.
+			return -pGamepadState->Axes[index];
+		}
+
 		return pGamepadState->Axes[index];
 	}
 
