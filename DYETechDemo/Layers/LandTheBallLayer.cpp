@@ -1,6 +1,6 @@
 #include "Layers/LandTheBallLayer.h"
 
-#include "MiniGamesApp.h"
+#include "DYETechDemoApp.h"
 
 #include "Core/Application.h"
 #include "Util/Logger.h"
@@ -233,7 +233,7 @@ namespace DYE
 		{
 			if (INPUT.GetKeyDown(KeyCode::Return))
 			{
-				auto &miniGamesApp = static_cast<MiniGamesApp &>(m_Application);
+				auto &miniGamesApp = static_cast<DYETechDemoApp &>(m_Application);
 				miniGamesApp.LoadMainMenuLayer();
 			}
 		}
@@ -290,7 +290,7 @@ namespace DYE
 		{
 			if (INPUT.GetGamepadButtonDown(0, GamepadButton::South))
 			{
-				auto &miniGamesApp = static_cast<MiniGamesApp &>(m_Application);
+				auto &miniGamesApp = static_cast<DYETechDemoApp &>(m_Application);
 				miniGamesApp.LoadMainMenuLayer();
 			}
 		}
@@ -317,7 +317,7 @@ namespace DYE
 
 		if (INPUT.GetKeyDown(KeyCode::Escape))
 		{
-			auto &miniGamesApp = static_cast<MiniGamesApp &>(m_Application);
+			auto &miniGamesApp = static_cast<DYETechDemoApp &>(m_Application);
 			miniGamesApp.LoadMainMenuLayer();
 		}
 	}
@@ -626,7 +626,7 @@ namespace DYE
 		{
 			if (ImGui::CollapsingHeader("Load", ImGuiTreeNodeFlags_DefaultOpen))
 			{
-				auto &miniGamesApp = static_cast<MiniGamesApp &>(m_Application);
+				auto &miniGamesApp = static_cast<DYETechDemoApp &>(m_Application);
 				if (ImGui::Button("Main Menu"))
 				{
 					miniGamesApp.LoadMainMenuLayer();

@@ -1,6 +1,6 @@
 #include "Layers/PongLayer.h"
 
-#include "MiniGamesApp.h"
+#include "DYETechDemoApp.h"
 
 #include "Core/Application.h"
 #include "Util/Logger.h"
@@ -401,7 +401,7 @@ namespace DYE
 
 		if (INPUT.GetKeyDown(KeyCode::Escape))
 		{
-			auto& miniGameApp = static_cast<MiniGamesApp&>(m_Application);
+			auto& miniGameApp = static_cast<DYETechDemoApp&>(m_Application);
 			miniGameApp.LoadMainMenuLayer();
 		}
 	}
@@ -410,7 +410,7 @@ namespace DYE
 	{
 		if (m_GameState == GameState::GameOver)
 		{
-			auto& miniGameApp = static_cast<MiniGamesApp&>(m_Application);
+			auto& miniGameApp = static_cast<DYETechDemoApp&>(m_Application);
 			if (INPUT.IsGamepadConnected(0) && INPUT.GetGamepadButton(0, GamepadButton::South))
 			{
 				miniGameApp.LoadMainMenuLayer();
@@ -1020,7 +1020,7 @@ namespace DYE
 					m_Application.Shutdown();
 				}
 
-				auto& miniGamesApp = static_cast<MiniGamesApp&>(m_Application);
+				auto& miniGamesApp = static_cast<DYETechDemoApp&>(m_Application);
 				ImGui::SameLine();
 				if (ImGui::Button("Main Menu"))
 				{

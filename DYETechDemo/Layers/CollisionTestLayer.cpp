@@ -1,6 +1,6 @@
 #include "CollisionTestLayer.h"
 
-#include "MiniGamesDemo/MiniGamesApp.h"
+#include "DYETechDemoApp.h"
 
 #include "Core/Application.h"
 #include "Util/Logger.h"
@@ -438,7 +438,7 @@ namespace DYE
 				m_WindowPosition = mainWindowPtr->GetPosition();
 			}
 
-			auto& miniGamesApp = static_cast<MiniGamesApp&>(m_Application);
+			auto& miniGamesApp = static_cast<DYETechDemoApp&>(m_Application);
 			if (ImGui::Button("Main Menu"))
 			{
 				miniGamesApp.LoadMainMenuLayer();

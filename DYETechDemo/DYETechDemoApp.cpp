@@ -1,4 +1,4 @@
-#include "MiniGamesDemo/MiniGamesApp.h"
+#include "DYETechDemoApp.h"
 
 #include "AppEntryPoint.h"
 
@@ -10,7 +10,7 @@
 
 namespace DYE
 {
-	MiniGamesApp::MiniGamesApp(const std::string &windowName, int fixedFramePerSecond)
+	DYETechDemoApp::DYETechDemoApp(const std::string &windowName, int fixedFramePerSecond)
 		: Application(windowName, fixedFramePerSecond)
 	{
 		m_CurrentMainLayer = std::make_shared<MainMenuLayer>(*this);
@@ -19,21 +19,21 @@ namespace DYE
 		INPUT.EnableGamepadInputEventInBackground();
 	}
 
-	void MiniGamesApp::LoadMainMenuLayer()
+	void DYETechDemoApp::LoadMainMenuLayer()
 	{
 		PopLayer(m_CurrentMainLayer);
 		m_CurrentMainLayer = std::make_shared<MainMenuLayer>(*this);
 		PushLayer(m_CurrentMainLayer);
 	}
 
-	void MiniGamesApp::LoadPongLayer()
+	void DYETechDemoApp::LoadPongLayer()
 	{
 		PopLayer(m_CurrentMainLayer);
 		m_CurrentMainLayer = std::make_shared<PongLayer>(*this);
 		PushLayer(m_CurrentMainLayer);
 	}
 
-	void MiniGamesApp::LoadLandBallLayer()
+	void DYETechDemoApp::LoadLandBallLayer()
 	{
 		PopLayer(m_CurrentMainLayer);
 		m_CurrentMainLayer = std::make_shared<LandTheBallLayer>(*this);
@@ -45,5 +45,5 @@ namespace DYE
 /// \return a new allocated Application object
 DYE::Application * DYE::CreateApplication()
 {
-    return new MiniGamesApp {"DYE Tech Demo", 60};
+    return new DYETechDemoApp {"DYE Tech Demo", 60};
 }

@@ -30,4 +30,4 @@ add_subdirectory(DYEngine)
 add_subdirectory(Sandbox)
 
 # MiniGamesDemo executable
-add_subdirectory(MiniGamesDemo)
+add_subdirectory(DYETechDemo)

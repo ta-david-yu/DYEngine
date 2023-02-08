@@ -1,6 +1,6 @@
 #include "Layers/MainMenuLayer.h"
 
-#include "MiniGamesApp.h"
+#include "DYETechDemoApp.h"
 #include "LandTheBallLayer.h"
 
 #include "Core/Application.h"
@@ -217,7 +217,7 @@ namespace DYE
 
 	void MainMenuLayer::onConfirm(int index)
 	{
-		auto &miniGamesApp = static_cast<MiniGamesApp &>(m_Application);
+		auto &miniGamesApp = static_cast<DYETechDemoApp &>(m_Application);
 		if (index == 0)
 		{
 			miniGamesApp.LoadLandBallLayer();
@@ -314,7 +314,7 @@ namespace DYE
 
 		if (ImGui::Begin("Menu"))
 		{
-			auto &miniGamesApp = static_cast<MiniGamesApp &>(m_Application);
+			auto &miniGamesApp = static_cast<DYETechDemoApp &>(m_Application);
 			ImGui::SameLine();
 			if (ImGui::Button("Main Menu"))
 			{

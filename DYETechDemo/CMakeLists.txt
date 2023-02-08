@@ -3,7 +3,7 @@ project(DYETechDemo)
 set(APP_ICON_RESOURCE_WINDOWS "${CMAKE_CURRENT_SOURCE_DIR}/appicon.rc")
 
 add_executable(DYETechDemo
-        MiniGamesApp.cpp
+        DYETechDemoApp.cpp
         ColliderManager.cpp
         GizmosRippleEffectManager.cpp
         WindowParticlesManager.cpp
