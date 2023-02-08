@@ -177,6 +177,14 @@ target_link_libraries(DYEngine
     )
 
 # ===========================================================================================
+# Copy SDL2.dll to the output directory post-build
+add_custom_command(TARGET DYEngine POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${PROJECT_SOURCE_DIR}/${SDL2_PATH}/bin/SDL2.dll
+        $<TARGET_FILE_DIR:DYEngine>/
+        COMMENT "${PROJECT_NAME} Post Build Copy SDL2.dll")
+
+# ===========================================================================================
 # Copy default assets to the output directory
 set(DEFAULT_ASSETS
         assets/default/DebugLineGizmo.shader
