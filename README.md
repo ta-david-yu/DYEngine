@@ -1,6 +1,6 @@
 # DYEngine
 - DESC: This is a WIP 2D game engine (with the possibility of 3D rendering)
-- ENV: right now I am using CLion + Mingw to configure & build the project, haven't tested it with other compiler (i.e. MSVC) yet.  
+- ENV: right now I am using CLion + gcc with Mingw to configure & build the project, haven't tested it with other compiler (i.e. MSVC) yet.  
 - LIB: SDL2 + OpenGL, glad, glm, stb_image, ImGui and possibly rttr & entt in the future (under research).
 
 # Showcase
