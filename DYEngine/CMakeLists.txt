@@ -126,10 +126,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Mo
 set(SDL2_PATH "extern/SDL2")
 find_package(SDL2 REQUIRED)
 
-# Define SDL2_IMAGE_PATH here that will be used by FindSDL2_image module
-set(SDL2_IMAGE_PATH "extern/SDL2_image")
-find_package(SDL2_image REQUIRED)
-
 # Define RTTR_DIR here that will be used in FindRTTR module
 #set(RTTR_DIR "extern/rttr/rttr")
 #find_package(RTTR CONFIG REQUIRED Core)
@@ -153,7 +149,6 @@ add_library(DYEngine STATIC
 target_include_directories(DYEngine PUBLIC include)
 # SDL2_INCLUDE_DIR variable set by the FindSDL2 module (if it finds directory).
 target_include_directories(DYEngine PUBLIC ${SDL2_INCLUDE_DIR})     # This should be a private inclusion though, because of KeyCode.h implementation, this needs to be PUBLIC
-target_include_directories(DYEngine PUBLIC ${SDL2_IMAGE_INCLUDE_DIRS})     # This should be a private inclusion though, because of KeyCode.h implementation, this needs to be PUBLIC
 target_include_directories(DYEngine PRIVATE extern/glad/include)
 target_include_directories(DYEngine PUBLIC extern/imgui)
 target_include_directories(DYEngine PRIVATE extern/imgui/backends)
@@ -167,7 +162,6 @@ target_include_directories(DYEngine PUBLIC extern/yaml-cpp/include)
 target_link_libraries(DYEngine
         #${SDL2MAIN_LIBRARY}
         ${SDL2_LIBRARY} # SDL2MAIN_LIBRARY is also specified within SDL2_LIBRARY by the FindSDL2 module. It's needed for Windows specific main function. If I don't use FindSDL2 module, I have to link it as well.
-        ${SDL2_IMAGE_LIBRARIES}
         glad
         imgui
         glm
