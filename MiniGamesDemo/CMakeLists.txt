@@ -79,5 +79,5 @@ set(BINARY_ASSETS
         assets/Sprite_P1Wins.png
         assets/Sprite_P2Wins.png)
 
-include(../DYEngine/cmake/Macros/CopyAssets.cmake)
+include(../DYEngine/cmake/Functions/CopyAssets.cmake)
 CopyBinaryAssets(${BINARY_ASSETS})

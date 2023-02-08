@@ -184,5 +184,5 @@ set(DEFAULT_ASSETS
         assets/default/SpriteDefault.shader
         assets/default/SpriteUnlit.shader)
 
-include(cmake/Macros/CopyAssets.cmake)
+include(cmake/Functions/CopyAssets.cmake)
 CopyTextAssets(${DEFAULT_ASSETS})

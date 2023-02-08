@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Cmake Macros
-include(DYEngine/cmake/Macros/RedirectOutputTo.cmake)
+include(DYEngine/cmake/Functions/RedirectOutputTo.cmake)
 
 if (CMAKE_BUILD_TYPE MATCHES Debug)
     RedirectOutputTo("out/Debug")
