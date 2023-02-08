@@ -18,16 +18,10 @@ elseif (CMAKE_BUILD_TYPE MATCHES Release)
     RedirectOutputTo("out/Release")
 endif ()
 
-# Includes
-#include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-
-# DYEngine
+# DYEngine library
 add_subdirectory(DYEngine)
 
 # TODO: Build DYEditor
 
 # Sandbox executable
 add_subdirectory(Sandbox)
-
-# MiniGamesDemo executable
-add_subdirectory(DYETechDemo)
