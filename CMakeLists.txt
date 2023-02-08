@@ -6,13 +6,9 @@ cmake_minimum_required(VERSION 3.17)
 # Cmake Flags
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-#set(CMAKE_CXX_STANDARD_LIBRARIES "-static-libgcc -static-libstdc++ -lwsock32 -lws2_32 ${CMAKE_CSS_STANDARD_LIBRARIES}")
-#set(CMAKE_CXX_STANDARD_LIBRARIES "-static-libgcc -static-libstdc++ ${CMAKE_CSS_STANDARD_LIBRARIES}")
-
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 # Cmake Macros
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Macros/RedirectOutputTo.cmake)
+include(DYEngine/cmake/Macros/RedirectOutputTo.cmake)
 
 if (CMAKE_BUILD_TYPE MATCHES Debug)
     RedirectOutputTo("out/Debug")

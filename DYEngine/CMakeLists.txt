@@ -119,6 +119,8 @@ message(STATUS "[DYEngine] Source Files: ${SOURCE_FILES}")
 message(STATUS "[DYEngine] Header Files: ${HEADER_FILES}")
 
 # ===========================================================================================
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
+
 # External 3rd party library
 # Define SDL2_PATH here that will be used by FindSDL2 module
 set(SDL2_PATH "extern/SDL2")
@@ -182,5 +184,5 @@ set(DEFAULT_ASSETS
         assets/default/SpriteDefault.shader
         assets/default/SpriteUnlit.shader)
 
-include(../cmake/Macros/CopyAssets.cmake)
+include(cmake/Macros/CopyAssets.cmake)
 CopyTextAssets(${DEFAULT_ASSETS})
