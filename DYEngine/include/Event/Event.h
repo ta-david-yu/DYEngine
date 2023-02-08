@@ -73,11 +73,6 @@ namespace DYE
         bool IsUsed = false;
     };
 
-    inline std::ostream & operator<<(std::ostream& os, const Event& evt)
-    {
-        return os << evt.ToString();
-    }
-
     /// EventHandleFunction handles all the Events emit by an EventSystemBase
     class EventHandler : public MessageHandlerBase<Event>
     {

@@ -472,7 +472,6 @@ namespace DYE::ImGuiUtil
 		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
 		{
-			texts.data();
 			isValueChanged |= ImGui::Combo("##combo", &value, texts.data(), texts.size());
 
 			ImGui::PopItemWidth();
