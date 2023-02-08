@@ -3,6 +3,8 @@
 #include "ImGui/ImGuiUtil.h"
 #include "Util/Macro.h"
 
+#include <algorithm>
+
 namespace DYE
 {
 	std::vector<std::pair<WindowID, std::unique_ptr<WindowBase>>> WindowManager::s_Windows = {};

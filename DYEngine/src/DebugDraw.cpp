@@ -9,6 +9,10 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/quaternion.hpp>
 
+#include <array>
+#include <algorithm>
+#include <cstdint>
+
 namespace DYE
 {
 	std::shared_ptr<ShaderProgram> DebugDraw::s_LineGizmoShaderProgram {};

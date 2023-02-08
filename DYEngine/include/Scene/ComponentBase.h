@@ -4,6 +4,7 @@
 #include <vector>
 #include <typeindex>
 #include <memory>
+#include <string>
 
 namespace DYE
 {

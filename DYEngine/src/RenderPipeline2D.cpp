@@ -8,6 +8,8 @@
 
 #include "Util/Algorithm.h"
 
+#include <array>
+
 namespace DYE
 {
 	RenderPipeline2D::RenderPipeline2D()

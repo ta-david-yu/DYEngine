@@ -1,5 +1,7 @@
 #include "Graphics/RenderPipelineManager.h"
 
+#include <algorithm>
+
 #include "Util/Macro.h"
 #include "Graphics/RenderCommand.h"
 #include "Graphics/WindowManager.h"
