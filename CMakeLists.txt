@@ -8,14 +8,15 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Cmake Macros
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Functions/")
 include(cmake/Functions/RedirectOutputTo.cmake)
 
 if (CMAKE_BUILD_TYPE MATCHES Debug)
-    RedirectOutputTo("out/Debug")
+    RedirectOutputTo("build/Debug")
     add_compile_definitions(DYE_DEBUG)
     add_compile_definitions(DYE_OPENGL_DEBUG)
 elseif (CMAKE_BUILD_TYPE MATCHES Release)
-    RedirectOutputTo("out/Release")
+    RedirectOutputTo("build/Release")
 endif ()
 
 # DYEngine library
