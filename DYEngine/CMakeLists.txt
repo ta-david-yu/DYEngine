@@ -150,8 +150,9 @@ target_include_directories(DYEngine PUBLIC include)
 # SDL2_INCLUDE_DIR variable set by the FindSDL2 module (if it finds directory).
 target_include_directories(DYEngine PUBLIC ${SDL2_INCLUDE_DIR})     # This should be a private inclusion though, because of KeyCode.h implementation, this needs to be PUBLIC
 target_include_directories(DYEngine PRIVATE extern/glad/include)
-target_include_directories(DYEngine PUBLIC extern/imgui)
-target_include_directories(DYEngine PRIVATE extern/imgui/backends)
+target_include_directories(DYEngine PUBLIC extern/imgui/imgui)
+# imgui/backends is needed by ImGuiLayer implementation (ImGuiLayer.cpp)
+target_include_directories(DYEngine PRIVATE extern/imgui/imgui/backends)
 target_include_directories(DYEngine PUBLIC extern/glm)
 target_include_directories(DYEngine PUBLIC extern/stb/include)
 target_include_directories(DYEngine PUBLIC extern/yaml-cpp/include)
