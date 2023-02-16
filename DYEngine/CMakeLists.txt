@@ -136,6 +136,7 @@ add_subdirectory(extern/imgui)
 add_subdirectory(extern/glm)
 add_subdirectory(extern/stb)
 add_subdirectory(extern/yaml-cpp)
+add_subdirectory(extern/entt)
 #add_subdirectory(extern/rttr)
 
 # ===========================================================================================
@@ -157,6 +158,7 @@ target_include_directories(DYEngine PRIVATE extern/imgui/imgui/backends)
 target_include_directories(DYEngine PUBLIC extern/glm)
 target_include_directories(DYEngine PUBLIC extern/stb/include)
 target_include_directories(DYEngine PUBLIC extern/yaml-cpp/include)
+target_include_directories(DYEngine PUBLIC extern/entt/single_include)
 #target_include_directories(DYEngine PUBLIC extern/rttr/rttr/src)
 
 # ===========================================================================================
@@ -169,6 +171,7 @@ target_link_libraries(DYEngine
         glm
         stb
         yaml-cpp
+        EnTT::EnTT
         #RTTR::Core_Lib
     )
 
