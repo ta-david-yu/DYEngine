@@ -1,6 +1,6 @@
 #include "AppEntryPoint.h"
 #include "Core/Application.h"
-#include "Scene/Entity.h"
+#include "Scene/GameObject.h"
 #include "Scene/SceneLayer.h"
 #include "Scene/Transform.h"
 #include "Util/TypeUtil.h"

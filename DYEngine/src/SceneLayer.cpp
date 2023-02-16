@@ -4,7 +4,7 @@
 #include "Util/Time.h"
 #include "Graphics/WindowBase.h"
 #include "Util/Logger.h"
-#include "Scene/Entity.h"
+#include "Scene/GameObject.h"
 #include "Scene/Transform.h"
 #include "Scene/ImageRenderer.h"
 #include "Util/TypeUtil.h"
@@ -551,9 +551,9 @@ namespace DYE
         }
     }
 
-    std::weak_ptr<Entity> SceneLayer::CreateEntity(const std::string& name)
+    std::weak_ptr<GameObject> SceneLayer::CreateEntity(const std::string& name)
     {
-        auto entity = std::make_shared<Entity>(m_EntityIDCounter, name);
+        auto entity = std::make_shared<GameObject>(m_EntityIDCounter, name);
 
         /// Cache transform component
         entity->m_Transform = LazyAddComponentToEntity<Transform>(entity);
@@ -589,7 +589,7 @@ namespace DYE
         m_Entities.erase(entPairItr);
     }
 
-    Entity *SceneLayer::GetEntity(uint32_t id)
+    GameObject *SceneLayer::GetEntity(uint32_t id)
     {
         auto entItr = m_Entities.find(id);
 

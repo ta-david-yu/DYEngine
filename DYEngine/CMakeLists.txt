@@ -16,7 +16,7 @@ set(SOURCE_FILES
         src/ImGuiLayer.cpp
         src/Logger.cpp
         src/SceneLayer.cpp
-        src/Entity.cpp
+        src/GameObject.cpp
         src/ComponentBase.cpp
         src/TypeUtil.cpp
         src/Transform.cpp
@@ -73,7 +73,7 @@ set(HEADER_FILES
         include/ImGui/ImGuiLayer.h
         include/Util/Logger.h
         include/Scene/SceneLayer.h
-        include/Scene/Entity.h
+        include/Scene/GameObject.h
         include/Scene/ComponentBase.h
         include/Util/TypeUtil.h
         include/Scene/Transform.h

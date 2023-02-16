@@ -2,7 +2,7 @@
 
 #include "Graphics/VertexArray.h"
 #include "Graphics/Shader.h"
-#include "Scene/Entity.h"
+#include "Scene/GameObject.h"
 #include "Scene/Transform.h"
 #include "Graphics/WindowBase.h"
 #include "Util/Logger.h"
@@ -106,7 +106,7 @@ namespace DYE
                                                     }), m_CachedImageRenderers.end());
     }
 
-    void ImageRendererUpdater::attachEntityWithComponent(const std::weak_ptr<Entity> &entity,
+    void ImageRendererUpdater::attachEntityWithComponent(const std::weak_ptr<GameObject> &entity,
                                                          const std::shared_ptr<ComponentBase> &component)
     {
         const auto imageRenderer = std::static_pointer_cast<ImageRenderer>(component);

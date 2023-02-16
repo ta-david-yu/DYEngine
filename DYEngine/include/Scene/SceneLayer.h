@@ -11,7 +11,7 @@
 
 namespace DYE
 {
-    class Entity;
+    class GameObject;
     class ComponentUpdaterBase;
     class TransformUpdater;
     class ImageRendererUpdater;
@@ -38,7 +38,7 @@ namespace DYE
         /// Create an entity and push into the list
         /// \param name the name of the entity
         /// \return a weak pointer to the entity
-        std::weak_ptr<Entity> CreateEntity(const std::string& name);
+        std::weak_ptr<GameObject> CreateEntity(const std::string& name);
 
         /// Delayed destroy an entity with the given id at the end of this frame
         /// \param entityID
@@ -47,7 +47,7 @@ namespace DYE
         /// Get the entity with the given id
         /// \param id
         /// \return a raw pointer to the entity. Return nullptr if the entity with the given id doesn't exist
-        Entity* GetEntity(uint32_t id);
+        GameObject* GetEntity(uint32_t id);
 
         /// Create a generic updater that is responsible for updating the components of the given component type id
         /// \param typeID type_index of the component type
@@ -83,14 +83,14 @@ namespace DYE
         /// \param typeID the typeID that is used to find/initialize the updater
         /// \return a weak pointer to the newly created component
         template<typename T>
-        std::weak_ptr<T> LazyAddComponentToEntity(std::weak_ptr<Entity> entity, ComponentTypeID typeID);
+        std::weak_ptr<T> LazyAddComponentToEntity(std::weak_ptr<GameObject> entity, ComponentTypeID typeID);
 
         /// Create a component and attach it to the entity. If an updater with the given typeid(componentType) exists, register the component to it. Otherwise, a new generic updater will be instantiated and registered
         /// \tparam T the type of the component
         /// \param entity the to-be-attached-to entity
         /// \return a weak pointer to the newly created component
         template<typename T>
-        std::weak_ptr<T> LazyAddComponentToEntity(std::weak_ptr<Entity> entity);
+        std::weak_ptr<T> LazyAddComponentToEntity(std::weak_ptr<GameObject> entity);
 
     private:
         WindowBase* m_pWindow;
@@ -101,7 +101,7 @@ namespace DYE
         ///
         /// \param uint32_t unique entityID
         /// \param sharedPtr2Entity a shared_ptr to Entity
-        std::map<uint32_t, std::shared_ptr<Entity>> m_Entities;
+        std::map<uint32_t, std::shared_ptr<GameObject>> m_Entities;
         //std::vector<std::shared_ptr<Entity>> m_Entities;
 
         // Important Updaters
@@ -175,7 +175,7 @@ namespace DYE
     }
 
     template<typename T>
-    std::weak_ptr<T> SceneLayer::LazyAddComponentToEntity(std::weak_ptr<Entity> entity, ComponentTypeID typeID)
+    std::weak_ptr<T> SceneLayer::LazyAddComponentToEntity(std::weak_ptr<GameObject> entity, ComponentTypeID typeID)
     {
         static_assert(std::is_base_of<ComponentBase, T>::value, "T must inherit from ComponentBase.");
 
@@ -192,7 +192,7 @@ namespace DYE
     }
 
     template<typename T>
-    std::weak_ptr<T> SceneLayer::LazyAddComponentToEntity(std::weak_ptr<Entity> entity)
+    std::weak_ptr<T> SceneLayer::LazyAddComponentToEntity(std::weak_ptr<GameObject> entity)
     {
         static_assert(std::is_base_of<ComponentBase, T>::value, "T must inherit from ComponentBase.");
 

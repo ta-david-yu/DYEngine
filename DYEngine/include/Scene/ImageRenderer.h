@@ -71,7 +71,7 @@ namespace DYE
         void FixedUpdateComponents() override;
 
         void RemoveComponentsOfEntity(uint32_t entityID) override;
-        void attachEntityWithComponent(const std::weak_ptr<Entity> &entity, const std::shared_ptr<ComponentBase> &component) override;
+        void attachEntityWithComponent(const std::weak_ptr<GameObject> &entity, const std::shared_ptr<ComponentBase> &component) override;
 
         /// Called in Render update, render the registered enabled images (in sorted order)
         void RenderImages();
