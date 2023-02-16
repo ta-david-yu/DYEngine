@@ -20,7 +20,7 @@ add_library(DYEntity STATIC ${SOURCE_FILES} ${HEADER_FILES})
 # Include Headers to DYEntity
 target_include_directories(DYEntity PUBLIC include)
 target_include_directories(DYEntity PUBLIC ../DYEngine/include)
-target_include_directories(DYEntity PRIVATE extern/entt/single_include)
+target_include_directories(DYEntity PUBLIC extern/entt/single_include)
 
 # ===========================================================================================
 # Link External Libraries with DYEntity lib
