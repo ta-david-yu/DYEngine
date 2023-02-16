@@ -10,6 +10,6 @@
 [submodule "DYEngine/extern/rttr/rttr"]
 	path = DYEngine/extern/rttr/rttr
 	url = git@github.com:ta-david-yu/rttr.git
-[submodule "DYEngine/extern/entt"]
-	path = DYEngine/extern/entt
+[submodule "DYEntity/extern/entt"]
+	path = DYEntity/extern/entt
 	url = git@github.com:ta-david-yu/entt.git
