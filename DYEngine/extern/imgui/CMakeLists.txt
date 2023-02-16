@@ -10,7 +10,7 @@ set(IMGUI_SOURCE_FILES
 
 # Imgui source files needed for SDL2
 set(IMGUI_SDL2_IMPL_SOURCE_FILES
-        "imgui/backends/imgui_impl_sdl.cpp"
+        "imgui/backends/imgui_impl_sdl2.cpp"
         "imgui/backends/imgui_impl_opengl3.cpp")
 
 add_library(${LIBRARY_NAME}

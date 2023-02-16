@@ -8,7 +8,7 @@
 #include "Graphics/WindowManager.h"
 
 #include <SDL.h>
-#include <imgui_impl_sdl.h>
+#include <imgui_impl_sdl2.h>
 
 namespace DYE
 {
