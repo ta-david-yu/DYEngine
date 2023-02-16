@@ -3,7 +3,7 @@ project(DYEntity)
 # ===========================================================================================
 # DYEngine Sources / Headers
 set(SOURCE_FILES src/Entity.cpp src/World.cpp) ## TODO
-set(HEADER_FILES include/Entity.h include/World.h) ## TODO
+set(HEADER_FILES include/Entity.h include/World.h include/Components/NameComponent.h include/Components.h) ## TODO
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")
@@ -24,5 +24,5 @@ target_include_directories(DYEntity PUBLIC extern/entt/single_include)
 
 # ===========================================================================================
 # Link External Libraries with DYEntity lib
-target_link_libraries(DYEntity INTERFACE DYEngine)
+target_link_libraries(DYEntity PUBLIC DYEngine)
 target_link_libraries(DYEntity PRIVATE EnTT::EnTT)
