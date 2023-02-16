@@ -6,19 +6,19 @@ DYEngine is a WIP 2D game engine (with the possibility of 3D rendering)
 ## Most of the following tools come with CLion as bundles
 - IDE: CLion (CMake)
 - Build system: Ninja
-- Compiler: gcc/g++ (mingw)  
+- Compiler: GCC (mingw) for C++20
 
-Right now I am using CLion + gcc with Mingw to configure & build the project, haven't tested it with other compiler (i.e. MSVC) yet.  
+Right now I am using CLion + GCC with Mingw to configure & build the project, haven't tested it with other compiler (i.e. MSVC) yet.  
 To achieve MSVC build, you probably have to replace SDL2 library with the MSVC version (the one included in the repository is mingw version).
 You can download **SDL2-devel-2.0.12-VC.zip** in the release page of [SDL2 repository](https://github.com/libsdl-org/SDL/releases).
 
-# External Dependencies
+# Library Dependencies (included in the project)
 - SDL2 - 2.0.12
 - glad
 - glm
 - stb_image
 - Dear ImGui
-## Pending (to add/added but not used)
+## Pending (to include/included but not used)
 - entt - use as the main object model in DYEngine. I might implement my own ECS framework if time allows it.
 - rttr - use for generating RTTI code for editor. I might implement a simple C++ parser/code generator myself.
 - yaml-cpp - most of the files in DYEngine will be stored as yaml (i.e. scene/level files, asset meta files)
