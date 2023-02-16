@@ -1,3 +1,4 @@
+![DYE_logo_outlined](https://user-images.githubusercontent.com/8101387/219255174-fdb29aa7-6c08-42ca-9365-a86e0d774d94.png)
 # DYEngine
 DYEngine is a WIP 2D game engine (with the possibility of 3D rendering)
 
