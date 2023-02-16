@@ -161,16 +161,16 @@ target_include_directories(DYEngine PUBLIC extern/yaml-cpp/include)
 
 # ===========================================================================================
 # Link External Libraries with DYEngine lib
-target_link_libraries(DYEngine
-        #${SDL2MAIN_LIBRARY}
-        ${SDL2_LIBRARY} # SDL2MAIN_LIBRARY is also specified within SDL2_LIBRARY by the FindSDL2 module. It's needed for Windows specific main function. If I don't use FindSDL2 module, I have to link it as well.
-        glad
-        imgui
-        glm
-        stb
-        yaml-cpp
-        #RTTR::Core_Lib
-    )
+
+# SDL2MAIN_LIBRARY is also specified within SDL2_LIBRARY by the FindSDL2 module. It's needed for Windows specific main function. If I don't use FindSDL2 module, I have to link it as well.
+#target_link_libraries(DYEngine ${SDL2MAIN_LIBRARY})
+target_link_libraries(DYEngine ${SDL2_LIBRARY})
+target_link_libraries(DYEngine glad)
+target_link_libraries(DYEngine imgui)
+target_link_libraries(DYEngine glm)
+target_link_libraries(DYEngine stb)
+target_link_libraries(DYEngine yaml-cpp)
+#target_link_libraries(DYEngine RTTR::Core_Lib)
 
 # ===========================================================================================
 # Copy SDL2.dll to the output directory post-build
