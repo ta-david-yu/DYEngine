@@ -2,7 +2,7 @@
 
 #include "entt/entt.hpp"
 
-namespace DYEngine::DYEntity
+namespace DYE::DYEntity
 {
 	class Entity
 	{
