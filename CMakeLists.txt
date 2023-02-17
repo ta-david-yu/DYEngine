@@ -25,7 +25,8 @@ add_subdirectory(DYEngine)
 # DYEntity library
 add_subdirectory(DYEntity)
 
-# TODO: DYEditor library
+# DYEditor library
+add_subdirectory(DYEditor)
 
 # Sandbox executable
 add_subdirectory(Sandbox)

@@ -1,34 +1,29 @@
-project(DYEntity)
+project(DYEditor)
 
 # ===========================================================================================
-# Sources & headers
+# Sources / Headers
 set(SOURCE_FILES
-        src/Entity.cpp
-        src/World.cpp)
+        src/EditorLayer.cpp)
 set(HEADER_FILES
-        include/Entity.h
-        include/World.h
-        include/Components.h
-        include/Components/NameComponent.h)
+        include/EditorLayer.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")
 
 # ===========================================================================================
 # External library
-add_subdirectory(extern/entt)
 
 # ===========================================================================================
 # Build library
-add_library(DYEntity STATIC ${SOURCE_FILES} ${HEADER_FILES})
+add_library(DYEditor STATIC ${SOURCE_FILES} ${HEADER_FILES})
 
 # ===========================================================================================
 # Include headers
-target_include_directories(DYEntity PUBLIC include)
-target_include_directories(DYEntity PUBLIC ../DYEngine/include)
-target_include_directories(DYEntity PUBLIC extern/entt/single_include)
+target_include_directories(DYEditor PUBLIC include)
+target_include_directories(DYEditor PUBLIC ../DYEngine/include)
+target_include_directories(DYEditor PUBLIC ../DYEntity/include)
 
 # ===========================================================================================
-# Link libraries
-target_link_libraries(DYEntity PUBLIC DYEngine)
-target_link_libraries(DYEntity PRIVATE EnTT::EnTT)
+# Link external libraries
+target_link_libraries(DYEditor PUBLIC DYEngine)
+target_link_libraries(DYEditor PUBLIC DYEntity)
