@@ -11,7 +11,7 @@ namespace DYE
     using ComponentTypeID = std::type_index;
 
     class SceneLayer;
-    class Entity;
+    class GameObject;
     class Transform;
     class ComponentUpdaterBase;
     class Event;
@@ -33,7 +33,7 @@ namespace DYE
 
         /// Get entity this component belongs to
         /// \return a raw pointer to the entity if the entity exists, otherwise nullptr
-        Entity* GetEntityPtr() const;
+        GameObject* GetEntityPtr() const;
 
         Transform* GetTransform() const;
 
@@ -44,7 +44,7 @@ namespace DYE
     private:
         bool m_IsEnabled = true;
 
-        std::weak_ptr<Entity> m_Entity;
+        std::weak_ptr<GameObject> m_Entity;
 
     protected:
 #if DYE_DEBUG
@@ -77,7 +77,7 @@ namespace DYE
         /// \param entity the entity to be attached to
         /// \param component the component to be attached and registered
         /// \return a weak pointer to the component
-        std::weak_ptr<ComponentBase> AttachEntityWithComponent(const std::weak_ptr<Entity>& entity, ComponentBase* component);
+        std::weak_ptr<ComponentBase> AttachEntityWithComponent(const std::weak_ptr<GameObject>& entity, ComponentBase* component);
 
         /// Check if an entity has the component that belongs to this updater
         /// \param entityId
@@ -105,7 +105,7 @@ namespace DYE
         std::vector<ComponentPair> m_Components;
 
         /// Called when a component is attached to an entity, useful for post-processing or custom data referencing
-        virtual void attachEntityWithComponent(const std::weak_ptr<Entity>& entity, const std::shared_ptr<ComponentBase>& component) { };
+        virtual void attachEntityWithComponent(const std::weak_ptr<GameObject>& entity, const std::shared_ptr<ComponentBase>& component) { };
 
     protected:
 #if DYE_DEBUG

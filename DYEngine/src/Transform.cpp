@@ -1,5 +1,5 @@
 #include "Scene/Transform.h"
-#include "Scene/Entity.h"
+#include "Scene/GameObject.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>

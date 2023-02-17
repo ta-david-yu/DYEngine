@@ -15,7 +15,7 @@ namespace DYE
     class Transform;
 
     /// An entity holds an ID that corresponds to a collection of components with logic
-    class Entity
+    class GameObject
     {
         friend SceneLayer;
         friend ComponentUpdaterBase;
@@ -23,7 +23,7 @@ namespace DYE
         /// Called by a factory when creating new ent
         /// \param id An unique runtime id, used to map components, constant across life time
         /// \param name The name of the entity
-        Entity(int id, std::string name);
+        GameObject(int id, std::string name);
 
         const std::string& GetName() const { return m_Name; }
         void SetName(const std::string& name) { m_Name = name; }

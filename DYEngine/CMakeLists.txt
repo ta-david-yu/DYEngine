@@ -1,7 +1,7 @@
 project(DYEngine VERSION 0.0.1)
 
 # ===========================================================================================
-# DYEngine Sources / Headers
+# Sources & headers
 set(SOURCE_FILES
         src/Application.cpp
         src/WindowBase.cpp
@@ -16,7 +16,7 @@ set(SOURCE_FILES
         src/ImGuiLayer.cpp
         src/Logger.cpp
         src/SceneLayer.cpp
-        src/Entity.cpp
+        src/GameObject.cpp
         src/ComponentBase.cpp
         src/TypeUtil.cpp
         src/Transform.cpp
@@ -73,7 +73,7 @@ set(HEADER_FILES
         include/ImGui/ImGuiLayer.h
         include/Util/Logger.h
         include/Scene/SceneLayer.h
-        include/Scene/Entity.h
+        include/Scene/GameObject.h
         include/Scene/ComponentBase.h
         include/Util/TypeUtil.h
         include/Scene/Transform.h
@@ -115,13 +115,13 @@ set(HEADER_FILES
         include/Util/FPSCounter.h
         include/Math/EasingFunctions.h)
 
-message(STATUS "[DYEngine] Source Files: ${SOURCE_FILES}")
-message(STATUS "[DYEngine] Header Files: ${HEADER_FILES}")
+message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
+message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")
 
 # ===========================================================================================
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
 
-# External 3rd party library
+# External library
 # Define SDL2_PATH here that will be used by FindSDL2 module
 set(SDL2_PATH "extern/SDL2")
 find_package(SDL2 REQUIRED)
@@ -130,7 +130,7 @@ find_package(SDL2 REQUIRED)
 #set(RTTR_DIR "extern/rttr/rttr")
 #find_package(RTTR CONFIG REQUIRED Core)
 
-# Build External Static Library
+# Build external static library
 add_subdirectory(extern/glad)
 add_subdirectory(extern/imgui)
 add_subdirectory(extern/glm)
@@ -139,13 +139,13 @@ add_subdirectory(extern/yaml-cpp)
 #add_subdirectory(extern/rttr)
 
 # ===========================================================================================
-# Build DYEngine library
+# Build library
 add_library(DYEngine STATIC
         ${SOURCE_FILES}
         ${HEADER_FILES})
 
 # ===========================================================================================
-# Include Headers to DYEngine
+# Include headers
 target_include_directories(DYEngine PUBLIC include)
 # SDL2_INCLUDE_DIR variable is set by the FindSDL2 module (if it finds the directory with SDL2).
 # Ideally SDL2 should be included privately. But because of KeyCode.h/Logger.h implementation, it needs to be PUBLIC for now.
@@ -160,17 +160,17 @@ target_include_directories(DYEngine PUBLIC extern/yaml-cpp/include)
 #target_include_directories(DYEngine PUBLIC extern/rttr/rttr/src)
 
 # ===========================================================================================
-# Link External Libraries with DYEngine lib
-target_link_libraries(DYEngine
-        #${SDL2MAIN_LIBRARY}
-        ${SDL2_LIBRARY} # SDL2MAIN_LIBRARY is also specified within SDL2_LIBRARY by the FindSDL2 module. It's needed for Windows specific main function. If I don't use FindSDL2 module, I have to link it as well.
-        glad
-        imgui
-        glm
-        stb
-        yaml-cpp
-        #RTTR::Core_Lib
-    )
+# Link external libraries
+
+# SDL2MAIN_LIBRARY is also specified within SDL2_LIBRARY by the FindSDL2 module. It's needed for Windows specific main function. If I don't use FindSDL2 module, I have to link it as well.
+#target_link_libraries(DYEngine ${SDL2MAIN_LIBRARY})
+target_link_libraries(DYEngine ${SDL2_LIBRARY})
+target_link_libraries(DYEngine glad)
+target_link_libraries(DYEngine imgui)
+target_link_libraries(DYEngine glm)
+target_link_libraries(DYEngine stb)
+target_link_libraries(DYEngine yaml-cpp)
+#target_link_libraries(DYEngine RTTR::Core_Lib)
 
 # ===========================================================================================
 # Copy SDL2.dll to the output directory post-build

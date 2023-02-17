@@ -1,5 +1,5 @@
 #include "Scene/ComponentBase.h"
-#include "Scene/Entity.h"
+#include "Scene/GameObject.h"
 #include "Util/TypeUtil.h"
 #include "Scene/Transform.h"
 
@@ -8,7 +8,7 @@
 
 namespace DYE
 {
-    Entity * ComponentBase::GetEntityPtr() const
+    GameObject * ComponentBase::GetEntityPtr() const
     {
         if (m_Entity.expired())
             return nullptr;
@@ -34,7 +34,7 @@ namespace DYE
     {
     }
 
-    std::weak_ptr<ComponentBase> ComponentUpdaterBase::AttachEntityWithComponent(const std::weak_ptr<Entity>& entity,
+    std::weak_ptr<ComponentBase> ComponentUpdaterBase::AttachEntityWithComponent(const std::weak_ptr<GameObject>& entity,
                                                          ComponentBase* component)
     {
         auto addedCompTypeID = std::type_index(typeid(*component));

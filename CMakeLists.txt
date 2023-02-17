@@ -22,7 +22,11 @@ endif ()
 # DYEngine library
 add_subdirectory(DYEngine)
 
-# TODO: Build DYEditor
+# DYEntity library
+add_subdirectory(DYEntity)
+
+# DYEditor library
+add_subdirectory(DYEditor)
 
 # Sandbox executable
 add_subdirectory(Sandbox)
