@@ -587,8 +587,6 @@ namespace DYE::ImGuiUtil
 
 		ImGui::PushID(label.c_str());
 
-		ImGui::Text(label.c_str());
-
 		isValueChanged |= DrawVec3Control("Position", cameraProperties.Position);
 		isValueChanged |= DrawColor4Control("Clear Color", cameraProperties.ClearColor);
 		isValueChanged |= DrawBooleanControl("Is Orthographic", cameraProperties.IsOrthographic);
