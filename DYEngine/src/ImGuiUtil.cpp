@@ -584,6 +584,9 @@ namespace DYE::ImGuiUtil
 	bool DrawCameraPropertiesControl(const std::string& label, CameraProperties& cameraProperties)
 	{
 		bool isValueChanged = false;
+
+		ImGui::PushID(label.c_str());
+
 		ImGui::Text(label.c_str());
 
 		isValueChanged |= DrawVec3Control("Position", cameraProperties.Position);
@@ -629,6 +632,8 @@ namespace DYE::ImGuiUtil
 			resetRect = {0, 0, (float) targetDimension.x, (float) targetDimension.y};
 		}
 		isValueChanged |= DrawRectControl("Viewport", cameraProperties.Viewport, resetRect);
+
+		ImGui::PopID();
 
 		return false;
 	}

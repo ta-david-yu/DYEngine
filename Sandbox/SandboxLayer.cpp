@@ -14,6 +14,7 @@
 #include "Graphics/DebugDraw.h"
 
 #include <imgui.h>
+#include <glm/gtx/norm.hpp>
 
 namespace DYE
 {
@@ -37,45 +38,59 @@ namespace DYE
 		{
 			m_InputBuffer.x = -1.0f;
 		}
-
-		if (INPUT.GetKey(KeyCode::W) || INPUT.GetKey(KeyCode::Up))
-		{
-			m_InputBuffer.y = 1.0f;
-		}
-
-		if (INPUT.GetKey(KeyCode::S) || INPUT.GetKey(KeyCode::Down))
-		{
-			m_InputBuffer.y = -1.0f;
-		}
     }
 
     void SandboxLayer::OnFixedUpdate()
     {
-		m_BallVelocity.x = m_HorizontalMoveUnitsPerSecond * m_InputBuffer.x;
-		m_BallVelocity.y = m_HorizontalMoveUnitsPerSecond * m_InputBuffer.y;
-
-		m_BallPosition += m_BallVelocity * static_cast<float>(TIME.FixedDeltaTime());
-
+		// Movement input action system
+		glm::vec2 input = {0, 0};
+		if (glm::length2(m_InputBuffer) > 0.01f)
+		{
+			input = m_InputBuffer;
+		}
 		m_InputBuffer = {0, 0};
+
+		m_BallVelocity.x = m_HorizontalMoveUnitsPerSecond * input.x;
+
+		// Movement system
+		m_BallPosition += m_BallVelocity * static_cast<float>(TIME.FixedDeltaTime());
+		m_BallPosition.x = glm::clamp(m_BallPosition.x, -m_GroundWidth * 0.5f, m_GroundWidth * 0.5f);
     }
 
 	void SandboxLayer::OnRender()
 	{
+		// TODO: Render system instead of im debug draw
+		Math::AABB const groundAABB = getGroundAABB();
+		DebugDraw::AABB(groundAABB.Min, groundAABB.Max, Color::Yellow);
+
 		DebugDraw::Sphere(m_BallPosition, m_BallRadius, Color::White);
-		DebugDraw::AABB(
-			m_BallPosition + glm::vec3 {m_BallRadius, m_BallRadius, m_BallRadius},
-			m_BallPosition - glm::vec3 {m_BallRadius, m_BallRadius, m_BallRadius},
-			Color::Yellow);
+
+		// Camera system
 		RenderPipelineManager::RegisterCameraForNextRender(m_CameraProperties);
 	}
 
     void SandboxLayer::OnImGui()
     {
+		const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
 		if (ImGui::Begin("Sandbox Debug Window"))
 		{
 			if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				ImGuiUtil::DrawCameraPropertiesControl("Camera", m_CameraProperties);
+			}
+
+			if (ImGui::CollapsingHeader("Ball", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				ImGuiUtil::DrawFloatControl("Horizontal Speed (unit/sec)", m_HorizontalMoveUnitsPerSecond, 3.0f);
+				ImGuiUtil::DrawFloatControl("Gravity", m_BallGravity, -9.8f);
+
+				ImGui::BeginDisabled(true);
+				ImGuiUtil::DrawVec3Control("Position", m_BallPosition);
+				ImGuiUtil::DrawVec3Control("Velocity", m_BallVelocity);
+				ImGuiUtil::DrawFloatControl("Radius", m_BallRadius, 0.5f);
+				ImGui::EndDisabled();
 			}
 
 		}
