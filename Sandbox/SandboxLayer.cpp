@@ -98,30 +98,29 @@ namespace DYE
 		if (glm::abs(moveOffset.x) > 0)
 		{
 			// Horizontal collision test
-			bool const hitHorizontally = Math::MovingCircleAABBIntersect(m_BallPosition, m_BallRadius,
-																		 horizontalMoveOffset, groundAABB, result2D);
+			float const directionSign = glm::sign(moveOffset.x);
+			bool const hitHorizontally = Math::MovingCircleAABBIntersect(
+				m_BallPosition + directionSign * glm::vec3 {m_BallRadiusSkin, 0, 0},
+				m_BallRadius,
+				horizontalMoveOffset, groundAABB, result2D);
+
 			if (hitHorizontally)
 			{
 				horizontalMoveOffset *= result2D.HitTime;
-				//if (horizontalMoveOffset.x >= m_BallRadiusSkin)
-				{
-					horizontalMoveOffset -= glm::vec3 {glm::sign(horizontalMoveOffset.x), 0, 0} * m_BallRadiusSkin;
-				}
 			}
 		}
 
 		if (glm::abs(moveOffset.y) > 0)
 		{
 			// Vertical collision test
-			bool const hitVertically = Math::MovingCircleAABBIntersect(m_BallPosition, m_BallRadius, verticalMoveOffset,
-																	   groundAABB, result2D);
+			float const directionSign = glm::sign(moveOffset.y);
+			bool const hitVertically = Math::MovingCircleAABBIntersect(
+				m_BallPosition + directionSign * glm::vec3 {0, m_BallRadiusSkin, 0},
+				m_BallRadius,
+				verticalMoveOffset, groundAABB, result2D);
 			if (hitVertically)
 			{
 				verticalMoveOffset *= result2D.HitTime;
-				//if (verticalMoveOffset.y >= m_BallRadiusSkin)
-				{
-					verticalMoveOffset -= glm::vec3 {0, glm::sign(verticalMoveOffset.y), 0} * m_BallRadiusSkin;
-				}
 
 				// Hit the ground, set vertical velocity to zero.
 				m_BallVelocity.y = 0;
