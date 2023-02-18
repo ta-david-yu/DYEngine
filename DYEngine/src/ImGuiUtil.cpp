@@ -13,10 +13,12 @@ namespace DYE::ImGuiUtil
 	namespace Parameters
 	{
 		float ControlLabelWidth = 200.0f;
+		std::string FloatFormat = "%.2f";
 
 		void ResetParametersToDefaultValues()
 		{
 			ControlLabelWidth = DefaultControlLabelWidth;
+			FloatFormat = DefaultFloatFormat;
 		}
 	}
 
@@ -54,7 +56,7 @@ namespace DYE::ImGuiUtil
 			ImGui::PopStyleColor(3);
 
 			ImGui::SameLine();
-			isValueChanged |= ImGui::DragFloat("##X", &value.x, 0.1f, 0.0f, 0.0f, "%.2f");
+			isValueChanged |= ImGui::DragFloat("##X", &value.x, 0.1f, 0.0f, 0.0f, Parameters::FloatFormat.c_str());
 			ImGui::PopItemWidth();
 		}
 
@@ -74,7 +76,7 @@ namespace DYE::ImGuiUtil
 			ImGui::PopStyleColor(3);
 
 			ImGui::SameLine();
-			isValueChanged |= ImGui::DragFloat("##Y", &value.y, 0.1f, 0.0f, 0.0f, "%.2f");
+			isValueChanged |= ImGui::DragFloat("##Y", &value.y, 0.1f, 0.0f, 0.0f, Parameters::FloatFormat.c_str());
 			ImGui::PopItemWidth();
 		}
 
@@ -120,7 +122,7 @@ namespace DYE::ImGuiUtil
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		isValueChanged |= ImGui::DragFloat("##X", &value.x, 0.1f, 0.0f, 0.0f, "%.2f");
+		isValueChanged |= ImGui::DragFloat("##X", &value.x, 0.1f, 0.0f, 0.0f, Parameters::FloatFormat.c_str());
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -137,7 +139,7 @@ namespace DYE::ImGuiUtil
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		isValueChanged |= ImGui::DragFloat("##Y", &value.y, 0.1f, 0.0f, 0.0f, "%.2f");
+		isValueChanged |= ImGui::DragFloat("##Y", &value.y, 0.1f, 0.0f, 0.0f, Parameters::FloatFormat.c_str());
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -154,7 +156,7 @@ namespace DYE::ImGuiUtil
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		isValueChanged |= ImGui::DragFloat("##Z", &value.z, 0.1f, 0.0f, 0.0f, "%.2f");
+		isValueChanged |= ImGui::DragFloat("##Z", &value.z, 0.1f, 0.0f, 0.0f, Parameters::FloatFormat.c_str());
 		ImGui::PopItemWidth();
 
 		ImGui::PopStyleVar();
@@ -215,7 +217,7 @@ namespace DYE::ImGuiUtil
 
 		// Drag Float
 		{
-			isValueChanged |= ImGui::DragFloat("##Float", &value, 0.1f, 0, 0, "%.2f");
+			isValueChanged |= ImGui::DragFloat("##Float", &value, 0.1f, 0, 0, Parameters::FloatFormat.c_str());
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
 		}
@@ -360,7 +362,7 @@ namespace DYE::ImGuiUtil
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		isValueChanged |= ImGui::DragFloat("##X", &value.X, 0.1f, 0.0f, 0.0f, "%.2f");
+		isValueChanged |= ImGui::DragFloat("##X", &value.X, 0.1f, 0.0f, 0.0f, Parameters::FloatFormat.c_str());
 		ImGui::PopItemWidth();
 
 		ImGui::SameLine();
@@ -377,7 +379,7 @@ namespace DYE::ImGuiUtil
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		isValueChanged |= ImGui::DragFloat("##Y", &value.Y, 0.1f, 0.0f, 0.0f, "%.2f");
+		isValueChanged |= ImGui::DragFloat("##Y", &value.Y, 0.1f, 0.0f, 0.0f, Parameters::FloatFormat.c_str());
 		ImGui::PopItemWidth();
 
 		ImGui::SameLine();
@@ -394,7 +396,7 @@ namespace DYE::ImGuiUtil
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		isValueChanged |= ImGui::DragFloat("##W", &value.Width, 0.1f, 0.0f, 0.0f, "%.2f");
+		isValueChanged |= ImGui::DragFloat("##W", &value.Width, 0.1f, 0.0f, 0.0f, Parameters::FloatFormat.c_str());
 		ImGui::PopItemWidth();
 
 		ImGui::SameLine();
@@ -411,7 +413,7 @@ namespace DYE::ImGuiUtil
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		isValueChanged |= ImGui::DragFloat("##H", &value.Height, 0.1f, 0.0f, 0.0f, "%.2f");
+		isValueChanged |= ImGui::DragFloat("##H", &value.Height, 0.1f, 0.0f, 0.0f, Parameters::FloatFormat.c_str());
 		ImGui::PopItemWidth();
 
 		ImGui::PopStyleVar();
@@ -527,15 +529,15 @@ namespace DYE::ImGuiUtil
 				ImGui::PopItemWidth();
 
 				ImGui::SameLine();
-				isValueChanged |= ImGui::DragFloat("##MinX", &aabb.Min.x, 0.1f, 0.0f, 0.0f, "%.2f");
+				isValueChanged |= ImGui::DragFloat("##MinX", &aabb.Min.x, 0.1f, 0.0f, 0.0f, Parameters::FloatFormat.c_str());
 				ImGui::PopItemWidth();
 
 				ImGui::SameLine();
-				isValueChanged |= ImGui::DragFloat("##MinY", &aabb.Min.y, 0.1f, 0.0f, 0.0f, "%.2f");
+				isValueChanged |= ImGui::DragFloat("##MinY", &aabb.Min.y, 0.1f, 0.0f, 0.0f, Parameters::FloatFormat.c_str());
 				ImGui::PopItemWidth();
 
 				ImGui::SameLine();
-				isValueChanged |= ImGui::DragFloat("##MinZ", &aabb.Min.z, 0.1f, 0.0f, 0.0f, "%.2f");
+				isValueChanged |= ImGui::DragFloat("##MinZ", &aabb.Min.z, 0.1f, 0.0f, 0.0f, Parameters::FloatFormat.c_str());
 				ImGui::PopItemWidth();
 			}
 			ImGui::PopStyleVar();
@@ -549,15 +551,15 @@ namespace DYE::ImGuiUtil
 				ImGui::PopItemWidth();
 
 				ImGui::SameLine();
-				isValueChanged |= ImGui::DragFloat("##MaxX", &aabb.Max.x, 0.1f, 0.0f, 0.0f, "%.2f");
+				isValueChanged |= ImGui::DragFloat("##MaxX", &aabb.Max.x, 0.1f, 0.0f, 0.0f, Parameters::FloatFormat.c_str());
 				ImGui::PopItemWidth();
 
 				ImGui::SameLine();
-				isValueChanged |= ImGui::DragFloat("##MaxY", &aabb.Max.y, 0.1f, 0.0f, 0.0f, "%.2f");
+				isValueChanged |= ImGui::DragFloat("##MaxY", &aabb.Max.y, 0.1f, 0.0f, 0.0f, Parameters::FloatFormat.c_str());
 				ImGui::PopItemWidth();
 
 				ImGui::SameLine();
-				isValueChanged |= ImGui::DragFloat("##MaxZ", &aabb.Max.z, 0.1f, 0.0f, 0.0f, "%.2f");
+				isValueChanged |= ImGui::DragFloat("##MaxZ", &aabb.Max.z, 0.1f, 0.0f, 0.0f, Parameters::FloatFormat.c_str());
 				ImGui::PopItemWidth();
 			}
 			ImGui::PopStyleVar();
