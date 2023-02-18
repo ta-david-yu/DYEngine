@@ -50,6 +50,19 @@ namespace DYE
 		}
 
 		m_IsJumpHeld = INPUT.GetKey(KeyCode::Space);
+
+
+		if (INPUT.IsGamepadConnected(0))
+		{
+			m_MovementInputBuffer.x = INPUT.GetGamepadAxis(0, GamepadAxis::LeftStickHorizontal);
+
+			if (INPUT.GetGamepadButtonDown(0, GamepadButton::South))
+			{
+				m_IsJumpPressed = true;
+			}
+
+			m_IsJumpHeld = INPUT.GetGamepadButton(0, GamepadButton::South);
+		}
     }
 
     void SandboxLayer::OnFixedUpdate()
@@ -159,7 +172,9 @@ namespace DYE
 			if (ImGui::CollapsingHeader("Ball", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				ImGuiUtil::DrawFloatControl("Horizontal Speed (unit/sec)", m_HorizontalMoveUnitsPerSecond, 3.0f);
+				ImGuiUtil::Parameters::FloatFormat = "%.4f";
 				ImGuiUtil::DrawFloatControl("Radius Skin", m_BallRadiusSkin, 0.015f);
+				ImGuiUtil::Parameters::FloatFormat = ImGuiUtil::Parameters::DefaultFloatFormat;
 				ImGui::Spacing();
 				bool requireJumpParametersRecalculation = false;
 				requireJumpParametersRecalculation |= ImGuiUtil::DrawFloatControl("Time To Reach Apex", m_BallTimeToReachApex, 2);
@@ -188,7 +203,7 @@ namespace DYE
 		}
 		ImGui::End();
 
-        ImGui::ShowDemoWindow();
+		INPUT.DrawInputManagerImGui();
     }
 
 	void SandboxLayer::recalculateJumpParameters()
