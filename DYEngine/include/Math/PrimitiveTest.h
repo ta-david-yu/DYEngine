@@ -40,6 +40,6 @@ namespace DYE::Math
 	bool MovingCircleAABBIntersect(glm::vec2 center, float radius, glm::vec2 direction, AABB const& aabb, DynamicTestResult2D& testResult);
 
 	/* TODO:
-	 * bool MovingAABBAABBIntersect(AABB const& aabb, glm::vec2 direction, AABB const& otherAABB, DynamicTestResult2D& testResult);
+	 * bool MovingAABBAABBIntersect2D(AABB const& aabb, glm::vec2 direction, AABB const& otherAABB, DynamicTestResult2D& testResult);
 	 */
 }

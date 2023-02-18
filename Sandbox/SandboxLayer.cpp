@@ -26,6 +26,8 @@ namespace DYE
 		m_CameraProperties.TargetWindowID = mainWindowPtr->GetWindowID();
 		m_CameraProperties.ManualAspectRatio = (float) mainWindowPtr->GetWidth() / (float) mainWindowPtr->GetHeight();
 		m_CameraProperties.Position = glm::vec3 {0, 0, 10};
+
+		recalculateJumpParameters();
     }
 
     void SandboxLayer::OnUpdate()
@@ -33,37 +35,51 @@ namespace DYE
 		// Movement input system
 		if (INPUT.GetKey(KeyCode::D) || INPUT.GetKey(KeyCode::Right))
 		{
-			m_InputBuffer.x = 1.0f;
+			m_MovementInputBuffer.x = 1.0f;
 		}
 
 		if (INPUT.GetKey(KeyCode::A) || INPUT.GetKey(KeyCode::Left))
 		{
-			m_InputBuffer.x = -1.0f;
+			m_MovementInputBuffer.x = -1.0f;
 		}
 
 		// Jump input system
 		if (INPUT.GetKeyDown(KeyCode::Space))
 		{
-			// TODO: Magic number :P gonna change it later with a speed value based on jump height & apex time
-			m_BallVelocity.y += 10.0f;
+			m_IsJumpPressed = true;
 		}
+
+		m_IsJumpHeld = INPUT.GetKey(KeyCode::Space);
     }
 
     void SandboxLayer::OnFixedUpdate()
     {
-		float timeStep = static_cast<float>(TIME.FixedDeltaTime());
+		auto const timeStep = static_cast<float>(TIME.FixedDeltaTime());
 
 		// Movement input action system
 		glm::vec2 input = {0, 0};
-		if (glm::length2(m_InputBuffer) > 0.01f)
+		if (glm::length2(m_MovementInputBuffer) > 0.01f)
 		{
-			input = m_InputBuffer;
+			input = m_MovementInputBuffer;
 		}
-		m_InputBuffer = {0, 0};
+		m_MovementInputBuffer = {0, 0};
 		m_BallVelocity.x = m_HorizontalMoveUnitsPerSecond * input.x;
 
 		// Gravity system
 		m_BallVelocity += glm::vec3 {0, m_BallGravity, 0} * timeStep;
+
+		// Jump input action system
+		if (m_IsJumpPressed)
+		{
+			m_IsJumpPressed = false;
+			m_BallVelocity.y = m_BallMaxJumpSpeed;
+		}
+
+		if (!m_IsJumpHeld && m_BallVelocity.y > m_BallMinJumpSpeed)
+		{
+			// Variable jump height: set the speed to min jump speed if the player releases jump button earlier.
+			m_BallVelocity.y = m_BallMinJumpSpeed;
+		}
 
 		// Movement system
 		if (glm::length2(m_BallVelocity) <= 0.01f)
@@ -144,9 +160,26 @@ namespace DYE
 			if (ImGui::CollapsingHeader("Ball", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				ImGuiUtil::DrawFloatControl("Horizontal Speed (unit/sec)", m_HorizontalMoveUnitsPerSecond, 3.0f);
-				ImGuiUtil::DrawFloatControl("Gravity", m_BallGravity, -9.8f);
+				ImGuiUtil::DrawFloatControl("Radius Skin", m_BallRadiusSkin, 0.015f);
+				ImGui::Spacing();
+				bool requireJumpParametersRecalculation = false;
+				requireJumpParametersRecalculation |= ImGuiUtil::DrawFloatControl("Time To Reach Apex", m_BallTimeToReachApex, 2);
+				requireJumpParametersRecalculation |= ImGuiUtil::DrawFloatControl("Max Jump Height", m_BallMaxJumpHeight, 5);
+				requireJumpParametersRecalculation |= ImGuiUtil::DrawFloatControl("Min Jump Height", m_BallMinJumpHeight, 2);
 
-				ImGui::BeginDisabled(true);
+				if (requireJumpParametersRecalculation)
+				{
+					recalculateJumpParameters();
+				}
+
+				ImGui::Separator();
+				static bool disableRuntimeVariable = true;
+				ImGuiUtil::DrawBooleanControl("Disable Runtime Variable", disableRuntimeVariable);
+				ImGui::BeginDisabled(disableRuntimeVariable);
+				ImGuiUtil::DrawFloatControl("Gravity", m_BallGravity, -9.8f);
+				ImGuiUtil::DrawFloatControl("MaxJumpSpeed", m_BallMaxJumpHeight, 10);
+				ImGuiUtil::DrawFloatControl("MinJumpSpeed", m_BallMinJumpHeight, 2);
+				ImGui::Spacing();
 				ImGuiUtil::DrawVec3Control("Position", m_BallPosition);
 				ImGuiUtil::DrawVec3Control("Velocity", m_BallVelocity);
 				ImGuiUtil::DrawFloatControl("Radius", m_BallRadius, 0.5f);
@@ -158,4 +191,11 @@ namespace DYE
 
         ImGui::ShowDemoWindow();
     }
+
+	void SandboxLayer::recalculateJumpParameters()
+	{
+		m_BallGravity = -m_BallMaxJumpHeight / (m_BallTimeToReachApex * m_BallTimeToReachApex * 0.5f);
+		m_BallMaxJumpSpeed = glm::abs(m_BallGravity) * m_BallTimeToReachApex;
+		m_BallMinJumpSpeed = glm::sqrt(2 * glm::abs(m_BallGravity) * m_BallMinJumpHeight);
+	}
 }
