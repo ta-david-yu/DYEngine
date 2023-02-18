@@ -41,5 +41,5 @@ namespace DYE::Math
 
 	/* TODO:
 	 * bool MovingAABBAABBIntersect(AABB const& aabb, glm::vec2 direction, AABB const& otherAABB, DynamicTestResult2D& testResult);
-	 * /
+	 */
 }
