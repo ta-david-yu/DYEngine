@@ -1,80 +1,86 @@
-#include "Util/Macro.h"
-
 #include "SandboxLayer.h"
-#include "Graphics/WindowBase.h"
-#include "Graphics/WindowManager.h"
-#include "Util/Logger.h"
 
+#include "Util/Logger.h"
+#include "Util/Macro.h"
 #include "Util/Time.h"
+#include "Math/Color.h"
 #include "ImGui/ImGuiUtil.h"
 
-#include "Graphics/RenderCommand.h"
+#include "Input/InputManager.h"
+
+#include "Graphics/WindowManager.h"
 #include "Graphics/RenderPipelineManager.h"
-
-#include "Graphics/VertexArray.h"
-#include "Graphics/Shader.h"
-#include "Graphics/OpenGL.h"
 #include "Graphics/Texture.h"
-#include "Graphics/CameraProperties.h"
-#include "Graphics/Material.h"
-
-#include "Math/Color.h"
+#include "Graphics/DebugDraw.h"
 
 #include <imgui.h>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/quaternion.hpp>
 
 namespace DYE
 {
     SandboxLayer::SandboxLayer()
     {
-		RenderCommand::GetInstance().SetClearColor(glm::vec4{0.5f, 0.5f, 0.5f, 0.5f});
-
 		auto mainWindowPtr = WindowManager::GetMainWindow();
-
-		m_CameraProperties = std::make_shared<CameraProperties>();
-		m_CameraProperties->ClearColor = Color::Red;
-		m_CameraProperties->TargetWindowID = mainWindowPtr->GetWindowID();
-		m_CameraProperties->ManualAspectRatio = (float) mainWindowPtr->GetWidth() / (float) mainWindowPtr->GetHeight();
-		m_CameraProperties->Position = glm::vec3 {0, 0, 3};
-    }
-
-	void SandboxLayer::OnRender()
-	{
-		RenderPipelineManager::RegisterCameraForNextRender(*m_CameraProperties);
-	}
-
-    void SandboxLayer::OnEvent(Event& event)
-    {
-        auto eventType = event.GetEventType();
-
-        if (eventType == EventType::KeyDown)
-        {
-            auto keyEvent = static_cast<KeyDownEvent&>(event);
-            DYE_ASSERT(keyEvent.GetKeyCode() != KeyCode::Space);
-            DYE_ASSERT_RELEASE(keyEvent.GetKeyCode() != KeyCode::Right);
-
-            //Logger::Log("Sandbox, KeyDown - %d", event.GetKeyCode());
-            DYE_LOG("Sandbox, KeyDown - %d", keyEvent.GetKeyCode());
-        }
-        else if (eventType == EventType::KeyUp)
-        {
-            auto keyEvent = static_cast<KeyUpEvent&>(event);
-            //Logger::Log("Sandbox, KeyUp - %d", event.GetKeyCode());
-            DYE_LOG("Sandbox, KeyUp - %d", keyEvent.GetKeyCode());
-        }
+		m_CameraProperties.ClearColor = Color::Black;
+		m_CameraProperties.TargetWindowID = mainWindowPtr->GetWindowID();
+		m_CameraProperties.ManualAspectRatio = (float) mainWindowPtr->GetWidth() / (float) mainWindowPtr->GetHeight();
+		m_CameraProperties.Position = glm::vec3 {0, 0, 10};
     }
 
     void SandboxLayer::OnUpdate()
     {
+		if (INPUT.GetKey(KeyCode::D) || INPUT.GetKey(KeyCode::Right))
+		{
+			m_InputBuffer.x = 1.0f;
+		}
+
+		if (INPUT.GetKey(KeyCode::A) || INPUT.GetKey(KeyCode::Left))
+		{
+			m_InputBuffer.x = -1.0f;
+		}
+
+		if (INPUT.GetKey(KeyCode::W) || INPUT.GetKey(KeyCode::Up))
+		{
+			m_InputBuffer.y = 1.0f;
+		}
+
+		if (INPUT.GetKey(KeyCode::S) || INPUT.GetKey(KeyCode::Down))
+		{
+			m_InputBuffer.y = -1.0f;
+		}
     }
 
     void SandboxLayer::OnFixedUpdate()
     {
+		m_BallVelocity.x = m_HorizontalMoveUnitsPerSecond * m_InputBuffer.x;
+		m_BallVelocity.y = m_HorizontalMoveUnitsPerSecond * m_InputBuffer.y;
+
+		m_BallPosition += m_BallVelocity * static_cast<float>(TIME.FixedDeltaTime());
+
+		m_InputBuffer = {0, 0};
     }
+
+	void SandboxLayer::OnRender()
+	{
+		DebugDraw::Sphere(m_BallPosition, m_BallRadius, Color::White);
+		DebugDraw::AABB(
+			m_BallPosition + glm::vec3 {m_BallRadius, m_BallRadius, m_BallRadius},
+			m_BallPosition - glm::vec3 {m_BallRadius, m_BallRadius, m_BallRadius},
+			Color::Yellow);
+		RenderPipelineManager::RegisterCameraForNextRender(m_CameraProperties);
+	}
 
     void SandboxLayer::OnImGui()
     {
+		if (ImGui::Begin("Sandbox Debug Window"))
+		{
+			if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				ImGuiUtil::DrawCameraPropertiesControl("Camera", m_CameraProperties);
+			}
+
+		}
+		ImGui::End();
+
         ImGui::ShowDemoWindow();
     }
 }

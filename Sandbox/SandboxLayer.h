@@ -1,44 +1,34 @@
 #pragma once
 
 #include "Core/LayerBase.h"
-#include "Event/KeyEvent.h"
+
+#include "Graphics/CameraProperties.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
 namespace DYE
 {
-    class WindowBase;
-	class VertexArray;
-	class ShaderProgram;
-	class Material;
-	class Texture2D;
-	class CameraProperties;
-
-	struct MaterialObject
-	{
-		std::string Name;
-
-		glm::vec3 Position{0, 0, 0};
-		glm::vec3 Scale{1, 1, 1};
-		glm::quat Rotation{glm::vec3 {0, 0, 0}};
-
-		std::shared_ptr<Material> Material;
-	};
-
     class SandboxLayer : public LayerBase
     {
     public:
         SandboxLayer();
         SandboxLayer(SandboxLayer const& other) = delete;
 
-        void OnEvent(Event& event) override;
         void OnUpdate() override;
         void OnFixedUpdate() override;
 		void OnRender() override;
         void OnImGui() override;
 
     private:
-		std::shared_ptr<CameraProperties> m_CameraProperties;
+		CameraProperties m_CameraProperties;
+
+		glm::vec3 m_BallPosition {0, 0, 0};
+		glm::vec3 m_BallVelocity {0, 0, 0};
+		float m_BallGravity = -9.8f;
+		float m_BallRadius = 0.5f;
+
+		glm::vec2 m_InputBuffer {0, 0};
+		float m_HorizontalMoveUnitsPerSecond = 1.0f;
 	};
 }
