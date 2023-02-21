@@ -3,7 +3,7 @@
 
 #include "SandboxLayer.h"
 
-namespace DYE
+namespace DYE::Sandbox
 {
     class SandboxApp final : public Application
     {
@@ -25,5 +25,5 @@ namespace DYE
 /// \return a new allocated Application object
 DYE::Application * DYE::CreateApplication()
 {
-    return new SandboxApp { "Sandbox", 60 };
+    return new Sandbox::SandboxApp { "Sandbox", 60 };
 }

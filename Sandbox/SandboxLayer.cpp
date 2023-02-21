@@ -17,17 +17,45 @@
 #include <imgui.h>
 #include <glm/gtx/norm.hpp>
 
-namespace DYE
+#define DYE_COMPONENT(name)
+#define DYE_PROPERTY(name)
+
+namespace DYE::Sandbox
 {
+	DYE_COMPONENT("ComponentA")
+	struct ComponentA
+	{
+		DYE_PROPERTY("Value")
+		int Value;
+	};
+
+
     SandboxLayer::SandboxLayer()
     {
+		int integer = 5;
+		auto integer32 = static_cast<std::uint32_t>(integer);
+
 		auto mainWindowPtr = WindowManager::GetMainWindow();
 		m_CameraProperties.ClearColor = Color::Black;
 		m_CameraProperties.TargetWindowID = mainWindowPtr->GetWindowID();
 		m_CameraProperties.ManualAspectRatio = (float) mainWindowPtr->GetWidth() / (float) mainWindowPtr->GetHeight();
-		m_CameraProperties.Position = glm::vec3 {0, 0, 10};
+		m_CameraProperties.Position = glm::vec3 {0, 0, 20};
+		m_CameraProperties.OrthographicSize = 20;
+		m_CameraProperties.IsOrthographic = true;
 
 		recalculateJumpParameters();
+
+		Math::AABB groundAABB = getGroundAABB();
+		m_CollisionManager.RegisterAABB(groundAABB);
+
+		groundAABB.Min += glm::vec3 {3, 4, 0};
+		groundAABB.Max += glm::vec3 {3, 4, 0};
+		m_CollisionManager.RegisterAABB(groundAABB);
+
+
+		groundAABB.Min += glm::vec3 {-4, -4, 0};
+		groundAABB.Max += glm::vec3 {-12, 4, 0};
+		m_CollisionManager.RegisterAABB(groundAABB);
     }
 
     void SandboxLayer::OnUpdate()
@@ -82,16 +110,16 @@ namespace DYE
 		m_BallVelocity += glm::vec3 {0, m_BallGravity, 0} * timeStep;
 
 		// Jump input action system
-		if (m_IsJumpPressed)
-		{
-			m_IsJumpPressed = false;
-			m_BallVelocity.y = m_BallMaxJumpSpeed;
-		}
-
 		if (!m_IsJumpHeld && m_BallVelocity.y > m_BallMinJumpSpeed)
 		{
 			// Variable jump height: set the speed to min jump speed if the player releases jump button earlier.
 			m_BallVelocity.y = m_BallMinJumpSpeed;
+		}
+
+		if (m_IsJumpPressed)
+		{
+			m_IsJumpPressed = false;
+			m_BallVelocity.y = m_BallMaxJumpSpeed;
 		}
 
 		// Movement system
@@ -106,20 +134,19 @@ namespace DYE
 		glm::vec3 horizontalMoveOffset = {moveOffset.x, 0, 0};
 		glm::vec3 verticalMoveOffset = {0, moveOffset.y, 0};
 
-		Math::DynamicTestResult2D result2D;
-
 		if (glm::abs(moveOffset.x) > 0)
 		{
 			// Horizontal collision test
 			float const directionSign = glm::sign(moveOffset.x);
-			bool const hitHorizontally = Math::MovingCircleAABBIntersect(
+			auto hits = m_CollisionManager.CircleCastAll(
 				m_BallPosition + directionSign * glm::vec3 {m_BallRadiusSkin, 0, 0},
 				m_BallRadius,
-				horizontalMoveOffset, groundAABB, result2D);
+				horizontalMoveOffset);
 
+			bool const hitHorizontally = !hits.empty();
 			if (hitHorizontally)
 			{
-				horizontalMoveOffset *= result2D.HitTime;
+				horizontalMoveOffset *= hits[0].Time;
 			}
 		}
 
@@ -127,13 +154,15 @@ namespace DYE
 		{
 			// Vertical collision test
 			float const directionSign = glm::sign(moveOffset.y);
-			bool const hitVertically = Math::MovingCircleAABBIntersect(
+			auto hits = m_CollisionManager.CircleCastAll(
 				m_BallPosition + directionSign * glm::vec3 {0, m_BallRadiusSkin, 0},
 				m_BallRadius,
-				verticalMoveOffset, groundAABB, result2D);
+				verticalMoveOffset);
+
+			bool const hitVertically = !hits.empty();
 			if (hitVertically)
 			{
-				verticalMoveOffset *= result2D.HitTime;
+				verticalMoveOffset *= hits[0].Time;
 
 				// Hit the ground, set vertical velocity to zero.
 				m_BallVelocity.y = 0;
@@ -149,8 +178,9 @@ namespace DYE
 	void SandboxLayer::OnRender()
 	{
 		// TODO: Render system instead of im debug draw
-		Math::AABB const groundAABB = getGroundAABB();
-		DebugDraw::AABB(groundAABB.Min, groundAABB.Max, Color::Yellow);
+		//Math::AABB const groundAABB = getGroundAABB();
+		//DebugDraw::AABB(groundAABB.Min, groundAABB.Max, Color::Yellow);
+		m_CollisionManager.DrawGizmos();
 		DebugDraw::Sphere(m_BallPosition, m_BallRadius, Color::White);
 
 		// Camera system

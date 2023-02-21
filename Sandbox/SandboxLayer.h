@@ -5,10 +5,12 @@
 #include "Graphics/CameraProperties.h"
 #include "Math/AABB.h"
 
+#include "CollisionManager.h"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-namespace DYE
+namespace DYE::Sandbox
 {
     class SandboxLayer : public LayerBase
     {
@@ -22,13 +24,15 @@ namespace DYE
         void OnImGui() override;
 
     private:
+		ColliderManager m_CollisionManager;
+
 		CameraProperties m_CameraProperties;
 
 		glm::vec2 m_MovementInputBuffer {0, 0};
 		bool m_IsJumpPressed = false;
 		bool m_IsJumpHeld = false;
 
-		float m_HorizontalMoveUnitsPerSecond = 3.0f;
+		float m_HorizontalMoveUnitsPerSecond = 6.0f;
 
 		glm::vec3 m_BallPosition {0, 5, 0};
 		glm::vec3 m_BallVelocity {0, 0, 0};
@@ -42,7 +46,7 @@ namespace DYE
 		float m_BallRadius = 0.5f;
 		float m_BallRadiusSkin = 0.015f;
 
-		float m_GroundY = 0.0f;
+		float m_GroundY = -2.0f;
 		float m_GroundWidth = 10.0f;
 
 		void recalculateJumpParameters();
