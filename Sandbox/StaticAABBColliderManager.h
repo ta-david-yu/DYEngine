@@ -19,15 +19,8 @@ namespace DYE::Sandbox
 		glm::vec2 Normal;
 	};
 
-	class ColliderManager
+	class StaticAABBColliderManager
 	{
-	private:
-		struct Collider
-		{
-			Math::AABB AABB;
-			glm::vec2 Velocity;
-		};
-
 	public:
 		ColliderID RegisterAABB(Math::AABB aabb);
 		void UnregisterAABB(ColliderID id);
@@ -40,6 +33,7 @@ namespace DYE::Sandbox
 		std::vector<ColliderID> OverlapCircle(glm::vec2 center, float radius) const;
 		std::vector<RaycastHit2D> RaycastAll(glm::vec2 start, glm::vec2 end) const;
 		std::vector<RaycastHit2D> CircleCastAll(glm::vec2 center, float radius, glm::vec2 direction) const;
+		std::vector<RaycastHit2D> AABBCastAll(Math::AABB aabb, glm::vec2 direction) const;
 
 		void DrawGizmos() const;
 		void DrawImGui();

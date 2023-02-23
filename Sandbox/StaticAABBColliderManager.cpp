@@ -1,4 +1,4 @@
-#include "CollisionManager.h"
+#include "StaticAABBColliderManager.h"
 
 #include "ImGui/ImGuiUtil.h"
 #include "Graphics/DebugDraw.h"
@@ -10,7 +10,7 @@
 
 namespace DYE::Sandbox
 {
-	ColliderID ColliderManager::RegisterAABB(Math::AABB aabb)
+	ColliderID StaticAABBColliderManager::RegisterAABB(Math::AABB aabb)
 	{
 		ColliderID const id = m_AABBIdCounter;
 		m_AABBs.emplace_back(id, aabb);
@@ -18,7 +18,7 @@ namespace DYE::Sandbox
 		return id;
 	}
 
-	void ColliderManager::UnregisterAABB(ColliderID id)
+	void StaticAABBColliderManager::UnregisterAABB(ColliderID id)
 	{
 		int index = binarySearchIndexOf(m_AABBs, id);
 		if (index == -1)
@@ -29,13 +29,13 @@ namespace DYE::Sandbox
 		m_AABBs.erase(m_AABBs.begin() + index);
 	}
 
-	bool ColliderManager::IsColliderRegistered(ColliderID id) const
+	bool StaticAABBColliderManager::IsColliderRegistered(ColliderID id) const
 	{
 		int const index = binarySearchIndexOf(m_AABBs, id);
 		return index != -1;
 	}
 
-	std::optional<Math::AABB> ColliderManager::GetAABB(ColliderID id)
+	std::optional<Math::AABB> StaticAABBColliderManager::GetAABB(ColliderID id)
 	{
 		int const index = binarySearchIndexOf(m_AABBs, id);
 		if (index == -1)
@@ -46,7 +46,7 @@ namespace DYE::Sandbox
 		return m_AABBs[index].second;
 	}
 
-	bool ColliderManager::SetAABB(ColliderID id, Math::AABB aabb)
+	bool StaticAABBColliderManager::SetAABB(ColliderID id, Math::AABB aabb)
 	{
 		int const index = binarySearchIndexOf(m_AABBs, id);
 		if (index == -1)
@@ -58,7 +58,7 @@ namespace DYE::Sandbox
 		return true;
 	}
 
-	std::vector<ColliderID> ColliderManager::OverlapAABB(Math::AABB aabb) const
+	std::vector<ColliderID> StaticAABBColliderManager::OverlapAABB(Math::AABB aabb) const
 	{
 		std::vector<ColliderID> overlappedIds;
 
@@ -75,7 +75,7 @@ namespace DYE::Sandbox
 		return std::move(overlappedIds);
 	}
 
-	std::vector<ColliderID> ColliderManager::OverlapCircle(glm::vec2 center, float radius) const
+	std::vector<ColliderID> StaticAABBColliderManager::OverlapCircle(glm::vec2 center, float radius) const
 	{
 		std::vector<ColliderID> overlappedIds;
 
@@ -92,7 +92,7 @@ namespace DYE::Sandbox
 		return std::move(overlappedIds);
 	}
 
-	std::vector<RaycastHit2D> ColliderManager::RaycastAll(glm::vec2 start, glm::vec2 end) const
+	std::vector<RaycastHit2D> StaticAABBColliderManager::RaycastAll(glm::vec2 start, glm::vec2 end) const
 	{
 		std::vector<RaycastHit2D> hits;
 
@@ -116,7 +116,7 @@ namespace DYE::Sandbox
 
 	}
 
-	std::vector<RaycastHit2D> ColliderManager::CircleCastAll(glm::vec2 center, float radius, glm::vec2 direction) const
+	std::vector<RaycastHit2D> StaticAABBColliderManager::CircleCastAll(glm::vec2 center, float radius, glm::vec2 direction) const
 	{
 		std::vector<RaycastHit2D> hits;
 
@@ -136,7 +136,27 @@ namespace DYE::Sandbox
 		return std::move(hits);
 	}
 
-	void ColliderManager::DrawGizmos() const
+	std::vector<RaycastHit2D> StaticAABBColliderManager::AABBCastAll(Math::AABB aabb, glm::vec2 direction) const
+	{
+		std::vector<RaycastHit2D> hits;
+
+		// TODO: improve the performance with AABB tree OR grid broad-phase
+		for (auto const& pair : m_AABBs)
+		{
+			Math::DynamicTestResult2D testResult;
+			bool const intersect = Math::MovingAABBAABBIntersect2D(aabb, direction, pair.second, testResult);
+			if (intersect)
+			{
+				hits.push_back(RaycastHit2D { .ColliderID = pair.first, .Time = testResult.HitTime, .Centroid = testResult.HitCentroid, .Point = testResult.HitPoint, .Normal = testResult.HitNormal });
+			}
+		}
+
+		std::sort(hits.begin(), hits.end(), [](RaycastHit2D const& hitA, RaycastHit2D const& hitB) { return hitA.Time < hitB.Time; });
+
+		return std::move(hits);
+	}
+
+	void StaticAABBColliderManager::DrawGizmos() const
 	{
 		for (auto const& pair : m_AABBs)
 		{
@@ -144,7 +164,7 @@ namespace DYE::Sandbox
 		}
 	}
 
-	void ColliderManager::DrawImGui()
+	void StaticAABBColliderManager::DrawImGui()
 	{
 		if (ImGui::Begin("Collider Manager"))
 		{
@@ -158,7 +178,7 @@ namespace DYE::Sandbox
 		ImGui::End();
 	}
 
-	int ColliderManager::binarySearchIndexOf(std::vector<std::pair<ColliderID, Math::AABB>> const& collection, ColliderID id) const
+	int StaticAABBColliderManager::binarySearchIndexOf(std::vector<std::pair<ColliderID, Math::AABB>> const& collection, ColliderID id) const
 	{
 		int left = 0;
 		int right = m_AABBs.size() - 1;

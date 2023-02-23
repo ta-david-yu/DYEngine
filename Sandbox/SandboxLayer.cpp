@@ -48,6 +48,7 @@ namespace DYE::Sandbox
 		Math::AABB groundAABB = getGroundAABB();
 		m_CollisionManager.RegisterAABB(groundAABB);
 
+		/*
 		groundAABB.Min += glm::vec3 {3, 4, 0};
 		groundAABB.Max += glm::vec3 {3, 4, 0};
 		m_CollisionManager.RegisterAABB(groundAABB);
@@ -55,7 +56,7 @@ namespace DYE::Sandbox
 
 		groundAABB.Min += glm::vec3 {-4, -4, 0};
 		groundAABB.Max += glm::vec3 {-12, 4, 0};
-		m_CollisionManager.RegisterAABB(groundAABB);
+		m_CollisionManager.RegisterAABB(groundAABB);*/
     }
 
     void SandboxLayer::OnUpdate()
@@ -104,44 +105,47 @@ namespace DYE::Sandbox
 			input = m_MovementInputBuffer;
 		}
 		m_MovementInputBuffer = {0, 0};
-		m_BallVelocity.x = m_HorizontalMoveUnitsPerSecond * input.x;
+		m_PlayerVelocity.x = m_HorizontalMoveUnitsPerSecond * input.x;
 
 		// Gravity system
-		m_BallVelocity += glm::vec3 {0, m_BallGravity, 0} * timeStep;
+		m_PlayerVelocity += glm::vec3 {0, m_PlayerGravity, 0} * timeStep;
 
 		// Jump input action system
-		if (!m_IsJumpHeld && m_BallVelocity.y > m_BallMinJumpSpeed)
+		if (!m_IsJumpHeld && m_PlayerVelocity.y > m_PlayerMinJumpSpeed)
 		{
 			// Variable jump height: set the speed to min jump speed if the player releases jump button earlier.
-			m_BallVelocity.y = m_BallMinJumpSpeed;
+			m_PlayerVelocity.y = m_PlayerMinJumpSpeed;
 		}
 
 		if (m_IsJumpPressed)
 		{
 			m_IsJumpPressed = false;
-			m_BallVelocity.y = m_BallMaxJumpSpeed;
+			m_PlayerVelocity.y = m_PlayerMaxJumpSpeed;
 		}
 
 		// Movement system
-		if (glm::length2(m_BallVelocity) <= 0.01f)
+		if (glm::length2(m_PlayerVelocity) <= 0.01f)
 		{
 			return;
 		}
 
-		Math::AABB const groundAABB = getGroundAABB();
-		auto moveOffset = m_BallVelocity * timeStep;
+		auto moveOffset = m_PlayerVelocity * timeStep;
 
 		glm::vec3 horizontalMoveOffset = {moveOffset.x, 0, 0};
 		glm::vec3 verticalMoveOffset = {0, moveOffset.y, 0};
+
+		Math::AABB const playerAABB = Math::AABB::CreateFromCenter(m_PlayerPosition, glm::vec3{m_PlayerWidth, m_PlayerHeight, 1});
 
 		if (glm::abs(moveOffset.x) > 0)
 		{
 			// Horizontal collision test
 			float const directionSign = glm::sign(moveOffset.x);
-			auto hits = m_CollisionManager.CircleCastAll(
-				m_BallPosition + directionSign * glm::vec3 {m_BallRadiusSkin, 0, 0},
-				m_BallRadius,
-				horizontalMoveOffset);
+
+			Math::AABB horizontalPlayerAABB = playerAABB;
+			horizontalPlayerAABB.Min += directionSign * glm::vec3 {m_PlayerSkin, 0, 0};
+			horizontalPlayerAABB.Max += directionSign * glm::vec3 {m_PlayerSkin, 0, 0};
+
+			auto hits = m_CollisionManager.AABBCastAll(horizontalPlayerAABB, horizontalMoveOffset);
 
 			bool const hitHorizontally = !hits.empty();
 			if (hitHorizontally)
@@ -154,10 +158,12 @@ namespace DYE::Sandbox
 		{
 			// Vertical collision test
 			float const directionSign = glm::sign(moveOffset.y);
-			auto hits = m_CollisionManager.CircleCastAll(
-				m_BallPosition + directionSign * glm::vec3 {0, m_BallRadiusSkin, 0},
-				m_BallRadius,
-				verticalMoveOffset);
+
+			Math::AABB verticalBallAABB = playerAABB;
+			verticalBallAABB.Min += directionSign * glm::vec3 {0, m_PlayerSkin, 0};
+			verticalBallAABB.Max += directionSign * glm::vec3 {0, m_PlayerSkin, 0};
+
+			auto hits = m_CollisionManager.AABBCastAll(verticalBallAABB, verticalMoveOffset);
 
 			bool const hitVertically = !hits.empty();
 			if (hitVertically)
@@ -165,12 +171,12 @@ namespace DYE::Sandbox
 				verticalMoveOffset *= hits[0].Time;
 
 				// Hit the ground, set vertical velocity to zero.
-				m_BallVelocity.y = 0;
+				m_PlayerVelocity.y = 0;
 			}
 		}
 
 		moveOffset = horizontalMoveOffset + verticalMoveOffset;
-		m_BallPosition += moveOffset;
+		m_PlayerPosition += moveOffset;
 
 		//m_BallPosition.x = glm::clamp(m_BallPosition.x, -m_GroundWidth * 0.5f, m_GroundWidth * 0.5f);
     }
@@ -178,10 +184,23 @@ namespace DYE::Sandbox
 	void SandboxLayer::OnRender()
 	{
 		// TODO: Render system instead of im debug draw
-		//Math::AABB const groundAABB = getGroundAABB();
-		//DebugDraw::AABB(groundAABB.Min, groundAABB.Max, Color::Yellow);
 		m_CollisionManager.DrawGizmos();
-		DebugDraw::Sphere(m_BallPosition, m_BallRadius, Color::White);
+		DebugDraw::Sphere(m_PlayerPosition, m_PlayerRadius, Color::White);
+
+		// DEBUG
+		Math::AABB const playerAABB = Math::AABB::CreateFromCenter(m_PlayerPosition, glm::vec3{m_PlayerWidth, m_PlayerHeight, 1});
+		Math::AABB verticalPlayerAABB = playerAABB;
+		verticalPlayerAABB.Min += -1.0f * glm::vec3 {0, m_PlayerSkin, 0};
+		verticalPlayerAABB.Max += -1.0f * glm::vec3 {0, m_PlayerSkin, 0};
+
+		auto hits = m_CollisionManager.AABBCastAll(verticalPlayerAABB, glm::vec3{0, -50.0f, 0});
+		if (!hits.empty())
+		{
+			auto hitAABB = Math::AABB::CreateFromCenter({hits[0].Centroid, 0}, glm::vec3{m_PlayerWidth, m_PlayerHeight, 1});
+			DebugDraw::AABB(hitAABB.Min, hitAABB.Max, Color::Yellow);
+
+			DebugDraw::Sphere({hits[0].Centroid, 0}, 0.1f, Color::Red);
+		}
 
 		// Camera system
 		RenderPipelineManager::RegisterCameraForNextRender(m_CameraProperties);
@@ -203,13 +222,13 @@ namespace DYE::Sandbox
 			{
 				ImGuiUtil::DrawFloatControl("Horizontal Speed (unit/sec)", m_HorizontalMoveUnitsPerSecond, 3.0f);
 				ImGuiUtil::Parameters::FloatFormat = "%.4f";
-				ImGuiUtil::DrawFloatControl("Radius Skin", m_BallRadiusSkin, 0.015f);
+				ImGuiUtil::DrawFloatControl("Radius Skin", m_PlayerSkin, 0.015f);
 				ImGuiUtil::Parameters::FloatFormat = ImGuiUtil::Parameters::DefaultFloatFormat;
 				ImGui::Spacing();
 				bool requireJumpParametersRecalculation = false;
-				requireJumpParametersRecalculation |= ImGuiUtil::DrawFloatControl("Time To Reach Apex", m_BallTimeToReachApex, 2);
-				requireJumpParametersRecalculation |= ImGuiUtil::DrawFloatControl("Max Jump Height", m_BallMaxJumpHeight, 5);
-				requireJumpParametersRecalculation |= ImGuiUtil::DrawFloatControl("Min Jump Height", m_BallMinJumpHeight, 2);
+				requireJumpParametersRecalculation |= ImGuiUtil::DrawFloatControl("Time To Reach Apex", m_PlayerTimeToReachApex, 2);
+				requireJumpParametersRecalculation |= ImGuiUtil::DrawFloatControl("Max Jump Height", m_PlayerMaxJumpHeight, 5);
+				requireJumpParametersRecalculation |= ImGuiUtil::DrawFloatControl("Min Jump Height", m_PlayerMinJumpHeight, 2);
 
 				if (requireJumpParametersRecalculation)
 				{
@@ -220,13 +239,13 @@ namespace DYE::Sandbox
 				static bool disableRuntimeVariable = true;
 				ImGuiUtil::DrawBooleanControl("Disable Runtime Variable", disableRuntimeVariable);
 				ImGui::BeginDisabled(disableRuntimeVariable);
-				ImGuiUtil::DrawFloatControl("Gravity", m_BallGravity, -9.8f);
-				ImGuiUtil::DrawFloatControl("MaxJumpSpeed", m_BallMaxJumpHeight, 10);
-				ImGuiUtil::DrawFloatControl("MinJumpSpeed", m_BallMinJumpHeight, 2);
+				ImGuiUtil::DrawFloatControl("Gravity", m_PlayerGravity, -9.8f);
+				ImGuiUtil::DrawFloatControl("MaxJumpSpeed", m_PlayerMaxJumpHeight, 10);
+				ImGuiUtil::DrawFloatControl("MinJumpSpeed", m_PlayerMinJumpHeight, 2);
 				ImGui::Spacing();
-				ImGuiUtil::DrawVec3Control("Position", m_BallPosition);
-				ImGuiUtil::DrawVec3Control("Velocity", m_BallVelocity);
-				ImGuiUtil::DrawFloatControl("Radius", m_BallRadius, 0.5f);
+				ImGuiUtil::DrawVec3Control("Position", m_PlayerPosition);
+				ImGuiUtil::DrawVec3Control("Velocity", m_PlayerVelocity);
+				ImGuiUtil::DrawFloatControl("Radius", m_PlayerRadius, 0.5f);
 				ImGui::EndDisabled();
 			}
 
@@ -238,8 +257,8 @@ namespace DYE::Sandbox
 
 	void SandboxLayer::recalculateJumpParameters()
 	{
-		m_BallGravity = -m_BallMaxJumpHeight / (m_BallTimeToReachApex * m_BallTimeToReachApex * 0.5f);
-		m_BallMaxJumpSpeed = glm::abs(m_BallGravity) * m_BallTimeToReachApex;
-		m_BallMinJumpSpeed = glm::sqrt(2 * glm::abs(m_BallGravity) * m_BallMinJumpHeight);
+		m_PlayerGravity = -m_PlayerMaxJumpHeight / (m_PlayerTimeToReachApex * m_PlayerTimeToReachApex * 0.5f);
+		m_PlayerMaxJumpSpeed = glm::abs(m_PlayerGravity) * m_PlayerTimeToReachApex;
+		m_PlayerMinJumpSpeed = glm::sqrt(2 * glm::abs(m_PlayerGravity) * m_PlayerMinJumpHeight);
 	}
 }

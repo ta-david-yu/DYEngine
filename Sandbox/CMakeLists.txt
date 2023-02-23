@@ -1,6 +1,6 @@
 project(Sandbox)
 
-add_executable(Sandbox SandboxApp.cpp SandboxLayer.cpp SandboxMessage.cpp CollisionManager.cpp)
+add_executable(Sandbox SandboxApp.cpp SandboxLayer.cpp SandboxMessage.cpp StaticAABBColliderManager.cpp)
 
 target_include_directories(Sandbox PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 

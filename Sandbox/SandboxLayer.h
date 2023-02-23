@@ -5,7 +5,7 @@
 #include "Graphics/CameraProperties.h"
 #include "Math/AABB.h"
 
-#include "CollisionManager.h"
+#include "StaticAABBColliderManager.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -24,7 +24,7 @@ namespace DYE::Sandbox
         void OnImGui() override;
 
     private:
-		ColliderManager m_CollisionManager;
+		StaticAABBColliderManager m_CollisionManager;
 
 		CameraProperties m_CameraProperties;
 
@@ -34,17 +34,20 @@ namespace DYE::Sandbox
 
 		float m_HorizontalMoveUnitsPerSecond = 6.0f;
 
-		glm::vec3 m_BallPosition {0, 5, 0};
-		glm::vec3 m_BallVelocity {0, 0, 0};
-		float m_BallTimeToReachApex = 0.5f;
-		float m_BallMaxJumpHeight = 5;
-		float m_BallMinJumpHeight = 2;
+		glm::vec3 m_PlayerPosition {0, 5, 0};
+		glm::vec3 m_PlayerVelocity {0, 0, 0};
+		float m_PlayerTimeToReachApex = 0.5f;
+		float m_PlayerMaxJumpHeight = 5;
+		float m_PlayerMinJumpHeight = 2;
 
-		float m_BallMaxJumpSpeed = 10;
-		float m_BallMinJumpSpeed = 2;
-		float m_BallGravity = -9.8f;
-		float m_BallRadius = 0.5f;
-		float m_BallRadiusSkin = 0.015f;
+		float m_PlayerMaxJumpSpeed = 10;
+		float m_PlayerMinJumpSpeed = 2;
+		float m_PlayerGravity = -9.8f;
+		float m_PlayerRadius = 0.5f;
+		float m_PlayerSkin = 0.015f;
+
+		float m_PlayerWidth = 1;
+		float m_PlayerHeight = 1;
 
 		float m_GroundY = -2.0f;
 		float m_GroundWidth = 10.0f;
