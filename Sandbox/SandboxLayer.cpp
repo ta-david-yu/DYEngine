@@ -196,11 +196,6 @@ namespace DYE::Sandbox
 
 		RenderPipelineManager::GetTypedActiveRenderPipelinePtr<RenderPipeline2D>()
 		    ->SubmitSprite(texture, m_PlayerColor, modelMatrix);
-
-
-		/*
-		Math::AABB const playerAABB = Math::AABB::CreateFromCenter(m_PlayerPosition, glm::vec3{m_PlayerWidth, m_PlayerHeight, 1});
-		DebugDraw::AABB(playerAABB.Min, playerAABB.Max, Color::White);*/
 	}
 
     void SandboxLayer::OnImGui()
