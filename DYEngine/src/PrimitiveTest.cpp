@@ -301,34 +301,59 @@ namespace DYE::Math
 		float lastContactTime = 1.0f;
 		for (int i = 0; i < numberOfAxes; ++i)
 		{
-			if (direction[i] > 0.0f)
+			if (direction[i] == 0.0f)
 			{
-				if (aabb.Min[i] > otherAABB.Max[i]) return false;	// AABB is moving away from OtherAABB on axis i.
-				if (aabb.Max[i] < otherAABB.Min[i]) firstContactTime = glm::max((otherAABB.Min[i] - aabb.Max[i]) / direction[i], firstContactTime);
-				if (aabb.Min[i] < otherAABB.Max[i]) lastContactTime = glm::min((otherAABB.Max[i] - aabb.Min[i]) / direction[i], lastContactTime);
+				// If the direction is zero on i axis, we need to check if both AABBs are overlapping on axis i already.
+				// Because they will never change their values/states on axis i.
+				if (aabb.Max[i] < otherAABB.Min[i] || aabb.Min[i] > otherAABB.Max[i])
+				{
+					return false;
+				}
 			}
+
 			if (direction[i] < 0.0f)
 			{
-				if (aabb.Max[i] < otherAABB.Min[i]) return false;	// AABB is moving away from OtherAABB on axis i.
+				if (aabb.Max[i] < otherAABB.Min[i])
+				{
+					return false;	// AABB is moving away from OtherAABB on axis i.
+				}
 				// Notice that because direction[i] is negative, the distance diff calculation is smaller value - bigger value.
-				if (aabb.Min[i] > otherAABB.Max[i]) firstContactTime = glm::max((otherAABB.Max[i] - aabb.Min[i]) / direction[i], firstContactTime);
-				if (aabb.Max[i] > otherAABB.Min[i]) lastContactTime = glm::min((otherAABB.Min[i] - aabb.Max[i]) / direction[i], lastContactTime);
+				if (aabb.Min[i] > otherAABB.Max[i])
+				{
+					firstContactTime = glm::max((otherAABB.Max[i] - aabb.Min[i]) / direction[i], firstContactTime);
+				}
+				if (aabb.Max[i] > otherAABB.Min[i])
+				{
+					lastContactTime = glm::min((otherAABB.Min[i] - aabb.Max[i]) / direction[i], lastContactTime);
+				}
 			}
-		}
 
-		if (firstContactTime > lastContactTime)
-		{
-			// AABBs never overlap on all axes at the same time.
-			return false;
+			if (direction[i] > 0.0f)
+			{
+				if (aabb.Min[i] > otherAABB.Max[i])
+				{
+					return false;	// AABB is moving away from OtherAABB on axis i.
+				}
+				if (aabb.Max[i] < otherAABB.Min[i])
+				{
+					firstContactTime = glm::max((otherAABB.Min[i] - aabb.Max[i]) / direction[i], firstContactTime);
+				}
+				if (aabb.Min[i] < otherAABB.Max[i])
+				{
+					lastContactTime = glm::min((otherAABB.Max[i] - aabb.Min[i]) / direction[i], lastContactTime);
+				}
+			}
+
+			if (firstContactTime > lastContactTime)
+			{
+				// AABBs never overlap on all axes at the same time.
+				return false;
+			}
 		}
 
 		testResult.HitCentroid = aabb.Center() + firstContactTime * glm::vec3 {direction, 0};
 		testResult.HitPoint = testResult.HitCentroid;
 		testResult.HitTime = firstContactTime;
 		return true;
-
-		// TODO: Implement actual AABB x AABB test
-		auto center = aabb.Center();
-		return MovingCircleAABBIntersect(center, (aabb.Max.x - aabb.Min.x) * 0.5f, direction, otherAABB, testResult);
 	}
 }
