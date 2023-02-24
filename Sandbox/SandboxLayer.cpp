@@ -192,7 +192,7 @@ namespace DYE::Sandbox
 
 		glm::mat4 modelMatrix = glm::mat4 {1.0f};
 		modelMatrix = glm::translate(modelMatrix, m_PlayerPosition);
-		modelMatrix = glm::scale(modelMatrix, glm::vec3{pixelsPerUnit, pixelsPerUnit, 1});
+		modelMatrix = glm::scale(modelMatrix, glm::vec3{pixelsPerUnit * m_PlayerWidth, pixelsPerUnit * m_PlayerHeight, 1});
 
 		RenderPipelineManager::GetTypedActiveRenderPipelinePtr<RenderPipeline2D>()
 		    ->SubmitSprite(texture, m_PlayerColor, modelMatrix);
