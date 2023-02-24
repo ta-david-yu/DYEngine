@@ -11,6 +11,7 @@
 
 #include "Graphics/WindowManager.h"
 #include "Graphics/RenderPipelineManager.h"
+#include "Graphics/RenderPipeline2D.h"
 #include "Graphics/Texture.h"
 #include "Graphics/DebugDraw.h"
 
@@ -32,9 +33,6 @@ namespace DYE::Sandbox
 
     SandboxLayer::SandboxLayer()
     {
-		int integer = 5;
-		auto integer32 = static_cast<std::uint32_t>(integer);
-
 		auto mainWindowPtr = WindowManager::GetMainWindow();
 		m_CameraProperties.ClearColor = Color::Black;
 		m_CameraProperties.TargetWindowID = mainWindowPtr->GetWindowID();
@@ -46,17 +44,17 @@ namespace DYE::Sandbox
 		recalculateJumpParameters();
 
 		Math::AABB groundAABB = getGroundAABB();
-		m_CollisionManager.RegisterAABB(groundAABB);
 
-		/*
+		m_StaticColliderManager.RegisterAABB(groundAABB);
+
+
 		groundAABB.Min += glm::vec3 {3, 4, 0};
 		groundAABB.Max += glm::vec3 {3, 4, 0};
-		m_CollisionManager.RegisterAABB(groundAABB);
-
+		m_StaticColliderManager.RegisterAABB(groundAABB);
 
 		groundAABB.Min += glm::vec3 {-4, -4, 0};
 		groundAABB.Max += glm::vec3 {-12, 4, 0};
-		m_CollisionManager.RegisterAABB(groundAABB);*/
+		m_StaticColliderManager.RegisterAABB(groundAABB);
     }
 
     void SandboxLayer::OnUpdate()
@@ -142,10 +140,10 @@ namespace DYE::Sandbox
 			float const directionSign = glm::sign(moveOffset.x);
 
 			Math::AABB horizontalPlayerAABB = playerAABB;
-			horizontalPlayerAABB.Min += directionSign * glm::vec3 {m_PlayerSkin, 0, 0};
-			horizontalPlayerAABB.Max += directionSign * glm::vec3 {m_PlayerSkin, 0, 0};
+			horizontalPlayerAABB.Min.x += directionSign * m_PlayerSkin;
+			horizontalPlayerAABB.Max.x += directionSign * m_PlayerSkin;
 
-			auto hits = m_CollisionManager.AABBCastAll(horizontalPlayerAABB, horizontalMoveOffset);
+			auto hits = m_StaticColliderManager.AABBCastAll(horizontalPlayerAABB, horizontalMoveOffset);
 
 			bool const hitHorizontally = !hits.empty();
 			if (hitHorizontally)
@@ -159,11 +157,11 @@ namespace DYE::Sandbox
 			// Vertical collision test
 			float const directionSign = glm::sign(moveOffset.y);
 
-			Math::AABB verticalBallAABB = playerAABB;
-			verticalBallAABB.Min += directionSign * glm::vec3 {0, m_PlayerSkin, 0};
-			verticalBallAABB.Max += directionSign * glm::vec3 {0, m_PlayerSkin, 0};
+			Math::AABB verticalPlayerAABB = playerAABB;
+			verticalPlayerAABB.Min.y += directionSign * m_PlayerSkin;
+			verticalPlayerAABB.Max.y += directionSign * m_PlayerSkin;
 
-			auto hits = m_CollisionManager.AABBCastAll(verticalBallAABB, verticalMoveOffset);
+			auto hits = m_StaticColliderManager.AABBCastAll(verticalPlayerAABB, verticalMoveOffset);
 
 			bool const hitVertically = !hits.empty();
 			if (hitVertically)
@@ -183,27 +181,26 @@ namespace DYE::Sandbox
 
 	void SandboxLayer::OnRender()
 	{
-		// TODO: Render system instead of im debug draw
-		m_CollisionManager.DrawGizmos();
-		DebugDraw::Sphere(m_PlayerPosition, m_PlayerRadius, Color::White);
-
-		// DEBUG
-		Math::AABB const playerAABB = Math::AABB::CreateFromCenter(m_PlayerPosition, glm::vec3{m_PlayerWidth, m_PlayerHeight, 1});
-		Math::AABB verticalPlayerAABB = playerAABB;
-		verticalPlayerAABB.Min += -1.0f * glm::vec3 {0, m_PlayerSkin, 0};
-		verticalPlayerAABB.Max += -1.0f * glm::vec3 {0, m_PlayerSkin, 0};
-
-		auto hits = m_CollisionManager.AABBCastAll(verticalPlayerAABB, glm::vec3{0, -50.0f, 0});
-		if (!hits.empty())
-		{
-			auto hitAABB = Math::AABB::CreateFromCenter({hits[0].Centroid, 0}, glm::vec3{m_PlayerWidth, m_PlayerHeight, 1});
-			DebugDraw::AABB(hitAABB.Min, hitAABB.Max, Color::Yellow);
-
-			DebugDraw::Sphere({hits[0].Centroid, 0}, 0.1f, Color::Red);
-		}
+		m_StaticColliderManager.DrawGizmos();
 
 		// Camera system
 		RenderPipelineManager::RegisterCameraForNextRender(m_CameraProperties);
+
+		// Render system
+		auto texture = Texture2D::GetWhiteTexture();
+		auto pixelsPerUnit = texture->PixelsPerUnit;
+
+		glm::mat4 modelMatrix = glm::mat4 {1.0f};
+		modelMatrix = glm::translate(modelMatrix, m_PlayerPosition);
+		modelMatrix = glm::scale(modelMatrix, glm::vec3{pixelsPerUnit, pixelsPerUnit, 1});
+
+		RenderPipelineManager::GetTypedActiveRenderPipelinePtr<RenderPipeline2D>()
+		    ->SubmitSprite(texture, m_PlayerColor, modelMatrix);
+
+
+		/*
+		Math::AABB const playerAABB = Math::AABB::CreateFromCenter(m_PlayerPosition, glm::vec3{m_PlayerWidth, m_PlayerHeight, 1});
+		DebugDraw::AABB(playerAABB.Min, playerAABB.Max, Color::White);*/
 	}
 
     void SandboxLayer::OnImGui()
@@ -218,11 +215,11 @@ namespace DYE::Sandbox
 				ImGuiUtil::DrawCameraPropertiesControl("Camera", m_CameraProperties);
 			}
 
-			if (ImGui::CollapsingHeader("Ball", ImGuiTreeNodeFlags_DefaultOpen))
+			if (ImGui::CollapsingHeader("Player", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				ImGuiUtil::DrawFloatControl("Horizontal Speed (unit/sec)", m_HorizontalMoveUnitsPerSecond, 3.0f);
 				ImGuiUtil::Parameters::FloatFormat = "%.4f";
-				ImGuiUtil::DrawFloatControl("Radius Skin", m_PlayerSkin, 0.015f);
+				ImGuiUtil::DrawFloatControl("Player Skin Width", m_PlayerSkin, 0.015f);
 				ImGuiUtil::Parameters::FloatFormat = ImGuiUtil::Parameters::DefaultFloatFormat;
 				ImGui::Spacing();
 				bool requireJumpParametersRecalculation = false;
@@ -235,6 +232,8 @@ namespace DYE::Sandbox
 					recalculateJumpParameters();
 				}
 
+				ImGuiUtil::DrawColor4Control("Player Color", m_PlayerColor);
+
 				ImGui::Separator();
 				static bool disableRuntimeVariable = true;
 				ImGuiUtil::DrawBooleanControl("Disable Runtime Variable", disableRuntimeVariable);
@@ -245,7 +244,8 @@ namespace DYE::Sandbox
 				ImGui::Spacing();
 				ImGuiUtil::DrawVec3Control("Position", m_PlayerPosition);
 				ImGuiUtil::DrawVec3Control("Velocity", m_PlayerVelocity);
-				ImGuiUtil::DrawFloatControl("Radius", m_PlayerRadius, 0.5f);
+				ImGuiUtil::DrawFloatControl("Width", m_PlayerWidth, 1);
+				ImGuiUtil::DrawFloatControl("Height", m_PlayerHeight, 1);
 				ImGui::EndDisabled();
 			}
 

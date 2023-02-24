@@ -45,23 +45,24 @@ namespace DYE
     class Texture2D : public Texture
     {
     public:
-        /// Create an empty texture2D with the given dimensions
+        /// Create an empty Texture2D with the given dimensions
         /// \param width
         /// \param height
         /// \return
         static std::shared_ptr<Texture2D> Create(std::uint32_t width, std::uint32_t height);
 
-        /// Create a 1x1 texture2D of the given color
+        /// Create a 1x1 Texture2D of the given color
         /// \param color
         /// \return
         static std::shared_ptr<Texture2D> Create(glm::vec4 color);
 
 		static std::shared_ptr<Texture2D> Create(glm::vec4 color, std::uint32_t width, std::uint32_t height);
 
-        /// Create a texture2D loaded from the given file path
+        /// Create a Texture2D loaded from the given file path
         /// \return
         static std::shared_ptr<Texture2D> Create(const std::filesystem::path& path);
 
+		/// \return a 1x1 white Texture2D
 		static std::shared_ptr<Texture2D> GetWhiteTexture();
 
         Texture2D() = delete;

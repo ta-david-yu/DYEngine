@@ -24,7 +24,7 @@ namespace DYE::Sandbox
         void OnImGui() override;
 
     private:
-		StaticAABBColliderManager m_CollisionManager;
+		StaticAABBColliderManager m_StaticColliderManager;
 
 		CameraProperties m_CameraProperties;
 
@@ -43,13 +43,13 @@ namespace DYE::Sandbox
 		float m_PlayerMaxJumpSpeed = 10;
 		float m_PlayerMinJumpSpeed = 2;
 		float m_PlayerGravity = -9.8f;
-		float m_PlayerRadius = 0.5f;
 		float m_PlayerSkin = 0.015f;
 
 		float m_PlayerWidth = 1;
 		float m_PlayerHeight = 1;
+		glm::vec4 m_PlayerColor {1, 1, 1, 1};
 
-		float m_GroundY = -2.0f;
+		float m_GroundY = -0.5f;
 		float m_GroundWidth = 10.0f;
 
 		void recalculateJumpParameters();
