@@ -112,6 +112,8 @@ namespace DYE::Sandbox
 			return;
 		}
 
+		// We want to shrink the player's AABB by player skin width on each side,
+		// therefore we could still cast AABB without starting inside a collider safely when the player is adjacent to the collider.
 		Math::AABB const playerAABB = Math::AABB::CreateFromCenter(m_PlayerPosition, glm::vec3{m_PlayerWidth - m_PlayerSkin * 2, m_PlayerHeight- m_PlayerSkin * 2, 1});
 
 		auto moveOffset = m_PlayerVelocity * timeStep;
@@ -151,8 +153,18 @@ namespace DYE::Sandbox
 			}
 		}
 
-
 		moveOffset = {horizontalDirectionSign * horizontalMoveOffset, verticalDirectionSign * verticalMoveOffset, 0};
+		if (glm::length2(moveOffset) > 0)
+		{
+			auto hits = m_StaticColliderManager.AABBCastAll(playerAABB, moveOffset);
+
+			if (!hits.empty())
+			{
+				moveOffset *= hits[0].Time;
+				moveOffset -= glm::vec3 {horizontalDirectionSign * m_PlayerSkin, verticalDirectionSign * m_PlayerSkin, 0};
+			}
+		}
+
 		m_PlayerPosition += moveOffset;
     }
 
