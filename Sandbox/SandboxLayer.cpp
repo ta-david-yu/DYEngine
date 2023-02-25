@@ -13,24 +13,12 @@
 #include "Graphics/RenderPipelineManager.h"
 #include "Graphics/RenderPipeline2D.h"
 #include "Graphics/Texture.h"
-#include "Graphics/DebugDraw.h"
 
 #include <imgui.h>
 #include <glm/gtx/norm.hpp>
 
-#define DYE_COMPONENT(name)
-#define DYE_PROPERTY(name)
-
 namespace DYE::Sandbox
 {
-	DYE_COMPONENT("ComponentA")
-	struct ComponentA
-	{
-		DYE_PROPERTY("Value")
-		int Value;
-	};
-
-
     SandboxLayer::SandboxLayer()
     {
 		auto mainWindowPtr = WindowManager::GetMainWindow();
@@ -174,6 +162,23 @@ namespace DYE::Sandbox
 		}
 
 		moveOffset = horizontalMoveOffset + verticalMoveOffset;
+		if (glm::length2(moveOffset) > 0)
+		{
+			Math::AABB diagonalPlayerAABB = playerAABB;
+			float const horizontalSign = glm::sign(moveOffset.x);
+			float const verticalSign = glm::sign(moveOffset.y);
+			diagonalPlayerAABB.Min.x += horizontalSign * m_PlayerSkin;
+			diagonalPlayerAABB.Max.x += horizontalSign * m_PlayerSkin;
+			diagonalPlayerAABB.Min.y += verticalSign * m_PlayerSkin;
+			diagonalPlayerAABB.Max.y += verticalSign * m_PlayerSkin;
+
+			auto hits = m_StaticColliderManager.AABBCastAll(diagonalPlayerAABB, moveOffset);
+			if (!hits.empty())
+	 		{
+				moveOffset *= hits[0].Time;
+			}
+		}
+
 		m_PlayerPosition += moveOffset;
 
 		//m_BallPosition.x = glm::clamp(m_BallPosition.x, -m_GroundWidth * 0.5f, m_GroundWidth * 0.5f);
