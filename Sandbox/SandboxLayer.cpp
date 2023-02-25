@@ -31,18 +31,15 @@ namespace DYE::Sandbox
 
 		recalculateJumpParameters();
 
-		Math::AABB groundAABB = getGroundAABB();
+		m_StaticColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({0, 0, 0}, {5, 1, 0}));
+		m_StaticColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({-3, -3, 0}, {5, 1, 0}));
+		m_StaticColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({-3, 3, 0}, {5, 1, 0}));
+		m_StaticColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({-5.5f, 0, 0}, {1, 6, 0}));
 
-		m_StaticColliderManager.RegisterAABB(groundAABB);
+		m_StaticColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({5, -2, 0}, {1, 8, 0}));
+		m_StaticColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({7, -2.5f, 0}, {1, 9, 0}));
 
-
-		groundAABB.Min += glm::vec3 {3, 4, 0};
-		groundAABB.Max += glm::vec3 {3, 4, 0};
-		m_StaticColliderManager.RegisterAABB(groundAABB);
-
-		groundAABB.Min += glm::vec3 {-4, -4, 0};
-		groundAABB.Max += glm::vec3 {-12, 4, 0};
-		m_StaticColliderManager.RegisterAABB(groundAABB);
+		m_StaticColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({0, -7.5f, 0}, {25, 1, 0}));
     }
 
     void SandboxLayer::OnUpdate()
@@ -115,73 +112,48 @@ namespace DYE::Sandbox
 			return;
 		}
 
+		Math::AABB const playerAABB = Math::AABB::CreateFromCenter(m_PlayerPosition, glm::vec3{m_PlayerWidth - m_PlayerSkin * 2, m_PlayerHeight- m_PlayerSkin * 2, 1});
+
 		auto moveOffset = m_PlayerVelocity * timeStep;
 
-		glm::vec3 horizontalMoveOffset = {moveOffset.x, 0, 0};
-		glm::vec3 verticalMoveOffset = {0, moveOffset.y, 0};
+		float const horizontalDirectionSign = glm::sign(moveOffset.x);
+		float horizontalMoveOffset = glm::abs(moveOffset.x) + m_PlayerSkin;
 
-		Math::AABB const playerAABB = Math::AABB::CreateFromCenter(m_PlayerPosition, glm::vec3{m_PlayerWidth, m_PlayerHeight, 1});
+		float const verticalDirectionSign = glm::sign(moveOffset.y);
+		float verticalMoveOffset = glm::abs(moveOffset.y) + m_PlayerSkin;
 
 		if (glm::abs(moveOffset.x) > 0)
 		{
 			// Horizontal collision test
-			float const directionSign = glm::sign(moveOffset.x);
-
-			Math::AABB horizontalPlayerAABB = playerAABB;
-			horizontalPlayerAABB.Min.x += directionSign * m_PlayerSkin;
-			horizontalPlayerAABB.Max.x += directionSign * m_PlayerSkin;
-
-			auto hits = m_StaticColliderManager.AABBCastAll(horizontalPlayerAABB, horizontalMoveOffset);
+			auto hits = m_StaticColliderManager.AABBCastAll(playerAABB, glm::vec3 {horizontalDirectionSign * horizontalMoveOffset, 0, 0});
 
 			bool const hitHorizontally = !hits.empty();
 			if (hitHorizontally)
 			{
 				horizontalMoveOffset *= hits[0].Time;
+				horizontalMoveOffset -= m_PlayerSkin;
 			}
 		}
 
 		if (glm::abs(moveOffset.y) > 0)
 		{
 			// Vertical collision test
-			float const directionSign = glm::sign(moveOffset.y);
-
-			Math::AABB verticalPlayerAABB = playerAABB;
-			verticalPlayerAABB.Min.y += directionSign * m_PlayerSkin;
-			verticalPlayerAABB.Max.y += directionSign * m_PlayerSkin;
-
-			auto hits = m_StaticColliderManager.AABBCastAll(verticalPlayerAABB, verticalMoveOffset);
+			auto hits = m_StaticColliderManager.AABBCastAll(playerAABB, glm::vec3 {0, verticalDirectionSign * verticalMoveOffset, 0});
 
 			bool const hitVertically = !hits.empty();
 			if (hitVertically)
 			{
-				verticalMoveOffset *= hits[0].Time;
+				verticalMoveOffset *= hits[0].Time;;
+				verticalMoveOffset -= m_PlayerSkin;
 
 				// Hit the ground, set vertical velocity to zero.
 				m_PlayerVelocity.y = 0;
 			}
 		}
 
-		moveOffset = horizontalMoveOffset + verticalMoveOffset;
-		if (glm::length2(moveOffset) > 0)
-		{
-			Math::AABB diagonalPlayerAABB = playerAABB;
-			float const horizontalSign = glm::sign(moveOffset.x);
-			float const verticalSign = glm::sign(moveOffset.y);
-			diagonalPlayerAABB.Min.x += horizontalSign * m_PlayerSkin;
-			diagonalPlayerAABB.Max.x += horizontalSign * m_PlayerSkin;
-			diagonalPlayerAABB.Min.y += verticalSign * m_PlayerSkin;
-			diagonalPlayerAABB.Max.y += verticalSign * m_PlayerSkin;
 
-			auto hits = m_StaticColliderManager.AABBCastAll(diagonalPlayerAABB, moveOffset);
-			if (!hits.empty())
-	 		{
-				moveOffset *= hits[0].Time;
-			}
-		}
-
+		moveOffset = {horizontalDirectionSign * horizontalMoveOffset, verticalDirectionSign * verticalMoveOffset, 0};
 		m_PlayerPosition += moveOffset;
-
-		//m_BallPosition.x = glm::clamp(m_BallPosition.x, -m_GroundWidth * 0.5f, m_GroundWidth * 0.5f);
     }
 
 	void SandboxLayer::OnRender()
