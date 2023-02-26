@@ -21,6 +21,10 @@ namespace DYE::Sandbox
 {
     SandboxLayer::SandboxLayer()
     {
+    }
+
+	void SandboxLayer::OnAttach()
+	{
 		auto mainWindowPtr = WindowManager::GetMainWindow();
 		m_CameraProperties.ClearColor = Color::Black;
 		m_CameraProperties.TargetWindowID = mainWindowPtr->GetWindowID();
@@ -40,7 +44,7 @@ namespace DYE::Sandbox
 		m_StaticColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({7, -2.5f, 0}, {1, 9, 0}));
 
 		m_StaticColliderManager.RegisterAABB(Math::AABB::CreateFromCenter({0, -7.5f, 0}, {25, 1, 0}));
-    }
+	}
 
     void SandboxLayer::OnUpdate()
     {

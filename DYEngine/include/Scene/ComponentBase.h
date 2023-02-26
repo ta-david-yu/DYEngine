@@ -66,7 +66,7 @@ namespace DYE
         explicit ComponentUpdaterBase(ComponentTypeID typeID);
         virtual ~ComponentUpdaterBase() = default;
 
-        /// Called at SceneLayer.OnInit()
+        /// Called at SceneLayer.OnPreApplicationRun()
         virtual void Init() {}
         virtual void UpdateComponents() = 0;
         virtual void FixedUpdateComponents() = 0;

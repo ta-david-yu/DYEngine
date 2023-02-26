@@ -28,7 +28,7 @@ namespace DYE
         /// Setup some of the default and built-in updaters, such as TransformUpdater, RendererUpdater
         void SetupDefaultUpdaters();
 
-        void OnInit() override;
+        void OnPreApplicationRun() override;
         void OnUpdate() override;
         void OnFixedUpdate() override;
         void OnRender() override;

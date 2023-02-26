@@ -18,6 +18,8 @@ namespace DYE::Sandbox
         SandboxLayer();
         SandboxLayer(SandboxLayer const& other) = delete;
 
+		void OnAttach() override;
+
         void OnUpdate() override;
         void OnFixedUpdate() override;
 		void OnRender() override;
