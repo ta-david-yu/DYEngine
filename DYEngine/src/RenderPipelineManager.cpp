@@ -96,15 +96,14 @@ namespace DYE
 				pCurrentWindow->MakeCurrent();
 			}
 
-			RenderCommand::GetInstance().SetClearColor(camera.ClearColor);
-			RenderCommand::GetInstance().Clear();
-
 			// Update camera's aspect ratio and set viewport.
 			auto targetDimension = camera.GetTargetDimension();
 			camera.CachedAutomaticAspectRatio = camera.GetAutomaticAspectRatioOfDimension(targetDimension);
 			Math::Rect const viewportDimension = camera.GetAbsoluteViewportOfDimension(targetDimension);
 
 			RenderCommand::GetInstance().SetViewport(viewportDimension);
+			RenderCommand::GetInstance().SetClearColor(camera.ClearColor);
+			RenderCommand::GetInstance().Clear();
 
 			s_ActiveRenderPipeline->renderCamera(camera);
 

@@ -34,7 +34,7 @@ namespace DYE
 		float FieldOfView = 45;
 		bool IsOrthographic = false;
 		/// Camera's half-size when in orthographic mode. This is ignored when IsOrthographic is false.
-		float OrthographicSize = 1;
+		float OrthographicSize = 10;
 		float NearClipDistance = 0.1f;
 		float FarClipDistance = 100;
 

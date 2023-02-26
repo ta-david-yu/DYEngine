@@ -17,14 +17,15 @@ namespace DYE
         explicit LayerBase(std::string name = "Layer");
         virtual ~LayerBase() = default;
 
-        /// Use this to initialize layer states after entering Application.Run loop.
+        /// Use this to initialize layer states if the layer is pushed after entering Application.Run loop.
         virtual void OnAttach() {}
 
         /// Use this to release resources owned by the layer.
         virtual void OnDetach() {}
 
-        /// Called before Application.Run loop.
-        virtual void OnInit() {}
+        // Called before game while loop in Application.Run.
+        // The event would not get triggerred if the layer is pushed after entering Application.Run loop.
+        virtual void OnPreApplicationRun() {}
 
         virtual void OnFixedUpdate() {}
 

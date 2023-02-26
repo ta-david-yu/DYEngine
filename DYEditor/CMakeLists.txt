@@ -5,7 +5,7 @@ project(DYEditor)
 set(SOURCE_FILES
         src/EditorLayer.cpp)
 set(HEADER_FILES
-        include/EditorLayer.h)
+        include/EditorLayer.h include/SerializableType.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")

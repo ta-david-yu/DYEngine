@@ -1,30 +1,9 @@
 #include "AppEntryPoint.h"
 #include "Core/Application.h"
-#include "Scene/GameObject.h"
-#include "Scene/SceneLayer.h"
-#include "Scene/Transform.h"
-#include "Util/TypeUtil.h"
 
-#include "Graphics/OpenGL.h"
-#include "Graphics/Shader.h"
-#include "Graphics/Buffer.h"
-#include "Graphics/VertexArray.h"
-#include "Graphics/Texture.h"
-#include "Graphics/RenderCommand.h"
-
-#include "Scene/ImageRenderer.h"
-
-#include "ImagePointerEventHandler.h"
 #include "SandboxLayer.h"
-#include "FrameCounterComponent.h"
-#include "SubtitleUpdater.h"
-#include "SandboxMessage.h"
 
-#include <glm/glm.hpp>
-#include <glad/glad.h>
-#include <yaml-cpp/yaml.h>
-
-namespace DYE
+namespace DYE::Sandbox
 {
     class SandboxApp final : public Application
     {
@@ -46,5 +25,5 @@ namespace DYE
 /// \return a new allocated Application object
 DYE::Application * DYE::CreateApplication()
 {
-    return new SandboxApp { "Sandbox", 60 };
+    return new Sandbox::SandboxApp { "Sandbox", 60 };
 }

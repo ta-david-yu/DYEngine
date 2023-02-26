@@ -107,7 +107,7 @@ namespace DYE
         // Init layers that were added before the game loop starts.
         for (auto& layer : m_LayerStack)
         {
-            layer->OnInit();
+			layer->OnPreApplicationRun();
         }
 
         while (m_IsRunning)

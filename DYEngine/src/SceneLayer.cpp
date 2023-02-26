@@ -44,7 +44,7 @@ namespace DYE
         RegisterComponentUpdater(std::move(imageRendererUpdater));
     }
 
-    void SceneLayer::OnInit()
+    void SceneLayer::OnPreApplicationRun()
     {
         for (auto& updater : m_ComponentUpdaters)
         {
