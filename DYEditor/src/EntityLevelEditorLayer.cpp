@@ -68,6 +68,28 @@ namespace DYE::DYEditor
 
 		if (ImGui::BeginPopup(addComponentPopupId))
 		{
+			if (ImGui::BeginListBox("##Add Component List Box"))
+			{
+				for (int componentIndex = 0; componentIndex < componentNamesAndFunctions.size(); componentIndex++)
+				{
+					auto const& name = componentNamesAndFunctions[componentIndex].first;
+					auto const& functionCollections = componentNamesAndFunctions[componentIndex].second;
+
+					if (functionCollections.Has(entity))
+					{
+						// The entity already has this component, skip it.
+						continue;
+					}
+
+					if (ImGui::Selectable(name.c_str()))
+					{
+						// Add the component
+						functionCollections.Add(entity);
+						ImGui::CloseCurrentPopup();
+					}
+				}
+				ImGui::EndListBox();
+			}
 			ImGui::EndPopup();
 		}
 
@@ -91,6 +113,7 @@ namespace DYE::DYEditor
 			bool const isRemoved = !showHeader;
 			if (isRemoved)
 			{
+				// Remove the component
 				functions.Remove(entity);
 				changed = true;
 				continue;

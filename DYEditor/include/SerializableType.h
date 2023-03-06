@@ -7,7 +7,7 @@
 
 #include <glm/glm.hpp>
 
-#define STRING(type) #type
+#define DYE_STRING(type) #type
 
 namespace DYE::DYEditor
 {
