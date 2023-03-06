@@ -21,8 +21,6 @@ namespace DYE::DYEditor
 		DYEntity::World m_World;
 		DYEntity::Entity m_Entity;
 
-		void drawEntityInspector(DYEntity::Entity& entity);
-		void drawAddComponentButtonAndPopup(DYEntity::Entity& entity);
-		void drawAllComponents(DYEntity::Entity& entity);
+		static bool drawEntityInspector(DYEntity::Entity& entity);
 	};
 }

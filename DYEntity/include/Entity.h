@@ -30,6 +30,13 @@ namespace DYE::DYEntity
 			return m_World->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
 		}
 
+		/// \return the number of removed components. 0 if the entity doesn't own the given component.
+		template<typename T>
+		std::size_t RemoveComponent()
+		{
+			return m_World->m_Registry.remove<T>(m_EntityHandle);
+		}
+
 		template<typename T>
 		T& GetComponent()
 		{

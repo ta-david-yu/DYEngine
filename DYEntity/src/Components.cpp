@@ -56,6 +56,7 @@ namespace DYE::DYEntity
 					{
 						.Has = DefaultHasComponentOfType<NameComponent>,
 						.Add = AddNameComponent,
+						.Remove = DefaultRemoveComponentOfType<NameComponent>,
 						.Serialize = nullptr,
 						.Deserialize = nullptr,
 						.DrawInspector = DrawInspectorOfNameComponent
@@ -69,9 +70,51 @@ namespace DYE::DYEntity
 					{
 						.Has = DefaultHasComponentOfType<TransformComponent>,
 						.Add = DefaultAddComponentOfType<TransformComponent>,
+						.Remove = DefaultRemoveComponentOfType<TransformComponent>,
 						.Serialize = nullptr,
 						.Deserialize = nullptr,
 						.DrawInspector = DrawInspectorOfTransformComponent
+					}
+			);
+
+		TypeRegistry::RegisterComponentType
+			(
+				"TestFloat",
+				ComponentTypeFunctionCollection
+					{
+						.Has = DefaultHasComponentOfType<_TestFloatComponent>,
+						.Add = DefaultAddComponentOfType<_TestFloatComponent>,
+						.Remove = DefaultRemoveComponentOfType<_TestFloatComponent>,
+						.Serialize = nullptr,
+						.Deserialize = nullptr,
+						.DrawInspector = [](Entity& entity)
+						{
+							ImGui::PushID("##TestFloat");
+							bool changed = ImGuiUtil::DrawFloatControl("Value", entity.GetComponent<_TestFloatComponent>().Value, 0.0f);
+							ImGui::PopID();
+							return changed;
+						}
+					}
+			);
+
+		TypeRegistry::RegisterComponentType
+			(
+				"TestInt",
+				ComponentTypeFunctionCollection
+					{
+						.Has = DefaultHasComponentOfType<_TestIntComponent>,
+						.Add = DefaultAddComponentOfType<_TestIntComponent>,
+						.Remove = DefaultRemoveComponentOfType<_TestIntComponent>,
+						.Serialize = nullptr,
+						.Deserialize = nullptr,
+						.DrawInspector = [](Entity& entity)
+						{
+							ImGui::PushID("##TestInt");
+							bool changed = ImGuiUtil::DrawIntControl("Value",
+																	 entity.GetComponent<_TestIntComponent>().Value, 0);
+							ImGui::PopID();
+							return changed;
+						}
 					}
 			);
 	}

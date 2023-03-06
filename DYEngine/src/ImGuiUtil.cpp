@@ -250,7 +250,7 @@ namespace DYE::ImGuiUtil
 
 		return isValueChanged;
 	}
-	bool DrawUnsignedIntControl(const std::string& label, int32_t & value, int32_t resetValue)
+	bool DrawIntControl(const std::string& label, int32_t & value, int32_t resetValue)
 	{
 		bool isValueChanged = false;
 
@@ -267,17 +267,17 @@ namespace DYE::ImGuiUtil
 		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
 
-		// Drag Float
+		// Drag int
 		{
-			isValueChanged |= ImGui::DragInt("##UnsignedInt", &value, 1, 0, 0);
+			isValueChanged |= ImGui::DragInt("##SignedInt", &value, 1, 0, 0);
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
 		}
 
 		// Reset button
 		{
-			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-			ImVec2 buttonSize = {lineHeight + 3.0f, lineHeight};
+			float const lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+			ImVec2 const buttonSize = {lineHeight + 3.0f, lineHeight};
 
 			///ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 {0.8f, 0.1f, 0.15f, 1.0f});
 			///ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 {0.9f, 0.2f, 0.2f, 1.0f});

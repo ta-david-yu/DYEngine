@@ -13,14 +13,18 @@ namespace DYE::DYEntity
 
 	using HasComponentFunction = bool (Entity& entity);
 	using AddComponentFunction = void (Entity& entity);
+	using RemoveComponentFunction = void (Entity& entity);
 	using SerializeComponentFunction = void (Entity& entity, Stream& streamToSerializeTo);
 	using DeserializeComponentFunction = void (Stream& streamToDeserializeFrom, Entity& entity);
+
+	/// \return true if the content of the inspector is changed/dirty.
 	using DrawInspectorFunction = bool (Entity& entity);
 
 	struct ComponentTypeFunctionCollection
 	{
 		HasComponentFunction* Has = nullptr;
 		AddComponentFunction* Add = nullptr;
+		RemoveComponentFunction* Remove = nullptr;
 		SerializeComponentFunction* Serialize = nullptr;
 		DeserializeComponentFunction* Deserialize = nullptr;
 		DrawInspectorFunction* DrawInspector = nullptr;

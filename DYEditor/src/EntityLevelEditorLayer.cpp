@@ -42,23 +42,18 @@ namespace DYE::DYEditor
 		ImGui::End();
 	}
 
-	void EntityLevelEditorLayer::drawEntityInspector(DYEntity::Entity& entity)
-	{
-		drawAddComponentButtonAndPopup(entity);
-		drawAllComponents(entity);
-	}
-
-	void EntityLevelEditorLayer::drawAddComponentButtonAndPopup(DYEntity::Entity &entity)
+	bool EntityLevelEditorLayer::drawEntityInspector(DYEntity::Entity& entity)
 	{
 		static auto componentNamesAndFunctions = DYEntity::TypeRegistry::GetComponentTypesNamesAndFunctionCollections();
 
-		// Draw a button aligned to the right,
-		// And draw the popup menu if the button is pressed.
+		bool changed = false;
+
+		// Draw a 'Add Component' button at the top of the inspector, and align it to the right side of the window.
 		char const* addComponentPopupId = "Add Component Menu Popup";
-		ImVec2 const buttonSize = ImVec2 {150, 0};
-		float const fullWidth = ImGui::GetWindowWidth();
-		ImGui::SetCursorPosX(fullWidth - buttonSize.x);
-		if (ImGui::Button("Add Component", buttonSize))
+		ImVec2 const addButtonSize = ImVec2 {150, 0};
+		float const fullAddButtonWidth = ImGui::GetWindowWidth();
+		ImGui::SetCursorPosX(fullAddButtonWidth - addButtonSize.x);
+		if (ImGui::Button("Add Component", addButtonSize))
 		{
 			ImGui::OpenPopup(addComponentPopupId);
 		}
@@ -75,13 +70,8 @@ namespace DYE::DYEditor
 		{
 			ImGui::EndPopup();
 		}
-	}
 
-	void EntityLevelEditorLayer::drawAllComponents(DYEntity::Entity &entity)
-	{
-		static auto componentNamesAndFunctions = DYEntity::TypeRegistry::GetComponentTypesNamesAndFunctionCollections();
-
-		// Draw all components of m_Entity
+		// Draw all components that the entity has.
 		for (auto [name, functions] : componentNamesAndFunctions)
 		{
 			if (functions.Has == nullptr)
@@ -95,7 +85,18 @@ namespace DYE::DYEditor
 				continue;
 			}
 
-			if (!ImGui::CollapsingHeader(name.c_str()))
+			bool showHeader = true;
+			bool const showInspector = ImGui::CollapsingHeader(name.c_str(), &showHeader);
+
+			bool const isRemoved = !showHeader;
+			if (isRemoved)
+			{
+				functions.Remove(entity);
+				changed = true;
+				continue;
+			}
+
+			if (!showInspector)
 			{
 				continue;
 			}
@@ -115,10 +116,12 @@ namespace DYE::DYEditor
 			}
 			else
 			{
-				functions.DrawInspector(entity);
+				changed |= functions.DrawInspector(entity);
 			}
 
 			ImGui::Spacing();
 		}
+
+		return changed;
 	}
 }
