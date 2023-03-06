@@ -4,12 +4,15 @@ project(DYEntity)
 # Sources & headers
 set(SOURCE_FILES
         src/Entity.cpp
-        src/World.cpp)
+        src/World.cpp
+        src/Components.cpp
+        src/TypeRegistry.cpp)
 set(HEADER_FILES
         include/Entity.h
         include/World.h
         include/Components.h
-        include/Components/NameComponent.h)
+        include/TypeRegistry.h
+        include/Components/NameComponent.h include/Components/TransformComponent.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")

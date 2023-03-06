@@ -3,9 +3,14 @@ project(DYEditor)
 # ===========================================================================================
 # Sources / Headers
 set(SOURCE_FILES
-        src/EditorLayer.cpp)
+        src/EntityLevelEditorLayer.cpp
+        src/EntityLevelRuntimeLayer.cpp
+        src/EntityLevelFile.cpp)
 set(HEADER_FILES
-        include/EditorLayer.h include/SerializableType.h)
+        include/EntityLevelEditorLayer.h
+        include/EntityLevelRuntimeLayer.h
+        include/EntityLevelFile.h
+        include/SerializableType.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")

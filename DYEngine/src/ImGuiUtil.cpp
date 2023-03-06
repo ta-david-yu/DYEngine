@@ -5,6 +5,8 @@
 #include "Graphics/Shader.h"
 #include "Math/AABB.h"
 
+#include <imgui_stdlib.h>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -457,7 +459,7 @@ namespace DYE::ImGuiUtil
 		return isValueChanged;
 	}
 
-	bool DrawDropdown(const std::string& label, int32_t& value, std::vector<char const*> const& texts)
+	bool DrawDropdown(const std::string& label, int32_t& value, std::vector<std::string> const& texts)
 	{
 		bool isValueChanged = false;
 
@@ -474,13 +476,56 @@ namespace DYE::ImGuiUtil
 		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
 		{
-			isValueChanged |= ImGui::Combo("##combo", &value, texts.data(), texts.size());
+			if (ImGui::BeginCombo("##combo", texts[value].c_str()))
+			{
+				for (int i = 0; i < texts.size(); ++i)
+				{
+					bool const isSelected = value == i;
+					if (ImGui::Selectable(texts[i].c_str(), isSelected))
+					{
+						value = i;
+						isValueChanged |= true;
+					}
+					if (isSelected)
+					{
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+				ImGui::EndCombo();
+			}
 
 			ImGui::PopItemWidth();
 		}
 		ImGui::PopStyleVar();
 		ImGui::Columns(1);
 		ImGui::PopID();
+		return isValueChanged;
+	}
+
+	bool DrawTextControl(std::string const& label, std::string & text)
+	{
+		bool isValueChanged = false;
+
+		ImGuiIO& io = ImGui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+
+		ImGui::PushID(label.c_str());
+
+		ImGui::Columns(2);
+		ImGui::SetColumnWidth(0, Parameters::ControlLabelWidth);
+		ImGui::Text(label.c_str());
+		ImGui::NextColumn();
+
+		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
+		{
+			isValueChanged |= ImGui::InputText("##text", &text);
+			ImGui::PopItemWidth();
+		}
+		ImGui::PopStyleVar();
+		ImGui::Columns(1);
+		ImGui::PopID();
+
 		return isValueChanged;
 	}
 

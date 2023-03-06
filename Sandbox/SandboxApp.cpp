@@ -3,6 +3,8 @@
 
 #include "SandboxLayer.h"
 
+#include "EntityLevelEditorLayer.h"
+
 namespace DYE::Sandbox
 {
     class SandboxApp final : public Application
@@ -15,6 +17,7 @@ namespace DYE::Sandbox
             : Application(windowName, fixedFramePerSecond)
         {
 			pushLayerImmediate(std::make_shared<SandboxLayer>());
+			pushLayerImmediate(std::make_shared<DYEditor::EntityLevelEditorLayer>());
         }
 
         ~SandboxApp() final = default;

@@ -40,7 +40,10 @@ namespace DYE::ImGuiUtil
 	bool DrawColor4Control(const std::string& label, glm::vec4& value);
 	bool DrawRectControl(const std::string& label, Math::Rect& value, Math::Rect const& resetValue);
 	bool DrawToolbar(const std::string& label, int32_t& value, std::vector<std::string> const& texts);
-	bool DrawDropdown(const std::string& label, int32_t& value, std::vector<char const*> const& texts);
+	//bool DrawDropdown(const std::string& label, int32_t& value, std::vector<char const*> const& texts);
+	bool DrawDropdown(const std::string& label, int32_t& value, std::vector<std::string> const& texts);
+
+	bool DrawTextControl(std::string const& label, std::string & text);
 
 	void DrawReadOnlyTextWithLabel(std::string const& label, std::string const& text);
 

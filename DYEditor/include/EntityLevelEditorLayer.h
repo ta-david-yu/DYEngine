@@ -1,0 +1,28 @@
+#pragma once
+
+#include "Core/LayerBase.h"
+
+#include "World.h"
+#include "Entity.h"
+
+namespace DYE::DYEditor
+{
+	class EntityLevelEditorLayer : public LayerBase
+	{
+	public:
+		EntityLevelEditorLayer();
+		~EntityLevelEditorLayer() override = default;
+
+		void OnImGui() override;
+
+	private:
+
+		// DEBUGGING
+		DYEntity::World m_World;
+		DYEntity::Entity m_Entity;
+
+		void drawEntityInspector(DYEntity::Entity& entity);
+		void drawAddComponentButtonAndPopup(DYEntity::Entity& entity);
+		void drawAllComponents(DYEntity::Entity& entity);
+	};
+}

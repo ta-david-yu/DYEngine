@@ -2,10 +2,10 @@
 
 namespace DYE::DYEntity
 {
-	Entity::Entity(World &world)
+	Entity::Entity(World &world) : m_World(&world), m_EntityHandle(world.m_Registry.create())
 	{
-		m_World = &world;
-		m_EntityHandle = world.m_Registry.create();
+
+
 	}
 
 	bool Entity::IsValid() const

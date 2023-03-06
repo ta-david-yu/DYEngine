@@ -5,11 +5,11 @@
 namespace DYE::DYEntity
 {
 	class Entity;
+	class World;
 
 	class World
 	{
 		friend Entity;
-
 	public:
 		World();
 		~World() = default;

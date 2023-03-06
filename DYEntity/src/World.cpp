@@ -8,6 +8,7 @@ namespace DYE::DYEntity
 	World::World()
 	{
 		// TEMP
+		// TODO: remove this create entity call
 		auto entity = CreateEntity("Ha Ha");
 	}
 
