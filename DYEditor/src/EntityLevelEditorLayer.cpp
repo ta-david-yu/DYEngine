@@ -14,8 +14,8 @@ namespace DYE::DYEditor
 
 		m_Entity = m_World.CreateEntity();
 
-		auto componentFunctions = DYEntity::TypeRegistry::GetComponentTypeFunctionCollections();
-		for (auto functions : componentFunctions)
+		auto componentNamesAndFunctions = DYEntity::TypeRegistry::GetComponentTypesNamesAndFunctionCollections();
+		for (auto& [name, functions] : componentNamesAndFunctions)
 		{
 			functions.Add(m_Entity);
 		}
@@ -95,7 +95,7 @@ namespace DYE::DYEditor
 		}
 
 		// Draw all components that the entity has.
-		for (auto [name, functions] : componentNamesAndFunctions)
+		for (auto& [name, functions] : componentNamesAndFunctions)
 		{
 			if (functions.Has == nullptr)
 			{
@@ -133,7 +133,7 @@ namespace DYE::DYEditor
 					ImGui::BeginTooltip();
 					ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
 					ImGui::TextWrapped("Missing 'DrawInspector' function for component '%s'. "
-									   "It's likely that the DrawInspectorFunction is not assigned when TypeRegistry::RegisterComponentType is called.", name.c_str());
+									   "It's likely that the DrawInspectorFunction is not assigned when TypeRegistry::registerComponentType is called.", name.c_str());
 					ImGui::PopTextWrapPos();
 					ImGui::EndTooltip();
 				}

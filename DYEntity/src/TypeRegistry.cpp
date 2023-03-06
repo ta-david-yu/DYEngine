@@ -4,7 +4,7 @@
 
 namespace DYE::DYEntity
 {
-	void TypeRegistry::RegisterComponentType(std::string const &componentName, ComponentTypeFunctionCollection functions)
+	void TypeRegistry::registerComponentType(std::string const &componentName, ComponentTypeFunctionCollection functions)
 	{
 		auto [iterator, insertionSuccess] = s_ComponentTypeRegistry.emplace(componentName, functions);
 		if (!insertionSuccess)

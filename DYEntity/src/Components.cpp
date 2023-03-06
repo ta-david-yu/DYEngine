@@ -6,7 +6,7 @@ namespace DYE::DYEntity
 {
 	void AddNameComponent(Entity& entity)
 	{
-		entity.AddComponent<NameComponent>("No Name");
+		entity.AddComponent<NameComponent>("New Entity");
 	}
 
 	bool DrawInspectorOfNameComponent(Entity& entity)
@@ -47,67 +47,120 @@ namespace DYE::DYEntity
 		return changed;
 	}
 
+	struct _TestFloatComponent
+	{
+		float Value;
+	};
+
+	struct _TestIntComponent
+	{
+		int Value;
+	};
+
+	struct _TestInt1Component
+	{
+		int Value;
+	};
+	struct _TestInt2Component
+	{
+		int Value;
+	};
+	struct _TestInt3Component
+	{
+		int Value;
+	};
 	void RegisterBuiltInComponentTypes()
 	{
-		TypeRegistry::RegisterComponentType
+		TypeRegistry::RegisterComponentType<NameComponent>
 			(
 				"Name",
 				ComponentTypeFunctionCollection
 					{
-						.Has = DefaultHasComponentOfType<NameComponent>,
 						.Add = AddNameComponent,
-						.Remove = DefaultRemoveComponentOfType<NameComponent>,
-						.Serialize = nullptr,
-						.Deserialize = nullptr,
 						.DrawInspector = DrawInspectorOfNameComponent
 					}
 			);
 
-		TypeRegistry::RegisterComponentType
+		TypeRegistry::RegisterComponentType<TransformComponent>
 			(
 				"Transform",
 				ComponentTypeFunctionCollection
 					{
-						.Has = DefaultHasComponentOfType<TransformComponent>,
-						.Add = DefaultAddComponentOfType<TransformComponent>,
-						.Remove = DefaultRemoveComponentOfType<TransformComponent>,
-						.Serialize = nullptr,
-						.Deserialize = nullptr,
 						.DrawInspector = DrawInspectorOfTransformComponent
 					}
 			);
 
-		TypeRegistry::RegisterComponentType
+		TypeRegistry::RegisterComponentType<_TestFloatComponent>
 			(
 				"TestFloat",
 				ComponentTypeFunctionCollection
 					{
-						.Has = DefaultHasComponentOfType<_TestFloatComponent>,
-						.Add = DefaultAddComponentOfType<_TestFloatComponent>,
-						.Remove = DefaultRemoveComponentOfType<_TestFloatComponent>,
-						.Serialize = nullptr,
-						.Deserialize = nullptr,
-						.DrawInspector = [](Entity& entity)
+						.DrawInspector = [](Entity &entity)
 						{
 							ImGui::PushID("##TestFloat");
-							bool changed = ImGuiUtil::DrawFloatControl("Value", entity.GetComponent<_TestFloatComponent>().Value, 0.0f);
+							bool changed = ImGuiUtil::DrawFloatControl("Value",
+																	   entity.GetComponent<_TestFloatComponent>().Value,
+																	   0.0f);
 							ImGui::PopID();
 							return changed;
 						}
 					}
 			);
 
-		TypeRegistry::RegisterComponentType
+		TypeRegistry::RegisterComponentType<_TestIntComponent>
 			(
 				"TestInt",
 				ComponentTypeFunctionCollection
 					{
-						.Has = DefaultHasComponentOfType<_TestIntComponent>,
-						.Add = DefaultAddComponentOfType<_TestIntComponent>,
-						.Remove = DefaultRemoveComponentOfType<_TestIntComponent>,
-						.Serialize = nullptr,
-						.Deserialize = nullptr,
-						.DrawInspector = [](Entity& entity)
+						.DrawInspector = [](Entity &entity)
+						{
+							ImGui::PushID("##TestInt");
+							bool changed = ImGuiUtil::DrawIntControl("Value",
+																	 entity.GetComponent<_TestIntComponent>().Value, 0);
+							ImGui::PopID();
+							return changed;
+						}
+					}
+			);
+
+		TypeRegistry::RegisterComponentType<_TestInt1Component>
+			(
+				"TestInt1",
+				ComponentTypeFunctionCollection
+					{
+						.DrawInspector = [](Entity &entity)
+						{
+							ImGui::PushID("##TestInt");
+							bool changed = ImGuiUtil::DrawIntControl("Value",
+																	 entity.GetComponent<_TestIntComponent>().Value, 0);
+							ImGui::PopID();
+							return changed;
+						}
+					}
+			);
+
+		TypeRegistry::RegisterComponentType<_TestInt2Component>
+			(
+				"TestInt2",
+				ComponentTypeFunctionCollection
+					{
+						.DrawInspector = [](Entity &entity)
+						{
+							ImGui::PushID("##TestInt");
+							bool changed = ImGuiUtil::DrawIntControl("Value",
+																	 entity.GetComponent<_TestIntComponent>().Value, 0);
+							ImGui::PopID();
+							return changed;
+						}
+					}
+			);
+
+		TypeRegistry::RegisterComponentType<_TestInt3Component>
+			(
+				"TestInt3",
+				ComponentTypeFunctionCollection
+					{
+						.DrawInspector = [](Entity &entity)
 						{
 							ImGui::PushID("##TestInt");
 							bool changed = ImGuiUtil::DrawIntControl("Value",
