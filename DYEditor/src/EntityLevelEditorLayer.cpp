@@ -140,7 +140,9 @@ namespace DYE::DYEditor
 			}
 			else
 			{
+				ImGui::PushID(name.c_str());
 				changed |= functions.DrawInspector(entity);
+				ImGui::PopID();
 			}
 
 			ImGui::Spacing();

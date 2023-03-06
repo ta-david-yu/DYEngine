@@ -26,8 +26,6 @@ namespace DYE::DYEntity
 
 		bool changed = false;
 
-		ImGui::PushID("##Transform");
-
 		changed |= ImGuiUtil::DrawVec3Control("Position", transformComponent.Position);
 		changed |= ImGuiUtil::DrawVec3Control("Scale", transformComponent.Scale);
 
@@ -41,8 +39,6 @@ namespace DYE::DYEntity
 
 			changed = true;
 		}
-
-		ImGui::PopID();
 
 		return changed;
 	}
@@ -97,11 +93,9 @@ namespace DYE::DYEntity
 					{
 						.DrawInspector = [](Entity &entity)
 						{
-							ImGui::PushID("##TestFloat");
 							bool changed = ImGuiUtil::DrawFloatControl("Value",
 																	   entity.GetComponent<_TestFloatComponent>().Value,
 																	   0.0f);
-							ImGui::PopID();
 							return changed;
 						}
 					}
@@ -114,10 +108,8 @@ namespace DYE::DYEntity
 					{
 						.DrawInspector = [](Entity &entity)
 						{
-							ImGui::PushID("##TestInt");
 							bool changed = ImGuiUtil::DrawIntControl("Value",
 																	 entity.GetComponent<_TestIntComponent>().Value, 0);
-							ImGui::PopID();
 							return changed;
 						}
 					}
@@ -130,10 +122,8 @@ namespace DYE::DYEntity
 					{
 						.DrawInspector = [](Entity &entity)
 						{
-							ImGui::PushID("##TestInt");
 							bool changed = ImGuiUtil::DrawIntControl("Value",
-																	 entity.GetComponent<_TestIntComponent>().Value, 0);
-							ImGui::PopID();
+																	 entity.GetComponent<_TestInt1Component>().Value, 0);
 							return changed;
 						}
 					}
@@ -146,10 +136,8 @@ namespace DYE::DYEntity
 					{
 						.DrawInspector = [](Entity &entity)
 						{
-							ImGui::PushID("##TestInt");
 							bool changed = ImGuiUtil::DrawIntControl("Value",
-																	 entity.GetComponent<_TestIntComponent>().Value, 0);
-							ImGui::PopID();
+																	 entity.GetComponent<_TestInt2Component>().Value, 0);
 							return changed;
 						}
 					}
@@ -162,10 +150,8 @@ namespace DYE::DYEntity
 					{
 						.DrawInspector = [](Entity &entity)
 						{
-							ImGui::PushID("##TestInt");
 							bool changed = ImGuiUtil::DrawIntControl("Value",
-																	 entity.GetComponent<_TestIntComponent>().Value, 0);
-							ImGui::PopID();
+																	 entity.GetComponent<_TestInt3Component>().Value, 0);
 							return changed;
 						}
 					}
