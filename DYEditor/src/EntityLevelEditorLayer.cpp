@@ -85,6 +85,7 @@ namespace DYE::DYEditor
 					{
 						// Add the component
 						functionCollections.Add(entity);
+						changed = true;
 						ImGui::CloseCurrentPopup();
 					}
 				}
