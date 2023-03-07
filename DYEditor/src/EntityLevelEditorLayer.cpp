@@ -1,25 +1,38 @@
 #include "EntityLevelEditorLayer.h"
 
-#include "TypeRegistry.h"
-#include "Components.h"
+#include "BuiltInTypeRegister.h"
+#include "UserTypeRegister.h"
+
 #include "ImGui/ImGuiUtil.h"
 
 #include <imgui.h>
+
+using namespace DYE::DYEntity;
 
 namespace DYE::DYEditor
 {
 	EntityLevelEditorLayer::EntityLevelEditorLayer() : LayerBase("Editor")
 	{
-		DYEntity::RegisterBuiltInComponentTypes();
+	}
 
+	void EntityLevelEditorLayer::OnAttach()
+	{
+		DYEditor::RegisterBuiltInTypes();
+		DYEditor::RegisterUserTypes();
+
+		// DEBUGGING
 		m_Entity = m_World.CreateEntity();
 
-		auto componentNamesAndFunctions = DYEntity::TypeRegistry::GetComponentTypesNamesAndFunctionCollections();
-		for (auto& [name, functions] : componentNamesAndFunctions)
+		m_ComponentTypeAndFunctions = TypeRegistry::GetComponentTypesNamesAndFunctionCollections();
+		for (auto& [name, functions] : m_ComponentTypeAndFunctions)
 		{
 			functions.Add(m_Entity);
 		}
-		//m_Entity.AddComponent<DYEntity::TransformComponent>();
+	}
+
+	void EntityLevelEditorLayer::OnDetach()
+	{
+		TypeRegistry::ClearRegisteredComponentTypes();
 	}
 
 	void EntityLevelEditorLayer::OnImGui()
@@ -37,15 +50,14 @@ namespace DYE::DYEditor
 			return;
 		}
 
-		drawEntityInspector(m_Entity);
+		drawEntityInspector(m_Entity, m_ComponentTypeAndFunctions);
 
 		ImGui::End();
 	}
 
-	bool EntityLevelEditorLayer::drawEntityInspector(DYEntity::Entity& entity)
+	bool EntityLevelEditorLayer::drawEntityInspector(DYEntity::Entity &entity,
+													 std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> componentNamesAndFunctions)
 	{
-		static auto componentNamesAndFunctions = DYEntity::TypeRegistry::GetComponentTypesNamesAndFunctionCollections();
-
 		bool changed = false;
 
 		// Draw a 'Add Component' button at the top of the inspector, and align it to the right side of the window.

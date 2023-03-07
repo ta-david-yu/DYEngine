@@ -9,6 +9,12 @@
 
 #define DYE_STRING(type) #type
 
+/// A class/struct marked with this macro will be identified by DYEditor code generator. DYEditor code generator will
+/// then generate code that registers the marked class/struct into TypeRegistry as a component.
+/// \param componentName the string name that will be used to identify the component type.
+/// \param componentType the component type.
+#define DYE_COMPONENT(componentName, componentType)
+
 namespace DYE::DYEditor
 {
 	using Char = char;

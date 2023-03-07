@@ -5,12 +5,18 @@ project(DYEditor)
 set(SOURCE_FILES
         src/EntityLevelEditorLayer.cpp
         src/EntityLevelRuntimeLayer.cpp
-        src/EntityLevelFile.cpp)
+        src/EntityLevelFile.cpp
+        src/TypeRegistry.cpp
+        src/BuiltInTypeRegister.cpp
+        src/UserTypeRegister.cpp)
 set(HEADER_FILES
         include/EntityLevelEditorLayer.h
         include/EntityLevelRuntimeLayer.h
         include/EntityLevelFile.h
-        include/SerializableType.h)
+        include/TypeRegistry.h
+        include/SerializableType.h
+        include/BuiltInTypeRegister.h
+        include/UserTypeRegister.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")

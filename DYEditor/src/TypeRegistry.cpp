@@ -2,8 +2,13 @@
 
 #include "Util/Logger.h"
 
-namespace DYE::DYEntity
+namespace DYE::DYEditor
 {
+	void TypeRegistry::ClearRegisteredComponentTypes()
+	{
+		s_ComponentTypeRegistry.clear();
+	}
+
 	void TypeRegistry::registerComponentType(std::string const &componentName, ComponentTypeFunctionCollection functions)
 	{
 		auto [iterator, insertionSuccess] = s_ComponentTypeRegistry.emplace(componentName, functions);

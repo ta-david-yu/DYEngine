@@ -7,7 +7,9 @@
 #include <optional>
 #include <map>
 
-namespace DYE::DYEntity
+using namespace DYE::DYEntity;
+
+namespace DYE::DYEditor
 {
 	class Stream;
 
@@ -80,6 +82,8 @@ namespace DYE::DYEntity
 
 			registerComponentType(componentName, functions);
 		}
+
+		static void ClearRegisteredComponentTypes();
 
 		/// Retrieves an array of pairs containing information about registered components.
 		/// The function is expensive, the user should cache the result instead of calling the function regularly.
