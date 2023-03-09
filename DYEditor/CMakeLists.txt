@@ -1,5 +1,7 @@
 project(DYEditor)
 
+option(DYEDITOR_BUILD_CODE_GENERATOR "Enable building DYEditor code generator tools" ON)
+
 # ===========================================================================================
 # Sources / Headers
 set(SOURCE_FILES
@@ -38,3 +40,8 @@ target_include_directories(DYEditor PUBLIC ../DYEntity/include)
 # Link external libraries
 target_link_libraries(DYEditor PUBLIC DYEngine)
 target_link_libraries(DYEditor PUBLIC DYEntity)
+
+# ===========================================================================================
+if(DYEDITOR_BUILD_CODE_GENERATOR)
+    add_subdirectory(DYEditorCodeGenerator)
+endif()

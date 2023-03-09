@@ -6,11 +6,33 @@ set(SOURCE_FILES
         SandboxMessage.cpp
         StaticAABBColliderManager.cpp)
 
-set(SOURCE_FILES
+# In the future this will be the whole codebase (Sandbox codebase)
+set(DEPEND_FILES
         ${SOURCE_FILES}
+        generated/_source_test/UserTypeRegister.template.cpp)
+
+set(GENERATED_FILES
         generated/UserTypeRegister.generated.cpp)
 
-add_executable(Sandbox ${SOURCE_FILES})
+message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
+message(STATUS "[${PROJECT_NAME}] Generated Files: ${GENERATED_FILES}")
+
+add_executable(Sandbox ${SOURCE_FILES} ${GENERATED_FILES})
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/UserTypeRegister.generated.cpp
+    COMMAND DYEditorCodeGenerator
+        ${CMAKE_CURRENT_SOURCE_DIR}/generated/_source_test/UserTypeRegister.template.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/generated/UserTypeRegister.generated.cpp
+    DEPENDS ${DEPEND_FILES}
+    COMMENT "[${PROJECT_NAME}] Run DYEditor Code Generator"
+)
+
+#add_custom_command(
+#        TARGET Sandbox
+#        PRE_BUILD
+#        COMMAND DYEditorCodeGenerator arg1 arg2 arg3
+#        COMMENT "[${PROJECT_NAME}] Run DYEditor Code Generator"
+#)
 
 target_include_directories(Sandbox PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 

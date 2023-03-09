@@ -17,6 +17,7 @@ namespace DYE::DYEditor
 
 	void EntityLevelEditorLayer::OnAttach()
 	{
+		// DEBUGGING, Should be moved to EntityLevelEditorApplication
 		DYEditor::RegisterBuiltInTypes();
 		DYEditor::RegisterUserTypes();
 

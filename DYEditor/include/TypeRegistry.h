@@ -100,6 +100,8 @@ namespace DYE::DYEditor
 		static void registerComponentType(std::string const &componentName, ComponentTypeFunctionCollection functions);
 
 	private:
+
+		// TODO: use array or vector instead
 		inline static std::map<std::string, ComponentTypeFunctionCollection> s_ComponentTypeRegistry;
 	};
 }

@@ -135,6 +135,7 @@ add_subdirectory(extern/glad)
 add_subdirectory(extern/imgui)
 add_subdirectory(extern/glm)
 add_subdirectory(extern/stb)
+option(YAML_CPP_BUILD_TOOLS "Enable parse tools" OFF) # Disable building yaml-cpp util tools
 add_subdirectory(extern/yaml-cpp)
 #add_subdirectory(extern/rttr)
 

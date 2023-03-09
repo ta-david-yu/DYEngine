@@ -1,5 +1,7 @@
 #include "UserTypeRegister.h"
 
+#include "Util/Logger.h"
+
 namespace DYE::DYEditor
 {
 	RegisterUserTypeFunction* RegisterUserTypeFunctionPointer = nullptr;
@@ -17,6 +19,7 @@ namespace DYE::DYEditor
 			return;
 		}
 
+		DYE_LOG("<< Register User Types to DYEditor::TypeRegistry >>");
 		RegisterUserTypeFunctionPointer();
 	}
 }
