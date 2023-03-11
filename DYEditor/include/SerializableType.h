@@ -11,8 +11,11 @@
 
 /// A class/struct marked with this macro will be identified by DYEditor code generator. DYEditor code generator will
 /// then generate code that registers the marked class/struct into TypeRegistry as a component.
+/// Example:
+/// DYE_COMPONENT("Foo", FooComponent)
+/// struct FooComponent { }
 /// \param componentName the string name that will be used to identify the component type.
-/// \param componentType the component type.
+/// \param componentType the component type. You should include namespace(s) as if the type is being accessed in global scope.
 #define DYE_COMPONENT(componentName, componentType)
 
 namespace DYE::DYEditor

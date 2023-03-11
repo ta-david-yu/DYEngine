@@ -13,12 +13,10 @@ namespace DYE::DYEditor
 		float Value3;
 		float Value4;
 	};
-
 	struct _TestIntComponent
 	{
 		int Value;
 	};
-
 	struct _TestInt1Component
 	{
 		int Value;
@@ -98,6 +96,7 @@ namespace DYE::DYEditor
 							bool changed = ImGuiUtil::DrawIntControl("Value",
 																	 entity.GetComponent<_TestInt2Component>().Value, 0);
 							return changed;
+
 						}
 					}
 			);
@@ -112,6 +111,7 @@ namespace DYE::DYEditor
 							bool changed = ImGuiUtil::DrawIntControl("Value",
 																	 entity.GetComponent<_TestInt3Component>().Value, 0);
 							return changed;
+
 						}
 					}
 			);
