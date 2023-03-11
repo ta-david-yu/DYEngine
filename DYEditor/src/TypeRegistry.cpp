@@ -24,6 +24,7 @@ namespace DYE::DYEditor
 	std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> TypeRegistry::GetComponentTypesNamesAndFunctionCollections()
 	{
 		std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> types;
+		types.reserve(s_ComponentTypeRegistry.size());
 		for (auto const& pair : s_ComponentTypeRegistry)
 		{
 			types.emplace_back(pair);
@@ -34,6 +35,7 @@ namespace DYE::DYEditor
 	std::vector<std::string> TypeRegistry::GetComponentTypeNames()
 	{
 		std::vector<std::string> names;
+		names.reserve(s_ComponentTypeRegistry.size());
 		for (auto const& pair : s_ComponentTypeRegistry)
 		{
 			names.push_back(pair.first);
@@ -44,6 +46,7 @@ namespace DYE::DYEditor
 	std::vector<ComponentTypeFunctionCollection> TypeRegistry::GetComponentTypeFunctionCollections()
 	{
 		std::vector<ComponentTypeFunctionCollection> functions;
+		functions.reserve(s_ComponentTypeRegistry.size());
 		for (auto const& pair : s_ComponentTypeRegistry)
 		{
 			functions.push_back(pair.second);

@@ -14,8 +14,8 @@
 #include "Graphics/RenderPipeline2D.h"
 #include "Graphics/Texture.h"
 
-#include <imgui.h>
-#include <glm/gtx/norm.hpp>
+#include "imgui.h"
+#include "glm/gtx/norm.hpp"
 
 namespace DYE::Sandbox
 {

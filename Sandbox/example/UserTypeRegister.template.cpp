@@ -1,3 +1,7 @@
+/*
+ * This is an example/template of the generated code
+ */
+
 #include "UserTypeRegister.h"
 
 #include "TypeRegistry.h"

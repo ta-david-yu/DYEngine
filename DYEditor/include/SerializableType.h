@@ -18,7 +18,10 @@
 /// \param componentType the component type. You should include namespace(s) as if the type is being accessed in global scope.
 #define DYE_COMPONENT(componentName, componentType)
 
-namespace DYE::DYEditor
+#define DYE_PROPERTY()
+
+
+namespace DYE
 {
 	using Char = char;
 	using Bool = bool;

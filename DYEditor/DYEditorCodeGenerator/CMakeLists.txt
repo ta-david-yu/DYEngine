@@ -20,6 +20,7 @@ add_executable(DYEditorCodeGenerator ${SOURCE_FILES})
 # Include headers
 target_include_directories(DYEditorCodeGenerator PRIVATE include)
 #target_include_directories(DYEditorCodeGenerator PRIVATE ../include)
+#target_include_directories(DYEditorCodeGenerator PRIVATE ../include)
 #target_include_directories(DYEditorCodeGenerator PRIVATE ../../DYEngine/include)
 #target_include_directories(DYEditorCodeGenerator PRIVATE ../../DYEntity/include)
 
