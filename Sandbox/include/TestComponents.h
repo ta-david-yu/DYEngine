@@ -19,12 +19,19 @@ DYE_COMPONENT("TestB", TestComponentB)
 struct TestComponentB
 {
 	DYE_PROPERTY()
-
-	DYE_PROPERTY()
 	DYE::Bool BooleanValue;
 
 	DYE_PROPERTY()
+	DYE::Char OneCharacter;
+
+	DYE_PROPERTY()
 	const DYE::Float FloatValue;
+
+	DYE_PROPERTY()
+	DYE::Vector3 Position = glm::vec3 {0, 0, 5};
+
+	DYE_PROPERTY()
+	DYE::Vector4 vec4 = glm::vec4 {1, 2, 3, 4};
 
 	DYE_PROPERTY()
 	int intVal;

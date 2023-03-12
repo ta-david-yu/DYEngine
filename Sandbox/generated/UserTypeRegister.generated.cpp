@@ -48,8 +48,11 @@ namespace DYE::DYEditor
 							bool changed = false;
 							ImGui::TextWrapped("TestComponentB");
 							changed |= ImGuiUtil::DrawBoolControl("BooleanValue", entity.GetComponent<TestComponentB>().BooleanValue);
-							ImGui::TextWrapped("FloatValue : const Float");
-							ImGui::TextWrapped("intVal : int");
+							changed |= ImGuiUtil::DrawCharControl("OneCharacter", entity.GetComponent<TestComponentB>().OneCharacter);
+							ImGui::BeginDisabled(true); ImGuiUtil::DrawReadOnlyTextWithLabel("FloatValue", "Constant variable of type 'Float'"); ImGui::EndDisabled();
+							changed |= ImGuiUtil::DrawVector3Control("Position", entity.GetComponent<TestComponentB>().Position);
+							changed |= ImGuiUtil::DrawVector4Control("vec4", entity.GetComponent<TestComponentB>().vec4);
+							ImGui::BeginDisabled(true); ImGuiUtil::DrawReadOnlyTextWithLabel("intVal", "Variable of unsupported type 'int'"); ImGui::EndDisabled();
 							return changed;
 						}
 					}
@@ -65,7 +68,8 @@ namespace DYE::DYEditor
 						{
 							bool changed = false;
 							ImGui::TextWrapped("TestComponentC");
-							ImGui::TextWrapped("ColorValue : const Color4");
+							changed |= ImGuiUtil::DrawColor4Control("ColorValue", entity.GetComponent<TestComponentC>().ColorValue);
+							changed |= ImGuiUtil::DrawTextControl("TestName", entity.GetComponent<TestComponentC>().TestName);
 							return changed;
 						}
 					}

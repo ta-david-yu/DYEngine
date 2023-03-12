@@ -13,3 +13,6 @@
 [submodule "DYEntity/extern/entt"]
 	path = DYEntity/extern/entt
 	url = git@github.com:ta-david-yu/entt.git
+[submodule "DYEditor/DYEditorCodeGenerator/extern/fmt"]
+	path = DYEditor/DYEditorCodeGenerator/extern/fmt
+	url = git@github.com:fmtlib/fmt.git

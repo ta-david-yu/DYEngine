@@ -6,8 +6,8 @@
 #include <string>
 #include <sstream>
 #include <regex>
-
 #include <cstdlib>
+
 
 char const* GeneratedSourceCodeRelativeFilePath = "generated/UserTypeRegister.generated.cpp";
 
@@ -53,17 +53,6 @@ R"(	}
 	static UserTypeRegister_Generated userTypeRegister_GeneratedInstance = UserTypeRegister_Generated();
 }
 )";
-
-std::regex const ConstKeywordPattern(R"(\bconst\b)");
-std::regex const DYEComponentKeywordPattern(
-	"^\\s*DYE_COMPONENT\\(\"([a-zA-Z]+[a-zA-Z0-9_]*?)\",\\s*([a-zA-Z0-9_]+(::[a-zA-Z0-9_]+)*)\\)\\s*$"
-);
-std::regex const DYEPropertyKeywordPattern(
-	"^\\s*DYE_PROPERTY\\(\\)\\s*$"
-);
-std::regex const variableDeclarationPattern(
-	R"((?:(?:[a-zA-Z_][a-zA-Z0-9_]*)+::)*([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:const\s+)?([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:=\s*[^;]*)?;)"
-);
 
 struct ComponentDescriptor
 {
@@ -191,6 +180,16 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 	std::ifstream file;
 	file.open(absoluteFilePath, std::ios::in);
 
+	std::regex const constKeywordPattern(R"(\bconst\b)");
+	std::regex const dyeComponentKeywordPattern(
+		"^\\s*DYE_COMPONENT\\(\"([a-zA-Z]+[a-zA-Z0-9_]*?)\",\\s*([a-zA-Z0-9_]+(::[a-zA-Z0-9_]+)*)\\)\\s*$"
+	);
+	std::regex const dyePropertyKeywordPattern(
+		R"(^\s*DYE_PROPERTY\(\)\s*$)"
+	);
+	std::regex const variableDeclarationPattern(
+		R"((?:(?:[a-zA-Z_][a-zA-Z0-9_]*)+::)*([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:const\s+)?([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:=\s*[^;]*)?;)"
+	);
 	std::smatch match;
 
 	std::string line;
@@ -213,7 +212,7 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 			{
 				std::string const& typeSpecifier = match[1].str();
 				std::string const& variableName = match[2].str();
-				bool const isConst = std::regex_search(line, match, ConstKeywordPattern);
+				bool const isConst = std::regex_search(line, match, constKeywordPattern);
 
 				currentComponentScopeDescriptor.Properties.emplace_back
 					(
@@ -246,7 +245,7 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 			}
 		}
 
-		bool const isDYEComponentKeyword = std::regex_match(line, match, DYEComponentKeywordPattern);
+		bool const isDYEComponentKeyword = std::regex_match(line, match, dyeComponentKeywordPattern);
 		if (isDYEComponentKeyword)
 		{
 			result.HasDYEditorKeyword |= true;
@@ -281,7 +280,7 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 		if (isInComponentScope || isInSystemScope)
 		{
 			// We are inside a DYEComponent/System body, search for DYEProperty keyword.
-			bool const isDYEPropertyKeyword = std::regex_match(line, match, DYEPropertyKeywordPattern);
+			bool const isDYEPropertyKeyword = std::regex_match(line, match, dyePropertyKeywordPattern);
 			if (!isDYEPropertyKeyword)
 			{
 				continue;
