@@ -21,8 +21,11 @@ struct TestComponentB
 	DYE_PROPERTY()
 
 	DYE_PROPERTY()
-	DYE::Bool const BooleanValue;
+	DYE::Bool BooleanValue;
 
 	DYE_PROPERTY()
 	const DYE::Float FloatValue;
+
+	DYE_PROPERTY()
+	int intVal;
 };

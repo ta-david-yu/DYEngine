@@ -11,27 +11,43 @@ struct PropertyDescriptor
 	bool IsConstant;
 };
 
-std::string PropertyDescriptorToImGuiUtilControlCallSource(PropertyDescriptor const& descriptor)
+std::string PropertyDescriptorToImGuiUtilControlCallSource(std::string componentType, PropertyDescriptor const& propertyDescriptor)
 {
 	std::stringstream stream;
 
-	stream <<
-R"(							ImGui::TextWrapped(")" << descriptor.VariableName << " : " << descriptor.TypeSpecifier << R"(");)" << std::endl;
-
-	return stream.str();
-	if (descriptor.TypeSpecifier == "Float")
+	if (propertyDescriptor.IsConstant)
 	{
-
+		stream <<
+			   R"(							ImGui::TextWrapped(")" << propertyDescriptor.VariableName << " : const " << propertyDescriptor.TypeSpecifier << R"(");)" << std::endl;
+		return stream.str();
 	}
-	else if (descriptor.TypeSpecifier == "Bool")
-	{
 
+	if (propertyDescriptor.TypeSpecifier == "Float")
+	{
+		stream 	<< "\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawFloatControl(\""
+				<< propertyDescriptor.VariableName << "\", "
+				<< "entity.GetComponent<" << componentType << ">()."
+				<< propertyDescriptor.VariableName << ");\n";
 	}
-	else if (descriptor.TypeSpecifier == "Vector3")
+	else if (propertyDescriptor.TypeSpecifier == "Int32")
 	{
-
+		stream 	<< "\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawIntControl(\""
+				  << propertyDescriptor.VariableName << "\", "
+				  << "entity.GetComponent<" << componentType << ">()."
+				  << propertyDescriptor.VariableName << ");\n";
+	}
+	else if (propertyDescriptor.TypeSpecifier == "Bool")
+	{
+		stream 	<< "\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawBoolControl(\""
+				  << propertyDescriptor.VariableName << "\", "
+				  << "entity.GetComponent<" << componentType << ">()."
+				  << propertyDescriptor.VariableName << ");\n";
 	}
 	else
 	{
+		stream <<
+			   R"(							ImGui::TextWrapped(")" << propertyDescriptor.VariableName << " : " << propertyDescriptor.TypeSpecifier << R"(");)" << std::endl;
 	}
+
+	return stream.str();
 }

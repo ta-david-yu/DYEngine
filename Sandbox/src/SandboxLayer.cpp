@@ -224,14 +224,14 @@ namespace DYE::Sandbox
 
 				ImGui::Separator();
 				static bool disableRuntimeVariable = true;
-				ImGuiUtil::DrawBooleanControl("Disable Runtime Variable", disableRuntimeVariable);
+				ImGuiUtil::DrawBoolControl("Disable Runtime Variable", disableRuntimeVariable);
 				ImGui::BeginDisabled(disableRuntimeVariable);
 				ImGuiUtil::DrawFloatControl("Gravity", m_PlayerGravity, -9.8f);
 				ImGuiUtil::DrawFloatControl("MaxJumpSpeed", m_PlayerMaxJumpHeight, 10);
 				ImGuiUtil::DrawFloatControl("MinJumpSpeed", m_PlayerMinJumpHeight, 2);
 				ImGui::Spacing();
-				ImGuiUtil::DrawVec3Control("Position", m_PlayerPosition);
-				ImGuiUtil::DrawVec3Control("Velocity", m_PlayerVelocity);
+				ImGuiUtil::DrawVector3Control("Position", m_PlayerPosition);
+				ImGuiUtil::DrawVector3Control("Velocity", m_PlayerVelocity);
 				ImGuiUtil::DrawFloatControl("Width", m_PlayerWidth, 1);
 				ImGuiUtil::DrawFloatControl("Height", m_PlayerHeight, 1);
 				ImGui::EndDisabled();

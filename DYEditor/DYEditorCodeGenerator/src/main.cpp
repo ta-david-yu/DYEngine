@@ -242,7 +242,7 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 			}
 			else
 			{
-				std::printf("\t\tDYE_PROPERTY at line %d is ignored because it is not followed by a variable declaration.\n", lineCount - 1);
+				std::printf("\t\tDYE_PROPERTY at line %d is ignored because it is not followed by a valid variable declaration.\n", lineCount - 1);
 			}
 		}
 
@@ -336,7 +336,7 @@ std::string createComponentTypeRegistrationCallSource(ComponentDescriptor const&
 
 	for (auto const& propertyDescriptor : descriptor.Properties)
 	{
-		result.append(PropertyDescriptorToImGuiUtilControlCallSource(propertyDescriptor));
+		result.append(PropertyDescriptorToImGuiUtilControlCallSource(descriptor.Type, propertyDescriptor));
 	}
 
 	result.append(UserTypeRegistrationCallSourceEnd);

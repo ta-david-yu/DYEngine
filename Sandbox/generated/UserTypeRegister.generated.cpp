@@ -30,8 +30,8 @@ namespace DYE::DYEditor
 						{
 							bool changed = false;
 							ImGui::TextWrapped("TestNamespace::TestComponentA");
-							ImGui::TextWrapped("FloatValue : Float");
-							ImGui::TextWrapped("IntegerValue : Int32");
+							changed |= ImGuiUtil::DrawFloatControl("FloatValue", entity.GetComponent<TestNamespace::TestComponentA>().FloatValue);
+							changed |= ImGuiUtil::DrawIntControl("IntegerValue", entity.GetComponent<TestNamespace::TestComponentA>().IntegerValue);
 							return changed;
 						}
 					}
@@ -47,8 +47,9 @@ namespace DYE::DYEditor
 						{
 							bool changed = false;
 							ImGui::TextWrapped("TestComponentB");
-							ImGui::TextWrapped("BooleanValue : Bool");
-							ImGui::TextWrapped("FloatValue : Float");
+							changed |= ImGuiUtil::DrawBoolControl("BooleanValue", entity.GetComponent<TestComponentB>().BooleanValue);
+							ImGui::TextWrapped("FloatValue : const Float");
+							ImGui::TextWrapped("intVal : int");
 							return changed;
 						}
 					}
@@ -64,7 +65,7 @@ namespace DYE::DYEditor
 						{
 							bool changed = false;
 							ImGui::TextWrapped("TestComponentC");
-							ImGui::TextWrapped("ColorValue : Color4");
+							ImGui::TextWrapped("ColorValue : const Color4");
 							return changed;
 						}
 					}

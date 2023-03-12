@@ -24,7 +24,7 @@ namespace DYE::ImGuiUtil
 		}
 	}
 
-	bool DrawVec2Control(const std::string& label, glm::vec2& value, float resetValue)
+	bool DrawVector2Control(const std::string& label, glm::vec2& value, float resetValue)
 	{
 		bool isValueChanged = false;
 
@@ -91,7 +91,7 @@ namespace DYE::ImGuiUtil
 		return isValueChanged;
 	}
 
-	bool DrawVec3Control(const std::string& label, glm::vec3& value, float resetValue)
+	bool DrawVector3Control(const std::string& label, glm::vec3& value, float resetValue)
 	{
 		bool isValueChanged = false;
 
@@ -170,7 +170,7 @@ namespace DYE::ImGuiUtil
 		return isValueChanged;
 	}
 
-	bool DrawBooleanControl(const std::string& label, bool& value)
+	bool DrawBoolControl(const std::string& label, bool& value)
 	{
 		bool isValueChanged = false;
 
@@ -634,9 +634,9 @@ namespace DYE::ImGuiUtil
 
 		ImGui::PushID(label.c_str());
 
-		isValueChanged |= DrawVec3Control("Position", cameraProperties.Position);
+		isValueChanged |= DrawVector3Control("Position", cameraProperties.Position);
 		isValueChanged |= DrawColor4Control("Clear Color", cameraProperties.ClearColor);
-		isValueChanged |= DrawBooleanControl("Is Orthographic", cameraProperties.IsOrthographic);
+		isValueChanged |= DrawBoolControl("Is Orthographic", cameraProperties.IsOrthographic);
 
 		if (cameraProperties.IsOrthographic)
 		{
@@ -650,7 +650,7 @@ namespace DYE::ImGuiUtil
 		isValueChanged |= DrawFloatControl("Clip Distance | Near", cameraProperties.NearClipDistance, 0.1f);
 		isValueChanged |= DrawFloatControl("Clip Distance | Far", cameraProperties.FarClipDistance, 100);
 
-		isValueChanged |= DrawBooleanControl("Use Manual Aspect Ratio", cameraProperties.UseManualAspectRatio);
+		isValueChanged |= DrawBoolControl("Use Manual Aspect Ratio", cameraProperties.UseManualAspectRatio);
 		if (cameraProperties.UseManualAspectRatio)
 		{
 			isValueChanged |= DrawFloatControl("Manual Aspect Ratio", cameraProperties.ManualAspectRatio, 16.0f / 9.0f);

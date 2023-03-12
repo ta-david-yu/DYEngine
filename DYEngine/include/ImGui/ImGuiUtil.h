@@ -32,11 +32,11 @@ namespace DYE::ImGuiUtil
 		void ResetParametersToDefaultValues();
 	}
 
-	bool DrawVec2Control(const std::string& label, glm::vec2& value, float resetValue = 0.0f);
-	bool DrawVec3Control(const std::string& label, glm::vec3& value, float resetValue = 0.0f);
-	bool DrawBooleanControl(const std::string& label, bool& value);
-	bool DrawFloatControl(const std::string& label, float& value, float resetValue);
-	bool DrawIntControl(const std::string& label, int32_t & value, int32_t resultValue);
+	bool DrawVector2Control(const std::string& label, glm::vec2& value, float resetValue = 0.0f);
+	bool DrawVector3Control(const std::string& label, glm::vec3& value, float resetValue = 0.0f);
+	bool DrawBoolControl(const std::string& label, bool& value);
+	bool DrawFloatControl(const std::string& label, float& value, float resetValue = 0.0f);
+	bool DrawIntControl(const std::string& label, int32_t & value, int32_t resultValue = 0);
 	bool DrawColor4Control(const std::string& label, glm::vec4& value);
 	bool DrawRectControl(const std::string& label, Math::Rect& value, Math::Rect const& resetValue);
 	bool DrawToolbar(const std::string& label, int32_t& value, std::vector<std::string> const& texts);

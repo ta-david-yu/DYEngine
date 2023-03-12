@@ -31,13 +31,13 @@ namespace DYE::DYEditor
 
 		bool changed = false;
 
-		changed |= ImGuiUtil::DrawVec3Control("Position", transformComponent.Position);
-		changed |= ImGuiUtil::DrawVec3Control("Scale", transformComponent.Scale);
+		changed |= ImGuiUtil::DrawVector3Control("Position", transformComponent.Position);
+		changed |= ImGuiUtil::DrawVector3Control("Scale", transformComponent.Scale);
 
 		glm::vec3 rotationInEulerAnglesDegree = glm::eulerAngles(transformComponent.Rotation);
 		rotationInEulerAnglesDegree += glm::vec3(0.f);
 		rotationInEulerAnglesDegree = glm::degrees(rotationInEulerAnglesDegree);
-		if (ImGuiUtil::DrawVec3Control("Rotation", rotationInEulerAnglesDegree))
+		if (ImGuiUtil::DrawVector3Control("Rotation", rotationInEulerAnglesDegree))
 		{
 			rotationInEulerAnglesDegree.y = glm::clamp(rotationInEulerAnglesDegree.y, -90.f, 90.f);
 			transformComponent.Rotation = glm::quat {glm::radians(rotationInEulerAnglesDegree)};
