@@ -8,7 +8,6 @@
 #include "UserTypeRegister.h"
 
 #include "TypeRegistry.h"
-#include "Util/Logger.h"
 #include "ImGui/ImGuiUtil.h"
 
 // Insert user headers here...
@@ -20,19 +19,22 @@ namespace DYE::DYEditor
 	void userRegisterTypeFunction()
 	{
 		// Insert user type registration here...
-		TypeRegistry::RegisterComponentType<TestNamespace::TestComponents>
+
+		// Component located in include/TestComponents.h
+		TypeRegistry::RegisterComponentType<TestNamespace::TestComponentA>
 			(
 				"TestA",
 				ComponentTypeFunctionCollection
 					{
 						.DrawInspector = [](Entity &entity)
 						{
-							ImGui::TextWrapped("TestNamespace::TestComponents");
+							ImGui::TextWrapped("TestNamespace::TestComponentA");
 							return false;
 						}
 					}
 			);
 
+		// Component located in include/TestComponents.h
 		TypeRegistry::RegisterComponentType<TestComponentB>
 			(
 				"TestB",
@@ -46,6 +48,7 @@ namespace DYE::DYEditor
 					}
 			);
 
+		// Component located in include/AnotherTestComponents.h
 		TypeRegistry::RegisterComponentType<TestComponentC>
 			(
 				"TestC",
@@ -58,7 +61,6 @@ namespace DYE::DYEditor
 						}
 					}
 			);
-
 
 	}
 
