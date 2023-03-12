@@ -28,8 +28,11 @@ namespace DYE::DYEditor
 					{
 						.DrawInspector = [](Entity &entity)
 						{
+							bool changed = false;
 							ImGui::TextWrapped("TestNamespace::TestComponentA");
-							return false;
+							ImGui::TextWrapped("FloatValue : Float");
+							ImGui::TextWrapped("IntegerValue : Int32");
+							return changed;
 						}
 					}
 			);
@@ -42,8 +45,11 @@ namespace DYE::DYEditor
 					{
 						.DrawInspector = [](Entity &entity)
 						{
+							bool changed = false;
 							ImGui::TextWrapped("TestComponentB");
-							return false;
+							ImGui::TextWrapped("BooleanValue : Bool");
+							ImGui::TextWrapped("FloatValue : Float");
+							return changed;
 						}
 					}
 			);
@@ -56,8 +62,10 @@ namespace DYE::DYEditor
 					{
 						.DrawInspector = [](Entity &entity)
 						{
+							bool changed = false;
 							ImGui::TextWrapped("TestComponentC");
-							return false;
+							ImGui::TextWrapped("ColorValue : Color4");
+							return changed;
 						}
 					}
 			);

@@ -12,18 +12,12 @@ namespace TestNamespace
 
 		DYE_PROPERTY()
 		DYE::Int32 IntegerValue;
-
-		DYE_PROPERTY()
-		DYE_PROPERTY()
-		DYE_PROPERTY()
-
 	};
 }
 
 DYE_COMPONENT("TestB", TestComponentB)
 struct TestComponentB
 {
-	DYE_PROPERTY()
 	DYE_PROPERTY()
 
 	DYE_PROPERTY()

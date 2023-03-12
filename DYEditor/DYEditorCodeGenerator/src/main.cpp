@@ -1,3 +1,5 @@
+#include "PropertyDescriptor.h"
+
 #include <iostream>
 #include <fstream>
 #include <filesystem>
@@ -62,14 +64,6 @@ std::regex const DYEPropertyKeywordPattern(
 std::regex const variableDeclarationPattern(
 	R"((?:(?:[a-zA-Z_][a-zA-Z0-9_]*)+::)*([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:const\s+)?([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:=\s*[^;]*)?;)"
 );
-
-struct PropertyDescriptor
-{
-	// Parsed from variable declaration
-	std::string TypeSpecifier;
-	std::string VariableName;
-	bool IsConstant;
-};
 
 struct ComponentDescriptor
 {
@@ -158,7 +152,10 @@ int main(int argc, char* argv[])
 	std::printf("Registered components: \n");
 	for (auto const& componentDescriptor : componentDescriptors)
 	{
-		std::printf("\tname = %s, type = %s\n", componentDescriptor.CustomName.c_str(), componentDescriptor.Type.c_str());
+		std::printf("\tname = %s, type = %s, numberOfProperties = %zu\n",
+					componentDescriptor.CustomName.c_str(),
+					componentDescriptor.Type.c_str(),
+					componentDescriptor.Properties.size());
 
 		// Insert component type registration calls.
 		generatedSourceCodeStream << createComponentTypeRegistrationCallSource(componentDescriptor);
@@ -218,6 +215,16 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 				std::string const& variableName = match[2].str();
 				bool const isConst = std::regex_search(line, match, ConstKeywordPattern);
 
+				currentComponentScopeDescriptor.Properties.emplace_back
+					(
+						PropertyDescriptor
+							{
+								.TypeSpecifier = typeSpecifier,
+								.VariableName = variableName,
+								.IsConstant = isConst
+							}
+					);
+
 				if (!isConst)
 				{
 					std::printf("\t\tDYE_PROPERTY '%s::%s' of type '%s' is registered.\n",
@@ -259,9 +266,11 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 			std::string const& componentName = match[1].str();
 			std::string const& componentType = match[2].str();
 
-			currentComponentScopeDescriptor.LocatedHeaderFile = relativeFilePath.string();
-			currentComponentScopeDescriptor.CustomName = componentName;
-			currentComponentScopeDescriptor.Type = componentType;
+			currentComponentScopeDescriptor = ComponentDescriptor{
+				.LocatedHeaderFile = relativeFilePath.string(),
+				.CustomName = componentName,
+				.Type = componentType
+			};
 
 			isInComponentScope = true;
 
@@ -297,12 +306,7 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 	return result;
 }
 
-std::string createComponentTypeRegistrationCallSource(ComponentDescriptor const& descriptor)
-{
-	auto const& componentName = descriptor.CustomName;
-	auto const& componentType = descriptor.Type;
-
-	char const *UserTypeRegistrationCallSource =
+char const *UserTypeRegistrationCallSourceStart =
 R"(		TypeRegistry::RegisterComponentType<${COMPONENT_TYPE}>
 			(
 				"${COMPONENT_NAME}",
@@ -310,16 +314,32 @@ R"(		TypeRegistry::RegisterComponentType<${COMPONENT_TYPE}>
 					{
 						.DrawInspector = [](Entity &entity)
 						{
+							bool changed = false;
 							ImGui::TextWrapped("${COMPONENT_TYPE}");
-							return false;
+)";
+
+char const* UserTypeRegistrationCallSourceEnd =
+R"(							return changed;
 						}
 					}
 			);
 
 )";
 
+std::string createComponentTypeRegistrationCallSource(ComponentDescriptor const& descriptor)
+{
+	auto const& componentName = descriptor.CustomName;
+	auto const& componentType = descriptor.Type;
+
 	std::string result = "\t\t// Component located in " + descriptor.LocatedHeaderFile + "\n";
-	result.append(UserTypeRegistrationCallSource);
+	result.append(UserTypeRegistrationCallSourceStart);
+
+	for (auto const& propertyDescriptor : descriptor.Properties)
+	{
+		result.append(PropertyDescriptorToImGuiUtilControlCallSource(propertyDescriptor));
+	}
+
+	result.append(UserTypeRegistrationCallSourceEnd);
 
 	std::regex const componentNameKeywordPattern(R"(\$\{COMPONENT_NAME\})");
 	std::regex const componentTypeKeywordPattern(R"(\$\{COMPONENT_TYPE\})");

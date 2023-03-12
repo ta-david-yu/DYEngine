@@ -4,7 +4,8 @@ project(DYEditorCodeGenerator)
 # Sources / Headers
 set(SOURCE_FILES
         src/main.cpp)
-set(HEADER_FILES)
+set(HEADER_FILES
+        include/PropertyDescriptor.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")
@@ -14,7 +15,7 @@ message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")
 
 # ===========================================================================================
 # Build executable
-add_executable(DYEditorCodeGenerator ${SOURCE_FILES})
+add_executable(DYEditorCodeGenerator ${SOURCE_FILES} ${HEADER_FILES})
 
 # ===========================================================================================
 # Include headers
