@@ -22,7 +22,7 @@ struct TestComponentB
 	DYE::Bool BooleanValue;
 
 	DYE_PROPERTY()
-	DYE::Char OneCharacter;
+	DYE::Char OneCharacter = 'a';
 
 	DYE_PROPERTY()
 	const DYE::Float FloatValue;
@@ -32,7 +32,4 @@ struct TestComponentB
 
 	DYE_PROPERTY()
 	DYE::Vector4 vec4 = glm::vec4 {1, 2, 3, 4};
-
-	DYE_PROPERTY()
-	int intVal;
 };
