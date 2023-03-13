@@ -25,14 +25,18 @@ set(DEPEND_FILES
         ${HEADER_FILES})
 
 
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/UserTypeRegister.generated.cpp
-    COMMAND DYEditorCodeGenerator
-        ${CMAKE_CURRENT_SOURCE_DIR} # The source directory to put the generated code in
-        ${HEADER_FILES}             # The list of headers to be parsed for generating code
-    DEPENDS ${DEPEND_FILES}
-    COMMENT "[${PROJECT_NAME}] Run DYEditor Code Generator"
-)
+include(../DYEditor/cmake/Modules/CodeGenerationCommand.cmake)
+GenerateDYEditorRTTICode(${CMAKE_CURRENT_SOURCE_DIR} ${HEADER_FILES})
+
+
+#add_custom_command(
+#    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/UserTypeRegister.generated.cpp
+#    COMMAND DYEditorCodeGenerator
+#        ${CMAKE_CURRENT_SOURCE_DIR} # The source directory to put the generated code in
+#        ${HEADER_FILES}             # The list of headers to be parsed for generating code
+#    DEPENDS ${DEPEND_FILES}
+#    COMMENT "[${PROJECT_NAME}] Run DYEditor Code Generator"
+#)
 
 target_include_directories(Sandbox PRIVATE include)
 target_include_directories(Sandbox PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})

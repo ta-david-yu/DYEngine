@@ -49,7 +49,8 @@ namespace DYE::DYEditor
 							ImGui::TextWrapped("TestComponentB");
 							changed |= ImGuiUtil::DrawBoolControl("BooleanValue", entity.GetComponent<TestComponentB>().BooleanValue);
 							changed |= ImGuiUtil::DrawCharControl("OneCharacter", entity.GetComponent<TestComponentB>().OneCharacter);
-							ImGui::BeginDisabled(true); ImGuiUtil::DrawReadOnlyTextWithLabel("FloatValue", "Constant variable of type 'Float'"); ImGui::EndDisabled();
+							ImGui::BeginDisabled(true); ImGuiUtil::DrawReadOnlyTextWithLabel("ConstantFloat", "Constant variable of type 'Float'"); ImGui::EndDisabled();
+							ImGui::BeginDisabled(true); ImGuiUtil::DrawReadOnlyTextWithLabel("ConstantVector3", "Constant variable of type 'Vector3'"); ImGui::EndDisabled();
 							changed |= ImGuiUtil::DrawVector3Control("Position", entity.GetComponent<TestComponentB>().Position);
 							changed |= ImGuiUtil::DrawVector4Control("vec4", entity.GetComponent<TestComponentB>().vec4);
 							return changed;

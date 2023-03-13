@@ -25,7 +25,10 @@ struct TestComponentB
 	DYE::Char OneCharacter = 'a';
 
 	DYE_PROPERTY()
-	const DYE::Float FloatValue;
+	const DYE::Float ConstantFloat;
+
+	DYE_PROPERTY()
+	const DYE::Vector3 ConstantVector3;
 
 	DYE_PROPERTY()
 	DYE::Vector3 Position = glm::vec3 {0, 0, 5};
