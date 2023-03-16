@@ -13,7 +13,12 @@ namespace TestNamespace
 		DYE_PROPERTY()
 		DYE::Int32 IntegerValue;
 
-		DYE::Int32 IntNotSerialized;
+		DYE_PROPERTY()
+		int intCannotBeSerialized;
+
+		DYE::Int32 DYEIntNotSerialized;
+
+		int intNotSerialized;
 	};
 }
 

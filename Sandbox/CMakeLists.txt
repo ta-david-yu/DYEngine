@@ -4,14 +4,14 @@ set(SOURCE_FILES
         src/SandboxApp.cpp
         src/SandboxLayer.cpp
         src/SandboxMessage.cpp
-        src/StaticAABBColliderManager.cpp)
+        src/StaticAABBColliderManager.cpp src/SystemFunctionExample.cpp)
 
 set(HEADER_FILES
         include/SandboxLayer.h
         include/SandboxMessage.h
         include/StaticAABBColliderManager.h
         include/TestComponents.h
-        include/AnotherTestComponents.h)
+        include/AnotherTestComponents.h include/SystemFunctionExample.h)
 
 set(GENERATED_FILES
         generated/UserTypeRegister.generated.cpp)

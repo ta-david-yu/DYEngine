@@ -32,6 +32,7 @@ namespace DYE::DYEditor
 							ImGui::TextWrapped("TestNamespace::TestComponentA");
 							changed |= ImGuiUtil::DrawFloatControl("FloatValue", entity.GetComponent<TestNamespace::TestComponentA>().FloatValue);
 							changed |= ImGuiUtil::DrawIntControl("IntegerValue", entity.GetComponent<TestNamespace::TestComponentA>().IntegerValue);
+							ImGui::BeginDisabled(true); ImGuiUtil::DrawReadOnlyTextWithLabel("intCannotBeSerialized", "Variable of unsupported type 'int'"); ImGui::EndDisabled();
 							return changed;
 						}
 					}

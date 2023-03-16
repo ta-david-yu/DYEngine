@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Entity.h"
+#include "DefaultComponentFunctions.h"
 
 #include <string>
 #include <vector>
@@ -18,7 +19,6 @@ namespace DYE::DYEditor
 	using RemoveComponentFunction = void (Entity& entity);
 	using SerializeComponentFunction = void (Entity& entity, Stream& streamToSerializeTo);
 	using DeserializeComponentFunction = void (Stream& streamToDeserializeFrom, Entity& entity);
-
 	/// \return true if the content of the inspector is changed/dirty.
 	using DrawInspectorFunction = bool (Entity& entity);
 
@@ -33,24 +33,17 @@ namespace DYE::DYEditor
 		DrawInspectorFunction* DrawInspector = nullptr;
 	};
 
-	template<typename T>
-	bool DefaultHasComponentOfType(Entity& entity)
-	{
-		return entity.HasComponent<T>();
-	}
+	using SystemFunction = void (World& world);
 
-	template<typename T>
-	void DefaultAddComponentOfType(Entity& entity)
+	struct ComponentDescriptor
 	{
-		// By default, add component to the entity using default constructor
-		entity.AddComponent<T>();
-	}
+		std::string Name;
+	};
 
-	template<typename T>
-	void DefaultRemoveComponentOfType(Entity& entity)
+	struct SystemDescriptor
 	{
-		entity.RemoveComponent<T>();
-	}
+		std::string Name;
+	};
 
 	// TypeRegistry keeps track of all the types, so we could use them in runtime.
 	// Types including built-in & user-defined components, systems, levels etc.
@@ -82,6 +75,8 @@ namespace DYE::DYEditor
 
 			registerComponentType(componentName, functions);
 		}
+
+		//static void RegisterSystemFunction()
 
 		static void ClearRegisteredComponentTypes();
 

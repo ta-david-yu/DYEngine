@@ -1,4 +1,4 @@
-#include "PropertyDescriptor.h"
+#include "PropertyCodeGeneration.h"
 
 #include <iostream>
 #include <fstream>
@@ -199,6 +199,7 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 
 	ComponentDescriptor currentComponentScopeDescriptor;
 
+	// Parse the file line by line.
 	int lineCount = 0;
 	while (std::getline(file, line))
 	{
@@ -206,6 +207,7 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 
 		if (nextLineShouldBeVariableDeclaration)
 		{
+			// The line after a DYE_PROPERTY should be a variable declaration.
 			nextLineShouldBeVariableDeclaration = false;
 			bool const isVariableDeclaration = std::regex_search(line, match, variableDeclarationPattern);
 			if (isVariableDeclaration)
@@ -245,6 +247,7 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 			}
 		}
 
+		// DYE_COMPONENT
 		bool const isDYEComponentKeyword = std::regex_match(line, match, dyeComponentKeywordPattern);
 		if (isDYEComponentKeyword)
 		{
@@ -252,7 +255,7 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 
 			if (isInComponentScope)
 			{
-				// We were in another DYEComponent body, flush the descriptor into the result.
+				// We were in another DYE_COMPONENT body, flush the descriptor into the result.
 				result.ComponentDescriptors.emplace_back(currentComponentScopeDescriptor);
 				isInComponentScope = false;
 			}
@@ -275,11 +278,12 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 
 			continue;
 		}
+
 		// TODO: parse DYE_SYSTEM
 
 		if (isInComponentScope || isInSystemScope)
 		{
-			// We are inside a DYEComponent/System body, search for DYEProperty keyword.
+			// We are inside a DYEComponent/System body, search for DYE_PROPERTY keyword.
 			bool const isDYEPropertyKeyword = std::regex_match(line, match, dyePropertyKeywordPattern);
 			if (!isDYEPropertyKeyword)
 			{

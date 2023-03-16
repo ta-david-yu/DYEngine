@@ -18,7 +18,7 @@ set(HEADER_FILES
         include/TypeRegistry.h
         include/SerializableType.h
         include/BuiltInTypeRegister.h
-        include/UserTypeRegister.h)
+        include/UserTypeRegister.h include/DefaultComponentFunctions.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")

@@ -16,10 +16,13 @@
 /// struct FooComponent { }
 /// \param componentName the string name that will be used to identify the component type.
 /// \param componentType the component type. You should include namespace(s) as if the type is being accessed in global scope.
-#define DYE_COMPONENT(componentName, componentType)
+#define DYE_COMPONENT(componentName, componentType, ...)
 
 #define DYE_PROPERTY()
 
+#define DYE_SYSTEM_FUNCTION(systemName, function)
+
+#define DYE_SYSTEM_FUNCTION_SIGNATURE(functionName) void functionName(DYE::DYEntity::World& world)
 
 namespace DYE
 {
