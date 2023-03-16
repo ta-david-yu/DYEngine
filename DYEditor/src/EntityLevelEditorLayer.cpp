@@ -15,6 +15,11 @@ namespace DYE::DYEditor
 	{
 	}
 
+	void testSystemFunction(World& world)
+	{
+		DYE_MSG_BOX(SDL_MESSAGEBOX_INFORMATION, "ExecuteTestFunction", "Executed!");
+	}
+
 	void EntityLevelEditorLayer::OnAttach()
 	{
 		// DEBUGGING, Should be moved to EntityLevelEditorApplication
@@ -23,6 +28,10 @@ namespace DYE::DYEditor
 
 		// DEBUGGING
 		m_Entity = m_World.CreateEntity();
+
+		TypeRegistry::RegisterSystemFunction("Test System1", testSystemFunction);
+		TypeRegistry::RegisterSystemFunction("Test System2", testSystemFunction);
+		TypeRegistry::RegisterSystemFunction("Test System3", testSystemFunction);
 
 		m_ComponentTypeAndFunctions = TypeRegistry::GetComponentTypesNamesAndFunctionCollections();
 		for (auto& [name, functions] : m_ComponentTypeAndFunctions)
@@ -45,14 +54,16 @@ namespace DYE::DYEditor
 		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
 
-		if (!ImGui::Begin("Component List"))
+		if (ImGui::Begin("Component List"))
 		{
-			ImGui::End();
-			return;
+			drawEntityInspector(m_Entity, m_ComponentTypeAndFunctions);
 		}
+		ImGui::End();
 
-		drawEntityInspector(m_Entity, m_ComponentTypeAndFunctions);
-
+		if (ImGui::Begin("Registered Systems"))
+		{
+			drawRegisteredSystems(m_World);
+		}
 		ImGui::End();
 	}
 
@@ -162,5 +173,25 @@ namespace DYE::DYEditor
 		}
 
 		return changed;
+	}
+
+	void EntityLevelEditorLayer::drawRegisteredSystems(DYEntity::World &world)
+	{
+		static auto systemNamesAndFunctions = TypeRegistry::GetSystemNamesAndFunctions();
+
+		for (auto& [name, systemFunctionPtr] : systemNamesAndFunctions)
+		{
+			ImGui::PushID(name.c_str());
+			bool const show = ImGui::CollapsingHeader(name.c_str());
+
+			if (show)
+			{
+				if (ImGui::Button("Execute System Function"))
+				{
+					systemFunctionPtr(world);
+				}
+			}
+			ImGui::PopID();
+		}
 	}
 }

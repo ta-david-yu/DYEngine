@@ -27,5 +27,6 @@ namespace DYE::DYEditor
 		DYEntity::Entity m_Entity;
 
 		static bool drawEntityInspector(DYEntity::Entity &entity, std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> componentNamesAndFunctions);
+		static void drawRegisteredSystems(DYEntity::World& world);
 	};
 }

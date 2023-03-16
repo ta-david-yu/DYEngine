@@ -35,16 +35,6 @@ namespace DYE::DYEditor
 
 	using SystemFunction = void (World& world);
 
-	struct ComponentDescriptor
-	{
-		std::string Name;
-	};
-
-	struct SystemDescriptor
-	{
-		std::string Name;
-	};
-
 	// TypeRegistry keeps track of all the types, so we could use them in runtime.
 	// Types including built-in & user-defined components, systems, levels etc.
 	class TypeRegistry
@@ -76,8 +66,6 @@ namespace DYE::DYEditor
 			registerComponentType(componentName, functions);
 		}
 
-		//static void RegisterSystemFunction()
-
 		static void ClearRegisteredComponentTypes();
 
 		/// Retrieves an array of pairs containing information about registered components.
@@ -91,12 +79,15 @@ namespace DYE::DYEditor
 		static std::vector<ComponentTypeFunctionCollection> GetComponentTypeFunctionCollections();
 		static std::optional<ComponentTypeFunctionCollection> TryGetComponentTypeFunctionsFromName(std::string const& componentName);
 
+		static void RegisterSystemFunction(std::string const &systemName, SystemFunction* systemFunction);
+		static std::vector<std::pair<std::string, SystemFunction*>> GetSystemNamesAndFunctions();
+
 	private:
 		static void registerComponentType(std::string const &componentName, ComponentTypeFunctionCollection functions);
 
 	private:
-
-		// TODO: use array or vector instead
+		// TODO: maybe we could use array or vector instead?
 		inline static std::map<std::string, ComponentTypeFunctionCollection> s_ComponentTypeRegistry;
+		inline static std::map<std::string, SystemFunction*> s_SystemFunctionRegistry;
 	};
 }

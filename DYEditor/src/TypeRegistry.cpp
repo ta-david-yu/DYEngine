@@ -63,4 +63,27 @@ namespace DYE::DYEditor
 
 		return {};
 	}
+
+	void TypeRegistry::RegisterSystemFunction(const std::string &systemName, SystemFunction* systemFunction)
+	{
+		auto [iterator, insertionSuccess] = s_SystemFunctionRegistry.emplace(systemName, systemFunction);
+		if (!insertionSuccess)
+		{
+			DYE_LOG("A system function with the name of %s has already been registered. Skip the registration with the same name.", systemName.c_str());
+			return;
+		}
+
+		DYE_LOG("Register system function (name = %s)", systemName.c_str());
+	}
+
+	std::vector<std::pair<std::string, SystemFunction *>> TypeRegistry::GetSystemNamesAndFunctions()
+	{
+		std::vector<std::pair<std::string, SystemFunction*>> systems;
+		systems.reserve(s_SystemFunctionRegistry.size());
+		for (auto const& pair : s_SystemFunctionRegistry)
+		{
+			systems.emplace_back(pair);
+		}
+		return systems;
+	}
 }
