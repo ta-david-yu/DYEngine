@@ -20,6 +20,11 @@ namespace DYE::DYEditor
 		DYE_MSG_BOX(SDL_MESSAGEBOX_INFORMATION, "ExecuteTestFunction", "Executed!");
 	}
 
+	void testSystemFunction2(World& world)
+	{
+		DYE_MSG_BOX(SDL_MESSAGEBOX_INFORMATION, "ExecuteTestFunction 2", "Executed!");
+	}
+
 	void EntityLevelEditorLayer::OnAttach()
 	{
 		// DEBUGGING, Should be moved to EntityLevelEditorApplication
@@ -30,7 +35,7 @@ namespace DYE::DYEditor
 		m_Entity = m_World.CreateEntity();
 
 		TypeRegistry::RegisterSystemFunction("Test System1", testSystemFunction);
-		TypeRegistry::RegisterSystemFunction("Test System2", testSystemFunction);
+		TypeRegistry::RegisterSystemFunction("Test System2", testSystemFunction2);
 		TypeRegistry::RegisterSystemFunction("Test System3", testSystemFunction);
 
 		m_ComponentTypeAndFunctions = TypeRegistry::GetComponentTypesNamesAndFunctionCollections();

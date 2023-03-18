@@ -16,9 +16,9 @@ set(HEADER_FILES
         include/EntityLevelRuntimeLayer.h
         include/EntityLevelFile.h
         include/TypeRegistry.h
-        include/SerializableType.h
+        include/EditorCore.h
         include/BuiltInTypeRegister.h
-        include/UserTypeRegister.h include/DefaultComponentFunctions.h)
+        include/UserTypeRegister.h include/DefaultComponentFunctions.h include/EditorComponent.h include/EditorSystem.h include/EditorProperty.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")

@@ -20,7 +20,7 @@ namespace DYE::DYEditor
 	using SerializeComponentFunction = void (Entity& entity, Stream& streamToSerializeTo);
 	using DeserializeComponentFunction = void (Stream& streamToDeserializeFrom, Entity& entity);
 	/// \return true if the content of the inspector is changed/dirty.
-	using DrawInspectorFunction = bool (Entity& entity);
+	using DrawComponentInspectorFunction = bool (Entity& entity);
 
 	struct ComponentTypeFunctionCollection
 	{
@@ -30,10 +30,16 @@ namespace DYE::DYEditor
 
 		SerializeComponentFunction* Serialize = nullptr;
 		DeserializeComponentFunction* Deserialize = nullptr;
-		DrawInspectorFunction* DrawInspector = nullptr;
+		DrawComponentInspectorFunction* DrawInspector = nullptr;
 	};
 
 	using SystemFunction = void (World& world);
+	using DrawSystemInspectorFunction = void (World& world);
+
+	struct SystemFunctionCollection
+	{
+
+	};
 
 	// TypeRegistry keeps track of all the types, so we could use them in runtime.
 	// Types including built-in & user-defined components, systems, levels etc.
@@ -80,6 +86,9 @@ namespace DYE::DYEditor
 		static std::optional<ComponentTypeFunctionCollection> TryGetComponentTypeFunctionsFromName(std::string const& componentName);
 
 		static void RegisterSystemFunction(std::string const &systemName, SystemFunction* systemFunction);
+
+		/// Retrieves an array of pairs containing information about registered components.
+		/// The function is expensive, the user should cache the result instead of calling the function regularly.
 		static std::vector<std::pair<std::string, SystemFunction*>> GetSystemNamesAndFunctions();
 
 	private:

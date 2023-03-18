@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SerializableType.h"
+#include "EditorCore.h"
 #include "Math/Color.h"
 
 DYE_COMPONENT("TestC", TestComponentC)
