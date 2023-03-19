@@ -4,18 +4,19 @@
 
 namespace SystemNamespace
 {
-	void UpdateMovementSystemExample(DYE::DYEntity::World &world)
+	void DerivedSystemB::Execute(DYE::DYEntity::World &world, DYE::DYEditor::ExecuteParameters params)
 	{
 
 	}
 }
 
-void InitializeVelocitySystemExample(DYE::DYEntity::World &world)
-{
-
-}
-
-void DerivedSystem::Execute(DYE::DYEntity::World &world, DYE::DYEditor::ExecuteParameters params)
+void DerivedSystemA::Execute(DYE::DYEntity::World &world, DYE::DYEditor::ExecuteParameters params)
 {
 	frameCounter++;
 }
+
+void DerivedSystemA::DrawInspector(DYE::DYEntity::World &world)
+{
+	SystemBase::DrawInspector(world);
+}
+
