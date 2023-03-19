@@ -218,6 +218,8 @@ namespace DYE::DYEditor
 	{
 		static auto systemNamesAndInstances = TypeRegistry::GetSystemNamesAndInstances();
 
+		ImGui::SeparatorText("Init");
+		ImGui::SeparatorText("Update");
 		for (auto& [name, systemBasePtr] : systemNamesAndInstances)
 		{
 			ImGui::PushID(name.c_str());
@@ -233,5 +235,8 @@ namespace DYE::DYEditor
 			}
 			ImGui::PopID();
 		}
+		ImGui::SeparatorText("FixedUpdate");
+		ImGui::SeparatorText("ImGui");
+		ImGui::SeparatorText("Render");
 	}
 }
