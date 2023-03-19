@@ -32,9 +32,10 @@ namespace DYE::DYEditor
 
 	struct SystemBase
 	{
+		virtual ExecutionPhase GetPhase() const = 0;
 		virtual void Execute(DYE::DYEntity::World& world, DYE::DYEditor::ExecuteParameters params) = 0;
-		virtual void DrawInspector(DYE::DYEntity::World& world);
 
+		virtual void DrawInspector(DYE::DYEntity::World& world);
 		virtual ~SystemBase() = default;
 	};
 }
