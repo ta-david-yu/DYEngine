@@ -1,24 +1,13 @@
 #include "TypeRegistry.h"
 
 #include "Util/Logger.h"
+#include "ImGui/ImGuiUtil.h"
 
 namespace DYE::DYEditor
 {
 	void TypeRegistry::ClearRegisteredComponentTypes()
 	{
 		s_ComponentTypeRegistry.clear();
-	}
-
-	void TypeRegistry::registerComponentType(std::string const &componentName, ComponentTypeFunctionCollection functions)
-	{
-		auto [iterator, insertionSuccess] = s_ComponentTypeRegistry.emplace(componentName, functions);
-		if (!insertionSuccess)
-		{
-			DYE_LOG("A component type with the name of %s has already been registered. Skip the registration with the same name.", componentName.c_str());
-			return;
-		}
-
-		DYE_LOG("Register component type (name = %s)", componentName.c_str());
 	}
 
 	std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> TypeRegistry::GetComponentTypesNamesAndFunctionCollections()
@@ -64,26 +53,38 @@ namespace DYE::DYEditor
 		return {};
 	}
 
-	void TypeRegistry::RegisterSystemFunction(const std::string &systemName, SystemFunction* systemFunction)
+	void TypeRegistry::RegisterSystem(const std::string &systemName, SystemBase *systemInstance)
 	{
-		auto [iterator, insertionSuccess] = s_SystemFunctionRegistry.emplace(systemName, systemFunction);
+		auto [iterator, insertionSuccess] = s_SystemRegistry.emplace(systemName, systemInstance);
 		if (!insertionSuccess)
 		{
-			DYE_LOG("A system function with the name of %s has already been registered. Skip the registration with the same name.", systemName.c_str());
+			DYE_LOG("A system with the name of %s has already been registered. Skip the registration with the same name.", systemName.c_str());
 			return;
 		}
 
-		DYE_LOG("Register system function (name = %s)", systemName.c_str());
+		DYE_LOG("Register system (name = %s)", systemName.c_str());
 	}
 
-	std::vector<std::pair<std::string, SystemFunction *>> TypeRegistry::GetSystemNamesAndFunctions()
+	std::vector<std::pair<std::string, SystemBase*>> TypeRegistry::GetSystemNamesAndInstances()
 	{
-		std::vector<std::pair<std::string, SystemFunction*>> systems;
-		systems.reserve(s_SystemFunctionRegistry.size());
-		for (auto const& pair : s_SystemFunctionRegistry)
+		std::vector<std::pair<std::string, SystemBase*>> systems;
+		systems.reserve(s_SystemRegistry.size());
+		for (auto const& pair : s_SystemRegistry)
 		{
 			systems.emplace_back(pair);
 		}
 		return systems;
+	}
+
+	void TypeRegistry::registerComponentType(std::string const &componentName, ComponentTypeFunctionCollection functions)
+	{
+		auto [iterator, insertionSuccess] = s_ComponentTypeRegistry.emplace(componentName, functions);
+		if (!insertionSuccess)
+		{
+			DYE_LOG("A component type with the name of %s has already been registered. Skip the registration with the same name.", componentName.c_str());
+			return;
+		}
+
+		DYE_LOG("Register component type (name = %s)", componentName.c_str());
 	}
 }

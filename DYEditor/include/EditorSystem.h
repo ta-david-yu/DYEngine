@@ -2,6 +2,9 @@
 
 #include "EditorProperty.h"
 
+/// @deprecated This macro was originally designed to mark function as system, but the complexity of a system has grown and we decided
+/// to use a class (SystemBase) to represent a system instead.
+///
 /// A function with the system function marked with this macro signature will be identified by DYEditor code generator. DYEditor code generator will
 /// then generate code that registers the marked function into TypeRegistry as a system. \n\n
 /// Example:\n
@@ -13,8 +16,6 @@
 /// \param optionalParameters ...to define custom draw function etc
 #define DYE_SYSTEM_FUNCTION(systemName, systemFunction, ...)
 
-#define DYE_SYSTEM_FUNCTION_SIGNATURE(functionName) void functionName(DYE::DYEntity::World& world)
-
 /// A class marked with this macro will be identified by DYEditor code generator. DYEditor code generator will
 /// then generate code that registers the marked class into TypeRegistry as a system. \n\n
 /// Example:\n
@@ -25,3 +26,33 @@
 /// \param systemType the system type. You should include namespace(s) as if the type is being accessed in global scope.
 /// \param optionalParameters ...to define tooltip etc
 #define DYE_SYSTEM(systemName, systemType, ...)
+
+namespace DYE::DYEntity
+{
+	class World;
+}
+
+namespace DYE::DYEditor
+{
+	enum class ExecutionPhase
+	{
+		Initialize = 0,
+		Update,
+		FixedUpdate,
+		Render,
+		ImGui
+	};
+
+	struct ExecuteParameters
+	{
+		ExecutionPhase Phase = ExecutionPhase::Update;
+	};
+
+	struct SystemBase
+	{
+		virtual void Execute(DYE::DYEntity::World& world, DYE::DYEditor::ExecuteParameters params) = 0;
+		virtual void DrawInspector(DYE::DYEntity::World& world);
+
+		virtual ~SystemBase() = default;
+	};
+}

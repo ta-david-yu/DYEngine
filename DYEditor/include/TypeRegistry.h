@@ -2,6 +2,7 @@
 
 #include "Entity.h"
 #include "DefaultComponentFunctions.h"
+#include "EditorSystem.h"
 
 #include <string>
 #include <vector>
@@ -13,6 +14,7 @@ using namespace DYE::DYEntity;
 namespace DYE::DYEditor
 {
 	class Stream;
+	class SystemBase;
 
 	using HasComponentFunction = bool (Entity& entity);
 	using AddComponentFunction = void (Entity& entity);
@@ -33,20 +35,11 @@ namespace DYE::DYEditor
 		DrawComponentInspectorFunction* DrawInspector = nullptr;
 	};
 
-	using SystemFunction = void (World& world);
-	using DrawSystemInspectorFunction = void (World& world);
-
-	struct SystemFunctionCollection
-	{
-
-	};
-
 	// TypeRegistry keeps track of all the types, so we could use them in runtime.
 	// Types including built-in & user-defined components, systems, levels etc.
 	class TypeRegistry
 	{
 	public:
-
 		/// Register a component type with its corresponding editor utility functions.
 		/// \param functions One could simply use the trivial function implementations by assigning null function pointer to the target function.
 		/// For now only 'Has', 'Add', 'Remove' have default implementations that make sense. For other functions, it's
@@ -85,11 +78,11 @@ namespace DYE::DYEditor
 		static std::vector<ComponentTypeFunctionCollection> GetComponentTypeFunctionCollections();
 		static std::optional<ComponentTypeFunctionCollection> TryGetComponentTypeFunctionsFromName(std::string const& componentName);
 
-		static void RegisterSystemFunction(std::string const &systemName, SystemFunction* systemFunction);
+		static void RegisterSystem(std::string const& systemName, SystemBase* systemInstance);
 
-		/// Retrieves an array of pairs containing information about registered components.
+		/// Retrieves an array of pairs of system names and instances.
 		/// The function is expensive, the user should cache the result instead of calling the function regularly.
-		static std::vector<std::pair<std::string, SystemFunction*>> GetSystemNamesAndFunctions();
+		static std::vector<std::pair<std::string, SystemBase*>> GetSystemNamesAndInstances();
 
 	private:
 		static void registerComponentType(std::string const &componentName, ComponentTypeFunctionCollection functions);
@@ -97,6 +90,6 @@ namespace DYE::DYEditor
 	private:
 		// TODO: maybe we could use array or vector instead?
 		inline static std::map<std::string, ComponentTypeFunctionCollection> s_ComponentTypeRegistry;
-		inline static std::map<std::string, SystemFunction*> s_SystemFunctionRegistry;
+		inline static std::map<std::string, SystemBase*> s_SystemRegistry;
 	};
 }

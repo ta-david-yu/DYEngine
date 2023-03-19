@@ -1,4 +1,6 @@
-#include "SystemFunctionExample.h"
+#include "SystemExample.h"
+
+#include "World.h"
 
 namespace SystemNamespace
 {
@@ -11,4 +13,9 @@ namespace SystemNamespace
 void InitializeVelocitySystemExample(DYE::DYEntity::World &world)
 {
 
+}
+
+void DerivedSystem::Execute(DYE::DYEntity::World &world, DYE::DYEditor::ExecuteParameters params)
+{
+	frameCounter++;
 }

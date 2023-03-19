@@ -10,7 +10,7 @@ set(SOURCE_FILES
         src/EntityLevelFile.cpp
         src/TypeRegistry.cpp
         src/BuiltInTypeRegister.cpp
-        src/UserTypeRegister.cpp)
+        src/UserTypeRegister.cpp src/EditorSystem.cpp src/EditorImGuiUtil.cpp)
 set(HEADER_FILES
         include/EntityLevelEditorLayer.h
         include/EntityLevelRuntimeLayer.h
@@ -18,7 +18,7 @@ set(HEADER_FILES
         include/TypeRegistry.h
         include/EditorCore.h
         include/BuiltInTypeRegister.h
-        include/UserTypeRegister.h include/DefaultComponentFunctions.h include/EditorComponent.h include/EditorSystem.h include/EditorProperty.h)
+        include/UserTypeRegister.h include/DefaultComponentFunctions.h include/EditorComponent.h include/EditorSystem.h include/EditorProperty.h include/ImGui/EditorImGuiUtil.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")
