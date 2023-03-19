@@ -9,20 +9,18 @@
 #include <optional>
 #include <map>
 
-using namespace DYE::DYEntity;
-
 namespace DYE::DYEditor
 {
 	class Stream;
 	class SystemBase;
 
-	using HasComponentFunction = bool (Entity& entity);
-	using AddComponentFunction = void (Entity& entity);
-	using RemoveComponentFunction = void (Entity& entity);
-	using SerializeComponentFunction = void (Entity& entity, Stream& streamToSerializeTo);
-	using DeserializeComponentFunction = void (Stream& streamToDeserializeFrom, Entity& entity);
+	using HasComponentFunction = bool (DYE::DYEntity::Entity& entity);
+	using AddComponentFunction = void (DYE::DYEntity::Entity& entity);
+	using RemoveComponentFunction = void (DYE::DYEntity::Entity& entity);
+	using SerializeComponentFunction = void (DYE::DYEntity::Entity& entity, Stream& streamToSerializeTo);
+	using DeserializeComponentFunction = void (Stream& streamToDeserializeFrom, DYE::DYEntity::Entity& entity);
 	/// \return true if the content of the inspector is changed/dirty.
-	using DrawComponentInspectorFunction = bool (Entity& entity);
+	using DrawComponentInspectorFunction = bool (DYE::DYEntity::Entity& entity);
 
 	struct ComponentTypeFunctionCollection
 	{

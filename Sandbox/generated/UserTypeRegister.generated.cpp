@@ -15,6 +15,8 @@
 #include "include/AnotherTestComponents.h"
 #include "include/SystemExample.h"
 
+using namespace DYE::DYEntity;
+
 namespace DYE::DYEditor
 {
 	void userRegisterTypeFunction()

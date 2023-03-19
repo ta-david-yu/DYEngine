@@ -7,6 +7,8 @@
 // All the built-in component types are in here.
 #include "Components.h"
 
+using namespace DYE::DYEntity;
+
 namespace DYE::DYEditor
 {
 	void AddNameComponent(Entity& entity)
