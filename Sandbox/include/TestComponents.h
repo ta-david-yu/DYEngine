@@ -2,6 +2,7 @@
 
 #include "EditorCore.h"
 
+
 namespace TestNamespace
 {
 	DYE_COMPONENT("TestA", TestNamespace::TestComponentA)
@@ -20,6 +21,16 @@ namespace TestNamespace
 
 		int intNotSerialized;
 	};
+
+	namespace Subnamespace
+	{
+		DYE_COMPONENT("SubTestA", TestNamespace::Subnamespace::SubtestComponentA)
+		struct SubtestComponentA
+		{
+			DYE_PROPERTY()
+			DYE::Int32 IntegerValue;
+		};
+	}
 }
 
 DYE_COMPONENT("TestB", TestComponentB)

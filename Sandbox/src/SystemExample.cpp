@@ -1,6 +1,7 @@
 #include "SystemExample.h"
 
 #include "World.h"
+#include "ImGui/ImGuiUtil.h"
 
 namespace SystemNamespace
 {
@@ -12,11 +13,11 @@ namespace SystemNamespace
 
 void DerivedSystemA::Execute(DYE::DYEntity::World &world, DYE::DYEditor::ExecuteParameters params)
 {
-	frameCounter++;
+	m_ExecutionCount++;
 }
 
 void DerivedSystemA::DrawInspector(DYE::DYEntity::World &world)
 {
-	SystemBase::DrawInspector(world);
+	DYE::ImGuiUtil::DrawIntControl("Execution Count", m_ExecutionCount);
 }
 

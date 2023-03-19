@@ -1,4 +1,6 @@
 #include "PropertyCodeGeneration.h"
+#include "ComponentCodeGeneration.h"
+#include "SystemCodeGeneration.h"
 
 #include <iostream>
 #include <fstream>
@@ -54,22 +56,14 @@ R"(	}
 }
 )";
 
-struct ComponentDescriptor
-{
-	std::string LocatedHeaderFile;
-	std::string CustomName;
-	std::string Type;
-	std::vector<PropertyDescriptor> Properties;
-};
-
 struct ParseResult
 {
 	bool HasDYEditorKeyword = false;
 	std::vector<ComponentDescriptor> ComponentDescriptors;
+	std::vector<SystemDescriptor> SystemDescriptors;
 };
 
 ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::filesystem::path const& relativeFilePath);
-std::string createComponentTypeRegistrationCallSource(ComponentDescriptor const& descriptor);
 
 int main(int argc, char* argv[])
 {
@@ -97,6 +91,7 @@ int main(int argc, char* argv[])
 	// Parse files.
 	std::vector<std::string> headerFilesToInclude; headerFilesToInclude.reserve(numberOfHeaderFiles);
 	std::vector<ComponentDescriptor> componentDescriptors;
+	std::vector<SystemDescriptor> systemDescriptors;
 
 	for (int headerFileIndex = 2; headerFileIndex < argc; ++headerFileIndex)
 	{
@@ -120,6 +115,7 @@ int main(int argc, char* argv[])
 
 		headerFilesToInclude.emplace_back(argv[headerFileIndex]);
 		componentDescriptors.insert(componentDescriptors.end(), result.ComponentDescriptors.begin(), result.ComponentDescriptors.end());
+		systemDescriptors.insert(systemDescriptors.end(), result.SystemDescriptors.begin(), result.SystemDescriptors.end());
 	}
 
 	// Generate user type register code based on the parsed result.
@@ -143,11 +139,22 @@ int main(int argc, char* argv[])
 	{
 		std::printf("\tname = %s, type = %s, numberOfProperties = %zu\n",
 					componentDescriptor.CustomName.c_str(),
-					componentDescriptor.Type.c_str(),
+					componentDescriptor.FullType.c_str(),
 					componentDescriptor.Properties.size());
 
 		// Insert component type registration calls.
-		generatedSourceCodeStream << createComponentTypeRegistrationCallSource(componentDescriptor);
+		generatedSourceCodeStream << ComponentDescriptorToTypeRegistrationCallSource(componentDescriptor);
+	}
+
+	std::printf("Registered systems: \n");
+	for (auto const& systemDescriptor : systemDescriptors)
+	{
+		std::printf("\tname = %s, type = %s\n",
+					systemDescriptor.CustomName.c_str(),
+					systemDescriptor.FullType.c_str());
+
+		// Insert component type registration calls.
+		generatedSourceCodeStream << SystemDescriptorToTypeRegistrationCallSource(systemDescriptor);
 	}
 
 	generatedSourceCodeStream << TypeRegisterBodyEnd;
@@ -181,8 +188,12 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 	file.open(absoluteFilePath, std::ios::in);
 
 	std::regex const constKeywordPattern(R"(\bconst\b)");
+	std::regex const typeWithNamespacesPattern(R"(^((?:\w+::)*)(\w+)$)");
 	std::regex const dyeComponentKeywordPattern(
-		"^\\s*DYE_COMPONENT\\(\"([a-zA-Z]+[a-zA-Z0-9_]*?)\",\\s*([a-zA-Z0-9_]+(::[a-zA-Z0-9_]+)*)\\)\\s*$"
+		R"lit(^\s*DYE_COMPONENT\(\s*"([a-zA-Z][\w\s]*?)",\s*([a-zA-Z0-9_]+[::[a-zA-Z0-9_]+]*)\)\s*$)lit"
+	);
+	std::regex const dyeSystemKeywordPattern(
+		R"lit(^\s*DYE_SYSTEM\(\s*"([a-zA-Z][\w\s]*?)",\s*([a-zA-Z0-9_]+[::[a-zA-Z0-9_]+]*)\)\s*$)lit"
 	);
 	std::regex const dyePropertyKeywordPattern(
 		R"(^\s*DYE_PROPERTY\(\)\s*$)"
@@ -194,10 +205,10 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 
 	std::string line;
 	bool isInComponentScope = false;
-	bool isInSystemScope = false;
 	bool nextLineShouldBeVariableDeclaration = false;
 
 	ComponentDescriptor currentComponentScopeDescriptor;
+	SystemDescriptor currentSystemScopeDescriptor;
 
 	// Parse the file line by line.
 	int lineCount = 0;
@@ -229,14 +240,14 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 				if (!isConst)
 				{
 					std::printf("\t\tDYE_PROPERTY '%s::%s' of type '%s' is registered.\n",
-								currentComponentScopeDescriptor.Type.c_str(), variableName.c_str(),
+								currentComponentScopeDescriptor.FullType.c_str(), variableName.c_str(),
 								typeSpecifier.c_str());
 				}
 				else
 				{
 					std::printf("\t\tDYE_PROPERTY at line %d is ignored because the followed variable declaration ('%s::%s' of type '%s') is a constant.\n",
 								lineCount - 1,
-								currentComponentScopeDescriptor.Type.c_str(), variableName.c_str(), typeSpecifier.c_str());
+								currentComponentScopeDescriptor.FullType.c_str(), variableName.c_str(), typeSpecifier.c_str());
 				}
 
 				continue;
@@ -259,11 +270,6 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 				result.ComponentDescriptors.emplace_back(currentComponentScopeDescriptor);
 				isInComponentScope = false;
 			}
-			else if (isInSystemScope)
-			{
-				// TODO: flush DYE_SYSTEM into the result.
-				isInSystemScope = false;
-			}
 
 			std::string const& componentName = match[1].str();
 			std::string const& componentType = match[2].str();
@@ -271,7 +277,7 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 			currentComponentScopeDescriptor = ComponentDescriptor{
 				.LocatedHeaderFile = relativeFilePath.string(),
 				.CustomName = componentName,
-				.Type = componentType
+				.FullType = componentType
 			};
 
 			isInComponentScope = true;
@@ -279,11 +285,37 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 			continue;
 		}
 
-		// TODO: parse DYE_SYSTEM
-
-		if (isInComponentScope || isInSystemScope)
+		// DYE_SYSTEM
+		bool const isDYESystemKeyword = std::regex_match(line, match, dyeSystemKeywordPattern);
+		if (isDYESystemKeyword)
 		{
-			// We are inside a DYEComponent/System body, search for DYE_PROPERTY keyword.
+			result.HasDYEditorKeyword |= true;
+
+			if (isInComponentScope)
+			{
+				// We were in another DYE_COMPONENT body, flush the descriptor into the result.
+				result.ComponentDescriptors.emplace_back(currentComponentScopeDescriptor);
+				isInComponentScope = false;
+			}
+
+			std::string const& systemName = match[1].str();
+			std::string const& systemType = match[2].str();
+
+			currentSystemScopeDescriptor = SystemDescriptor{
+				.LocatedHeaderFile = relativeFilePath.string(),
+				.CustomName = systemName,
+				.FullType = systemType
+			};
+
+			result.SystemDescriptors.emplace_back(currentSystemScopeDescriptor);
+
+			continue;
+		}
+
+
+		if (isInComponentScope)
+		{
+			// We are inside a DYEComponent body, search for DYE_PROPERTY keyword.
 			bool const isDYEPropertyKeyword = std::regex_match(line, match, dyePropertyKeywordPattern);
 			if (!isDYEPropertyKeyword)
 			{
@@ -300,55 +332,6 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 		result.ComponentDescriptors.emplace_back(currentComponentScopeDescriptor);
 		isInComponentScope = false;
 	}
-	else if (isInSystemScope)
-	{
-		// TODO: flush DYE_SYSTEM into the result.
-		isInSystemScope = false;
-	}
-
-	return result;
-}
-
-char const *UserTypeRegistrationCallSourceStart =
-R"(		TypeRegistry::RegisterComponentType<${COMPONENT_TYPE}>
-			(
-				"${COMPONENT_NAME}",
-				ComponentTypeFunctionCollection
-					{
-						.DrawInspector = [](Entity &entity)
-						{
-							bool changed = false;
-							ImGui::TextWrapped("${COMPONENT_TYPE}");
-)";
-
-char const* UserTypeRegistrationCallSourceEnd =
-R"(							return changed;
-						}
-					}
-			);
-
-)";
-
-std::string createComponentTypeRegistrationCallSource(ComponentDescriptor const& descriptor)
-{
-	auto const& componentName = descriptor.CustomName;
-	auto const& componentType = descriptor.Type;
-
-	std::string result = "\t\t// Component located in " + descriptor.LocatedHeaderFile + "\n";
-	result.append(UserTypeRegistrationCallSourceStart);
-
-	for (auto const& propertyDescriptor : descriptor.Properties)
-	{
-		result.append(PropertyDescriptorToImGuiUtilControlCallSource(descriptor.Type, propertyDescriptor));
-	}
-
-	result.append(UserTypeRegistrationCallSourceEnd);
-
-	std::regex const componentNameKeywordPattern(R"(\$\{COMPONENT_NAME\})");
-	std::regex const componentTypeKeywordPattern(R"(\$\{COMPONENT_TYPE\})");
-
-	result = std::regex_replace(result, componentNameKeywordPattern, componentName);
-	result = std::regex_replace(result, componentTypeKeywordPattern, componentType);
 
 	return result;
 }

@@ -5,7 +5,7 @@ project(DYEditorCodeGenerator)
 set(SOURCE_FILES
         src/main.cpp)
 set(HEADER_FILES
-        include/PropertyCodeGeneration.h)
+        include/PropertyCodeGeneration.h include/ComponentCodeGeneration.h include/SystemCodeGeneration.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")

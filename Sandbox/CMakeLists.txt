@@ -22,7 +22,7 @@ message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 add_executable(Sandbox ${SOURCE_FILES} ${HEADER_FILES} ${GENERATED_FILES})
 
 include(../DYEditor/cmake/Modules/CodeGenerationCommand.cmake)
-GenerateDYEditorRTTICode(${CMAKE_CURRENT_SOURCE_DIR} ${HEADER_FILES})
+ForceGenerateDYEditorRTTICode(${CMAKE_CURRENT_SOURCE_DIR} ${HEADER_FILES})
 
 target_include_directories(Sandbox PRIVATE include)
 target_include_directories(Sandbox PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})

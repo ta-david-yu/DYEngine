@@ -9,7 +9,7 @@ struct DerivedSystemA final : public DYE::DYEditor::SystemBase
 	void DrawInspector(DYE::DYEntity::World &world) final;
 
 private:
-	int frameCounter = 0;
+	int m_ExecutionCount = 0;
 };
 
 namespace SystemNamespace

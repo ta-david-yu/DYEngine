@@ -3,7 +3,6 @@
 #include <fmt/core.h>
 
 #include <string>
-#include <sstream>
 
 struct PropertyDescriptor
 {

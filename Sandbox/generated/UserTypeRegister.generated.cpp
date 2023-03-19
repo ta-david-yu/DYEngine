@@ -13,6 +13,7 @@
 // Insert user headers here...
 #include "include/TestComponents.h"
 #include "include/AnotherTestComponents.h"
+#include "include/SystemExample.h"
 
 namespace DYE::DYEditor
 {
@@ -33,6 +34,22 @@ namespace DYE::DYEditor
 							changed |= ImGuiUtil::DrawFloatControl("FloatValue", entity.GetComponent<TestNamespace::TestComponentA>().FloatValue);
 							changed |= ImGuiUtil::DrawIntControl("IntegerValue", entity.GetComponent<TestNamespace::TestComponentA>().IntegerValue);
 							ImGui::BeginDisabled(true); ImGuiUtil::DrawReadOnlyTextWithLabel("intCannotBeSerialized", "Variable of unsupported type 'int'"); ImGui::EndDisabled();
+							return changed;
+						}
+					}
+			);
+
+		// Component located in include/TestComponents.h
+		TypeRegistry::RegisterComponentType<TestNamespace::Subnamespace::SubtestComponentA>
+			(
+				"SubTestA",
+				ComponentTypeFunctionCollection
+					{
+						.DrawInspector = [](Entity &entity)
+						{
+							bool changed = false;
+							ImGui::TextWrapped("TestNamespace::Subnamespace::SubtestComponentA");
+							changed |= ImGuiUtil::DrawIntControl("IntegerValue", entity.GetComponent<TestNamespace::Subnamespace::SubtestComponentA>().IntegerValue);
 							return changed;
 						}
 					}
@@ -75,6 +92,14 @@ namespace DYE::DYEditor
 						}
 					}
 			);
+
+		// System located in include/SystemExample.h
+		static DerivedSystemA _DerivedSystemA;
+		TypeRegistry::RegisterSystem("Derived System A", &_DerivedSystemA);
+
+		// System located in include/SystemExample.h
+		static SystemNamespace::DerivedSystemB _DerivedSystemB;
+		TypeRegistry::RegisterSystem("Derived System B", &_DerivedSystemB);
 
 	}
 
