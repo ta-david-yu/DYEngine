@@ -10,6 +10,12 @@ namespace DYE::DYEditor
 		s_ComponentTypeRegistry.clear();
 	}
 
+	void TypeRegistry::ClearRegisteredSystems()
+	{
+		s_SystemRegistry.clear();
+	}
+
+
 	std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> TypeRegistry::GetComponentTypesNamesAndFunctionCollections()
 	{
 		std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> types;
@@ -19,38 +25,6 @@ namespace DYE::DYEditor
 			types.emplace_back(pair);
 		}
 		return types;
-	}
-
-	std::vector<std::string> TypeRegistry::GetComponentTypeNames()
-	{
-		std::vector<std::string> names;
-		names.reserve(s_ComponentTypeRegistry.size());
-		for (auto const& pair : s_ComponentTypeRegistry)
-		{
-			names.push_back(pair.first);
-		}
-		return names;
-	}
-
-	std::vector<ComponentTypeFunctionCollection> TypeRegistry::GetComponentTypeFunctionCollections()
-	{
-		std::vector<ComponentTypeFunctionCollection> functions;
-		functions.reserve(s_ComponentTypeRegistry.size());
-		for (auto const& pair : s_ComponentTypeRegistry)
-		{
-			functions.push_back(pair.second);
-		}
-		return functions;
-	}
-
-	std::optional<ComponentTypeFunctionCollection> TypeRegistry::TryGetComponentTypeFunctionsFromName(const std::string &componentName)
-	{
-		if (s_ComponentTypeRegistry.contains(componentName))
-		{
-			return s_ComponentTypeRegistry.at(componentName);
-		}
-
-		return {};
 	}
 
 	void TypeRegistry::RegisterSystem(const std::string &systemName, SystemBase *systemInstance)

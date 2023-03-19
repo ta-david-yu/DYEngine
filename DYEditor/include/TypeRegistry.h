@@ -66,17 +66,11 @@ namespace DYE::DYEditor
 		}
 
 		static void ClearRegisteredComponentTypes();
+		static void ClearRegisteredSystems();
 
 		/// Retrieves an array of pairs containing information about registered components.
 		/// The function is expensive, the user should cache the result instead of calling the function regularly.
 		static std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> GetComponentTypesNamesAndFunctionCollections();
-
-		/// The function is expensive, the user should cache the result instead of calling the function regularly.
-		static std::vector<std::string> GetComponentTypeNames();
-
-		/// The function is expensive, the user should cache the result instead of calling the function regularly.
-		static std::vector<ComponentTypeFunctionCollection> GetComponentTypeFunctionCollections();
-		static std::optional<ComponentTypeFunctionCollection> TryGetComponentTypeFunctionsFromName(std::string const& componentName);
 
 		static void RegisterSystem(std::string const& systemName, SystemBase* systemInstance);
 

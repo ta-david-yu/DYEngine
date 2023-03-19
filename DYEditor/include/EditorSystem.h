@@ -25,6 +25,24 @@ namespace DYE::DYEditor
 		ImGui
 	};
 
+	static std::string ExecutionPhaseToString(ExecutionPhase phase)
+	{
+		switch (phase)
+		{
+			case ExecutionPhase::Initialize:
+				return "Initialize";
+			case ExecutionPhase::Update:
+				return "Update";
+			case ExecutionPhase::FixedUpdate:
+				return "FixedUpdate";
+			case ExecutionPhase::Render:
+				return "Render";
+			case ExecutionPhase::ImGui:
+				return "ImGui";
+		}
+		return "Invalid Phase";
+	}
+
 	struct ExecuteParameters
 	{
 		ExecutionPhase Phase = ExecutionPhase::Update;

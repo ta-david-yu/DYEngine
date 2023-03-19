@@ -16,61 +16,14 @@ namespace DYE::DYEditor
 	{
 	}
 
-	struct SystemA final : public SystemBase
-	{
-		void Execute(DYE::DYEntity::World &world, DYE::DYEditor::ExecuteParameters params) final
-		{
-			DYE_MSG_BOX(SDL_MESSAGEBOX_INFORMATION, "ExecuteTestFunction", "SystemA Executed!");
-		}
-
-		void DrawInspector(DYE::DYEntity::World &world) final
-		{
-			ImGuiUtil::DrawReadOnlyTextWithLabel("Name", "SystemA");
-		}
-	};
-
-	struct SystemB final : public SystemBase
-	{
-		void Execute(DYE::DYEntity::World &world, DYE::DYEditor::ExecuteParameters params) final
-		{
-			DYE_MSG_BOX(SDL_MESSAGEBOX_INFORMATION, "ExecuteTestFunction", "SystemB Executed!");
-		}
-	};
-
-	struct SystemC final : public SystemBase
-	{
-		void Execute(DYE::DYEntity::World &world, DYE::DYEditor::ExecuteParameters params) final
-		{
-			DYE_MSG_BOX(SDL_MESSAGEBOX_INFORMATION, "ExecuteTestFunction", "SystemC Executed!");
-		}
-	};
-
-	void testSystemFunction(World& world)
-	{
-		DYE_MSG_BOX(SDL_MESSAGEBOX_INFORMATION, "ExecuteTestFunction", "Executed!");
-	}
-
-	void testSystemFunction2(World& world)
-	{
-		DYE_MSG_BOX(SDL_MESSAGEBOX_INFORMATION, "ExecuteTestFunction 2", "Executed!");
-	}
-
 	void EntityLevelEditorLayer::OnAttach()
 	{
-		static SystemA systemA;
-		static SystemB systemB;
-		static SystemC systemC;
-
 		// DEBUGGING, Should be moved to EntityLevelEditorApplication
 		DYEditor::RegisterBuiltInTypes();
 		DYEditor::RegisterUserTypes();
 
 		// DEBUGGING
 		m_Entity = m_World.CreateEntity();
-
-		TypeRegistry::RegisterSystem("System A", &systemA);
-		TypeRegistry::RegisterSystem("System B", &systemB);
-		TypeRegistry::RegisterSystem("System C", &systemC);
 
 		m_ComponentTypeAndFunctions = TypeRegistry::GetComponentTypesNamesAndFunctionCollections();
 		for (auto& [name, functions] : m_ComponentTypeAndFunctions)
@@ -82,6 +35,7 @@ namespace DYE::DYEditor
 	void EntityLevelEditorLayer::OnDetach()
 	{
 		TypeRegistry::ClearRegisteredComponentTypes();
+		TypeRegistry::ClearRegisteredSystems();
 	}
 
 	void EntityLevelEditorLayer::OnImGui()
@@ -218,8 +172,6 @@ namespace DYE::DYEditor
 	{
 		static auto systemNamesAndInstances = TypeRegistry::GetSystemNamesAndInstances();
 
-		ImGui::SeparatorText("Init");
-		ImGui::SeparatorText("Update");
 		for (auto& [name, systemBasePtr] : systemNamesAndInstances)
 		{
 			ImGui::PushID(name.c_str());
@@ -227,6 +179,7 @@ namespace DYE::DYEditor
 
 			if (show)
 			{
+				ImGui::TextWrapped(ExecutionPhaseToString(systemBasePtr->GetPhase()).c_str());
 				if (ImGui::Button("Execute System Function"))
 				{
 					systemBasePtr->Execute(world, { .Phase = ExecutionPhase::Initialize });
@@ -235,8 +188,5 @@ namespace DYE::DYEditor
 			}
 			ImGui::PopID();
 		}
-		ImGui::SeparatorText("FixedUpdate");
-		ImGui::SeparatorText("ImGui");
-		ImGui::SeparatorText("Render");
 	}
 }
