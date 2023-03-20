@@ -25,6 +25,7 @@ message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")
 
 # ===========================================================================================
 # External library
+add_subdirectory(extern/tomlplusplus)
 
 # ===========================================================================================
 # Build library
@@ -35,11 +36,13 @@ add_library(DYEditor STATIC ${SOURCE_FILES} ${HEADER_FILES})
 target_include_directories(DYEditor PUBLIC include)
 target_include_directories(DYEditor PUBLIC ../DYEngine/include)
 target_include_directories(DYEditor PUBLIC ../DYEntity/include)
+target_include_directories(DYEditor PRIVATE extern/tomlplusplus/tomlplusplus/include)
 
 # ===========================================================================================
 # Link external libraries
 target_link_libraries(DYEditor PUBLIC DYEngine)
 target_link_libraries(DYEditor PUBLIC DYEntity)
+target_link_libraries(DYEditor PRIVATE tomlplusplus::tomlplusplus)
 
 # ===========================================================================================
 if(DYEDITOR_BUILD_CODE_GENERATOR)

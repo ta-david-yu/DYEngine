@@ -135,8 +135,6 @@ add_subdirectory(extern/glad)
 add_subdirectory(extern/imgui)
 add_subdirectory(extern/glm)
 add_subdirectory(extern/stb)
-option(YAML_CPP_BUILD_TOOLS "Enable parse tools" OFF) # Disable building yaml-cpp util tools
-add_subdirectory(extern/yaml-cpp)
 #add_subdirectory(extern/rttr)
 
 # ===========================================================================================
@@ -171,7 +169,6 @@ target_link_libraries(DYEngine glad)
 target_link_libraries(DYEngine imgui)
 target_link_libraries(DYEngine glm)
 target_link_libraries(DYEngine stb)
-target_link_libraries(DYEngine yaml-cpp)
 #target_link_libraries(DYEngine RTTR::Core_Lib)
 
 # ===========================================================================================

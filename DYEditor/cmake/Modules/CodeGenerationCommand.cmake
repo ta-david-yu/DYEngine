@@ -38,14 +38,14 @@ function(ForceGenerateDYEditorRTTICode SOURCE_DIR HEADER_FILES)
             COMMAND DYEditorCodeGenerator
             ${SOURCE_DIR}           # The source directory to read headers from & to put the generated code in
             ${HEADER_FILES}         # The list of relative path to headers to be parsed for code generation
-            DEPENDS AlwaysRebuild   # The command depends on a dummy target so it is executed every build
+            DEPENDS AlwaysRebuildCodeGenerator   # The command depends on a dummy target so it is executed every build
             COMMENT "[${PROJECT_NAME}] Force Run DYEditor Code Generator"
     )
 
     # Dummy output which is never actually produced. Anything that depends on
     # this will always be rebuilt.
     add_custom_command(
-            OUTPUT AlwaysRebuild
+            OUTPUT AlwaysRebuildCodeGenerator
             COMMAND cmake -E echo
     )
 endfunction()
