@@ -35,3 +35,10 @@ if(CMAKE_BUILD_TYPE MATCHES Release)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive")
     target_link_libraries(Sandbox -static-libgcc)
 endif ()
+
+# Copy assets to the output directory
+set(TEXT_ASSETS
+        assets/Scenes/TestScene.tscene)
+
+include(../cmake/Modules/CopyAssets.cmake)
+CopyTextAssets(${TEXT_ASSETS})

@@ -123,19 +123,16 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Mo
 
 # External library
 # Define SDL2_PATH here that will be used by FindSDL2 module
+#TODO: Link to different binaries based on compiler, right now there is only mingw version.
+#TODO: for instance if (MINGW) set(SDL2_PATH "extern/SDL2/mingw")
 set(SDL2_PATH "extern/SDL2")
 find_package(SDL2 REQUIRED)
-
-# Define RTTR_DIR here that will be used in FindRTTR module
-#set(RTTR_DIR "extern/rttr/rttr")
-#find_package(RTTR CONFIG REQUIRED Core)
 
 # Build external static library
 add_subdirectory(extern/glad)
 add_subdirectory(extern/imgui)
 add_subdirectory(extern/glm)
 add_subdirectory(extern/stb)
-#add_subdirectory(extern/rttr)
 
 # ===========================================================================================
 # Build library
@@ -157,7 +154,6 @@ target_include_directories(DYEngine PRIVATE extern/imgui/imgui/backends)
 target_include_directories(DYEngine PUBLIC extern/glm)
 target_include_directories(DYEngine PUBLIC extern/stb/include)
 target_include_directories(DYEngine PUBLIC extern/yaml-cpp/include)
-#target_include_directories(DYEngine PUBLIC extern/rttr/rttr/src)
 
 # ===========================================================================================
 # Link external libraries
@@ -169,7 +165,6 @@ target_link_libraries(DYEngine glad)
 target_link_libraries(DYEngine imgui)
 target_link_libraries(DYEngine glm)
 target_link_libraries(DYEngine stb)
-#target_link_libraries(DYEngine RTTR::Core_Lib)
 
 # ===========================================================================================
 # Copy SDL2.dll to the output directory post-build

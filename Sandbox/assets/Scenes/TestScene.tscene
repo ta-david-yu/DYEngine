@@ -1,0 +1,63 @@
+Name = "Sandbox"
+Version = 2
+
+[[Systems]]
+Type = "LoadSpriteTextureSystem"
+
+[[Systems]]
+Type = "MovementSystem"
+
+[[Systems]]
+Type = "SpriteRenderingSystem"
+
+[[Entities]]
+ID = 0
+NumberOfComponents = 3 # We probably don't need this
+
+	[[Entities.Components]]
+	Type = "Name"
+	Name = "Entity 0"
+
+	[[Entities.Components]]
+	Type = "Transform"
+	Position = { x = 0, y = 0, z = 0 }
+	Scale = { x = 1, y = 1, z = 1 }
+	Rotation = { x = 0, y = 0, z = 0, w = 0 }
+
+	[[Entities.Components]]
+	Type = "TestFloat"
+	FloatValue = 0.5
+
+[[Entities]]
+ID = 1
+DerivedFromPrefab = false
+NumberOfComponents = 2 # We probably don't need this
+
+	[[Entities.Components]]
+	Type = "Name"
+	Name = "Entity 1"
+
+	[[Entities.Components]]
+	Type = "Transform"
+	Position = { x = 0, y = 0, z = 0 }
+	Scale = { x = 1, y = 1, z = 1 }
+	Rotation = { x = 0, y = 0, z = 0, w = 0 }
+
+	[[Entities.Components]]
+	Type = "Sprite"
+	Texture = { Path = "assets://Textures/Character.png" } # To be determined / changed
+	Color = { r = 1, g = 1, b = 1, a = 1 }
+
+[[Entities]]
+ID = 2
+DerivedFromPrefab = true
+Prefab = { Path = "assets://Prefabs/Rock.tprefab" }
+
+	# Instance Overrides
+	[[Entities.Components]]
+	Type = "Name"
+	Name = "Entity 2"
+
+	[[Entities.Components]]
+	Type = "Transform"
+	Scale = { x = 1, y = 2, z = 1 }

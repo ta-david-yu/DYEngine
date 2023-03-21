@@ -2,7 +2,6 @@
 
 #include "Entity.h"
 #include "DefaultComponentFunctions.h"
-#include "EditorSystem.h"
 
 #include <string>
 #include <vector>

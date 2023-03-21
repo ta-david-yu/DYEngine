@@ -1,4 +1,4 @@
-#include "EntityLevelEditorLayer.h"
+#include "EntitySceneEditorLayer.h"
 
 #include "BuiltInTypeRegister.h"
 #include "UserTypeRegister.h"
@@ -6,19 +6,37 @@
 
 #include "ImGui/ImGuiUtil.h"
 
+#include "SerializedObject.h"
+
 #include <imgui.h>
+#include <iostream>
 
 using namespace DYE::DYEntity;
 
 namespace DYE::DYEditor
 {
-	EntityLevelEditorLayer::EntityLevelEditorLayer() : LayerBase("Editor")
+	EntitySceneEditorLayer::EntitySceneEditorLayer() : LayerBase("Editor")
 	{
+		std::optional<SerializedScene> serializedScene = SerializedObjectFactory::GetSerializedSceneFromFile("assets\\Scenes\\TestScene.tscene");
+		if (serializedScene)
+		{
+			auto serializedEntities = serializedScene->GetSerializedEntityHandles();
+			for (auto& entityHandle : serializedEntities)
+			{
+				auto serializedComponents = entityHandle.GetSerializedComponentHandles();
+				DYE_LOG("Number Of Components: %d\n", serializedComponents.size());
+
+				for (auto& componentHandle : serializedComponents)
+				{
+					DYE_LOG("Component Type: %s\n", componentHandle.GetTypeName()->c_str());
+				}
+			}
+		}
 	}
 
-	void EntityLevelEditorLayer::OnAttach()
+	void EntitySceneEditorLayer::OnAttach()
 	{
-		// DEBUGGING, Should be moved to EntityLevelEditorApplication
+		// DEBUGGING, Should be moved to EntityLevelEditorApplication so that both EntityLevelEditorLayer & EntityLevelRuntimeLayer could use it
 		DYEditor::RegisterBuiltInTypes();
 		DYEditor::RegisterUserTypes();
 
@@ -32,13 +50,13 @@ namespace DYE::DYEditor
 		}
 	}
 
-	void EntityLevelEditorLayer::OnDetach()
+	void EntitySceneEditorLayer::OnDetach()
 	{
 		TypeRegistry::ClearRegisteredComponentTypes();
 		TypeRegistry::ClearRegisteredSystems();
 	}
 
-	void EntityLevelEditorLayer::OnImGui()
+	void EntitySceneEditorLayer::OnImGui()
 	{
 		ImGui::ShowDemoWindow();
 
@@ -60,7 +78,7 @@ namespace DYE::DYEditor
 		ImGui::End();
 	}
 
-	bool EntityLevelEditorLayer::drawEntityInspector(DYEntity::Entity &entity,
+	bool EntitySceneEditorLayer::drawEntityInspector(DYEntity::Entity &entity,
 													 std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> componentNamesAndFunctions)
 	{
 		bool changed = false;
@@ -168,7 +186,7 @@ namespace DYE::DYEditor
 		return changed;
 	}
 
-	void EntityLevelEditorLayer::drawRegisteredSystems(DYEntity::World &world)
+	void EntitySceneEditorLayer::drawRegisteredSystems(DYEntity::World &world)
 	{
 		static auto systemNamesAndInstances = TypeRegistry::GetSystemNamesAndInstances();
 

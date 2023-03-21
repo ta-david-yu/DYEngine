@@ -1,5 +1,6 @@
 #include "TypeRegistry.h"
 
+#include "EditorSystem.h"
 #include "Util/Logger.h"
 #include "ImGui/ImGuiUtil.h"
 
@@ -14,7 +15,6 @@ namespace DYE::DYEditor
 	{
 		s_SystemRegistry.clear();
 	}
-
 
 	std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> TypeRegistry::GetComponentTypesNamesAndFunctionCollections()
 	{

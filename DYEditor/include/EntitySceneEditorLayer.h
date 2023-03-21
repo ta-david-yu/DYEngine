@@ -9,11 +9,11 @@
 
 namespace DYE::DYEditor
 {
-	class EntityLevelEditorLayer : public LayerBase
+	class EntitySceneEditorLayer : public LayerBase
 	{
 	public:
-		EntityLevelEditorLayer();
-		~EntityLevelEditorLayer() override = default;
+		EntitySceneEditorLayer();
+		~EntitySceneEditorLayer() override = default;
 
 		void OnAttach() override;
 		void OnDetach() override;

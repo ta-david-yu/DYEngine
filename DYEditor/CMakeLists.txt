@@ -5,20 +5,18 @@ option(DYEDITOR_BUILD_CODE_GENERATOR "Enable building DYEditor code generator to
 # ===========================================================================================
 # Sources / Headers
 set(SOURCE_FILES
-        src/EntityLevelEditorLayer.cpp
-        src/EntityLevelRuntimeLayer.cpp
-        src/EntityLevelFile.cpp
+        src/EntitySceneEditorLayer.cpp
+        src/EntitySceneRuntimeLayer.cpp
         src/TypeRegistry.cpp
         src/BuiltInTypeRegister.cpp
         src/UserTypeRegister.cpp src/EditorSystem.cpp src/EditorImGuiUtil.cpp)
 set(HEADER_FILES
-        include/EntityLevelEditorLayer.h
-        include/EntityLevelRuntimeLayer.h
-        include/EntityLevelFile.h
+        include/EntitySceneEditorLayer.h
+        include/EntitySceneRuntimeLayer.h
         include/TypeRegistry.h
         include/EditorCore.h
         include/BuiltInTypeRegister.h
-        include/UserTypeRegister.h include/DefaultComponentFunctions.h include/EditorComponent.h include/EditorSystem.h include/EditorProperty.h include/ImGui/EditorImGuiUtil.h)
+        include/UserTypeRegister.h include/DefaultComponentFunctions.h include/EditorComponent.h include/EditorSystem.h include/EditorProperty.h include/ImGui/EditorImGuiUtil.h include/SerializedObject.h src/SerializedObject.cpp)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")

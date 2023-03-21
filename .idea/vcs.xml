@@ -3,10 +3,9 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/DYEditor/DYEditorCodeGenerator/extern/fmt" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/DYEditor/extern/tomlplusplus/tomlplusplus" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/DYEngine/extern/glm" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/DYEngine/extern/imgui/imgui" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/DYEngine/extern/rttr/rttr" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/DYEngine/extern/tomplusplus/tomlplusplus" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/DYEntity/extern/entt" vcs="Git" />
   </component>
 </project>
