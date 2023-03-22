@@ -1,5 +1,7 @@
 #pragma once
 
+#include "EditorCore.h"
+
 #include <string>
 #include <optional>
 

@@ -11,50 +11,24 @@ using namespace DYE::DYEntity;
 
 namespace DYE::DYEditor
 {
-	void RegisterBuiltInTypes()
-	{
-		DYE_LOG("<< Register Built-in Types to DYEditor::TypeRegistry >>");
-		TypeRegistry::RegisterComponentType<NameComponent>
-			(
-				"Name",
-				ComponentTypeFunctionCollection
-					{
-						.Add = AddNameComponent,
-
-						.Serialize = SerializeNameComponent,
-						.Deserialize = DeserializeNameComponent,
-						.DrawInspector = DrawInspectorOfNameComponent,
-					}
-			);
-
-		TypeRegistry::RegisterComponentType<TransformComponent>
-			(
-				"Transform",
-				ComponentTypeFunctionCollection
-					{
-						.Serialize = nullptr,
-						.Deserialize = nullptr,
-						.DrawInspector = DrawInspectorOfTransformComponent
-					}
-			);
-	}
-
-	namespace
+	namespace BuiltInFunctions
 	{
 		void AddNameComponent(Entity &entity)
 		{
 			entity.AddComponent<NameComponent>("New Entity");
 		}
 
-		void SerializeNameComponent(DYE::DYEntity::Entity& entity, SerializedEntity& serializedEntity)
+		SerializationResult SerializeNameComponent(DYE::DYEntity::Entity& entity, SerializedEntity& serializedEntity)
 		{
 			// We don't do any error handling here (i.e. check if entity has NameComponent) because
 			// the function will only be called when the entity has NameComponent for sure.
 			SerializedComponentHandle serializedComponent = serializedEntity.TryAddComponentOfType("Name");
 			serializedComponent.SetPrimitiveTypePropertyValue("Name", entity.GetComponent<NameComponent>().Name);
+
+			return {};
 		}
 
-		void DeserializeNameComponent(SerializedComponentHandle& serializedComponent, DYE::DYEntity::Entity& entity)
+		DeserializationResult DeserializeNameComponent(SerializedComponentHandle& serializedComponent, DYE::DYEntity::Entity& entity)
 		{
 			auto tryGetNameResult = serializedComponent.TryGetPrimitiveTypePropertyValue<std::string>("Name");
 			if (!tryGetNameResult.has_value())
@@ -70,6 +44,8 @@ namespace DYE::DYEditor
 			{
 				entity.AddComponent<NameComponent>(tryGetNameResult.value());
 			}
+
+			return {};
 		}
 
 		bool DrawInspectorOfNameComponent(Entity &entity)
@@ -81,6 +57,38 @@ namespace DYE::DYEditor
 			changed |= ImGuiUtil::DrawTextControl("Name", nameComponent.Name);
 
 			return changed;
+		}
+
+		SerializationResult SerializeTransformComponent(DYE::DYEntity::Entity& entity, SerializedEntity& serializedEntity)
+		{
+			SerializedComponentHandle serializedComponent = serializedEntity.TryAddComponentOfType("Transform");
+
+			auto const& transformComponent = entity.GetComponent<TransformComponent>();
+			serializedComponent.SetPrimitiveTypePropertyValue("Position", transformComponent.Position);
+			serializedComponent.SetPrimitiveTypePropertyValue("Scale", transformComponent.Scale);
+			serializedComponent.SetPrimitiveTypePropertyValue("Rotation", transformComponent.Rotation);
+
+			return {};
+		}
+
+		DeserializationResult DeserializeTransformComponent(SerializedComponentHandle& serializedComponent, DYE::DYEntity::Entity& entity)
+		{
+			if (entity.HasComponent<NameComponent>())
+			{
+				auto& transformComponent = entity.GetComponent<TransformComponent>();
+				transformComponent.Position = serializedComponent.TryGetPrimitiveTypePropertyValue<DYE::Vector3>("Position").value();
+				transformComponent.Scale = serializedComponent.TryGetPrimitiveTypePropertyValue<DYE::Vector3>("Scale").value();
+				transformComponent.Rotation = serializedComponent.TryGetPrimitiveTypePropertyValue<DYE::Quaternion>("Rotation").value();
+			}
+			else
+			{
+				auto& transformComponent = entity.AddComponent<TransformComponent>();
+				transformComponent.Position = serializedComponent.TryGetPrimitiveTypePropertyValue<DYE::Vector3>("Position").value();
+				transformComponent.Scale = serializedComponent.TryGetPrimitiveTypePropertyValue<DYE::Vector3>("Scale").value();
+				transformComponent.Rotation = serializedComponent.TryGetPrimitiveTypePropertyValue<DYE::Quaternion>("Rotation").value();
+			}
+
+			return {};
 		}
 
 		bool DrawInspectorOfTransformComponent(Entity &entity)
@@ -105,5 +113,33 @@ namespace DYE::DYEditor
 
 			return changed;
 		}
+	}
+
+	void RegisterBuiltInTypes()
+	{
+		DYE_LOG("<< Register Built-in Types to DYEditor::TypeRegistry >>");
+		TypeRegistry::RegisterComponentType<NameComponent>
+			(
+				"Name",
+				ComponentTypeFunctionCollection
+					{
+						.Add = BuiltInFunctions::AddNameComponent,
+
+						.Serialize = BuiltInFunctions::SerializeNameComponent,
+						.Deserialize = BuiltInFunctions::DeserializeNameComponent,
+						.DrawInspector = BuiltInFunctions::DrawInspectorOfNameComponent,
+					}
+			);
+
+		TypeRegistry::RegisterComponentType<TransformComponent>
+			(
+				"Transform",
+				ComponentTypeFunctionCollection
+					{
+						.Serialize = BuiltInFunctions::SerializeTransformComponent,
+						.Deserialize = BuiltInFunctions::DeserializeTransformComponent,
+						.DrawInspector = BuiltInFunctions::DrawInspectorOfTransformComponent
+					}
+			);
 	}
 }

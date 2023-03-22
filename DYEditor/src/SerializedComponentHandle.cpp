@@ -21,4 +21,99 @@ namespace DYE::DYEditor
 	SerializedComponentHandle::SerializedComponentHandle(toml::table *pComponentTable) : m_pComponentTable(pComponentTable)
 	{
 	}
+
+	//
+
+	template<>
+	std::optional<DYE::Vector2> SerializedComponentHandle::TryGetPrimitiveTypePropertyValue(std::string_view const& propertyName) const
+	{
+		toml::node* pPropertyNode = m_pComponentTable->get(propertyName);
+		if (pPropertyNode == nullptr)
+		{
+			return {};
+		}
+
+		toml::table* pPropertyTable = pPropertyNode->as_table();
+		auto x = pPropertyTable->get("x")->value_or<float>(0);
+		auto y = pPropertyTable->get("y")->value_or<float>(0);
+		return DYE::Vector2 { x, y };
+	}
+
+	template<>
+	std::optional<DYE::Vector3> SerializedComponentHandle::TryGetPrimitiveTypePropertyValue(std::string_view const& propertyName) const
+	{
+		toml::node* pPropertyNode = m_pComponentTable->get(propertyName);
+		if (pPropertyNode == nullptr)
+		{
+			return {};
+		}
+
+		toml::table* pPropertyTable = pPropertyNode->as_table();
+		auto x = pPropertyTable->get("x")->value_or<float>(0);
+		auto y = pPropertyTable->get("y")->value_or<float>(0);
+		auto z = pPropertyTable->get("z")->value_or<float>(0);
+		return DYE::Vector3 { x, y, z };
+	}
+
+	template<>
+	std::optional<DYE::Vector4> SerializedComponentHandle::TryGetPrimitiveTypePropertyValue(std::string_view const& propertyName) const
+	{
+		toml::node* pPropertyNode = m_pComponentTable->get(propertyName);
+		if (pPropertyNode == nullptr)
+		{
+			return {};
+		}
+
+		toml::table* pPropertyTable = pPropertyNode->as_table();
+		auto x = pPropertyTable->get("x")->value_or<float>(0);
+		auto y = pPropertyTable->get("y")->value_or<float>(0);
+		auto z = pPropertyTable->get("z")->value_or<float>(0);
+		auto w = pPropertyTable->get("w")->value_or<float>(0);
+		return DYE::Vector4 { x, y, z, w };
+	}
+
+	template<>
+	std::optional<DYE::Quaternion> SerializedComponentHandle::TryGetPrimitiveTypePropertyValue(std::string_view const& propertyName) const
+	{
+		toml::node* pPropertyNode = m_pComponentTable->get(propertyName);
+		if (pPropertyNode == nullptr)
+		{
+			return {};
+		}
+
+		toml::table* pPropertyTable = pPropertyNode->as_table();
+		auto x = pPropertyTable->get("x")->value_or<float>(0);
+		auto y = pPropertyTable->get("y")->value_or<float>(0);
+		auto z = pPropertyTable->get("z")->value_or<float>(0);
+		auto w = pPropertyTable->get("w")->value_or<float>(0);
+#ifdef GLM_FORCE_QUAT_DATA_XYZW
+		return DYE::Quaternion { x, y, z, w };
+#else
+		return DYE::Quaternion { w, x, y, z };
+#endif
+	}
+
+	template<>
+	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<DYE::Vector2>(std::string const& propertyName, DYE::Vector2 const& value)
+	{
+		m_pComponentTable->insert_or_assign(propertyName, toml::table { {"x", value.x}, {"y", value.y} });
+	}
+
+	template<>
+	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<DYE::Vector3>(std::string const& propertyName, DYE::Vector3 const& value)
+	{
+		m_pComponentTable->insert_or_assign(propertyName, toml::table { {"x", value.x}, {"y", value.y}, {"z", value.z} });
+	}
+
+	template<>
+	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<DYE::Vector4>(std::string const& propertyName, DYE::Vector4 const& value)
+	{
+		m_pComponentTable->insert_or_assign(propertyName, toml::table { {"x", value.x}, {"y", value.y}, {"z", value.z}, {"w", value.w} });
+	}
+
+	template<>
+	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<DYE::Quaternion>(std::string const& propertyName, DYE::Quaternion const& value)
+	{
+		m_pComponentTable->insert_or_assign(propertyName, toml::table { {"x", value.x}, {"y", value.y}, {"z", value.z}, {"w", value.w} });
+	}
 }

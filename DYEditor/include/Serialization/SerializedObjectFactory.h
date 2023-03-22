@@ -19,11 +19,13 @@ namespace DYE::DYEditor
 		static std::optional<SerializedScene> GetSerializedSceneFromFile(std::filesystem::path const& path);
 		static std::optional<SerializedEntity> GetSerializedEntityFromFile(std::filesystem::path const& path);
 
-		static SerializedEntity CreateSerializedEntity(DYE::DYEntity::Entity const& entity);
+		static SerializedEntity CreateSerializedEntity(DYE::DYEntity::Entity& entity);
 		// TODO:
 		// 		static SerializedScene CreateSerializedScene(layer? world?)
 
 		static SerializedEntity CreateEmptySerializedEntity();
 		static SerializedScene CreateEmptySerializedScene();
+
+		static void SaveSerializedEntityToFile(SerializedEntity& serializedEntity, std::filesystem::path const& path);
 	};
 }

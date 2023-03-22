@@ -17,6 +17,7 @@ namespace DYE::DYEditor
 {
 	EntitySceneEditorLayer::EntitySceneEditorLayer() : LayerBase("Editor")
 	{
+		/*
 		std::optional<SerializedScene> serializedScene = SerializedObjectFactory::GetSerializedSceneFromFile("assets\\Scenes\\TestScene.tscene");
 		if (serializedScene)
 		{
@@ -38,7 +39,7 @@ namespace DYE::DYEditor
 					DYE_LOG("\tComponent Type: %s\n", componentHandle.TryGetTypeName()->c_str());
 				}
 			}
-		}
+		}*/
 	}
 
 	void EntitySceneEditorLayer::OnAttach()
@@ -106,6 +107,12 @@ namespace DYE::DYEditor
 			ImGui::TextUnformatted("Add a new component to this entity.");
 			ImGui::PopTextWrapPos();
 			ImGui::EndTooltip();
+		}
+
+		if (ImGui::Button("Save To TestPrefab.tprefab"))
+		{
+			auto serializedEntity = SerializedObjectFactory::CreateSerializedEntity(entity);
+			SerializedObjectFactory::SaveSerializedEntityToFile(serializedEntity, "assets\\Scenes\\TestPrefab.tprefab");
 		}
 
 		if (ImGui::BeginPopup(addComponentPopupId))

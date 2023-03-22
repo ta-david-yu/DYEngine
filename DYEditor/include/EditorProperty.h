@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <glm/glm.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #define DYE_PROPERTY()
 
@@ -23,11 +24,12 @@ namespace DYE
 	using Uint64 	= std::uint64_t;
 	using Float 	= float;
 	using Double 	= double;
-	using Vector2 	= glm::vec3;
+	using Vector2 	= glm::vec2;
 	using Vector3 	= glm::vec3;
 	using Vector4 	= glm::vec4;
 	using Color4 	= glm::vec4;
 	using String 	= std::string;
+	using Quaternion = glm::quat;
 
 	// TODO: need to figure out a way to handle enum type
 	//		 maybe we can let user provide a specialized template function that
