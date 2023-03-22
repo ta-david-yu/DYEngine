@@ -18,11 +18,10 @@ namespace DYE::DYEditor
 			entity.AddComponent<NameComponent>("New Entity");
 		}
 
-		SerializationResult SerializeNameComponent(DYE::DYEntity::Entity& entity, SerializedEntity& serializedEntity)
+		SerializationResult SerializeNameComponent(DYE::DYEntity::Entity& entity, SerializedComponentHandle& serializedComponent)
 		{
 			// We don't do any error handling here (i.e. check if entity has NameComponent) because
 			// the function will only be called when the entity has NameComponent for sure.
-			SerializedComponentHandle serializedComponent = serializedEntity.TryAddComponentOfType("Name");
 			serializedComponent.SetPrimitiveTypePropertyValue("Name", entity.GetComponent<NameComponent>().Name);
 
 			return {};
@@ -59,10 +58,8 @@ namespace DYE::DYEditor
 			return changed;
 		}
 
-		SerializationResult SerializeTransformComponent(DYE::DYEntity::Entity& entity, SerializedEntity& serializedEntity)
+		SerializationResult SerializeTransformComponent(DYE::DYEntity::Entity& entity, SerializedComponentHandle& serializedComponent)
 		{
-			SerializedComponentHandle serializedComponent = serializedEntity.TryAddComponentOfType("Transform");
-
 			auto const& transformComponent = entity.GetComponent<TransformComponent>();
 			serializedComponent.SetPrimitiveTypePropertyValue("Position", transformComponent.Position);
 			serializedComponent.SetPrimitiveTypePropertyValue("Scale", transformComponent.Scale);

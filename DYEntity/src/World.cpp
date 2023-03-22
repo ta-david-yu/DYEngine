@@ -14,12 +14,12 @@ namespace DYE::DYEntity
 
 	Entity World::CreateEntity()
 	{
-		return Entity(*this);
+		return Entity(*this, m_Registry.create());
 	}
 
 	Entity World::CreateEntity(std::string const& name)
 	{
-		auto entity = Entity(*this);
+		auto entity = Entity(*this, m_Registry.create());
 		entity.AddComponent<NameComponent>(name);
 
 		return entity;

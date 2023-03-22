@@ -12,7 +12,7 @@ set(SOURCE_FILES
         src/UserTypeRegister.cpp
         src/EditorSystem.cpp
         src/EditorImGuiUtil.cpp
-        src/SerializedObjectFactory.cpp src/SerializedComponentHandle.cpp src/SerializedEntity.cpp src/SerializedScene.cpp src/SerializedSystemHandle.cpp)
+        src/SerializedObjectFactory.cpp src/SerializedComponentHandle.cpp src/SerializedEntity.cpp src/SerializedScene.cpp src/SerializedSystemHandle.cpp src/Scene.cpp)
 set(HEADER_FILES
         include/EntitySceneEditorLayer.h
         include/EntitySceneRuntimeLayer.h
@@ -28,7 +28,7 @@ set(HEADER_FILES
         include/Serialization/SerializedObjectFactory.h
         include/Serialization/SerializedEntity.h
         include/Serialization/SerializedComponentHandle.h
-        include/Serialization/SerializedScene.h include/Serialization/SerializedSystemHandle.h)
+        include/Serialization/SerializedScene.h include/Serialization/SerializedSystemHandle.h include/Scene.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")
@@ -46,7 +46,7 @@ add_library(DYEditor STATIC ${SOURCE_FILES} ${HEADER_FILES})
 target_include_directories(DYEditor PUBLIC include)
 target_include_directories(DYEditor PUBLIC ../DYEngine/include)
 target_include_directories(DYEditor PUBLIC ../DYEntity/include)
-target_include_directories(DYEditor PRIVATE extern/tomlplusplus/tomlplusplus/include)
+target_include_directories(DYEditor PUBLIC extern/tomlplusplus/tomlplusplus/include)
 
 # ===========================================================================================
 # Link external libraries

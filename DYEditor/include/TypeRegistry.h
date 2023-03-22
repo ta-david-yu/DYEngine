@@ -29,7 +29,7 @@ namespace DYE::DYEditor
 	using AddComponentFunction = void (DYE::DYEntity::Entity& entity);
 	using RemoveComponentFunction = void (DYE::DYEntity::Entity& entity);
 	/// Serialize a component on an entity to a serialized entity.
-	using SerializeComponentFunction = SerializationResult (DYE::DYEntity::Entity& entity, SerializedEntity& serializedEntity);
+	using SerializeComponentFunction = SerializationResult (DYE::DYEntity::Entity& entity, SerializedComponentHandle& serializedComponent);
 	/// Deserialize a serialized component (handle) and add it to an entity.
 	using DeserializeComponentFunction = DeserializationResult (SerializedComponentHandle& serializedComponent, DYE::DYEntity::Entity& entity);
 	/// \return true if the content of the inspector is changed/dirty.
@@ -97,5 +97,8 @@ namespace DYE::DYEditor
 		// TODO: maybe we could use array or vector instead?
 		inline static std::map<std::string, ComponentTypeFunctionCollection> s_ComponentTypeRegistry;
 		inline static std::map<std::string, SystemBase*> s_SystemRegistry;
+
+		static std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> s_ComponentNamesAndFunctionCollectionsCache;
+		static std::vector<std::pair<std::string, SystemBase*>> s_SystemNamesAndPointersCache;
 	};
 }

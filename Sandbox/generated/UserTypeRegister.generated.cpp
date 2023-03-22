@@ -8,6 +8,7 @@
 #include "UserTypeRegister.h"
 
 #include "TypeRegistry.h"
+#include "Serialization/SerializedObjectFactory.h"
 #include "ImGui/ImGuiUtil.h"
 
 // Insert user headers here...
@@ -29,6 +30,16 @@ namespace DYE::DYEditor
 				"TestA",
 				ComponentTypeFunctionCollection
 					{
+						.Serialize = [](Entity& entity, SerializedEntity& serializedEntity)
+						{
+							SerializedComponentHandle serializedComponent = serializedEntity.TryAddComponentOfType("TestA");
+
+							auto const& component = entity.GetComponent<TestNamespace::TestComponentA>();
+							serializedComponent.SetPrimitiveTypePropertyValue("FloatValue", component.FloatValue);
+							serializedComponent.SetPrimitiveTypePropertyValue("IntegerValue", component.IntegerValue);
+
+							return SerializationResult {};
+						},
 						.DrawInspector = [](Entity &entity)
 						{
 							bool changed = false;

@@ -6,6 +6,9 @@
 
 namespace DYE::DYEditor
 {
+	std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> TypeRegistry::s_ComponentNamesAndFunctionCollectionsCache = {};
+	std::vector<std::pair<std::string, SystemBase*>> TypeRegistry::s_SystemNamesAndPointersCache = {};
+
 	void TypeRegistry::ClearRegisteredComponentTypes()
 	{
 		s_ComponentTypeRegistry.clear();
@@ -18,13 +21,20 @@ namespace DYE::DYEditor
 
 	std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> TypeRegistry::GetComponentTypesNamesAndFunctionCollections()
 	{
-		std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> types;
-		types.reserve(s_ComponentTypeRegistry.size());
+		auto registrySize = s_ComponentTypeRegistry.size();
+		bool const cacheNeededRefresh = s_ComponentNamesAndFunctionCollectionsCache.size() != registrySize;
+		if (!cacheNeededRefresh)
+		{
+			return s_ComponentNamesAndFunctionCollectionsCache;
+		}
+
+		s_ComponentNamesAndFunctionCollectionsCache.clear();
+		s_ComponentNamesAndFunctionCollectionsCache.reserve(registrySize);
 		for (auto const& pair : s_ComponentTypeRegistry)
 		{
-			types.emplace_back(pair);
+			s_ComponentNamesAndFunctionCollectionsCache.emplace_back(pair);
 		}
-		return types;
+		return s_ComponentNamesAndFunctionCollectionsCache;
 	}
 
 	void TypeRegistry::RegisterSystem(const std::string &systemName, SystemBase *systemInstance)
@@ -41,13 +51,20 @@ namespace DYE::DYEditor
 
 	std::vector<std::pair<std::string, SystemBase*>> TypeRegistry::GetSystemNamesAndInstances()
 	{
-		std::vector<std::pair<std::string, SystemBase*>> systems;
-		systems.reserve(s_SystemRegistry.size());
+		auto registrySize = s_SystemRegistry.size();
+		bool const cacheNeededRefresh = s_SystemNamesAndPointersCache.size() != registrySize;
+		if (!cacheNeededRefresh)
+		{
+			return s_SystemNamesAndPointersCache;
+		}
+
+		s_SystemNamesAndPointersCache.clear();
+		s_SystemNamesAndPointersCache.reserve(registrySize);
 		for (auto const& pair : s_SystemRegistry)
 		{
-			systems.emplace_back(pair);
+			s_SystemNamesAndPointersCache.emplace_back(pair);
 		}
-		return systems;
+		return s_SystemNamesAndPointersCache;
 	}
 
 	void TypeRegistry::registerComponentType(std::string const &componentName, ComponentTypeFunctionCollection functions)

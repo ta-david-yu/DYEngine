@@ -6,6 +6,8 @@
 
 namespace DYE::DYEditor
 {
+	constexpr const char* SystemTypeNameKey = "Type";
+
 	struct SerializedSystemHandle
 	{
 		friend class SerializedScene;

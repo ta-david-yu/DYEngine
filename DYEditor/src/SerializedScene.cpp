@@ -5,6 +5,22 @@ namespace DYE::DYEditor
 	constexpr const char* ArrayOfEntityTablesKey = "Entities";
 	constexpr const char* ArrayOfSystemTablesKey = "Systems";
 
+	std::optional<std::string> SerializedScene::GetName() const
+	{
+		auto pNameNode = m_SceneTable.get("Name");
+		if (pNameNode == nullptr)
+		{
+			return {};
+		}
+
+		return pNameNode->value<std::string>();
+	}
+
+	void SerializedScene::SetName(const std::string &name)
+	{
+		m_SceneTable.insert_or_assign("Name", name);
+	}
+
 	std::vector<SerializedSystemHandle> SerializedScene::GetSerializedSystemHandles()
 	{
 		toml::node* pArrayOfSystemTables = m_SceneTable.get(ArrayOfSystemTablesKey);
@@ -59,20 +75,64 @@ namespace DYE::DYEditor
 	{
 	}
 
-	std::optional<std::string> SerializedScene::GetName() const
+	SerializedEntity SerializedScene::CreateAndAddSerializedEntity()
 	{
-		auto pNameNode = m_SceneTable.get("Name");
-		if (pNameNode == nullptr)
+		toml::array* pArrayOfEntityTables = m_SceneTable.get_as<toml::array>(ArrayOfEntityTablesKey);
+
+		if (pArrayOfEntityTables == nullptr)
 		{
-			return {};
+			// Emplace an entity array into the entity table if it doesn't exist yet.
+			auto [iterator, insertionResult] = m_SceneTable.emplace(ArrayOfEntityTablesKey, toml::array());
+			pArrayOfEntityTables = iterator->second.as_array();
 		}
 
-		return pNameNode->value<std::string>();
+		toml::table* pNewEntityTableHandle = &pArrayOfEntityTables->emplace_back(toml::table());
+
+		return SerializedEntity(pNewEntityTableHandle);
 	}
 
-	void SerializedScene::SetName(const std::string &name)
+	SerializedSystemHandle SerializedScene::TryAddSystemOfType(const std::string &typeName)
 	{
-		m_SceneTable.insert_or_assign("Name", name);
-	}
+		toml::array* pArrayOfSystemTables = m_SceneTable.get_as<toml::array>(ArrayOfSystemTablesKey);
 
+		bool needToCreateNewSystem = false;
+		toml::table* pSystemTable = nullptr;
+		if (pArrayOfSystemTables == nullptr)
+		{
+			// Emplace a system array into the entity table if it doesn't exist yet.
+			auto [iterator, insertionResult] = m_SceneTable.emplace(ArrayOfSystemTablesKey, toml::array());
+			pArrayOfSystemTables = iterator->second.as_array();
+			needToCreateNewSystem = true;
+		}
+		else
+		{
+			// The array was created already, try to find the system of the given type in the array.
+			auto systemNodeOfTypeItr =
+				std::find_if(pArrayOfSystemTables->begin(), pArrayOfSystemTables->end(),
+							 [typeName] (toml::node& systemNode)
+							 {
+								 toml::node* systemTypeNameNode = systemNode.as_table()->get(SystemTypeNameKey);
+								 return systemTypeNameNode != nullptr && systemTypeNameNode->value<std::string>() == typeName;
+							 });
+
+			bool const hasSystem = systemNodeOfTypeItr != pArrayOfSystemTables->end();
+			if (hasSystem)
+			{
+				// Found the existing component, use it directly.
+				pSystemTable = systemNodeOfTypeItr->as_table();
+			}
+			else
+			{
+				needToCreateNewSystem = true;
+			}
+		}
+
+		if (needToCreateNewSystem)
+		{
+			// Create a new system (table) with the given type name.
+			pSystemTable = &pArrayOfSystemTables->emplace_back(toml::table {{SystemTypeNameKey, typeName}});
+		}
+
+		return SerializedSystemHandle(pSystemTable);
+	}
 }

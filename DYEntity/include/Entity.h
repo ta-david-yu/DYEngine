@@ -15,12 +15,11 @@ namespace DYE::DYEntity
 	/// The wrapper Entity class should be trivially-copyable.
 	class Entity
 	{
+		// We need this so World could call the private ctor.
+		friend class World;
 	public:
 		/// Create a null entity.
 		Entity() = default;
-
-		/// Create an entity with the given World.
-		explicit Entity(World& world);
 		Entity(Entity const& other) = default;
 
 		bool IsValid() const;
@@ -72,7 +71,12 @@ namespace DYE::DYEntity
 			return m_World->m_Registry.all_of<T>(m_EntityHandle);
 		}
 
+		void RemoveAllComponents();
+
 	private:
+		/// Create an Entity with the given World & the internal handle.
+		explicit Entity(World& world, EntityHandle handle);
+
 		World* m_World = nullptr;
 		EntityHandle m_EntityHandle = entt::null;
 	};

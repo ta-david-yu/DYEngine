@@ -2,8 +2,6 @@
 
 namespace DYE::DYEditor
 {
-	constexpr const char* SystemTypeNameKey = "Type";
-
 	std::optional<std::string> SerializedSystemHandle::GetTypeName() const
 	{
 		auto pTypeNode = m_pSystemTable->get(SystemTypeNameKey);

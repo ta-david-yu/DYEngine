@@ -101,9 +101,7 @@ namespace DYE::DYEditor
 		if (needToCreateNewComponent)
 		{
 			// Create a new component (table) with the given type name.
-			toml::table &newComponentTable =
-				pArrayOfComponentTables->emplace_back(toml::table {{ComponentTypeNameKey, typeName}});
-			pComponentTable = &newComponentTable;
+			pComponentTable = &pArrayOfComponentTables->emplace_back(toml::table {{ComponentTypeNameKey, typeName}});
 		}
 
 		return SerializedComponentHandle(pComponentTable);

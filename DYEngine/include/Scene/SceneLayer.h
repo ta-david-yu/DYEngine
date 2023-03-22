@@ -21,6 +21,7 @@ namespace DYE
     class SceneLayer : public LayerBase
     {
     public:
+		[[deprecated("SceneLayer & old GameObject Scene system has been abandoned. Use DYEntity instead if you want an object model.")]]
         explicit SceneLayer(WindowBase* pWindow);
         SceneLayer() = delete;
         ~SceneLayer() override;
