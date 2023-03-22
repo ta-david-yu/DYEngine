@@ -6,7 +6,7 @@
 
 #include "ImGui/ImGuiUtil.h"
 
-#include "Serialization/SerializedObject.h"
+#include "Serialization/SerializedObjectFactory.h"
 
 #include <imgui.h>
 #include <iostream>
@@ -35,7 +35,7 @@ namespace DYE::DYEditor
 
 				for (auto& componentHandle : serializedComponents)
 				{
-					DYE_LOG("\tComponent Type: %s\n", componentHandle.GetTypeName()->c_str());
+					DYE_LOG("\tComponent Type: %s\n", componentHandle.TryGetTypeName()->c_str());
 				}
 			}
 		}

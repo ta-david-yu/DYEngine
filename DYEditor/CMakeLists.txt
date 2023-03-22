@@ -9,14 +9,26 @@ set(SOURCE_FILES
         src/EntitySceneRuntimeLayer.cpp
         src/TypeRegistry.cpp
         src/BuiltInTypeRegister.cpp
-        src/UserTypeRegister.cpp src/EditorSystem.cpp src/EditorImGuiUtil.cpp)
+        src/UserTypeRegister.cpp
+        src/EditorSystem.cpp
+        src/EditorImGuiUtil.cpp
+        src/SerializedObjectFactory.cpp src/SerializedComponentHandle.cpp src/SerializedEntity.cpp src/SerializedScene.cpp src/SerializedSystemHandle.cpp)
 set(HEADER_FILES
         include/EntitySceneEditorLayer.h
         include/EntitySceneRuntimeLayer.h
         include/TypeRegistry.h
         include/EditorCore.h
         include/BuiltInTypeRegister.h
-        include/UserTypeRegister.h include/DefaultComponentFunctions.h include/EditorComponent.h include/EditorSystem.h include/EditorProperty.h include/ImGui/EditorImGuiUtil.h include/Serialization/SerializedObject.h src/SerializedObject.cpp include/Serialization/SerializedEntity.h include/Serialization/SerializedComponentHandle.h include/Serialization/SerializedScene.h)
+        include/UserTypeRegister.h
+        include/DefaultComponentFunctions.h
+        include/EditorComponent.h
+        include/EditorSystem.h
+        include/EditorProperty.h
+        include/ImGui/EditorImGuiUtil.h
+        include/Serialization/SerializedObjectFactory.h
+        include/Serialization/SerializedEntity.h
+        include/Serialization/SerializedComponentHandle.h
+        include/Serialization/SerializedScene.h include/Serialization/SerializedSystemHandle.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")

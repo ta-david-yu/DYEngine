@@ -1,7 +1,7 @@
 #include "BuiltInTypeRegister.h"
 
 #include "TypeRegistry.h"
-#include "Serialization/SerializedObject.h"
+#include "Serialization/SerializedObjectFactory.h"
 #include "ImGui/ImGuiUtil.h"
 
 // All the built-in component types are in here.
@@ -46,6 +46,32 @@ namespace DYE::DYEditor
 			entity.AddComponent<NameComponent>("New Entity");
 		}
 
+		void SerializeNameComponent(DYE::DYEntity::Entity& entity, SerializedEntity& serializedEntity)
+		{
+			// We don't do any error handling here (i.e. check if entity has NameComponent) because
+			// the function will only be called when the entity has NameComponent for sure.
+			SerializedComponentHandle serializedComponent = serializedEntity.TryAddComponentOfType("Name");
+			serializedComponent.SetPrimitiveTypePropertyValue("Name", entity.GetComponent<NameComponent>().Name);
+		}
+
+		void DeserializeNameComponent(SerializedComponentHandle& serializedComponent, DYE::DYEntity::Entity& entity)
+		{
+			auto tryGetNameResult = serializedComponent.TryGetPrimitiveTypePropertyValue<std::string>("Name");
+			if (!tryGetNameResult.has_value())
+			{
+				tryGetNameResult.value() = "";
+			}
+
+			if (entity.HasComponent<NameComponent>())
+			{
+				entity.GetComponent<NameComponent>().Name = tryGetNameResult.value();
+			}
+			else
+			{
+				entity.AddComponent<NameComponent>(tryGetNameResult.value());
+			}
+		}
+
 		bool DrawInspectorOfNameComponent(Entity &entity)
 		{
 			auto &nameComponent = entity.GetComponent<NameComponent>();
@@ -55,19 +81,6 @@ namespace DYE::DYEditor
 			changed |= ImGuiUtil::DrawTextControl("Name", nameComponent.Name);
 
 			return changed;
-		}
-
-		void SerializeNameComponent(DYE::DYEntity::Entity& entity, SerializedEntity& serializedEntity)
-		{
-			// TODO: get Name value from serializedComponent and add/change entity.GetComponent<NameComponent>().Name
-			//		for now we assume the serializedEntity is empty
-			SerializedComponentHandle serializedComponent = serializedEntity.TryAddComponentOfType("Name");
-
-		}
-
-		void DeserializeNameComponent(SerializedComponentHandle& serializedComponent, DYE::DYEntity::Entity& entity)
-		{
-			// TODO: get Name value from serializedComponent and add/change entity.GetComponent<NameComponent>().Name
 		}
 
 		bool DrawInspectorOfTransformComponent(Entity &entity)

@@ -3,6 +3,8 @@
 #include "Util/Macro.h"
 #include "World.h"
 
+#include <optional>
+#include <functional>
 #include <entt/entt.hpp>
 
 namespace DYE::DYEntity
@@ -30,6 +32,16 @@ namespace DYE::DYEntity
 			return m_World->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
 		}
 
+		template<typename T, typename... Args>
+		T& AddOrGetComponent(Args&&...args)
+		{
+			if (this->HasComponent<T>())
+			{
+				return GetComponent<T>();
+			}
+			return m_World->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
+		}
+
 		/// \return the number of removed components. 0 if the entity doesn't own the given component.
 		template<typename T>
 		std::size_t RemoveComponent()
@@ -41,6 +53,16 @@ namespace DYE::DYEntity
 		T& GetComponent()
 		{
 			DYE_ASSERT(this->HasComponent<T>() && "Entity::GetComponent: Entity doesn't have component of the given type.");
+			return m_World->m_Registry.get<T>(m_EntityHandle);
+		}
+
+		template<typename T>
+		std::optional<std::reference_wrapper<T>> TryGetComponent()
+		{
+			if (!this->HasComponent<T>())
+			{
+				return {};
+			}
 			return m_World->m_Registry.get<T>(m_EntityHandle);
 		}
 
