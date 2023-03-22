@@ -22,8 +22,6 @@ namespace DYE::DYEditor
 	{
 	}
 
-	//
-
 	template<>
 	std::optional<DYE::Vector2> SerializedComponentHandle::TryGetPrimitiveTypePropertyValue(std::string_view const& propertyName) const
 	{
@@ -96,24 +94,32 @@ namespace DYE::DYEditor
 	template<>
 	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<DYE::Vector2>(std::string const& propertyName, DYE::Vector2 const& value)
 	{
-		m_pComponentTable->insert_or_assign(propertyName, toml::table { {"x", value.x}, {"y", value.y} });
+		toml::table table { {"x", value.x}, {"y", value.y} };
+		table.is_inline(true);
+		m_pComponentTable->insert_or_assign(propertyName, std::move(table));
 	}
 
 	template<>
 	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<DYE::Vector3>(std::string const& propertyName, DYE::Vector3 const& value)
 	{
-		m_pComponentTable->insert_or_assign(propertyName, toml::table { {"x", value.x}, {"y", value.y}, {"z", value.z} });
+		toml::table table { {"x", value.x}, {"y", value.y}, {"z", value.z} };
+		table.is_inline(true);
+		m_pComponentTable->insert_or_assign(propertyName, std::move(table));
 	}
 
 	template<>
 	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<DYE::Vector4>(std::string const& propertyName, DYE::Vector4 const& value)
 	{
-		m_pComponentTable->insert_or_assign(propertyName, toml::table { {"x", value.x}, {"y", value.y}, {"z", value.z}, {"w", value.w} });
+		toml::table table { {"x", value.x}, {"y", value.y}, {"z", value.z}, {"w", value.w} };
+		table.is_inline(true);
+		m_pComponentTable->insert_or_assign(propertyName, std::move(table));
 	}
 
 	template<>
 	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<DYE::Quaternion>(std::string const& propertyName, DYE::Quaternion const& value)
 	{
-		m_pComponentTable->insert_or_assign(propertyName, toml::table { {"x", value.x}, {"y", value.y}, {"z", value.z}, {"w", value.w} });
+		toml::table table { {"x", value.x}, {"y", value.y}, {"z", value.z}, {"w", value.w} };
+		table.is_inline(true);
+		m_pComponentTable->insert_or_assign(propertyName, std::move(table));
 	}
 }

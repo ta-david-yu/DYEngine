@@ -41,4 +41,21 @@ namespace DYE::DYEditor
 		explicit SerializedComponentHandle(toml::table* pComponentTable);
 		toml::table* m_pComponentTable = nullptr;
 	};
+
+	template<>
+	std::optional<DYE::Vector2> SerializedComponentHandle::TryGetPrimitiveTypePropertyValue(std::string_view const& propertyName) const;
+	template<>
+	std::optional<DYE::Vector3> SerializedComponentHandle::TryGetPrimitiveTypePropertyValue(std::string_view const& propertyName) const;
+	template<>
+	std::optional<DYE::Vector4> SerializedComponentHandle::TryGetPrimitiveTypePropertyValue(std::string_view const& propertyName) const;
+	template<>
+	std::optional<DYE::Quaternion> SerializedComponentHandle::TryGetPrimitiveTypePropertyValue(std::string_view const& propertyName) const;
+	template<>
+	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<DYE::Vector2>(std::string const& propertyName, DYE::Vector2 const& value);
+	template<>
+	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<DYE::Vector3>(std::string const& propertyName, DYE::Vector3 const& value);
+	template<>
+	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<DYE::Vector4>(std::string const& propertyName, DYE::Vector4 const& value);
+	template<>
+	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<DYE::Quaternion>(std::string const& propertyName, DYE::Quaternion const& value);
 }
