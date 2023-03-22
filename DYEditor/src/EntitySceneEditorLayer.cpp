@@ -6,7 +6,7 @@
 
 #include "ImGui/ImGuiUtil.h"
 
-#include "SerializedObject.h"
+#include "Serialization/SerializedObject.h"
 
 #include <imgui.h>
 #include <iostream>
@@ -20,6 +20,13 @@ namespace DYE::DYEditor
 		std::optional<SerializedScene> serializedScene = SerializedObjectFactory::GetSerializedSceneFromFile("assets\\Scenes\\TestScene.tscene");
 		if (serializedScene)
 		{
+			auto serializedSystems = serializedScene->GetSerializedSystemHandles();
+			DYE_LOG("Number Of Systems: %d\n", serializedSystems.size());
+			for (auto& systemHandle : serializedSystems)
+			{
+				DYE_LOG("\tSystem: %s\n", systemHandle.GetTypeName()->c_str());
+			}
+
 			auto serializedEntities = serializedScene->GetSerializedEntityHandles();
 			for (auto& entityHandle : serializedEntities)
 			{
@@ -28,7 +35,7 @@ namespace DYE::DYEditor
 
 				for (auto& componentHandle : serializedComponents)
 				{
-					DYE_LOG("Component Type: %s\n", componentHandle.GetTypeName()->c_str());
+					DYE_LOG("\tComponent Type: %s\n", componentHandle.GetTypeName()->c_str());
 				}
 			}
 		}

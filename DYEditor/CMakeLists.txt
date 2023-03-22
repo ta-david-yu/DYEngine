@@ -16,7 +16,7 @@ set(HEADER_FILES
         include/TypeRegistry.h
         include/EditorCore.h
         include/BuiltInTypeRegister.h
-        include/UserTypeRegister.h include/DefaultComponentFunctions.h include/EditorComponent.h include/EditorSystem.h include/EditorProperty.h include/ImGui/EditorImGuiUtil.h include/SerializedObject.h src/SerializedObject.cpp)
+        include/UserTypeRegister.h include/DefaultComponentFunctions.h include/EditorComponent.h include/EditorSystem.h include/EditorProperty.h include/ImGui/EditorImGuiUtil.h include/Serialization/SerializedObject.h src/SerializedObject.cpp include/Serialization/SerializedEntity.h include/Serialization/SerializedComponentHandle.h include/Serialization/SerializedScene.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")

@@ -8,6 +8,11 @@
 
 #include <toml++/toml.h>
 
+namespace DYE::DYEntity
+{
+	class Entity;
+}
+
 namespace DYE::DYEditor
 {
 	struct SerializedComponentHandle
@@ -28,6 +33,9 @@ namespace DYE::DYEditor
 		friend class SerializedScene;
 		SerializedSystemHandle() = delete;
 
+		std::optional<std::string> GetTypeName() const;
+		void SetTypeName(std::string const& typeName);
+
 	private:
 		explicit SerializedSystemHandle(toml::table* pSystemTable);
 		toml::table* m_pSystemTable = nullptr;
@@ -40,6 +48,10 @@ namespace DYE::DYEditor
 
 		inline bool IsHandle() const { return m_IsHandle; }
 		std::vector<SerializedComponentHandle> GetSerializedComponentHandles();
+		/// \return true if a component of the given type is removed.
+		bool TryRemoveComponentOfType(std::string const& typeName);
+		/// \return a SerializedComponentHandle of the newly added component OR the existing component of the given type.
+		SerializedComponentHandle TryAddComponentOfType(std::string const& typeName);
 
 	private:
 		SerializedEntity() = default;
@@ -76,6 +88,11 @@ namespace DYE::DYEditor
 	public:
 		static std::optional<SerializedScene> GetSerializedSceneFromFile(std::filesystem::path const& path);
 		static std::optional<SerializedEntity> GetSerializedEntityFromFile(std::filesystem::path const& path);
+
+		static SerializedEntity CreateSerializedEntity(DYE::DYEntity::Entity const& entity);
+		// TODO:
+		// 		static SerializedScene CreateSerializedScene(layer? world?)
+
 		static SerializedEntity CreateEmptySerializedEntity();
 		static SerializedScene CreateEmptySerializedScene();
 	};

@@ -11,16 +11,21 @@
 namespace DYE::DYEditor
 {
 	class Stream;
+	struct SerializedEntity;
+	struct SerializedComponentHandle;
 	class SystemBase;
 
 	using HasComponentFunction = bool (DYE::DYEntity::Entity& entity);
 	using AddComponentFunction = void (DYE::DYEntity::Entity& entity);
 	using RemoveComponentFunction = void (DYE::DYEntity::Entity& entity);
-	using SerializeComponentFunction = void (DYE::DYEntity::Entity& entity, Stream& streamToSerializeTo);
-	using DeserializeComponentFunction = void (Stream& streamToDeserializeFrom, DYE::DYEntity::Entity& entity);
+	/// Serialize a component on an entity to a serialized entity.
+	using SerializeComponentFunction = void (DYE::DYEntity::Entity& entity, SerializedEntity& serializedEntity);
+	/// Deserialize a serialized component (handle) and add it to an entity.
+	using DeserializeComponentFunction = void (SerializedComponentHandle& serializedComponent, DYE::DYEntity::Entity& entity);
 	/// \return true if the content of the inspector is changed/dirty.
 	using DrawComponentInspectorFunction = bool (DYE::DYEntity::Entity& entity);
 
+	/// One should always provide 'Serialize', 'Deserialize' and 'DrawInspector' functions.
 	struct ComponentTypeFunctionCollection
 	{
 		HasComponentFunction* Has = nullptr;
