@@ -17,29 +17,6 @@ namespace DYE::DYEditor
 {
 	EntitySceneEditorLayer::EntitySceneEditorLayer() : LayerBase("Editor")
 	{
-		/*
-		std::optional<SerializedScene> serializedScene = SerializedObjectFactory::GetSerializedSceneFromFile("assets\\Scenes\\TestScene.tscene");
-		if (serializedScene)
-		{
-			auto serializedSystems = serializedScene->GetSerializedSystemHandles();
-			DYE_LOG("Number Of Systems: %d\n", serializedSystems.size());
-			for (auto& systemHandle : serializedSystems)
-			{
-				DYE_LOG("\tSystem: %s\n", systemHandle.GetTypeName()->c_str());
-			}
-
-			auto serializedEntities = serializedScene->GetSerializedEntityHandles();
-			for (auto& entityHandle : serializedEntities)
-			{
-				auto serializedComponents = entityHandle.GetSerializedComponentHandles();
-				DYE_LOG("Number Of Components: %d\n", serializedComponents.size());
-
-				for (auto& componentHandle : serializedComponents)
-				{
-					DYE_LOG("\tComponent Type: %s\n", componentHandle.TryGetTypeName()->c_str());
-				}
-			}
-		}*/
 	}
 
 	void EntitySceneEditorLayer::OnAttach()
@@ -51,10 +28,37 @@ namespace DYE::DYEditor
 		// DEBUGGING
 		m_Entity = m_World.CreateEntity();
 
-		m_ComponentTypeAndFunctions = TypeRegistry::GetComponentTypesNamesAndFunctionCollections();
-		for (auto& [name, functions] : m_ComponentTypeAndFunctions)
+		auto componentNamesAndFunctions = TypeRegistry::GetComponentTypesNamesAndFunctionCollections();
+		for (auto& [name, functions] : componentNamesAndFunctions)
 		{
 			functions.Add(m_Entity);
+		}
+
+
+		// DEBUGGING
+		std::optional<SerializedScene> serializedScene = SerializedObjectFactory::TryLoadSerializedSceneFromFile("assets\\Scenes\\TestScene.tscene");
+		if (serializedScene.has_value())
+		{
+			auto serializedSystems = serializedScene->GetSerializedSystemHandles();
+			DYE_LOG("Number Of Systems: %d\n", serializedSystems.size());
+			for (auto &systemHandle: serializedSystems)
+			{
+				DYE_LOG("\tSystem: %s\n", systemHandle.TryGetTypeName()->c_str());
+			}
+
+			auto serializedEntities = serializedScene->GetSerializedEntityHandles();
+			for (auto &entityHandle: serializedEntities)
+			{
+				auto serializedComponents = entityHandle.GetSerializedComponentHandles();
+				DYE_LOG("Number Of Components: %d\n", serializedComponents.size());
+
+				for (auto &componentHandle: serializedComponents)
+				{
+					DYE_LOG("\tComponent Type: %s\n", componentHandle.TryGetTypeName()->c_str());
+				}
+			}
+
+			SerializedObjectFactory::ApplySerializedSceneToEmptyScene(serializedScene.value(), m_Scene);
 		}
 	}
 
@@ -72,23 +76,77 @@ namespace DYE::DYEditor
 		const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
 		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
-
-		if (ImGui::Begin("Component List"))
-		{
-			drawEntityInspector(m_Entity, m_ComponentTypeAndFunctions);
-		}
-		ImGui::End();
-
 		if (ImGui::Begin("Registered Systems"))
 		{
 			drawRegisteredSystems(m_World);
 		}
 		ImGui::End();
+
+		// Set a default size for the window in case it has never been opened before.
+		main_viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
+		if (ImGui::Begin("Scene Hierarchy"))
+		{
+			drawSceneHierarchy(m_Scene, &m_CurrentSelectedEntity);
+		}
+		ImGui::End();
+
+		// Set a default size for the window in case it has never been opened before.
+		main_viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
+		if (ImGui::Begin("Entity Inspector"))
+		{
+			drawEntityInspector(m_CurrentSelectedEntity, TypeRegistry::GetComponentTypesNamesAndFunctionCollections());
+		}
+		ImGui::End();
+	}
+
+	bool EntitySceneEditorLayer::drawSceneHierarchy(Scene &scene, Entity *pCurrentSelectedEntity)
+	{
+		scene.World.ForEachEntity
+		(
+			[&pCurrentSelectedEntity](DYEntity::Entity& entity)
+			{
+				auto tryGetNameResult = entity.TryGetName();
+				if (!tryGetNameResult.has_value())
+				{
+					// No name, skip it
+					return ;
+				}
+
+				auto& name = tryGetNameResult.value();
+
+				bool const isSelected = entity == *pCurrentSelectedEntity;
+
+				ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow;
+				if (isSelected) flags |= ImGuiTreeNodeFlags_Selected;
+
+				bool const isNodeOpen = ImGui::TreeNodeEx((void*)(std::uint64_t) entity.GetID(), flags, name.c_str());
+				if (ImGui::IsItemClicked())
+				{
+					*pCurrentSelectedEntity = entity;
+				}
+
+				if (isNodeOpen)
+				{
+					ImGui::TreePop();
+				}
+			}
+		);
+
+		return false;
 	}
 
 	bool EntitySceneEditorLayer::drawEntityInspector(DYEntity::Entity &entity,
 													 std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> componentNamesAndFunctions)
 	{
+		if (!entity.IsValid())
+		{
+			return false;
+		}
+
 		bool changed = false;
 
 		// Draw a 'Add Component' button at the top of the inspector, and align it to the right side of the window.

@@ -12,12 +12,12 @@ namespace DYE::DYEditor
 		friend class SerializedObjectFatory;
 
 	public:
+		Scene() = default;
+
+	public:
 		std::string Name;
 		// At runtime, we will use the names to reference the actual systems from TypeRegistry.
 		std::vector<std::string> SystemTypeNames;
 		DYEntity::World World;
-
-	private:
-		Scene() = default;
 	};
 }

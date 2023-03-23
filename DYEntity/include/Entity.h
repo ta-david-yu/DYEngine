@@ -12,6 +12,7 @@
 namespace DYE::DYEntity
 {
 	using EntityHandle = entt::entity;
+	using EntityID = std::uint32_t;
 
 	/// We want to have a light-weight wrapper around the underlying implementation.
 	/// The wrapper Entity class should be trivially-copyable.
@@ -24,6 +25,7 @@ namespace DYE::DYEntity
 		Entity() = default;
 		Entity(Entity const& other) = default;
 
+		EntityID GetID() const { return static_cast<EntityID>(m_EntityHandle); }
 		bool IsValid() const;
 
 		template<typename T, typename... Args>
@@ -57,6 +59,10 @@ namespace DYE::DYEntity
 			return m_World->m_Registry.get<T>(m_EntityHandle);
 		}
 
+		/// Syntactic sugar for TryGetComponent<NameComponent>().Name
+		/// \return
+		std::optional<std::string> TryGetName();
+
 		template<typename T>
 		std::optional<std::reference_wrapper<T>> TryGetComponent()
 		{
@@ -68,12 +74,22 @@ namespace DYE::DYEntity
 		}
 
 		template<typename T>
-		bool HasComponent()
+		bool HasComponent() const
 		{
 			return m_World->m_Registry.all_of<T>(m_EntityHandle);
 		}
 
 		void RemoveAllComponents();
+
+		bool operator==(Entity const& other) const
+		{
+			return m_EntityHandle == other.m_EntityHandle && m_World == other.m_World;
+		}
+
+		bool operator!=(Entity const& other) const
+		{
+			return !(*this == other);
+		}
 
 	private:
 		/// Create an Entity with the given World & the internal handle.

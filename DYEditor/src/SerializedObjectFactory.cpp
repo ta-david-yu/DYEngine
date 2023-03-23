@@ -100,7 +100,15 @@ namespace DYE::DYEditor
 				continue;
 			}
 
-			DeserializationResult const result = componentTypeFunctions.Deserialize(serializedComponentHandle, entity);
+			try
+			{
+				DeserializationResult const result = componentTypeFunctions.Deserialize(serializedComponentHandle, entity);
+			}
+			catch (std::exception& exception)
+			{
+				DYE_LOG_ERROR(exception.what());
+				DYE_ASSERT(false);
+			}
 		}
 	}
 

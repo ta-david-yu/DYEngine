@@ -3,6 +3,7 @@
 #include "Core/LayerBase.h"
 
 #include "TypeRegistry.h"
+#include "Scene.h"
 
 #include "World.h"
 #include "Entity.h"
@@ -22,10 +23,13 @@ namespace DYE::DYEditor
 	private:
 
 		// DEBUGGING
-		std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> m_ComponentTypeAndFunctions;
+		DYEditor::Scene m_Scene;
+		DYEntity::Entity m_CurrentSelectedEntity;
+
 		DYEntity::World m_World;
 		DYEntity::Entity m_Entity;
 
+		static bool drawSceneHierarchy(Scene &scene, DYEntity::Entity *pCurrentSelectedEntity);
 		static bool drawEntityInspector(DYEntity::Entity &entity, std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> componentNamesAndFunctions);
 		static void drawRegisteredSystems(DYEntity::World& world);
 	};

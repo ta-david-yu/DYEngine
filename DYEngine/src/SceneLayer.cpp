@@ -394,7 +394,7 @@ namespace DYE
 
                                     char updaterCompLabel[128];
                                     sprintf(updaterCompLabel, "[ID: %d] %s##%d", compEntity->GetID(),
-											compEntity->TryGetName().c_str(), selectedUpdaterIndex);
+											compEntity->GetName().c_str(), selectedUpdaterIndex);
 
                                     ImGui::PushStyleColor(ImGuiCol_Text, compPair.second->m_IsEnabled ? enabledTextColor : disabledTextColor);
                                     if (ImGui::Selectable(updaterCompLabel, selectedUpdaterComponentIndex == i))
@@ -421,7 +421,7 @@ namespace DYE
                                     auto entPtr = compPair.second->GetEntityPtr();
 
                                     char entityLabel[128];
-                                    sprintf(entityLabel, "[EntID: %d] %s", entPtr->GetID(), entPtr->TryGetName().c_str());
+                                    sprintf(entityLabel, "[EntID: %d] %s", entPtr->GetID(), entPtr->GetName().c_str());
 
                                     ImGui::Text("%s", entityLabel);
                                     if (ImGui::Button("goto entity"))

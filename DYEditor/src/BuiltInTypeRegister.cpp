@@ -70,20 +70,10 @@ namespace DYE::DYEditor
 
 		DeserializationResult DeserializeTransformComponent(SerializedComponentHandle& serializedComponent, DYE::DYEntity::Entity& entity)
 		{
-			if (entity.HasComponent<NameComponent>())
-			{
-				auto& transformComponent = entity.GetComponent<TransformComponent>();
-				transformComponent.Position = serializedComponent.TryGetPrimitiveTypePropertyValue<DYE::Vector3>("Position").value();
-				transformComponent.Scale = serializedComponent.TryGetPrimitiveTypePropertyValue<DYE::Vector3>("Scale").value();
-				transformComponent.Rotation = serializedComponent.TryGetPrimitiveTypePropertyValue<DYE::Quaternion>("Rotation").value();
-			}
-			else
-			{
-				auto& transformComponent = entity.AddComponent<TransformComponent>();
-				transformComponent.Position = serializedComponent.TryGetPrimitiveTypePropertyValue<DYE::Vector3>("Position").value();
-				transformComponent.Scale = serializedComponent.TryGetPrimitiveTypePropertyValue<DYE::Vector3>("Scale").value();
-				transformComponent.Rotation = serializedComponent.TryGetPrimitiveTypePropertyValue<DYE::Quaternion>("Rotation").value();
-			}
+			auto& transformComponent = entity.AddOrGetComponent<TransformComponent>();
+			transformComponent.Position = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Vector3>("Position");
+			transformComponent.Scale = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Vector3>("Scale");
+			transformComponent.Rotation = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Quaternion>("Rotation");
 
 			return {};
 		}
