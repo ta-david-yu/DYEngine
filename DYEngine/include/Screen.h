@@ -24,6 +24,6 @@ namespace DYE
 		static Screen& GetInstance();
 
 		std::uint32_t GetNumberOfDisplays() const;
-		std::optional<DisplayMode> GetDisplayMode(int displayIndex) const;
+		std::optional<DisplayMode> TryGetDisplayMode(int displayIndex) const;
 	};
 }

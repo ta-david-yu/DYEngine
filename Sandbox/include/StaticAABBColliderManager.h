@@ -26,7 +26,7 @@ namespace DYE::Sandbox
 		void UnregisterAABB(ColliderID id);
 
 		bool IsColliderRegistered(ColliderID id) const;
-		std::optional<Math::AABB> GetAABB(ColliderID id);
+		std::optional<Math::AABB> TryGetAABB(ColliderID id);
 		bool SetAABB(ColliderID id, Math::AABB aabb);
 
 		std::vector<ColliderID> OverlapAABB(Math::AABB aabb) const;

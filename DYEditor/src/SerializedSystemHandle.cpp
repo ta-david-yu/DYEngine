@@ -2,7 +2,7 @@
 
 namespace DYE::DYEditor
 {
-	std::optional<std::string> SerializedSystemHandle::GetTypeName() const
+	std::optional<std::string> SerializedSystemHandle::TryGetTypeName() const
 	{
 		auto pTypeNode = m_pSystemTable->get(SystemTypeNameKey);
 		if (pTypeNode == nullptr)

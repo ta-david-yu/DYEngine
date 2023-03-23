@@ -25,14 +25,14 @@ namespace DYE
 		return SDL_GetNumVideoDisplays();
 	}
 
-	std::optional<DisplayMode> Screen::GetDisplayMode(int displayIndex) const
+	std::optional<DisplayMode> Screen::TryGetDisplayMode(int displayIndex) const
 	{
 		SDL_DisplayMode nativeDisplayMode;
 		bool const success = SDL_GetCurrentDisplayMode(displayIndex, &nativeDisplayMode) == 0;
 
 		if (!success)
 		{
-			DYE_LOG_ERROR("GetDisplayMode(%d) failed: %s", displayIndex, SDL_GetError());
+			DYE_LOG_ERROR("TryGetDisplayMode(%d) failed: %s", displayIndex, SDL_GetError());
 			return {};
 		}
 

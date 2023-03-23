@@ -30,10 +30,8 @@ namespace DYE::DYEditor
 				"TestA",
 				ComponentTypeFunctionCollection
 					{
-						.Serialize = [](Entity& entity, SerializedEntity& serializedEntity)
+						.Serialize = [](Entity& entity, SerializedComponentHandle& serializedComponent)
 						{
-							SerializedComponentHandle serializedComponent = serializedEntity.TryAddComponentOfType("TestA");
-
 							auto const& component = entity.GetComponent<TestNamespace::TestComponentA>();
 							serializedComponent.SetPrimitiveTypePropertyValue("FloatValue", component.FloatValue);
 							serializedComponent.SetPrimitiveTypePropertyValue("IntegerValue", component.IntegerValue);

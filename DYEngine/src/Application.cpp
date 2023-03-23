@@ -303,7 +303,7 @@ namespace DYE
 
     void Application::handleOnWindowClose(const WindowCloseEvent &event)
     {
-		auto const mainWindowID = WindowManager::GetMainWindowID();
+		auto const mainWindowID = WindowManager::TryGetMainWindowID();
 		if (mainWindowID.has_value() && event.GetWindowID() == mainWindowID.value())
 		{
 			// If the close event comes from the main window, shutdown the application.

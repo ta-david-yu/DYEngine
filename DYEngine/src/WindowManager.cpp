@@ -59,7 +59,7 @@ namespace DYE
 
 	}
 
-	std::optional<WindowID> WindowManager::GetMainWindowID()
+	std::optional<WindowID> WindowManager::TryGetMainWindowID()
 	{
 		return s_MainWindowID;
 	}

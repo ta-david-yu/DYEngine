@@ -5,7 +5,7 @@ namespace DYE::DYEditor
 	constexpr const char* ArrayOfEntityTablesKey = "Entities";
 	constexpr const char* ArrayOfSystemTablesKey = "Systems";
 
-	std::optional<std::string> SerializedScene::GetName() const
+	std::optional<std::string> SerializedScene::TryGetName() const
 	{
 		auto pNameNode = m_SceneTable.get("Name");
 		if (pNameNode == nullptr)

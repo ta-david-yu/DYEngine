@@ -3,7 +3,7 @@
 namespace DYE
 {
 
-	std::optional<CompareFunction> StringToCompareFunction(std::string const& input)
+	std::optional<CompareFunction> TryCastStringToCompareFunction(std::string const& input)
 	{
 		if (input == "Never")
 		{

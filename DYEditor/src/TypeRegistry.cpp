@@ -67,6 +67,16 @@ namespace DYE::DYEditor
 		return s_SystemNamesAndPointersCache;
 	}
 
+	std::optional<ComponentTypeFunctionCollection> TypeRegistry::TryGetComponentTypeFunctions(std::string const& componentTypeName)
+	{
+		if (s_ComponentTypeRegistry.contains(componentTypeName))
+		{
+			return s_ComponentTypeRegistry.at(componentTypeName);
+		}
+
+		return {};
+	}
+
 	void TypeRegistry::registerComponentType(std::string const &componentName, ComponentTypeFunctionCollection functions)
 	{
 		auto [iterator, insertionSuccess] = s_ComponentTypeRegistry.emplace(componentName, functions);

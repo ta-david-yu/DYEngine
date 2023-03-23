@@ -9,7 +9,7 @@
 
 namespace DYE::DYEditor
 {
-	std::optional<SerializedScene> SerializedObjectFactory::LoadSerializedSceneFromFile(const std::filesystem::path &path)
+	std::optional<SerializedScene> SerializedObjectFactory::TryLoadSerializedSceneFromFile(const std::filesystem::path &path)
 	{
 		auto result = toml::parse_file(path.string());
 		if (!result)
@@ -21,7 +21,7 @@ namespace DYE::DYEditor
 		return SerializedScene(std::move(result.table()));
 	}
 
-	std::optional<SerializedEntity> SerializedObjectFactory::LoadSerializedEntityFromFile(const std::filesystem::path &path)
+	std::optional<SerializedEntity> SerializedObjectFactory::TryLoadSerializedEntityFromFile(const std::filesystem::path &path)
 	{
 		auto result = toml::parse_file(path.string());
 		if (!result)
@@ -31,6 +31,77 @@ namespace DYE::DYEditor
 		}
 
 		return SerializedEntity(std::move(result.table()));
+	}
+
+	void SerializedObjectFactory::ApplySerializedSceneToEmptyScene(SerializedScene &serializedScene, Scene &scene)
+	{
+#if DYE_DEBUG
+		bool const isEmptyScene = scene.World.IsEmpty() && scene.SystemTypeNames.empty();
+		DYE_ASSERT(isEmptyScene && "The given scene is not empty!");
+#endif
+
+		auto serializedSystemHandles = serializedScene.GetSerializedSystemHandles();
+		auto serializedEntityHandles = serializedScene.GetSerializedEntityHandles();
+
+		// Populate systems.
+		scene.SystemTypeNames.reserve(serializedSystemHandles.size());
+		for (auto& serializedSystemHandle : serializedSystemHandles)
+		{
+			auto getTypeNameResult = serializedSystemHandle.TryGetTypeName();
+
+			if (!getTypeNameResult.has_value())
+			{
+				continue;
+			}
+
+			scene.SystemTypeNames.emplace_back(getTypeNameResult.value());
+		}
+
+		// Populate entities.
+		for (auto& serializedEntityHandle : serializedEntityHandles)
+		{
+			DYEntity::Entity entity = scene.World.CreateEntity();
+			ApplySerializedEntityToEmptyEntity(serializedEntityHandle, entity);
+		}
+
+	}
+
+	void SerializedObjectFactory::ApplySerializedEntityToEmptyEntity(SerializedEntity &serializedEntity,
+																	 DYEntity::Entity &entity)
+	{
+		std::vector<SerializedComponentHandle> serializedComponentHandles = serializedEntity.GetSerializedComponentHandles();
+		for (auto& serializedComponentHandle : serializedComponentHandles)
+		{
+			auto getTypeNameResult = serializedComponentHandle.TryGetTypeName();
+			if (!getTypeNameResult.has_value())
+			{
+				// Garbage component element without a type name, skip it.
+				continue;
+			}
+
+			auto& typeName = getTypeNameResult.value();
+			auto getComponentTypeFunctionsResult = TypeRegistry::TryGetComponentTypeFunctions(typeName);
+			if (!getComponentTypeFunctionsResult.has_value())
+			{
+				// Cannot find the given component type and its related functions, add the component name
+				// to the unrecognized component list OR component.
+				// TODO:
+				DYE_LOG("Entity has an unrecognized component of type '%s'.", typeName.c_str());
+				continue;
+			}
+
+			auto& componentTypeFunctions = getComponentTypeFunctionsResult.value();
+			if (componentTypeFunctions.Deserialize == nullptr)
+			{
+				// The component type doesn't have a corresponding Deserialize function.
+				// Ignored and add the component name to the unrecognized component list.
+				// TODO:
+				DYE_LOG("Component of type '%s' will not be deserialized because its Deserialize function is not provided.", typeName.c_str());
+				continue;
+			}
+
+			DeserializationResult const result = componentTypeFunctions.Deserialize(serializedComponentHandle, entity);
+		}
 	}
 
 	SerializedScene SerializedObjectFactory::CreateSerializedScene(Scene &scene)

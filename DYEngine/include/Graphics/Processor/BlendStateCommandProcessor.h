@@ -28,7 +28,7 @@ namespace DYE::ShaderProcessor
 		static BlendState parseBlendFunctionLine(std::string const& line);
 		static void parseBlendOperationLine(std::string const& line);
 
-		static std::optional<BlendState::BlendFactor> stringToBlendFactor(std::string const& input);
+		static std::optional<BlendState::BlendFactor> tryCastStringToBlendFactor(std::string const& input);
 
 	private:
 		BlendState m_BlendStateCache;

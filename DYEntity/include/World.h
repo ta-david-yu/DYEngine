@@ -6,7 +6,6 @@ namespace DYE::DYEntity
 {
 	class Entity;
 
-	//using ForEachEntityFunction = void (Entity& entity);
 	class World
 	{
 		// We need this so Entity could access m_Registry for entt operation.
@@ -29,8 +28,12 @@ namespace DYE::DYEntity
 				});
 		}
 
+		inline bool IsEmpty() const { return m_Registry.empty(); }
+
 	private:
 		entt::registry m_Registry;
+
+		// TODO: vector<Entity>?
 
 	};
 }

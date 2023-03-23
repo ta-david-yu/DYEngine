@@ -3,6 +3,8 @@
 #include "Util/Macro.h"
 #include "World.h"
 
+#include <string>
+#include <vector>
 #include <optional>
 #include <functional>
 #include <entt/entt.hpp>

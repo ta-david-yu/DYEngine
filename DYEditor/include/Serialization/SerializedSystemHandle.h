@@ -13,7 +13,7 @@ namespace DYE::DYEditor
 		friend class SerializedScene;
 		SerializedSystemHandle() = delete;
 
-		std::optional<std::string> GetTypeName() const;
+		std::optional<std::string> TryGetTypeName() const;
 		void SetTypeName(std::string const& typeName);
 
 	private:

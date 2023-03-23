@@ -35,7 +35,7 @@ namespace DYE::Sandbox
 		return index != -1;
 	}
 
-	std::optional<Math::AABB> StaticAABBColliderManager::GetAABB(ColliderID id)
+	std::optional<Math::AABB> StaticAABBColliderManager::TryGetAABB(ColliderID id)
 	{
 		int const index = binarySearchIndexOf(m_AABBs, id);
 		if (index == -1)

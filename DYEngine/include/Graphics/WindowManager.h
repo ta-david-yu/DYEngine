@@ -27,7 +27,7 @@ namespace DYE
 		static WindowBase* GetWindowFromID(WindowID id);
 		static bool HasWindowWithID(WindowID id);
 		static bool IsMainWindow(WindowBase const& window);
-		static std::optional<WindowID> GetMainWindowID();
+		static std::optional<WindowID> TryGetMainWindowID();
 		static WindowBase* GetMainWindow();
 		static std::uint32_t GetNumberOfWindows() { return s_Windows.size(); }
 		static WindowBase* GetMouseFocusedWindow();

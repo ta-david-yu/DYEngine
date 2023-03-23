@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="DYE Source Code" pattern="file[DYEngineRoot]:DYEditor/DYEditorCodeGenerator/include//*||file[DYEngineRoot]:DYEditor/DYEditorCodeGenerator/src//*||file[DYEngineRoot]:DYEditor/include//*||file[DYEngineRoot]:DYEditor/src//*||file[DYEngineRoot]:DYEngine/include//*||file[DYEngineRoot]:DYEngine/src//*||file[DYEngineRoot]:DYEntity/include//*||file[DYEngineRoot]:DYEntity/src//*||file[DYEngineRoot]:Sandbox/include//*||file[DYEngineRoot]:Sandbox/src//*" />
+</component>

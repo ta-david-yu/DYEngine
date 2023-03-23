@@ -12,7 +12,7 @@ namespace DYE::DYEditor
 	{
 		friend class SerializedObjectFactory;
 
-		std::optional <std::string> GetName() const;
+		std::optional <std::string> TryGetName() const;
 		void SetName(std::string const &name);
 
 		std::vector<SerializedSystemHandle> GetSerializedSystemHandles();
