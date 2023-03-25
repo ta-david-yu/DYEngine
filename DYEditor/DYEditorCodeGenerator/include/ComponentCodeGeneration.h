@@ -18,10 +18,25 @@ char const *ComponentTypeRegistrationCallSourceStart =
 				"${COMPONENT_NAME}",
 				ComponentTypeFunctionCollection
 					{
-						.DrawInspector = [](Entity &entity)
+)";
+
+char const* SerializeLambdaSourceStart =
+	R"(						.Serialize = [](Entity& entity, SerializedComponentHandle& serializedComponent)
+						{
+							auto const& component = entity.GetComponent<${COMPONENT_FULL_TYPE}>();
+)";
+
+char const* SerializeLambdaSourceEnd =
+	R"(							return SerializationResult {};
+						},
+)";
+
+char const* DrawInspectorLambdaSourceStart =
+	R"(						.DrawInspector = [](Entity &entity)
 						{
 							bool changed = false;
 							ImGui::TextWrapped("${COMPONENT_FULL_TYPE}");
+
 )";
 
 char const* ComponentTypeRegistrationCallSourceEnd =
@@ -39,12 +54,17 @@ std::string ComponentDescriptorToTypeRegistrationCallSource(ComponentDescriptor 
 
 	std::string result = "\t\t// Component located in " + descriptor.LocatedHeaderFile + "\n";
 	result.append(ComponentTypeRegistrationCallSourceStart);
-
+	result.append(SerializeLambdaSourceStart);
+	for (auto const& propertyDescriptor : descriptor.Properties)
+	{
+		result.append(PropertyDescriptorToSerializeCallSource(descriptor.FullType, propertyDescriptor));
+	}
+	result.append(SerializeLambdaSourceEnd);
+	result.append(DrawInspectorLambdaSourceStart);
 	for (auto const& propertyDescriptor : descriptor.Properties)
 	{
 		result.append(PropertyDescriptorToImGuiUtilControlCallSource(descriptor.FullType, propertyDescriptor));
 	}
-
 	result.append(ComponentTypeRegistrationCallSourceEnd);
 
 	std::regex const componentNameKeywordPattern(R"(\$\{COMPONENT_NAME\})");

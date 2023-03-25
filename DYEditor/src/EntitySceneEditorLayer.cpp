@@ -98,6 +98,7 @@ namespace DYE::DYEditor
 		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
 		if (ImGui::Begin("Entity Inspector"))
 		{
+			//drawEntityInspector(m_Entity, TypeRegistry::GetComponentTypesNamesAndFunctionCollections());
 			drawEntityInspector(m_CurrentSelectedEntity, TypeRegistry::GetComponentTypesNamesAndFunctionCollections());
 		}
 		ImGui::End();

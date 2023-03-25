@@ -24,6 +24,7 @@ R"(//---------------------------------------------------------------------------
 #include "UserTypeRegister.h"
 
 #include "TypeRegistry.h"
+#include "Serialization/SerializedObjectFactory.h"
 #include "ImGui/ImGuiUtil.h"
 
 // Insert user headers here...
@@ -225,17 +226,19 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 			bool const isVariableDeclaration = std::regex_search(line, match, variableDeclarationPattern);
 			if (isVariableDeclaration)
 			{
-				std::string const& typeSpecifier = match[1].str();
+				std::string const& typeSpecifierString = match[1].str();
 				std::string const& variableName = match[2].str();
+				PropertyType const& typeSpecifier = CastTypeSpecifierStringToPropertyType(typeSpecifierString);
 				bool const isConst = std::regex_search(line, match, constKeywordPattern);
 
 				currentComponentScopeDescriptor.Properties.emplace_back
 					(
 						PropertyDescriptor
 							{
-								.TypeSpecifier = typeSpecifier,
+								.TypeSpecifierString = typeSpecifierString,
 								.VariableName = variableName,
-								.IsConstant = isConst
+								.IsConstant = isConst,
+								.TypeSpecifier = typeSpecifier
 							}
 					);
 
@@ -243,13 +246,13 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 				{
 					std::printf("\t\tDYE_PROPERTY '%s::%s' of type '%s' is registered.\n",
 								currentComponentScopeDescriptor.FullType.c_str(), variableName.c_str(),
-								typeSpecifier.c_str());
+								typeSpecifierString.c_str());
 				}
 				else
 				{
 					std::printf("\t\tDYE_PROPERTY at line %d is ignored because the followed variable declaration ('%s::%s' of type '%s') is a constant.\n",
 								lineCount - 1,
-								currentComponentScopeDescriptor.FullType.c_str(), variableName.c_str(), typeSpecifier.c_str());
+								currentComponentScopeDescriptor.FullType.c_str(), variableName.c_str(), typeSpecifierString.c_str());
 				}
 
 				continue;

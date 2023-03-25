@@ -29,20 +29,8 @@ namespace DYE::DYEditor
 
 		DeserializationResult DeserializeNameComponent(SerializedComponentHandle& serializedComponent, DYE::DYEntity::Entity& entity)
 		{
-			auto tryGetNameResult = serializedComponent.TryGetPrimitiveTypePropertyValue<std::string>("Name");
-			if (!tryGetNameResult.has_value())
-			{
-				tryGetNameResult.value() = "";
-			}
-
-			if (entity.HasComponent<NameComponent>())
-			{
-				entity.GetComponent<NameComponent>().Name = tryGetNameResult.value();
-			}
-			else
-			{
-				entity.AddComponent<NameComponent>(tryGetNameResult.value());
-			}
+			auto& nameComponent = entity.AddOrGetComponent<NameComponent>();
+			nameComponent.Name = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::String>("Name");
 
 			return {};
 		}
