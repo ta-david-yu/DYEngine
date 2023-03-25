@@ -28,6 +28,10 @@ NumberOfComponents = 3 # We probably don't need this
 	Type = "TestFloat"
 	FloatValue = 0.5
 
+	[[Entities.Components]]
+	Type = "TestA"
+	IntegerValue = 15
+
 [[Entities]]
 ID = 1
 DerivedFromPrefab = false
@@ -36,6 +40,9 @@ NumberOfComponents = 2 # We probably don't need this
 	[[Entities.Components]]
 	Type = "Name"
 	Name = "Entity 1"
+
+	[[Entities.Components]]
+	Type = "TestB"
 
 	[[Entities.Components]]
 	Type = "Transform"
@@ -57,6 +64,9 @@ Prefab = { Path = "assets://Prefabs/Rock.tprefab" }
 	[[Entities.Components]]
 	Type = "Name"
 	Name = "Entity 2"
+
+	[[Entities.Components]]
+	Type = "TestC"
 
 	[[Entities.Components]]
 	Type = "Transform"

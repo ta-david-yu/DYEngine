@@ -35,8 +35,16 @@ namespace DYE::DYEditor
 							auto const& component = entity.GetComponent<TestNamespace::TestComponentA>();
 							serializedComponent.SetPrimitiveTypePropertyValue("FloatValue", component.FloatValue);
 							serializedComponent.SetPrimitiveTypePropertyValue("IntegerValue", component.IntegerValue);
-
+							// Property 'intCannotBeSerialized' will not be serialized because its type 'int' is not supported.
 							return SerializationResult {};
+						},
+						.Deserialize = [](SerializedComponentHandle& serializedComponent, DYE::DYEntity::Entity& entity)
+						{
+							auto& component = entity.AddOrGetComponent<TestNamespace::TestComponentA>();
+							component.FloatValue = serializedComponent.GetPrimitiveTypePropertyValueOr<Float>("FloatValue", 1.0f);
+							component.IntegerValue = serializedComponent.GetPrimitiveTypePropertyValueOr<Int32>("IntegerValue", 20);
+							// Property 'intCannotBeSerialized' will not be serialized because its type 'int' is not supported.
+							return DeserializationResult {};
 						},
 						.DrawInspector = [](Entity &entity)
 						{
@@ -56,6 +64,18 @@ namespace DYE::DYEditor
 				"SubTestA",
 				ComponentTypeFunctionCollection
 					{
+						.Serialize = [](Entity& entity, SerializedComponentHandle& serializedComponent)
+						{
+							auto const& component = entity.GetComponent<TestNamespace::Subnamespace::SubtestComponentA>();
+							serializedComponent.SetPrimitiveTypePropertyValue("IntegerValue", component.IntegerValue);
+							return SerializationResult {};
+						},
+						.Deserialize = [](SerializedComponentHandle& serializedComponent, DYE::DYEntity::Entity& entity)
+						{
+							auto& component = entity.AddOrGetComponent<TestNamespace::Subnamespace::SubtestComponentA>();
+							component.IntegerValue = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<Int32>("IntegerValue");
+							return DeserializationResult {};
+						},
 						.DrawInspector = [](Entity &entity)
 						{
 							bool changed = false;
@@ -72,6 +92,27 @@ namespace DYE::DYEditor
 				"TestB",
 				ComponentTypeFunctionCollection
 					{
+						.Serialize = [](Entity& entity, SerializedComponentHandle& serializedComponent)
+						{
+							auto const& component = entity.GetComponent<TestComponentB>();
+							serializedComponent.SetPrimitiveTypePropertyValue("BooleanValue", component.BooleanValue);
+							std::string OneCharacter(" "); OneCharacter[0] = component.OneCharacter; serializedComponent.SetPrimitiveTypePropertyValue("OneCharacter", OneCharacter);							// Property 'ConstantFloat' will not be serialized because it is a constant variable.
+							// Property 'ConstantVector3' will not be serialized because it is a constant variable.
+							serializedComponent.SetPrimitiveTypePropertyValue("Position", component.Position);
+							serializedComponent.SetPrimitiveTypePropertyValue("vec4", component.vec4);
+							return SerializationResult {};
+						},
+						.Deserialize = [](SerializedComponentHandle& serializedComponent, DYE::DYEntity::Entity& entity)
+						{
+							auto& component = entity.AddOrGetComponent<TestComponentB>();
+							component.BooleanValue = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<Bool>("BooleanValue");
+							component.OneCharacter = serializedComponent.GetPrimitiveTypePropertyValueOr<const char*>("OneCharacter", "a")[0];
+							// Property 'ConstantFloat' will not be serialized because it is a constant variable.
+							// Property 'ConstantVector3' will not be serialized because it is a constant variable.
+							component.Position = serializedComponent.GetPrimitiveTypePropertyValueOr<Vector3>("Position", glm::vec3 {0, 0, 5});
+							component.vec4 = serializedComponent.GetPrimitiveTypePropertyValueOr<Vector4>("vec4", glm::vec4 {1, 2, 3, 4});
+							return DeserializationResult {};
+						},
 						.DrawInspector = [](Entity &entity)
 						{
 							bool changed = false;
@@ -93,12 +134,30 @@ namespace DYE::DYEditor
 				"TestC",
 				ComponentTypeFunctionCollection
 					{
+						.Serialize = [](Entity& entity, SerializedComponentHandle& serializedComponent)
+						{
+							auto const& component = entity.GetComponent<TestComponentC>();
+							serializedComponent.SetPrimitiveTypePropertyValue("ColorValue", component.ColorValue);
+							std::string TestChar2(" "); TestChar2[0] = component.TestChar2; serializedComponent.SetPrimitiveTypePropertyValue("TestChar2", TestChar2);							serializedComponent.SetPrimitiveTypePropertyValue("TestName", component.TestName);
+							std::string TestChar(" "); TestChar[0] = component.TestChar; serializedComponent.SetPrimitiveTypePropertyValue("TestChar", TestChar);							return SerializationResult {};
+						},
+						.Deserialize = [](SerializedComponentHandle& serializedComponent, DYE::DYEntity::Entity& entity)
+						{
+							auto& component = entity.AddOrGetComponent<TestComponentC>();
+							component.ColorValue = serializedComponent.GetPrimitiveTypePropertyValueOr<Color4>("ColorValue", DYE::Color::Yellow);
+							component.TestChar2 = serializedComponent.GetPrimitiveTypePropertyValueOr<const char*>("TestChar2", "2")[0];
+							component.TestName = serializedComponent.GetPrimitiveTypePropertyValueOr<String>("TestName", "WHY IS IT LIKE THAT?!");
+							component.TestChar = serializedComponent.GetPrimitiveTypePropertyValueOr<const char*>("TestChar", "X")[0];
+							return DeserializationResult {};
+						},
 						.DrawInspector = [](Entity &entity)
 						{
 							bool changed = false;
 							ImGui::TextWrapped("TestComponentC");
 							changed |= ImGuiUtil::DrawColor4Control("ColorValue", entity.GetComponent<TestComponentC>().ColorValue);
+							changed |= ImGuiUtil::DrawCharControl("TestChar2", entity.GetComponent<TestComponentC>().TestChar2);
 							changed |= ImGuiUtil::DrawTextControl("TestName", entity.GetComponent<TestComponentC>().TestName);
+							changed |= ImGuiUtil::DrawCharControl("TestChar", entity.GetComponent<TestComponentC>().TestChar);
 							return changed;
 						}
 					}

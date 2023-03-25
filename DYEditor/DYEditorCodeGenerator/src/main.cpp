@@ -202,7 +202,7 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 		R"(^\s*DYE_PROPERTY\(\)\s*$)"
 	);
 	std::regex const variableDeclarationPattern(
-		R"((?:(?:[a-zA-Z_][a-zA-Z0-9_]*)+::)*([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:const\s+)?([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:=\s*[^;]*)?;)"
+		R"((?:(?:[a-zA-Z_][a-zA-Z0-9_]*)+::)*([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:const\s+)?([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:=\s*([^;]*))?;)"
 	);
 	std::smatch match;
 
@@ -227,8 +227,10 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 			if (isVariableDeclaration)
 			{
 				std::string const& typeSpecifierString = match[1].str();
-				std::string const& variableName = match[2].str();
 				PropertyType const& typeSpecifier = CastTypeSpecifierStringToPropertyType(typeSpecifierString);
+				std::string const& variableName = match[2].str();
+				bool const hasDefaultValue = !match[3].str().empty();
+				std::string const& defaultValueString = hasDefaultValue? match[3].str() : "";
 				bool const isConst = std::regex_search(line, match, constKeywordPattern);
 
 				currentComponentScopeDescriptor.Properties.emplace_back
@@ -236,17 +238,28 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 						PropertyDescriptor
 							{
 								.TypeSpecifierString = typeSpecifierString,
+								.TypeSpecifier = typeSpecifier,
 								.VariableName = variableName,
+								.HasDefaultValue = hasDefaultValue,
+								.DefaultValueString = defaultValueString,
 								.IsConstant = isConst,
-								.TypeSpecifier = typeSpecifier
 							}
 					);
 
 				if (!isConst)
 				{
-					std::printf("\t\tDYE_PROPERTY '%s::%s' of type '%s' is registered.\n",
-								currentComponentScopeDescriptor.FullType.c_str(), variableName.c_str(),
-								typeSpecifierString.c_str());
+					if (hasDefaultValue)
+					{
+						std::printf("\t\tDYE_PROPERTY '%s::%s' of type '%s' is registered. (Default value = %s)\n",
+									currentComponentScopeDescriptor.FullType.c_str(), variableName.c_str(),
+									typeSpecifierString.c_str(), defaultValueString.c_str());
+					}
+					else
+					{
+						std::printf("\t\tDYE_PROPERTY '%s::%s' of type '%s' is registered.\n",
+									currentComponentScopeDescriptor.FullType.c_str(), variableName.c_str(),
+									typeSpecifierString.c_str());
+					}
 				}
 				else
 				{

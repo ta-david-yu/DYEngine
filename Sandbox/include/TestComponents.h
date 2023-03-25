@@ -9,10 +9,10 @@ namespace TestNamespace
 	struct TestComponentA
 	{
 		DYE_PROPERTY()
-		DYE::Float FloatValue;
+		DYE::Float FloatValue=1.0f;
 
 		DYE_PROPERTY()
-		DYE::Int32 IntegerValue;
+		DYE::Int32 IntegerValue = 20;
 
 		DYE_PROPERTY()
 		int intCannotBeSerialized;

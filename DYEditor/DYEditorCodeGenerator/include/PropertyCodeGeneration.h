@@ -32,9 +32,11 @@ struct PropertyDescriptor
 {
 	// Parsed from variable declaration
 	std::string TypeSpecifierString;
-	std::string VariableName;
-	bool IsConstant;
 	PropertyType TypeSpecifier;
+	std::string VariableName;
+	bool HasDefaultValue;
+	std::string DefaultValueString;
+	bool IsConstant;
 };
 
 PropertyType CastTypeSpecifierStringToPropertyType(std::string_view const& typeString)
@@ -130,13 +132,35 @@ std::string PropertyDescriptorToDeserializeCallSource(std::string_view const& co
 							   propertyDescriptor.VariableName, propertyDescriptor.TypeSpecifierString);
 		case PropertyType::Char:
 			// Char needs special handling because some serialization libraries don't support character type.
-			return fmt::format("\t\t\t\t\t\t\t"
-							   "component.{} = serializedComponent.GetPrimitiveTypePropertyValueOr<const char*>(\"{}\", \" \")[0];\n",
-							   propertyDescriptor.VariableName, propertyDescriptor.VariableName);
+			if (propertyDescriptor.HasDefaultValue)
+			{
+				// Because the default value string for a char variable is '0' for instance, index 1 (the 0) will be the default character.
+				char defaultValue = propertyDescriptor.DefaultValueString[1];
+				return fmt::format("\t\t\t\t\t\t\t"
+								   "component.{} = serializedComponent.GetPrimitiveTypePropertyValueOr<const char*>(\"{}\", \"{}\")[0];\n",
+								   propertyDescriptor.VariableName, propertyDescriptor.VariableName, defaultValue);
+			}
+			else
+			{
+				return fmt::format("\t\t\t\t\t\t\t"
+								   "component.{} = serializedComponent.GetPrimitiveTypePropertyValueOr<const char*>(\"{}\", \" \")[0];\n",
+								   propertyDescriptor.VariableName, propertyDescriptor.VariableName);
+			}
 		default:
-			return fmt::format("\t\t\t\t\t\t\t"
-							   "component.{} = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<{}>(\"{}\");\n",
-							   propertyDescriptor.VariableName, propertyDescriptor.TypeSpecifierString, propertyDescriptor.VariableName);
+			if (propertyDescriptor.HasDefaultValue)
+			{
+				return fmt::format("\t\t\t\t\t\t\t"
+								   "component.{} = serializedComponent.GetPrimitiveTypePropertyValueOr<{}>(\"{}\", {});\n",
+								   propertyDescriptor.VariableName, propertyDescriptor.TypeSpecifierString,
+								   propertyDescriptor.VariableName, propertyDescriptor.DefaultValueString);
+			}
+			else
+			{
+				return fmt::format("\t\t\t\t\t\t\t"
+								   "component.{} = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<{}>(\"{}\");\n",
+								   propertyDescriptor.VariableName, propertyDescriptor.TypeSpecifierString,
+								   propertyDescriptor.VariableName);
+			}
 	}
 }
 
