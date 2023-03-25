@@ -44,6 +44,18 @@ namespace DYE::DYEditor
 		}
 
 		template<typename T>
+		T GetPrimitiveTypePropertyValueOr(std::string_view const& propertyName, T const& defaultValue) const
+		{
+			auto getValueResult = TryGetPrimitiveTypePropertyValue<T>(propertyName);
+			if (!getValueResult.has_value())
+			{
+				return defaultValue;
+			}
+
+			return getValueResult.value();
+		}
+
+		template<typename T>
 		void SetPrimitiveTypePropertyValue(std::string const& propertyName, T const& value)
 		{
 			m_pComponentTable->insert_or_assign(propertyName, value);

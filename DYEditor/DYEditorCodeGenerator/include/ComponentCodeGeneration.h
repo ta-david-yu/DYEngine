@@ -31,12 +31,22 @@ char const* SerializeLambdaSourceEnd =
 						},
 )";
 
+char const* DeserializeLambdaSourceStart =
+	R"(						.Deserialize = [](SerializedComponentHandle& serializedComponent, DYE::DYEntity::Entity& entity)
+						{
+							auto& component = entity.AddOrGetComponent<${COMPONENT_FULL_TYPE}>();
+)";
+
+char const* DeserializeLambdaSourceEnd =
+	R"(							return DeserializationResult {};
+						},
+)";
+
 char const* DrawInspectorLambdaSourceStart =
 	R"(						.DrawInspector = [](Entity &entity)
 						{
 							bool changed = false;
 							ImGui::TextWrapped("${COMPONENT_FULL_TYPE}");
-
 )";
 
 char const* ComponentTypeRegistrationCallSourceEnd =
@@ -60,6 +70,12 @@ std::string ComponentDescriptorToTypeRegistrationCallSource(ComponentDescriptor 
 		result.append(PropertyDescriptorToSerializeCallSource(descriptor.FullType, propertyDescriptor));
 	}
 	result.append(SerializeLambdaSourceEnd);
+	result.append(DeserializeLambdaSourceStart);
+	for (auto const& propertyDescriptor : descriptor.Properties)
+	{
+		result.append(PropertyDescriptorToDeserializeCallSource(descriptor.FullType, propertyDescriptor));
+	}
+	result.append(DeserializeLambdaSourceEnd);
 	result.append(DrawInspectorLambdaSourceStart);
 	for (auto const& propertyDescriptor : descriptor.Properties)
 	{

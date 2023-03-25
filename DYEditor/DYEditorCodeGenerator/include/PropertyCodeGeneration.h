@@ -113,25 +113,47 @@ PropertyType CastTypeSpecifierStringToPropertyType(std::string_view const& typeS
 	}
 }
 
-std::string PropertyDescriptorToSerializeCallSource(std::string_view const& componentType, PropertyDescriptor const& propertyDescriptor)
+std::string PropertyDescriptorToDeserializeCallSource(std::string_view const& componentType, PropertyDescriptor const& propertyDescriptor)
 {
 	if (propertyDescriptor.IsConstant)
 	{
 		return fmt::format("\t\t\t\t\t\t\t"
-			   				"// {} will not be serialized because it is a constant variable.\n", propertyDescriptor.VariableName);
-	}
-
-	if (propertyDescriptor.TypeSpecifier == PropertyType::Unsupported)
-	{
-		return fmt::format("\t\t\t\t\t\t\t"
-						   "// {} will not be serialized because its type {} is not supported.\n", propertyDescriptor.VariableName, propertyDescriptor.TypeSpecifierString);
+						   "// Property '{}' will not be serialized because it is a constant variable.\n",
+						   propertyDescriptor.VariableName);
 	}
 
 	switch (propertyDescriptor.TypeSpecifier)
 	{
 		case PropertyType::Unsupported:
 			return fmt::format("\t\t\t\t\t\t\t"
-							   "// {} will not be serialized because its type {} is not supported.\n",
+							   "// Property '{}' will not be serialized because its type '{}' is not supported.\n",
+							   propertyDescriptor.VariableName, propertyDescriptor.TypeSpecifierString);
+		case PropertyType::Char:
+			// Char needs special handling because some serialization libraries don't support character type.
+			return fmt::format("\t\t\t\t\t\t\t"
+							   "component.{} = serializedComponent.GetPrimitiveTypePropertyValueOr<const char*>(\"{}\", \" \")[0];\n",
+							   propertyDescriptor.VariableName, propertyDescriptor.VariableName);
+		default:
+			return fmt::format("\t\t\t\t\t\t\t"
+							   "component.{} = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<{}>(\"{}\");\n",
+							   propertyDescriptor.VariableName, propertyDescriptor.TypeSpecifierString, propertyDescriptor.VariableName);
+	}
+}
+
+std::string PropertyDescriptorToSerializeCallSource(std::string_view const& componentType, PropertyDescriptor const& propertyDescriptor)
+{
+	if (propertyDescriptor.IsConstant)
+	{
+		return fmt::format("\t\t\t\t\t\t\t"
+						   "// Property '{}' will not be serialized because it is a constant variable.\n",
+						   propertyDescriptor.VariableName);
+	}
+
+	switch (propertyDescriptor.TypeSpecifier)
+	{
+		case PropertyType::Unsupported:
+			return fmt::format("\t\t\t\t\t\t\t"
+							   "// Property '{}' will not be serialized because its type '{}' is not supported.\n",
 							   propertyDescriptor.VariableName, propertyDescriptor.TypeSpecifierString);
 		case PropertyType::Char:
 			// Char needs special handling because some serialization libraries don't support character type.
