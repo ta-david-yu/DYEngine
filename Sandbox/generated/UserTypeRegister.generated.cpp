@@ -49,9 +49,10 @@ namespace DYE::DYEditor
 						.DrawInspector = [](Entity &entity)
 						{
 							bool changed = false;
+							auto& component = entity.GetComponent<TestNamespace::TestComponentA>();
 							ImGui::TextWrapped("TestNamespace::TestComponentA");
-							changed |= ImGuiUtil::DrawFloatControl("FloatValue", entity.GetComponent<TestNamespace::TestComponentA>().FloatValue);
-							changed |= ImGuiUtil::DrawIntControl("IntegerValue", entity.GetComponent<TestNamespace::TestComponentA>().IntegerValue);
+							changed |= ImGuiUtil::DrawFloatControl("FloatValue", component.FloatValue);
+							changed |= ImGuiUtil::DrawIntControl("IntegerValue", component.IntegerValue);
 							ImGui::BeginDisabled(true); ImGuiUtil::DrawReadOnlyTextWithLabel("intCannotBeSerialized", "Variable of unsupported type 'int'"); ImGui::EndDisabled();
 							return changed;
 						}
@@ -79,8 +80,9 @@ namespace DYE::DYEditor
 						.DrawInspector = [](Entity &entity)
 						{
 							bool changed = false;
+							auto& component = entity.GetComponent<TestNamespace::Subnamespace::SubtestComponentA>();
 							ImGui::TextWrapped("TestNamespace::Subnamespace::SubtestComponentA");
-							changed |= ImGuiUtil::DrawIntControl("IntegerValue", entity.GetComponent<TestNamespace::Subnamespace::SubtestComponentA>().IntegerValue);
+							changed |= ImGuiUtil::DrawIntControl("IntegerValue", component.IntegerValue);
 							return changed;
 						}
 					}
@@ -116,13 +118,79 @@ namespace DYE::DYEditor
 						.DrawInspector = [](Entity &entity)
 						{
 							bool changed = false;
+							auto& component = entity.GetComponent<TestComponentB>();
 							ImGui::TextWrapped("TestComponentB");
-							changed |= ImGuiUtil::DrawBoolControl("BooleanValue", entity.GetComponent<TestComponentB>().BooleanValue);
-							changed |= ImGuiUtil::DrawCharControl("OneCharacter", entity.GetComponent<TestComponentB>().OneCharacter);
+							changed |= ImGuiUtil::DrawBoolControl("BooleanValue", component.BooleanValue);
+							changed |= ImGuiUtil::DrawCharControl("OneCharacter", component.OneCharacter);
 							ImGui::BeginDisabled(true); ImGuiUtil::DrawReadOnlyTextWithLabel("ConstantFloat", "Constant variable of type 'Float'"); ImGui::EndDisabled();
 							ImGui::BeginDisabled(true); ImGuiUtil::DrawReadOnlyTextWithLabel("ConstantVector3", "Constant variable of type 'Vector3'"); ImGui::EndDisabled();
-							changed |= ImGuiUtil::DrawVector3Control("Position", entity.GetComponent<TestComponentB>().Position);
-							changed |= ImGuiUtil::DrawVector4Control("vec4", entity.GetComponent<TestComponentB>().vec4);
+							changed |= ImGuiUtil::DrawVector3Control("Position", component.Position);
+							changed |= ImGuiUtil::DrawVector4Control("vec4", component.vec4);
+							return changed;
+						}
+					}
+			);
+
+		// Component located in include/TestComponents.h
+		TypeRegistry::RegisterComponentType<ComponentWithAllPrimitiveProperties>
+			(
+				"ComponentWithAllPrimitiveProperties",
+				ComponentTypeFunctionCollection
+					{
+						.Serialize = [](Entity& entity, SerializedComponentHandle& serializedComponent)
+						{
+							auto const& component = entity.GetComponent<ComponentWithAllPrimitiveProperties>();
+							std::string CharVar(" "); CharVar[0] = component.CharVar; serializedComponent.SetPrimitiveTypePropertyValue("CharVar", CharVar);							serializedComponent.SetPrimitiveTypePropertyValue("BoolVar", component.BoolVar);
+							serializedComponent.SetPrimitiveTypePropertyValue("Int32Var", component.Int32Var);
+							serializedComponent.SetPrimitiveTypePropertyValue("FloatVar", component.FloatVar);
+							serializedComponent.SetPrimitiveTypePropertyValue("Vector2Var", component.Vector2Var);
+							serializedComponent.SetPrimitiveTypePropertyValue("Vector3Var", component.Vector3Var);
+							serializedComponent.SetPrimitiveTypePropertyValue("Vector4Var", component.Vector4Var);
+							serializedComponent.SetPrimitiveTypePropertyValue("Color4Var", component.Color4Var);
+							serializedComponent.SetPrimitiveTypePropertyValue("StringVar", component.StringVar);
+							serializedComponent.SetPrimitiveTypePropertyValue("QuaternionVar", component.QuaternionVar);
+							return SerializationResult {};
+						},
+						.Deserialize = [](SerializedComponentHandle& serializedComponent, DYE::DYEntity::Entity& entity)
+						{
+							auto& component = entity.AddOrGetComponent<ComponentWithAllPrimitiveProperties>();
+							component.CharVar = serializedComponent.GetPrimitiveTypePropertyValueOr<const char*>("CharVar", "a")[0];
+							component.BoolVar = serializedComponent.GetPrimitiveTypePropertyValueOr<Bool>("BoolVar", false);
+							component.Int32Var = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<Int32>("Int32Var");
+							component.FloatVar = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<Float>("FloatVar");
+							component.Vector2Var = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<Vector2>("Vector2Var");
+							component.Vector3Var = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<Vector3>("Vector3Var");
+							component.Vector4Var = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<Vector4>("Vector4Var");
+							component.Color4Var = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<Color4>("Color4Var");
+							component.StringVar = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<String>("StringVar");
+							component.QuaternionVar = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<Quaternion>("QuaternionVar");
+							return DeserializationResult {};
+						},
+						.DrawInspector = [](Entity &entity)
+						{
+							bool changed = false;
+							auto& component = entity.GetComponent<ComponentWithAllPrimitiveProperties>();
+							ImGui::TextWrapped("ComponentWithAllPrimitiveProperties");
+							changed |= ImGuiUtil::DrawCharControl("CharVar", component.CharVar);
+							changed |= ImGuiUtil::DrawBoolControl("BoolVar", component.BoolVar);
+							changed |= ImGuiUtil::DrawIntControl("Int32Var", component.Int32Var);
+							changed |= ImGuiUtil::DrawFloatControl("FloatVar", component.FloatVar);
+							changed |= ImGuiUtil::DrawVector2Control("Vector2Var", component.Vector2Var);
+							changed |= ImGuiUtil::DrawVector3Control("Vector3Var", component.Vector3Var);
+							changed |= ImGuiUtil::DrawVector4Control("Vector4Var", component.Vector4Var);
+							changed |= ImGuiUtil::DrawColor4Control("Color4Var", component.Color4Var);
+							changed |= ImGuiUtil::DrawTextControl("StringVar", component.StringVar);
+							// 'QuaternionVar' : Quaternion 
+							{
+								glm::vec3 eulerDegree = glm::eulerAngles(component.QuaternionVar);
+								eulerDegree += glm::vec3(0.f); eulerDegree = glm::degrees(eulerDegree);
+								if (ImGuiUtil::DrawVector3Control("QuaternionVar", eulerDegree))
+								{
+									eulerDegree.y = glm::clamp(eulerDegree.y, -90.f, 90.f);
+									component.QuaternionVar = glm::quat (glm::radians(eulerDegree));
+									changed = true;
+								}
+							}
 							return changed;
 						}
 					}
@@ -153,11 +221,12 @@ namespace DYE::DYEditor
 						.DrawInspector = [](Entity &entity)
 						{
 							bool changed = false;
+							auto& component = entity.GetComponent<TestComponentC>();
 							ImGui::TextWrapped("TestComponentC");
-							changed |= ImGuiUtil::DrawColor4Control("ColorValue", entity.GetComponent<TestComponentC>().ColorValue);
-							changed |= ImGuiUtil::DrawCharControl("TestChar2", entity.GetComponent<TestComponentC>().TestChar2);
-							changed |= ImGuiUtil::DrawTextControl("TestName", entity.GetComponent<TestComponentC>().TestName);
-							changed |= ImGuiUtil::DrawCharControl("TestChar", entity.GetComponent<TestComponentC>().TestChar);
+							changed |= ImGuiUtil::DrawColor4Control("ColorValue", component.ColorValue);
+							changed |= ImGuiUtil::DrawCharControl("TestChar2", component.TestChar2);
+							changed |= ImGuiUtil::DrawTextControl("TestName", component.TestName);
+							changed |= ImGuiUtil::DrawCharControl("TestChar", component.TestChar);
 							return changed;
 						}
 					}

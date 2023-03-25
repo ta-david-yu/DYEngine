@@ -23,6 +23,7 @@ enum class PropertyType
 	Uint8,
 	Char,
 	Vector4,
+	Quaternion,
 
 	Unsupported
 	// TODO: To add more
@@ -108,6 +109,10 @@ PropertyType CastTypeSpecifierStringToPropertyType(std::string_view const& typeS
 	else if (typeString == "Vector4")
 	{
 		return PropertyType::Vector4;
+	}
+	else if (typeString == "Quaternion")
+	{
+		return PropertyType::Quaternion;
 	}
 	else
 	{
@@ -207,41 +212,54 @@ std::string PropertyDescriptorToImGuiUtilControlCallSource(std::string_view cons
 	{
 		case PropertyType::Float:
 		case PropertyType::Double:
-			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawFloatControl(\"{}\", entity.GetComponent<{}>().{});\n",
-							   propertyDescriptor.VariableName, componentType, propertyDescriptor.VariableName);
+			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawFloatControl(\"{}\", component.{});\n",
+							   propertyDescriptor.VariableName, propertyDescriptor.VariableName);
 		case PropertyType::Bool:
-			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawBoolControl(\"{}\", entity.GetComponent<{}>().{});\n",
-							   propertyDescriptor.VariableName, componentType, propertyDescriptor.VariableName);
+			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawBoolControl(\"{}\", component.{});\n",
+							   propertyDescriptor.VariableName, propertyDescriptor.VariableName);
 		case PropertyType::String:
-			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawTextControl(\"{}\", entity.GetComponent<{}>().{});\n",
-							   propertyDescriptor.VariableName, componentType, propertyDescriptor.VariableName);
+			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawTextControl(\"{}\", component.{});\n",
+							   propertyDescriptor.VariableName, propertyDescriptor.VariableName);
 		case PropertyType::Vector2:
-			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawVector2Control(\"{}\", entity.GetComponent<{}>().{});\n",
-							   propertyDescriptor.VariableName, componentType, propertyDescriptor.VariableName);
+			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawVector2Control(\"{}\", component.{});\n",
+							   propertyDescriptor.VariableName, propertyDescriptor.VariableName);
 		case PropertyType::Vector3:
-			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawVector3Control(\"{}\", entity.GetComponent<{}>().{});\n",
-							   propertyDescriptor.VariableName, componentType, propertyDescriptor.VariableName);
+			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawVector3Control(\"{}\", component.{});\n",
+							   propertyDescriptor.VariableName, propertyDescriptor.VariableName);
 		case PropertyType::Color4:
-			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawColor4Control(\"{}\", entity.GetComponent<{}>().{});\n",
-							   propertyDescriptor.VariableName, componentType, propertyDescriptor.VariableName);
+			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawColor4Control(\"{}\", component.{});\n",
+							   propertyDescriptor.VariableName, propertyDescriptor.VariableName);
 		case PropertyType::Int32:
 		case PropertyType::Int64:
 		case PropertyType::Int16:
 		case PropertyType::Int8:
-			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawIntControl(\"{}\", entity.GetComponent<{}>().{});\n",
-							   propertyDescriptor.VariableName, componentType, propertyDescriptor.VariableName);
+			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawIntControl(\"{}\", component.{});\n",
+							   propertyDescriptor.VariableName, propertyDescriptor.VariableName);
 		case PropertyType::Uint32:
 		case PropertyType::Uint64:
 		case PropertyType::Uint16:
 		case PropertyType::Uint8:
-			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawIntControl(\"{}\", entity.GetComponent<{}>().{});\n",
-							   propertyDescriptor.VariableName, componentType, propertyDescriptor.VariableName);
+			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawIntControl(\"{}\", component.{});\n",
+							   propertyDescriptor.VariableName, propertyDescriptor.VariableName);
 		case PropertyType::Char:
-			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawCharControl(\"{}\", entity.GetComponent<{}>().{});\n",
-							   propertyDescriptor.VariableName, componentType, propertyDescriptor.VariableName);
+			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawCharControl(\"{}\", component.{});\n",
+							   propertyDescriptor.VariableName, propertyDescriptor.VariableName);
 		case PropertyType::Vector4:
-			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawVector4Control(\"{}\", entity.GetComponent<{}>().{});\n",
-							   propertyDescriptor.VariableName, componentType, propertyDescriptor.VariableName);
+			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawVector4Control(\"{}\", component.{});\n",
+							   propertyDescriptor.VariableName, propertyDescriptor.VariableName);
+		case PropertyType::Quaternion:
+			return fmt::format("\t\t\t\t\t\t\t// '{}' : Quaternion \n"
+							   "\t\t\t\t\t\t\t{}\n"
+							   "\t\t\t\t\t\t\t\tglm::vec3 eulerDegree = glm::eulerAngles(component.{});\n"
+							   "\t\t\t\t\t\t\t\teulerDegree += glm::vec3(0.f); eulerDegree = glm::degrees(eulerDegree);\n"
+							   "\t\t\t\t\t\t\t\tif (ImGuiUtil::DrawVector3Control(\"{}\", eulerDegree))\n"
+							   "\t\t\t\t\t\t\t\t{}\n"		// THIS is causing the error!! Have to use the hack.
+							   "\t\t\t\t\t\t\t\t	eulerDegree.y = glm::clamp(eulerDegree.y, -90.f, 90.f);\n"
+							   "\t\t\t\t\t\t\t\t	component.{} = glm::quat (glm::radians(eulerDegree));\n"
+							   "\t\t\t\t\t\t\t\t	changed = true;\n"
+							   "\t\t\t\t\t\t\t\t{}\n"
+							   "\t\t\t\t\t\t\t{}\n", 	// THIS is causing the error!! Have to use the hack.
+							   propertyDescriptor.VariableName, "{", propertyDescriptor.VariableName, propertyDescriptor.VariableName, "{", propertyDescriptor.VariableName, "}", "}");
 		case PropertyType::Unsupported:
 		default:
 			return fmt::format("\t\t\t\t\t\t\t"

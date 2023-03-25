@@ -46,6 +46,7 @@ char const* DrawInspectorLambdaSourceStart =
 	R"(						.DrawInspector = [](Entity &entity)
 						{
 							bool changed = false;
+							auto& component = entity.GetComponent<${COMPONENT_FULL_TYPE}>();
 							ImGui::TextWrapped("${COMPONENT_FULL_TYPE}");
 )";
 
