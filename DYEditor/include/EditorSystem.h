@@ -3,6 +3,8 @@
 #include "EditorProperty.h"
 #include "World.h"
 
+#include <optional>
+
 /// A class marked with this macro will be identified by DYEditor code generator. DYEditor code generator will
 /// then generate code that registers the marked class into TypeRegistry as a system. \n\n
 /// Example:\n
@@ -18,30 +20,23 @@ namespace DYE::DYEditor
 {
 	enum class ExecutionPhase
 	{
+		/// Called at the start of the scene
 		Initialize = 0,
-		Update,
 		FixedUpdate,
+		Update,
+		/// Called after all Updates but before all Renders
+		LateUpdate,
 		Render,
-		ImGui
+		ImGui,
+		/// Called at the end of each frame
+		Cleanup,
+		/// Called at the end of the scene
+		TearDown
 	};
 
-	static std::string ExecutionPhaseToString(ExecutionPhase phase)
-	{
-		switch (phase)
-		{
-			case ExecutionPhase::Initialize:
-				return "Initialize";
-			case ExecutionPhase::Update:
-				return "Update";
-			case ExecutionPhase::FixedUpdate:
-				return "FixedUpdate";
-			case ExecutionPhase::Render:
-				return "Render";
-			case ExecutionPhase::ImGui:
-				return "ImGui";
-		}
-		return "Invalid Phase";
-	}
+	std::string CastExecutionPhaseToString(ExecutionPhase phase);
+
+	std::optional<ExecutionPhase> TryCastStringToExecutionPhase(std::string_view const& phaseInString);
 
 	struct ExecuteParameters
 	{
