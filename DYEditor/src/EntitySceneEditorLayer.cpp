@@ -233,19 +233,33 @@ namespace DYE::DYEditor
 			ImGui::TextUnformatted(headerText);
 
 			// Draw move up & move down buttons, from right to left.
-			float const offsetToRight = ImGui::GetFrameHeight();
+			bool const isTheFirst = i == 0;
+			bool const isTheLast = i == scene.SystemTypeNames.size() - 1;
+			float const offsetToRight = ImGui::GetFrameHeightWithSpacing();
 			float const fullReorderButtonWidth = ImGui::GetWindowWidth();
 			ImGui::SameLine();
 			ImGui::SetCursorPosX(fullReorderButtonWidth - offsetToRight * 2);	// * 2 because: close button + up button (itself)
-			if (ImGui::ArrowButton("##up", ImGuiDir_Up))
+			if (!isTheFirst && ImGui::ArrowButton("##up", ImGuiDir_Up))
 			{
-
+				// Swap with the previous system and return right away.
+				int const otherSystemIndex = i - 1;
+				auto const otherSystemName = scene.SystemTypeNames[otherSystemIndex];
+				scene.SystemTypeNames[otherSystemIndex] = systemName;
+				scene.SystemTypeNames[i] = otherSystemName;
+				ImGui::PopID();
+				return true;
 			}
 			ImGui::SameLine();
 			ImGui::SetCursorPosX(fullReorderButtonWidth - offsetToRight * 3);	// * 3 because: close button + up button + down button (itself)
-			if (ImGui::ArrowButton("##down", ImGuiDir_Down))
+			if (!isTheLast && ImGui::ArrowButton("##down", ImGuiDir_Down))
 			{
-
+				// Swap with the next system and return right away.
+				int const otherSystemIndex = i + 1;
+				auto const otherSystemName = scene.SystemTypeNames[otherSystemIndex];
+				scene.SystemTypeNames[otherSystemIndex] = systemName;
+				scene.SystemTypeNames[i] = otherSystemName;
+				ImGui::PopID();
+				return true;
 			}
 
 			if (isShown)
