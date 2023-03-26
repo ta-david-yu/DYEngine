@@ -108,7 +108,6 @@ namespace DYE::DYEditor
 		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
 		if (ImGui::Begin("Entity Inspector"))
 		{
-			//drawEntityInspector(m_Entity, TypeRegistry::GetComponentTypesNamesAndFunctionCollections());
 			drawEntityInspector(m_CurrentSelectedEntity, TypeRegistry::GetComponentTypesNamesAndFunctionCollections());
 		}
 		ImGui::End();
@@ -156,7 +155,7 @@ namespace DYE::DYEditor
 	{
 		bool changed = false;
 
-		std::unordered_set<std::string> includedScenes(scene.SystemTypeNames.begin(), scene.SystemTypeNames.end());
+		std::unordered_set<std::string> const includedScenes(scene.SystemTypeNames.begin(), scene.SystemTypeNames.end());
 
 		// Draw a 'Add System' button at the top of the inspector, and align it to the right side of the window.
 		char const* addSystemPopupId = "Add System Menu Popup";
@@ -225,10 +224,29 @@ namespace DYE::DYEditor
 			}
 
 			static bool isEnabled = true;
+			// Draw enabled toggle.
 			ImGui::SameLine();
 			ImGui::Checkbox("##Checkbox", &isEnabled);
+
+			// Draw header text (system name most likely).
 			ImGui::SameLine();
 			ImGui::TextUnformatted(headerText);
+
+			// Draw move up & move down buttons, from right to left.
+			float const offsetToRight = ImGui::GetFrameHeight();
+			float const fullReorderButtonWidth = ImGui::GetWindowWidth();
+			ImGui::SameLine();
+			ImGui::SetCursorPosX(fullReorderButtonWidth - offsetToRight * 2);	// * 2 because: close button + up button (itself)
+			if (ImGui::ArrowButton("##up", ImGuiDir_Up))
+			{
+
+			}
+			ImGui::SameLine();
+			ImGui::SetCursorPosX(fullReorderButtonWidth - offsetToRight * 3);	// * 3 because: close button + up button + down button (itself)
+			if (ImGui::ArrowButton("##down", ImGuiDir_Down))
+			{
+
+			}
 
 			if (isShown)
 			{
@@ -252,7 +270,7 @@ namespace DYE::DYEditor
 			scene.SystemTypeNames.erase(scene.SystemTypeNames.begin() + index);
 		}
 
-		return false;
+		return changed;
 	}
 
 	bool EntitySceneEditorLayer::drawEntityInspector(DYEntity::Entity &entity,
