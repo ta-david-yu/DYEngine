@@ -8,8 +8,10 @@
 
 #include "Serialization/SerializedObjectFactory.h"
 
-#include <imgui.h>
+#include <unordered_set>
+#include <stack>
 #include <iostream>
+#include <imgui.h>
 
 using namespace DYE::DYEntity;
 
@@ -70,8 +72,6 @@ namespace DYE::DYEditor
 
 	void EntitySceneEditorLayer::OnImGui()
 	{
-		ImGui::ShowDemoWindow();
-
 		// Set a default size for the window in case it has never been opened before.
 		const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
 		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
@@ -88,7 +88,17 @@ namespace DYE::DYEditor
 		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
 		if (ImGui::Begin("Scene Hierarchy"))
 		{
-			drawSceneHierarchy(m_Scene, &m_CurrentSelectedEntity);
+			drawSceneEntityHierarchyPanel(m_Scene, &m_CurrentSelectedEntity);
+		}
+		ImGui::End();
+
+		// Set a default size for the window in case it has never been opened before.
+		main_viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
+		if (ImGui::Begin("Scene System"))
+		{
+			drawSceneSystemListPanel(m_Scene);
 		}
 		ImGui::End();
 
@@ -102,9 +112,11 @@ namespace DYE::DYEditor
 			drawEntityInspector(m_CurrentSelectedEntity, TypeRegistry::GetComponentTypesNamesAndFunctionCollections());
 		}
 		ImGui::End();
+
+		ImGui::ShowDemoWindow();
 	}
 
-	bool EntitySceneEditorLayer::drawSceneHierarchy(Scene &scene, Entity *pCurrentSelectedEntity)
+	bool EntitySceneEditorLayer::drawSceneEntityHierarchyPanel(Scene &scene, Entity *pCurrentSelectedEntity)
 	{
 		scene.World.ForEachEntity
 		(
@@ -140,6 +152,109 @@ namespace DYE::DYEditor
 		return false;
 	}
 
+	bool EntitySceneEditorLayer::drawSceneSystemListPanel(Scene &scene)
+	{
+		bool changed = false;
+
+		std::unordered_set<std::string> includedScenes(scene.SystemTypeNames.begin(), scene.SystemTypeNames.end());
+
+		// Draw a 'Add System' button at the top of the inspector, and align it to the right side of the window.
+		char const* addSystemPopupId = "Add System Menu Popup";
+		ImVec2 const addButtonSize = ImVec2 {150, 0};
+		float const fullAddButtonWidth = ImGui::GetWindowWidth();
+		ImGui::SetCursorPosX(fullAddButtonWidth - addButtonSize.x);
+		if (ImGui::Button("Add System", addButtonSize))
+		{
+			ImGui::OpenPopup(addSystemPopupId);
+		}
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
+		{
+			ImGui::BeginTooltip();
+			ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+			ImGui::TextUnformatted("Add a new system to the scene.");
+			ImGui::PopTextWrapPos();
+			ImGui::EndTooltip();
+		}
+
+		if (ImGui::BeginPopup(addSystemPopupId))
+		{
+			if (ImGui::BeginListBox("##Add System List Box"))
+			{
+				for (auto const& [systemName, pSystemInstance] : TypeRegistry::GetSystemNamesAndInstances())
+				{
+					if (includedScenes.contains(systemName))
+					{
+						// The scene already has this system, skip it.
+						continue;
+					}
+
+					if (ImGui::Selectable(systemName.c_str()))
+					{
+						// Add the system.
+						scene.SystemTypeNames.push_back(systemName);
+						changed = true;
+						ImGui::CloseCurrentPopup();
+					}
+				}
+				ImGui::EndListBox();
+			}
+			ImGui::EndPopup();
+		}
+
+		std::stack<int> toBeRemovedSystemIndices;
+		for (int i = 0; i < scene.SystemTypeNames.size(); ++i)
+		{
+			auto& systemName = scene.SystemTypeNames[i];
+
+			ImGui::PushID(systemName.c_str());
+			SystemBase* pSystemInstance = TypeRegistry::TryGetSystemInstance(systemName);
+			bool const isRecognizedSystem = pSystemInstance != nullptr;
+			char const* headerText = isRecognizedSystem? systemName.c_str() : "(Unrecognized System)";
+
+			ImGui::AlignTextToFramePadding();
+
+			bool isHeaderVisible = true;
+			bool const isShown = ImGui::CollapsingHeader("", &isHeaderVisible, ImGuiTreeNodeFlags_AllowItemOverlap);
+			bool const isRemoved = !isHeaderVisible;
+			if (isRemoved)
+			{
+				changed = true;
+				toBeRemovedSystemIndices.push(i);
+				ImGui::PopID();
+				continue;
+			}
+
+			static bool isEnabled = true;
+			ImGui::SameLine();
+			ImGui::Checkbox("##Checkbox", &isEnabled);
+			ImGui::SameLine();
+			ImGui::TextUnformatted(headerText);
+
+			if (isShown)
+			{
+				if (isRecognizedSystem)
+				{
+					pSystemInstance->DrawInspector(scene.World);
+				}
+				else
+				{
+					ImGui::TextWrapped("System '%s' cannot be found in the TypeRegistry.", systemName.c_str());
+				}
+			}
+
+			ImGui::PopID();
+		}
+
+		// Remove systems.
+		while (!toBeRemovedSystemIndices.empty())
+		{
+			int const index = toBeRemovedSystemIndices.top(); toBeRemovedSystemIndices.pop();
+			scene.SystemTypeNames.erase(scene.SystemTypeNames.begin() + index);
+		}
+
+		return false;
+	}
+
 	bool EntitySceneEditorLayer::drawEntityInspector(DYEntity::Entity &entity,
 													 std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> componentNamesAndFunctions)
 	{
@@ -149,6 +264,12 @@ namespace DYE::DYEditor
 		}
 
 		bool changed = false;
+
+		if (ImGui::Button("Save To TestPrefab.tprefab"))
+		{
+			auto serializedEntity = SerializedObjectFactory::CreateSerializedEntity(entity);
+			SerializedObjectFactory::SaveSerializedEntityToFile(serializedEntity, "assets\\Scenes\\TestPrefab.tprefab");
+		}
 
 		// Draw a 'Add Component' button at the top of the inspector, and align it to the right side of the window.
 		char const* addComponentPopupId = "Add Component Menu Popup";
@@ -163,26 +284,17 @@ namespace DYE::DYEditor
 		{
 			ImGui::BeginTooltip();
 			ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-			ImGui::TextUnformatted("Add a new component to this entity.");
+			ImGui::TextUnformatted("Add a new component to the entity.");
 			ImGui::PopTextWrapPos();
 			ImGui::EndTooltip();
-		}
-
-		if (ImGui::Button("Save To TestPrefab.tprefab"))
-		{
-			auto serializedEntity = SerializedObjectFactory::CreateSerializedEntity(entity);
-			SerializedObjectFactory::SaveSerializedEntityToFile(serializedEntity, "assets\\Scenes\\TestPrefab.tprefab");
 		}
 
 		if (ImGui::BeginPopup(addComponentPopupId))
 		{
 			if (ImGui::BeginListBox("##Add Component List Box"))
 			{
-				for (int componentIndex = 0; componentIndex < componentNamesAndFunctions.size(); componentIndex++)
+				for (auto const& [name, functionCollections] : componentNamesAndFunctions)
 				{
-					auto const& name = componentNamesAndFunctions[componentIndex].first;
-					auto const& functionCollections = componentNamesAndFunctions[componentIndex].second;
-
 					if (functionCollections.Has(entity))
 					{
 						// The entity already has this component, skip it.
@@ -216,10 +328,10 @@ namespace DYE::DYEditor
 				continue;
 			}
 
-			bool showHeader = true;
-			bool const showInspector = ImGui::CollapsingHeader(name.c_str(), &showHeader);
+			bool isHeaderVisible = true;
+			bool const showInspector = ImGui::CollapsingHeader(name.c_str(), &isHeaderVisible);
 
-			bool const isRemoved = !showHeader;
+			bool const isRemoved = !isHeaderVisible;
 			if (isRemoved)
 			{
 				// Remove the component

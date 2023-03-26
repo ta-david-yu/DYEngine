@@ -77,6 +77,16 @@ namespace DYE::DYEditor
 		return {};
 	}
 
+	SystemBase* TypeRegistry::TryGetSystemInstance(const std::string &systemName)
+	{
+		if (s_SystemRegistry.contains(systemName))
+		{
+			return s_SystemRegistry.at(systemName);
+		}
+
+		return nullptr;
+	}
+
 	void TypeRegistry::registerComponentType(std::string const &componentName, ComponentTypeFunctionCollection functions)
 	{
 		auto [iterator, insertionSuccess] = s_ComponentTypeRegistry.emplace(componentName, functions);

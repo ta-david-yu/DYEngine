@@ -29,7 +29,8 @@ namespace DYE::DYEditor
 		DYEntity::World m_World;
 		DYEntity::Entity m_Entity;
 
-		static bool drawSceneHierarchy(Scene &scene, DYEntity::Entity *pCurrentSelectedEntity);
+		static bool drawSceneEntityHierarchyPanel(Scene &scene, DYEntity::Entity *pCurrentSelectedEntity);
+		static bool drawSceneSystemListPanel(Scene &scene);
 		static bool drawEntityInspector(DYEntity::Entity &entity, std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> componentNamesAndFunctions);
 		static void drawRegisteredSystems(DYEntity::World& world);
 	};

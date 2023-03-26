@@ -5,6 +5,9 @@ Version = 2
 Type = "LoadSpriteTextureSystem"
 
 [[Systems]]
+Type = "Derived System A"
+
+[[Systems]]
 Type = "MovementSystem"
 
 [[Systems]]

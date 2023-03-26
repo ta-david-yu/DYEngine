@@ -90,8 +90,10 @@ namespace DYE::DYEditor
 		/// The function is expensive, the user should cache the result instead of calling the function regularly.
 		static std::vector<std::pair<std::string, SystemBase*>> GetSystemNamesAndInstances();
 
-		/// \return
 		static std::optional<ComponentTypeFunctionCollection> TryGetComponentTypeFunctions(std::string const& componentTypeName);
+
+		/// \return a pointer to the system instance, else nullptr.
+		static SystemBase* TryGetSystemInstance(std::string const& systemName);
 
 	private:
 		static void registerComponentType(std::string const &componentName, ComponentTypeFunctionCollection functions);
