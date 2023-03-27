@@ -3,12 +3,14 @@ Version = 2
 
 [[Systems]]
 Type = "LoadSpriteTextureSystem"
+Group = "AssetInitializationGroup"
 
 [[Systems]]
 Type = "Derived System A"
 
 [[Systems]]
 Type = "MovementSystem"
+Group = "MovementGroup"
 
 [[Systems]]
 Type = "SpriteRenderingSystem"
