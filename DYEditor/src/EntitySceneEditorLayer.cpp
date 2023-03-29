@@ -26,42 +26,6 @@ namespace DYE::DYEditor
 		// DEBUGGING, Should be moved to EntityLevelEditorApplication so that both EntityLevelEditorLayer & EntityLevelRuntimeLayer could use it
 		DYEditor::RegisterBuiltInTypes();
 		DYEditor::RegisterUserTypes();
-
-		// DEBUGGING
-		m_Entity = m_World.CreateEntity();
-
-		auto componentNamesAndFunctions = TypeRegistry::GetComponentTypesNamesAndFunctionCollections();
-		for (auto& [name, functions] : componentNamesAndFunctions)
-		{
-			functions.Add(m_Entity);
-		}
-
-
-		// DEBUGGING
-		std::optional<SerializedScene> serializedScene = SerializedObjectFactory::TryLoadSerializedSceneFromFile("assets\\Scenes\\TestScene.tscene");
-		if (serializedScene.has_value())
-		{
-			auto serializedSystems = serializedScene->GetSerializedSystemHandles();
-			DYE_LOG("Number Of Systems: %d\n", serializedSystems.size());
-			for (auto &systemHandle: serializedSystems)
-			{
-				DYE_LOG("\tSystem: %s\n", systemHandle.TryGetTypeName()->c_str());
-			}
-
-			auto serializedEntities = serializedScene->GetSerializedEntityHandles();
-			for (auto &entityHandle: serializedEntities)
-			{
-				auto serializedComponents = entityHandle.GetSerializedComponentHandles();
-				DYE_LOG("Number Of Components: %d\n", serializedComponents.size());
-
-				for (auto &componentHandle: serializedComponents)
-				{
-					DYE_LOG("\tComponent Type: %s\n", componentHandle.TryGetTypeName()->c_str());
-				}
-			}
-
-			SerializedObjectFactory::ApplySerializedSceneToEmptyScene(serializedScene.value(), m_Scene);
-		}
 	}
 
 	void EntitySceneEditorLayer::OnDetach()
@@ -72,7 +36,7 @@ namespace DYE::DYEditor
 
 	void EntitySceneEditorLayer::OnImGui()
 	{
-		drawMainMenuBar();
+		drawMainMenuBar(m_Scene);
 
 		// Set a default size for the window in case it has never been opened before.
 		const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
@@ -173,12 +137,28 @@ namespace DYE::DYEditor
 		ImGui::ShowDemoWindow();
 	}
 
-	void EntitySceneEditorLayer::drawMainMenuBar()
+	void EntitySceneEditorLayer::drawMainMenuBar(Scene& currentScene)
 	{
 		if (ImGui::BeginMainMenuBar())
 		{
 			if (ImGui::BeginMenu("File"))
 			{
+				if (ImGui::MenuItem("Save", "CTRL+S"))
+				{
+					auto serializedScene = SerializedObjectFactory::CreateSerializedScene(currentScene);
+					SerializedObjectFactory::SaveSerializedSceneToFile(serializedScene, "assets\\Scenes\\TestScene.tscene");
+				}
+
+				if (ImGui::MenuItem("Load"))
+				{
+					currentScene.Clear();
+					std::optional<SerializedScene> serializedScene = SerializedObjectFactory::TryLoadSerializedSceneFromFile("assets\\Scenes\\TestScene.tscene");
+					if (serializedScene.has_value())
+					{
+						SerializedObjectFactory::ApplySerializedSceneToEmptyScene(serializedScene.value(), currentScene);
+					}
+				}
+
 				ImGui::EndMenu();
 			}
 			if (ImGui::BeginMenu("Edit"))
@@ -197,9 +177,23 @@ namespace DYE::DYEditor
 
 	bool EntitySceneEditorLayer::drawSceneEntityHierarchyPanel(Scene &scene, Entity *pCurrentSelectedEntity)
 	{
+		// Draw scene hierarchy context menu.
+		if (ImGui::BeginPopupContextWindow())
+		{
+			if (ImGui::Selectable("Create Empty"))
+			{
+				scene.World.CreateEntity("Entity");
+			}
+			ImGui::EndPopup();
+		}
+
+		// Draw scene name as title.
+		ImGui::SeparatorText(scene.Name.c_str());
+
+		// Draw all entities.
 		scene.World.ForEachEntity
 		(
-			[&pCurrentSelectedEntity](DYEntity::Entity& entity)
+			[&scene, &pCurrentSelectedEntity](DYEntity::Entity& entity)
 			{
 				auto tryGetNameResult = entity.TryGetName();
 				if (!tryGetNameResult.has_value())
@@ -216,10 +210,21 @@ namespace DYE::DYEditor
 				if (isSelected) flags |= ImGuiTreeNodeFlags_Selected;
 
 				bool const isNodeOpen = ImGui::TreeNodeEx((void*)(std::uint64_t) entity.GetID(), flags, name.c_str());
-				if (ImGui::IsItemClicked())
+				if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
 				{
 					*pCurrentSelectedEntity = entity;
 				}
+
+				// Draw entity context menu.
+				if (ImGui::BeginPopupContextItem())
+				{
+					if (ImGui::Selectable("Delete"))
+					{
+						scene.World.DestroyEntity(entity);
+					}
+					ImGui::EndPopup();
+				}
+
 
 				if (isNodeOpen)
 				{

@@ -28,8 +28,9 @@ namespace DYE::DYEditor
 
 		std::vector<SystemDescriptor>& GetSystemDescriptorsOfPhase(ExecutionPhase phase);
 
+		/// Foreach for all system descriptor from different event phases, this does not include systems which are unrecognized.
 		template<typename Func>
-		void ForEachSystemTypeName(Func function)
+		void ForEachSystemDescriptor(Func function)
 		{
 			for (const auto& systemDescriptor : InitializeSystemDescriptors)
 			{
@@ -66,6 +67,9 @@ namespace DYE::DYEditor
 		}
 
 		GroupID AddOrGetGroupID(std::string_view const& groupName);
+
+		/// Remove all entities and systems. Basically make the scene empty.
+		void Clear();
 
 	public:
 		std::string Name;

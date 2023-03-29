@@ -44,5 +44,24 @@ namespace DYE::DYEditor
 		SystemGroupNames.emplace_back(groupName);
 		return SystemGroupNames.size() - 1;
 	}
+
+	void Scene::Clear()
+	{
+		Name.clear();
+
+		InitializeSystemDescriptors.clear();
+		FixedUpdateSystemDescriptors.clear();
+		UpdateSystemDescriptors.clear();
+		LateUpdateSystemDescriptors.clear();
+		RenderSystemDescriptors.clear();
+		ImGuiSystemDescriptors.clear();
+		CleanupSystemDescriptors.clear();
+		TearDownSystemDescriptors.clear();
+		UnrecognizedSystems.clear();
+
+		SystemGroupNames.clear();
+
+		World.Clear();
+	}
 }
 

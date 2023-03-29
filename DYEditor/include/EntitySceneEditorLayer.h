@@ -32,7 +32,7 @@ namespace DYE::DYEditor
 		DYEntity::World m_World;
 		DYEntity::Entity m_Entity;
 
-		static void drawMainMenuBar();
+		static void drawMainMenuBar(Scene& currentScene);
 
 		static bool drawSceneEntityHierarchyPanel(Scene &scene, DYEntity::Entity *pCurrentSelectedEntity);
 

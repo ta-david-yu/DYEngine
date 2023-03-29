@@ -16,6 +16,7 @@ namespace DYE::DYEntity
 
 		Entity CreateEntity();
 		Entity CreateEntity(std::string const& name);
+		void DestroyEntity(Entity& entity);
 
 		template<typename Func>
 		void ForEachEntity(Func function)
@@ -29,7 +30,8 @@ namespace DYE::DYEntity
 		}
 
 		inline bool IsEmpty() const { return m_Registry.empty(); }
-
+		inline void Reserve(std::size_t size) { m_Registry.reserve(size); }
+		void Clear() { m_Registry.clear<>(); }
 	private:
 		entt::registry m_Registry;
 

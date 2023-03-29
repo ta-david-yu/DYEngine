@@ -43,6 +43,12 @@ namespace DYE::DYEditor
 		auto serializedSystemHandles = serializedScene.GetSerializedSystemHandles();
 		auto serializedEntityHandles = serializedScene.GetSerializedEntityHandles();
 
+		auto tryGetSceneNameResult = serializedScene.TryGetName();
+		if (tryGetSceneNameResult.has_value())
+		{
+			scene.Name = tryGetSceneNameResult.value();
+		}
+
 		// Populate systems.
 		scene.InitializeSystemDescriptors.reserve(serializedSystemHandles.size());
 		for (auto& serializedSystemHandle : serializedSystemHandles)
@@ -75,8 +81,10 @@ namespace DYE::DYEditor
 		}
 
 		// Populate entities.
-		for (auto& serializedEntityHandle : serializedEntityHandles)
+		scene.World.Reserve(serializedEntityHandles.size());
+		for (int i = serializedEntityHandles.size() - 1; i >= 0; i--)
 		{
+			auto& serializedEntityHandle = serializedEntityHandles[i];
 			DYEntity::Entity entity = scene.World.CreateEntity();
 			ApplySerializedEntityToEmptyEntity(serializedEntityHandle, entity);
 		}
@@ -134,21 +142,36 @@ namespace DYE::DYEditor
 		serializedScene.SetName(scene.Name);
 
 		// Populate systems.
-		scene.ForEachSystemTypeName
-		(
-			[&serializedScene, &scene](SystemDescriptor const& systemDescriptor, ExecutionPhase phase)
-			{
-				serializedScene.TryAddSystem
+		scene.ForEachSystemDescriptor
+			(
+				[&serializedScene, &scene](SystemDescriptor const &systemDescriptor, ExecutionPhase phase)
+				{
+					serializedScene.TryAddSystem
+						(
+							SerializedScene::AddSystemParameters
+								{
+									.SystemTypeName = systemDescriptor.Name,
+									.HasGroup = systemDescriptor.Group != NO_SYSTEM_GROUP_ID,
+									.SystemGroupName = (systemDescriptor.Group != NO_SYSTEM_GROUP_ID)
+													   ? scene.SystemGroupNames[systemDescriptor.Group] : ""
+								}
+						);
+				}
+			);
+
+		// Populate unrecognized/unknown systems.
+		for (auto unrecognizedSystemDescriptor : scene.UnrecognizedSystems)
+		{
+			serializedScene.TryAddSystem
 				(
 					SerializedScene::AddSystemParameters
 						{
-							.SystemTypeName = systemDescriptor.Name,
-							.HasGroup = systemDescriptor.Group != NO_SYSTEM_GROUP_ID,
-							.SystemGroupName = (systemDescriptor.Group != NO_SYSTEM_GROUP_ID) ? scene.SystemGroupNames[systemDescriptor.Group] : ""
+							.SystemTypeName = unrecognizedSystemDescriptor.Name,
+							.HasGroup = unrecognizedSystemDescriptor.Group != NO_SYSTEM_GROUP_ID,
+							.SystemGroupName = (unrecognizedSystemDescriptor.Group != NO_SYSTEM_GROUP_ID) ? scene.SystemGroupNames[unrecognizedSystemDescriptor.Group] : ""
 						}
 				);
-			}
-		);
+		}
 
 		// Populate entities and their components.
 		scene.World.ForEachEntity

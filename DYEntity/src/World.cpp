@@ -21,4 +21,9 @@ namespace DYE::DYEntity
 
 		return entity;
 	}
+
+	void World::DestroyEntity(Entity &entity)
+	{
+		m_Registry.destroy(entity.m_EntityHandle);
+	}
 }
