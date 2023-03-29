@@ -69,8 +69,8 @@ namespace DYE::DYEditor
 			}
 			else
 			{
-				// Unrecognized system in TypeRegistry, we will just add it to InitializeSystems.
-				scene.InitializeSystemDescriptors.emplace_back(systemDescriptor);
+				// Unrecognized system in TypeRegistry.
+				scene.UnrecognizedSystems.emplace_back(systemDescriptor);
 			}
 		}
 

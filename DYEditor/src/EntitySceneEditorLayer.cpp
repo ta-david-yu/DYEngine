@@ -116,6 +116,21 @@ namespace DYE::DYEditor
 				}
 				ImGui::PopID();
 			}
+
+			ImGui::Separator();
+			if (m_Scene.UnrecognizedSystems.size() > 0)
+			{
+				ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(1.000f, 0.000f, 0.000f, 0.310f));
+				bool const showUnrecognizedSystems = ImGui::CollapsingHeader("Unrecognized Systems");
+				ImGui::PopStyleColor();
+				if (showUnrecognizedSystems)
+				{
+					for (auto const &descriptor: m_Scene.UnrecognizedSystems)
+					{
+						ImGui::Text("System '%s' is unknown in the TypeRegistry.", descriptor.Name.c_str());
+					}
+				}
+			}
 		}
 		ImGui::End();
 
