@@ -233,12 +233,16 @@ namespace DYE::DYEditor
 			);
 
 		// System located in include/SystemExample.h
-		static DerivedSystemA _DerivedSystemA;
-		TypeRegistry::RegisterSystem("Derived System A", &_DerivedSystemA);
+		static UpdateSystemA _UpdateSystemA;
+		TypeRegistry::RegisterSystem("Update System A", &_UpdateSystemA);
 
 		// System located in include/SystemExample.h
-		static SystemNamespace::DerivedSystemB _DerivedSystemB;
-		TypeRegistry::RegisterSystem("Derived System B", &_DerivedSystemB);
+		static FixedUpdateSystemB _FixedUpdateSystemB;
+		TypeRegistry::RegisterSystem("Fixed Update System B", &_FixedUpdateSystemB);
+
+		// System located in include/SystemExample.h
+		static SystemNamespace::InitializeSystemA _InitializeSystemA;
+		TypeRegistry::RegisterSystem("Initialize System A", &_InitializeSystemA);
 
 	}
 

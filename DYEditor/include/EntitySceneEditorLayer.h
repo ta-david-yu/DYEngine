@@ -7,6 +7,9 @@
 
 #include "World.h"
 #include "Entity.h"
+#include "EditorSystem.h"
+
+#include <concepts>
 
 namespace DYE::DYEditor
 {
@@ -30,7 +33,10 @@ namespace DYE::DYEditor
 		DYEntity::Entity m_Entity;
 
 		static bool drawSceneEntityHierarchyPanel(Scene &scene, DYEntity::Entity *pCurrentSelectedEntity);
-		static bool drawSceneSystemListPanel(Scene &scene);
+
+		template<typename Func> requires std::predicate<Func, std::string const&, SystemBase const*>
+		static bool drawSceneSystemListPanel(Scene &scene, std::vector<SystemDescriptor> &systemDescriptors, Func addSystemFilterPredicate);
+
 		static bool drawEntityInspector(DYEntity::Entity &entity, std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> componentNamesAndFunctions);
 		static void drawRegisteredSystems(DYEntity::World& world);
 	};

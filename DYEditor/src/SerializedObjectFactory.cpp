@@ -36,7 +36,7 @@ namespace DYE::DYEditor
 	void SerializedObjectFactory::ApplySerializedSceneToEmptyScene(SerializedScene &serializedScene, Scene &scene)
 	{
 #if DYE_DEBUG
-		bool const isEmptyScene = scene.World.IsEmpty() && scene.SystemTypeNames.empty();
+		bool const isEmptyScene = scene.World.IsEmpty() && scene.InitializeSystemDescriptors.empty();
 		DYE_ASSERT(isEmptyScene && "The given scene is not empty!");
 #endif
 
@@ -44,17 +44,34 @@ namespace DYE::DYEditor
 		auto serializedEntityHandles = serializedScene.GetSerializedEntityHandles();
 
 		// Populate systems.
-		scene.SystemTypeNames.reserve(serializedSystemHandles.size());
+		scene.InitializeSystemDescriptors.reserve(serializedSystemHandles.size());
 		for (auto& serializedSystemHandle : serializedSystemHandles)
 		{
 			auto getTypeNameResult = serializedSystemHandle.TryGetTypeName();
-
 			if (!getTypeNameResult.has_value())
 			{
 				continue;
 			}
 
-			scene.SystemTypeNames.emplace_back(getTypeNameResult.value());
+			auto getGroupResult = serializedSystemHandle.TryGetGroupName();
+			bool const hasGroup = getGroupResult.has_value();
+			SystemDescriptor systemDescriptor =
+				{
+					.Name = getTypeNameResult.value(),
+					.Group = hasGroup? scene.AddOrGetGroupID(getGroupResult.value()) : NO_SYSTEM_GROUP_ID
+				};
+
+			SystemBase* pSystemInstance = TypeRegistry::TryGetSystemInstance(getTypeNameResult.value());
+			if (pSystemInstance != nullptr)
+			{
+				auto const phase = pSystemInstance->GetPhase();
+				scene.GetSystemDescriptorsOfPhase(phase).emplace_back(systemDescriptor);
+			}
+			else
+			{
+				// Unrecognized system in TypeRegistry, we will just add it to InitializeSystems.
+				scene.InitializeSystemDescriptors.emplace_back(systemDescriptor);
+			}
 		}
 
 		// Populate entities.
@@ -63,7 +80,6 @@ namespace DYE::DYEditor
 			DYEntity::Entity entity = scene.World.CreateEntity();
 			ApplySerializedEntityToEmptyEntity(serializedEntityHandle, entity);
 		}
-
 	}
 
 	void SerializedObjectFactory::ApplySerializedEntityToEmptyEntity(SerializedEntity &serializedEntity,
@@ -118,10 +134,21 @@ namespace DYE::DYEditor
 		serializedScene.SetName(scene.Name);
 
 		// Populate systems.
-		for (auto systemName : scene.SystemTypeNames)
-		{
-			serializedScene.TryAddSystemOfType(systemName);
-		}
+		scene.ForEachSystemTypeName
+		(
+			[&serializedScene, &scene](SystemDescriptor const& systemDescriptor, ExecutionPhase phase)
+			{
+				serializedScene.TryAddSystem
+				(
+					SerializedScene::AddSystemParameters
+						{
+							.SystemTypeName = systemDescriptor.Name,
+							.HasGroup = systemDescriptor.Group != NO_SYSTEM_GROUP_ID,
+							.SystemGroupName = (systemDescriptor.Group != NO_SYSTEM_GROUP_ID) ? scene.SystemGroupNames[systemDescriptor.Group] : ""
+						}
+				);
+			}
+		);
 
 		// Populate entities and their components.
 		scene.World.ForEachEntity

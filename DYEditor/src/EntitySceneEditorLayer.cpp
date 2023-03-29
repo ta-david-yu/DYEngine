@@ -98,7 +98,24 @@ namespace DYE::DYEditor
 		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
 		if (ImGui::Begin("Scene System"))
 		{
-			drawSceneSystemListPanel(m_Scene);
+			#pragma unroll
+			for (int phaseIndex = static_cast<int>(ExecutionPhase::Initialize); phaseIndex <= static_cast<int>(ExecutionPhase::TearDown); phaseIndex++)
+			{
+				auto const phase = static_cast<ExecutionPhase>(phaseIndex);
+				std::string const& phaseId = CastExecutionPhaseToString(phase);
+				ImGui::PushID(phaseId.c_str());
+				ImGui::Separator();
+				bool const showSystems = ImGui::CollapsingHeader(phaseId.c_str(), ImGuiTreeNodeFlags_AllowItemOverlap);
+				if (showSystems)
+				{
+					drawSceneSystemListPanel(m_Scene, m_Scene.GetSystemDescriptorsOfPhase(phase),
+											 [phase](std::string const &systemName, SystemBase const *pInstance)
+											 {
+												 return pInstance->GetPhase() == phase;
+											 });
+				}
+				ImGui::PopID();
+			}
 		}
 		ImGui::End();
 
@@ -108,6 +125,13 @@ namespace DYE::DYEditor
 		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
 		if (ImGui::Begin("Entity Inspector"))
 		{
+			if (m_CurrentSelectedEntity.IsValid() && ImGui::Button("Save To TestPrefab.tprefab"))
+			{
+				auto serializedEntity = SerializedObjectFactory::CreateSerializedEntity(m_CurrentSelectedEntity);
+				SerializedObjectFactory::SaveSerializedEntityToFile(serializedEntity, "assets\\Scenes\\TestPrefab.tprefab");
+			}
+			ImGui::Separator();
+
 			drawEntityInspector(m_CurrentSelectedEntity, TypeRegistry::GetComponentTypesNamesAndFunctionCollections());
 		}
 		ImGui::End();
@@ -151,11 +175,22 @@ namespace DYE::DYEditor
 		return false;
 	}
 
-	bool EntitySceneEditorLayer::drawSceneSystemListPanel(Scene &scene)
+	template<typename Func> requires std::predicate<Func, std::string const&, SystemBase const*>
+	bool EntitySceneEditorLayer::drawSceneSystemListPanel(Scene &scene, std::vector<SystemDescriptor> &systemDescriptors, Func addSystemFilterPredicate)
 	{
 		bool changed = false;
 
-		std::unordered_set<std::string> const includedScenes(scene.SystemTypeNames.begin(), scene.SystemTypeNames.end());
+		// Create a set for faster lookup of already included systems.
+		std::unordered_set<std::string> alreadyIncludedSystems;
+		alreadyIncludedSystems.reserve(systemDescriptors.size());
+		std::for_each(systemDescriptors.begin(), systemDescriptors.end(),
+					  	[&alreadyIncludedSystems](SystemDescriptor const& descriptor)
+					  	{
+							alreadyIncludedSystems.insert(descriptor.Name);
+					 	});
+
+		ImGui::TextWrapped("Number Of Systems: %d", systemDescriptors.size());
+		ImGui::SameLine();
 
 		// Draw a 'Add System' button at the top of the inspector, and align it to the right side of the window.
 		char const* addSystemPopupId = "Add System Menu Popup";
@@ -181,16 +216,28 @@ namespace DYE::DYEditor
 			{
 				for (auto const& [systemName, pSystemInstance] : TypeRegistry::GetSystemNamesAndInstances())
 				{
-					if (includedScenes.contains(systemName))
+					if (alreadyIncludedSystems.contains(systemName))
 					{
 						// The scene already has this system, skip it.
+						continue;
+					}
+
+					if (!addSystemFilterPredicate(systemName, pSystemInstance))
+					{
 						continue;
 					}
 
 					if (ImGui::Selectable(systemName.c_str()))
 					{
 						// Add the system.
-						scene.SystemTypeNames.push_back(systemName);
+						systemDescriptors.push_back
+						(
+							SystemDescriptor
+								{
+									.Name = systemName,
+									.Group = NO_SYSTEM_GROUP_ID
+								}
+						);
 						changed = true;
 						ImGui::CloseCurrentPopup();
 					}
@@ -201,19 +248,21 @@ namespace DYE::DYEditor
 		}
 
 		std::stack<int> toBeRemovedSystemIndices;
-		for (int i = 0; i < scene.SystemTypeNames.size(); ++i)
+		for (int i = 0; i < systemDescriptors.size(); ++i)
 		{
-			auto& systemName = scene.SystemTypeNames[i];
+			auto& systemDescriptor = systemDescriptors[i];
 
-			ImGui::PushID(systemName.c_str());
-			SystemBase* pSystemInstance = TypeRegistry::TryGetSystemInstance(systemName);
+			ImGui::PushID(systemDescriptor.Name.c_str());
+			SystemBase* pSystemInstance = TypeRegistry::TryGetSystemInstance(systemDescriptor.Name);
 			bool const isRecognizedSystem = pSystemInstance != nullptr;
-			char const* headerText = isRecognizedSystem? systemName.c_str() : "(Unrecognized System)";
+			char const* headerText = isRecognizedSystem ? systemDescriptor.Name.c_str() : "(Unrecognized System)";
 
 			ImGui::AlignTextToFramePadding();
 
 			bool isHeaderVisible = true;
+			ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.000f, 0.215f, 0.470f, 0.310f));
 			bool const isShown = ImGui::CollapsingHeader("", &isHeaderVisible, ImGuiTreeNodeFlags_AllowItemOverlap);
+			ImGui::PopStyleColor();
 			bool const isRemoved = !isHeaderVisible;
 			if (isRemoved)
 			{
@@ -234,9 +283,9 @@ namespace DYE::DYEditor
 
 			// Draw move up & move down buttons, from right to left.
 			bool const isTheFirst = i == 0;
-			bool const isTheLast = i == scene.SystemTypeNames.size() - 1;
+			bool const isTheLast = i == systemDescriptors.size() - 1;
 			float const offsetToRight = ImGui::GetFrameHeightWithSpacing();
-			float const fullReorderButtonWidth = ImGui::GetWindowWidth();
+			float const fullReorderButtonWidth = ImGui::GetContentRegionAvail().x;
 			if (!isTheFirst)
 			{
 				ImGui::SameLine();
@@ -245,9 +294,9 @@ namespace DYE::DYEditor
 				{
 					// Swap with the previous system and return right away.
 					int const otherSystemIndex = i - 1;
-					auto const otherSystemName = scene.SystemTypeNames[otherSystemIndex];
-					scene.SystemTypeNames[otherSystemIndex] = systemName;
-					scene.SystemTypeNames[i] = otherSystemName;
+					auto const otherSystemDescriptor = systemDescriptors[otherSystemIndex];
+					systemDescriptors[otherSystemIndex] = systemDescriptor;
+					systemDescriptors[i] = otherSystemDescriptor;
 					ImGui::PopID();
 					return true;
 				}
@@ -260,9 +309,9 @@ namespace DYE::DYEditor
 				{
 					// Swap with the next system and return right away.
 					int const otherSystemIndex = i + 1;
-					auto const otherSystemName = scene.SystemTypeNames[otherSystemIndex];
-					scene.SystemTypeNames[otherSystemIndex] = systemName;
-					scene.SystemTypeNames[i] = otherSystemName;
+					auto const otherSystemDescriptor = systemDescriptors[otherSystemIndex];
+					systemDescriptors[otherSystemIndex] = systemDescriptor;
+					systemDescriptors[i] = otherSystemDescriptor;
 					ImGui::PopID();
 					return true;
 				}
@@ -270,13 +319,17 @@ namespace DYE::DYEditor
 
 			if (isShown)
 			{
+				if (systemDescriptor.Group != NO_SYSTEM_GROUP_ID)
+				{
+					ImGuiUtil::DrawReadOnlyTextWithLabel("Group", scene.SystemGroupNames[systemDescriptor.Group]);
+				}
 				if (isRecognizedSystem)
 				{
 					pSystemInstance->DrawInspector(scene.World);
 				}
 				else
 				{
-					ImGui::TextWrapped("System '%s' cannot be found in the TypeRegistry.", systemName.c_str());
+					ImGui::TextWrapped("System '%s' cannot be found in the TypeRegistry.", systemDescriptor.Name.c_str());
 				}
 			}
 
@@ -287,7 +340,7 @@ namespace DYE::DYEditor
 		while (!toBeRemovedSystemIndices.empty())
 		{
 			int const index = toBeRemovedSystemIndices.top(); toBeRemovedSystemIndices.pop();
-			scene.SystemTypeNames.erase(scene.SystemTypeNames.begin() + index);
+			systemDescriptors.erase(systemDescriptors.begin() + index);
 		}
 
 		return changed;
@@ -302,12 +355,6 @@ namespace DYE::DYEditor
 		}
 
 		bool changed = false;
-
-		if (ImGui::Button("Save To TestPrefab.tprefab"))
-		{
-			auto serializedEntity = SerializedObjectFactory::CreateSerializedEntity(entity);
-			SerializedObjectFactory::SaveSerializedEntityToFile(serializedEntity, "assets\\Scenes\\TestPrefab.tprefab");
-		}
 
 		// Draw a 'Add Component' button at the top of the inspector, and align it to the right side of the window.
 		char const* addComponentPopupId = "Add Component Menu Popup";

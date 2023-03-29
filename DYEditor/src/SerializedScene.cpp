@@ -71,10 +71,6 @@ namespace DYE::DYEditor
 		return handles;
 	}
 
-	SerializedScene::SerializedScene(toml::table &&sceneTable) : m_SceneTable(sceneTable)
-	{
-	}
-
 	SerializedEntity SerializedScene::CreateAndAddSerializedEntity()
 	{
 		toml::array* pArrayOfEntityTables = m_SceneTable.get_as<toml::array>(ArrayOfEntityTablesKey);
@@ -91,7 +87,7 @@ namespace DYE::DYEditor
 		return SerializedEntity(pNewEntityTableHandle);
 	}
 
-	SerializedSystemHandle SerializedScene::TryAddSystemOfType(const std::string &typeName)
+	SerializedSystemHandle SerializedScene::TryAddSystem(AddSystemParameters addSystemParams)
 	{
 		toml::array* pArrayOfSystemTables = m_SceneTable.get_as<toml::array>(ArrayOfSystemTablesKey);
 
@@ -109,10 +105,10 @@ namespace DYE::DYEditor
 			// The array was created already, try to find the system of the given type in the array.
 			auto systemNodeOfTypeItr =
 				std::find_if(pArrayOfSystemTables->begin(), pArrayOfSystemTables->end(),
-							 [typeName] (toml::node& systemNode)
+							 [&addSystemParams] (toml::node& systemNode)
 							 {
 								 toml::node* systemTypeNameNode = systemNode.as_table()->get(SystemTypeNameKey);
-								 return systemTypeNameNode != nullptr && systemTypeNameNode->value<std::string>() == typeName;
+								 return systemTypeNameNode != nullptr && systemTypeNameNode->value<std::string>() == addSystemParams.SystemTypeName;
 							 });
 
 			bool const hasSystem = systemNodeOfTypeItr != pArrayOfSystemTables->end();
@@ -130,9 +126,18 @@ namespace DYE::DYEditor
 		if (needToCreateNewSystem)
 		{
 			// Create a new system (table) with the given type name.
-			pSystemTable = &pArrayOfSystemTables->emplace_back(toml::table {{SystemTypeNameKey, typeName}});
+			pSystemTable = &pArrayOfSystemTables->emplace_back(toml::table {{SystemTypeNameKey, addSystemParams.SystemTypeName}});
+		}
+
+		if (addSystemParams.HasGroup)
+		{
+			pSystemTable->insert_or_assign(SystemGroupNameKey, addSystemParams.SystemGroupName);
 		}
 
 		return SerializedSystemHandle(pSystemTable);
+	}
+
+	SerializedScene::SerializedScene(toml::table &&sceneTable) : m_SceneTable(sceneTable)
+	{
 	}
 }

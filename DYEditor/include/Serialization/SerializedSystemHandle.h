@@ -7,6 +7,7 @@
 namespace DYE::DYEditor
 {
 	constexpr const char* SystemTypeNameKey = "Type";
+	constexpr const char* SystemGroupNameKey = "Group";
 
 	struct SerializedSystemHandle
 	{
@@ -15,6 +16,9 @@ namespace DYE::DYEditor
 
 		std::optional<std::string> TryGetTypeName() const;
 		void SetTypeName(std::string const& typeName);
+
+		std::optional<std::string> TryGetGroupName() const;
+		void SetGroupName(std::string const& groupName);
 
 	private:
 		explicit SerializedSystemHandle(toml::table* pSystemTable);
