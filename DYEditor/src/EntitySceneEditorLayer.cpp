@@ -91,26 +91,44 @@ namespace DYE::DYEditor
 				ImGui::PopStyleColor();
 				if (showUnrecognizedSystems)
 				{
-					for (auto const &descriptor: m_Scene.UnrecognizedSystems)
+					if (ImGui::BeginTable("Unrecognized System Table", 1, ImGuiTableFlags_RowBg))
 					{
-						ImGui::PushID(descriptor.Name.c_str());
-						ImGui::Text("System '%s' is unknown in the TypeRegistry.", descriptor.Name.c_str());
-						char const *popupId = "Unknown system popup";
-						if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+						int indexToRemove = -1;
+						for (int i = 0; i < m_Scene.UnrecognizedSystems.size(); ++i)
 						{
-							ImGui::OpenPopup(popupId);
+							auto const& descriptor = m_Scene.UnrecognizedSystems[i];
+
+							ImGui::TableNextRow();
+							ImGui::TableSetColumnIndex(0);
+							ImGui::PushID(descriptor.Name.c_str());
+							ImGui::Text("System '%s' is unknown in the TypeRegistry.", descriptor.Name.c_str());
+							char const *popupId = "Unknown system popup";
+							if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+							{
+								ImGui::OpenPopup(popupId);
+							}
+
+							if (ImGui::BeginPopup(popupId))
+							{
+								if (ImGui::Selectable("Copy Name"))
+								{
+									ImGui::SetClipboardText(descriptor.Name.c_str());
+								}
+								if (ImGui::Selectable("Delete"))
+								{
+									indexToRemove = i;
+								}
+								ImGui::EndPopup();
+							}
+							ImGui::PopID();
 						}
 
-						if (ImGui::BeginPopup(popupId))
+						if (indexToRemove != -1)
 						{
-							if (ImGui::Button("Copy System Name"))
-							{
-								ImGui::SetClipboardText(descriptor.Name.c_str());
-								ImGui::CloseCurrentPopup();
-							}
-							ImGui::EndPopup();
+							m_Scene.UnrecognizedSystems.erase(m_Scene.UnrecognizedSystems.begin() + indexToRemove);
 						}
-						ImGui::PopID();
+
+						ImGui::EndTable();
 					}
 				}
 			}
@@ -308,7 +326,7 @@ namespace DYE::DYEditor
 			ImGui::EndPopup();
 		}
 
-		std::stack<int> toBeRemovedSystemIndices;
+		int indexToRemove = -1;
 		for (int i = 0; i < systemDescriptors.size(); ++i)
 		{
 			auto& systemDescriptor = systemDescriptors[i];
@@ -328,7 +346,7 @@ namespace DYE::DYEditor
 			if (isRemoved)
 			{
 				changed = true;
-				toBeRemovedSystemIndices.push(i);
+				indexToRemove = i;
 				ImGui::PopID();
 				continue;
 			}
@@ -398,10 +416,9 @@ namespace DYE::DYEditor
 		}
 
 		// Remove systems.
-		while (!toBeRemovedSystemIndices.empty())
+		if (indexToRemove != -1)
 		{
-			int const index = toBeRemovedSystemIndices.top(); toBeRemovedSystemIndices.pop();
-			systemDescriptors.erase(systemDescriptors.begin() + index);
+			systemDescriptors.erase(systemDescriptors.begin() + indexToRemove);
 		}
 
 		return changed;

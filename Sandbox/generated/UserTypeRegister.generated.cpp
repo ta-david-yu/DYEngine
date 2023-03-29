@@ -237,8 +237,24 @@ namespace DYE::DYEditor
 		TypeRegistry::RegisterSystem("Update System A", &_UpdateSystemA);
 
 		// System located in include/SystemExample.h
-		static FixedUpdateSystemB _FixedUpdateSystemB;
-		TypeRegistry::RegisterSystem("Fixed Update System B", &_FixedUpdateSystemB);
+		static UpdateSystemB _UpdateSystemB;
+		TypeRegistry::RegisterSystem("Update System B", &_UpdateSystemB);
+
+		// System located in include/SystemExample.h
+		static FixedUpdateSystem1 _FixedUpdateSystem1;
+		TypeRegistry::RegisterSystem("Fixed Update System 1", &_FixedUpdateSystem1);
+
+		// System located in include/SystemExample.h
+		static FixedUpdateSystem2 _FixedUpdateSystem2;
+		TypeRegistry::RegisterSystem("Fixed Update System 2", &_FixedUpdateSystem2);
+
+		// System located in include/SystemExample.h
+		static FixedUpdateSystem3 _FixedUpdateSystem3;
+		TypeRegistry::RegisterSystem("Fixed Update System 3", &_FixedUpdateSystem3);
+
+		// System located in include/SystemExample.h
+		static FixedUpdateSystem4 _FixedUpdateSystem4;
+		TypeRegistry::RegisterSystem("Fixed Update System 4", &_FixedUpdateSystem4);
 
 		// System located in include/SystemExample.h
 		static SystemNamespace::InitializeSystemA _InitializeSystemA;
