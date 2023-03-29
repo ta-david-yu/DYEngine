@@ -72,6 +72,8 @@ namespace DYE::DYEditor
 
 	void EntitySceneEditorLayer::OnImGui()
 	{
+		drawMainMenuBar();
+
 		// Set a default size for the window in case it has never been opened before.
 		const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
 		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
@@ -118,7 +120,7 @@ namespace DYE::DYEditor
 			}
 
 			ImGui::Separator();
-			if (m_Scene.UnrecognizedSystems.size() > 0)
+			if (!m_Scene.UnrecognizedSystems.empty())
 			{
 				ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(1.000f, 0.000f, 0.000f, 0.310f));
 				bool const showUnrecognizedSystems = ImGui::CollapsingHeader("Unrecognized Systems");
@@ -127,7 +129,24 @@ namespace DYE::DYEditor
 				{
 					for (auto const &descriptor: m_Scene.UnrecognizedSystems)
 					{
+						ImGui::PushID(descriptor.Name.c_str());
 						ImGui::Text("System '%s' is unknown in the TypeRegistry.", descriptor.Name.c_str());
+						char const *popupId = "Unknown system popup";
+						if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+						{
+							ImGui::OpenPopup(popupId);
+						}
+
+						if (ImGui::BeginPopup(popupId))
+						{
+							if (ImGui::Button("Copy System Name"))
+							{
+								ImGui::SetClipboardText(descriptor.Name.c_str());
+								ImGui::CloseCurrentPopup();
+							}
+							ImGui::EndPopup();
+						}
+						ImGui::PopID();
 					}
 				}
 			}
@@ -152,6 +171,28 @@ namespace DYE::DYEditor
 		ImGui::End();
 
 		ImGui::ShowDemoWindow();
+	}
+
+	void EntitySceneEditorLayer::drawMainMenuBar()
+	{
+		if (ImGui::BeginMainMenuBar())
+		{
+			if (ImGui::BeginMenu("File"))
+			{
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu("Edit"))
+			{
+				if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
+				if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
+				ImGui::Separator();
+				if (ImGui::MenuItem("Cut", "CTRL+X")) {}
+				if (ImGui::MenuItem("Copy", "CTRL+C")) {}
+				if (ImGui::MenuItem("Paste", "CTRL+V")) {}
+				ImGui::EndMenu();
+			}
+			ImGui::EndMainMenuBar();
+		}
 	}
 
 	bool EntitySceneEditorLayer::drawSceneEntityHierarchyPanel(Scene &scene, Entity *pCurrentSelectedEntity)

@@ -32,6 +32,8 @@ namespace DYE::DYEditor
 		DYEntity::World m_World;
 		DYEntity::Entity m_Entity;
 
+		static void drawMainMenuBar();
+
 		static bool drawSceneEntityHierarchyPanel(Scene &scene, DYEntity::Entity *pCurrentSelectedEntity);
 
 		template<typename Func> requires std::predicate<Func, std::string const&, SystemBase const*>
