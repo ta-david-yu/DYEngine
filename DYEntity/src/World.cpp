@@ -26,4 +26,9 @@ namespace DYE::DYEntity
 	{
 		m_Registry.destroy(entity.m_EntityHandle);
 	}
+
+	entt::registry& GetWorldUnderlyingRegistry(World &world)
+	{
+		return world.m_Registry;
+	}
 }

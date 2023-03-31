@@ -9,7 +9,7 @@ set(HEADER_FILES
         include/Entity.h
         include/World.h
         include/NameComponent.h
-        include/TransformComponent.h)
+        include/TransformComponent.h include/WorldView.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")

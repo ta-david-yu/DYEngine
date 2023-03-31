@@ -1,5 +1,7 @@
 #pragma once
 
+#include "WorldView.h"
+
 #include <entt/entt.hpp>
 
 namespace DYE::DYEntity
@@ -10,6 +12,7 @@ namespace DYE::DYEntity
 	{
 		// We need this so Entity could access m_Registry for entt operation.
 		friend Entity;
+		friend entt::registry& GetWorldUnderlyingRegistry(World& world);
 	public:
 		World();
 		~World() = default;
@@ -38,4 +41,6 @@ namespace DYE::DYEntity
 		// TODO: vector<Entity>?
 
 	};
+
+	entt::registry& GetWorldUnderlyingRegistry(World& world);
 }
