@@ -448,7 +448,7 @@ namespace DYE::ImGuiUtil
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
 
 		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-		ImVec2 buttonSize = {lineHeight + 3.0f, lineHeight};
+		ImVec2 const buttonSize = {lineHeight + 3.0f, lineHeight};
 
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 {0.8f, 0.1f, 0.15f, 1.0f});
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 {0.9f, 0.2f, 0.2f, 1.0f});
@@ -686,6 +686,8 @@ namespace DYE::ImGuiUtil
 
 	void DrawTexture2DPreviewWithLabel(const std::string &label, const std::shared_ptr<Texture2D> &texture)
 	{
+		static bool isTexturePreviewWindowOpen = false;
+
 		ImGuiIO &io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 
@@ -717,22 +719,26 @@ namespace DYE::ImGuiUtil
 					ImVec4 const borderColor = ImGui::GetStyleColorVec4(ImGuiCol_Border);
 					if (ImGui::ImageButton("", imTexId, size, uv0, uv1, bgColor))
 					{
-						ImGui::OpenPopup(previewWindowPopupId);
+						isTexturePreviewWindowOpen = true;
 					}
 
 					if (ImGui::IsItemHovered())
 					{
 						ImGui::BeginTooltip();
+						ImGui::TextUnformatted("Click to open a separate persistent texture preview window.");
 						ImVec2 const textureSize = ImVec2(texture->GetWidth(), texture->GetHeight());
-						ImGui::Image(imTexId, textureSize, uv0, uv1);
+						ImGui::Image(imTexId, textureSize, uv0, uv1, ImVec4(1, 1, 1, 1), borderColor);
 						ImGui::EndTooltip();
 					}
 
-					if (ImGui::BeginPopup(previewWindowPopupId))
+					if (isTexturePreviewWindowOpen)
 					{
-						ImVec2 const textureSize = ImVec2(texture->GetWidth(), texture->GetHeight());
-						ImGui::Image(imTexId, textureSize, uv0, uv1);
-						ImGui::EndPopup();
+						if (ImGui::Begin("Texture Preview Window", &isTexturePreviewWindowOpen))
+						{
+							ImVec2 const textureSize = ImVec2(texture->GetWidth(), texture->GetHeight());
+							ImGui::Image(imTexId, textureSize, uv0, uv1, ImVec4(1, 1, 1, 1), borderColor);
+						}
+						ImGui::End();
 					}
 				}
 			}

@@ -135,22 +135,18 @@ namespace DYE::DYEditor
 			//  For now, we use a simple string editor,
 			// 	We will eventually use ImGuiUtil::DrawAssetPathStringControl("Texture Path", component.TextureAssetPath);
 			auto pathAsString = component.TextureAssetPath.string();
-			bool const isPathChanged = ImGuiUtil::DrawTextControl("Texture Asset Path", pathAsString);
+			bool isPathChanged = ImGuiUtil::DrawTextControl("Texture Asset Path", pathAsString);
 			if (isPathChanged)
 			{
 				component.TextureAssetPath = pathAsString;
 			}
-
 			changed |= isPathChanged;
+			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+			ImVec2 const buttonSize = {lineHeight + 3.0f, lineHeight};
 
+			// Draw reload button.
 			ImGui::SameLine();
-			if (ImGui::Button("R"))
-			{
-				component.Texture = Texture2D::GetDefaultTexture();
-			}
-
-			ImGui::SameLine();
-			if (ImGui::Button("S"))
+			if (ImGui::Button("S", buttonSize))
 			{
 				if (FileSystem::FileExists(component.TextureAssetPath))
 				{
@@ -160,6 +156,25 @@ namespace DYE::DYEditor
 				{
 					component.Texture = Texture2D::GetDefaultTexture();
 				}
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::BeginTooltip();
+				ImGui::TextUnformatted("Load the texture from the given path");
+				ImGui::EndTooltip();
+			}
+
+			// Draw reset button.
+			ImGui::SameLine();
+			if (ImGui::Button("R", buttonSize))
+			{
+				component.Texture = Texture2D::GetDefaultTexture();
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::BeginTooltip();
+				ImGui::TextUnformatted("Reset to default white texture");
+				ImGui::EndTooltip();
 			}
 
 			// Draw a preview of the texture
