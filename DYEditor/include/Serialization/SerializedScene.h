@@ -25,6 +25,7 @@ namespace DYE::DYEditor
 			std::string SystemTypeName;
 			bool HasGroup = false;
 			std::string SystemGroupName;
+			bool IsEnabled = true;
 		};
 		/// \return a SerializedSystemHandle of the newly added system OR the existing system of the given type.
 		SerializedSystemHandle TryAddSystem(AddSystemParameters addSystemParams);

@@ -9,6 +9,9 @@ Group = "AssetInitializationGroup"
 Type = "Derived System A"
 
 [[Systems]]
+Type = "Fixed Update System 1"
+
+[[Systems]]
 Type = "MovementSystem"
 Group = "MovementGroup"
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EditorProperty.h"
+#include "Core/EditorProperty.h"
 #include "World.h"
 
 #include <optional>
@@ -18,6 +18,12 @@
 
 namespace DYE::DYEditor
 {
+	enum class ExecutionMode
+	{
+		Runtime,
+		Editor
+	};
+
 	enum class ExecutionPhase
 	{
 		/// Called at the start of the scene
@@ -26,11 +32,12 @@ namespace DYE::DYEditor
 		Update,
 		/// Called after all Updates but before all Renders
 		LateUpdate,
+		/// Called after all LateUpdates in Runtime Mode. It's also called in Edit Mode to render the scene in scene view.
 		Render,
 		ImGui,
 		/// Called at the end of each frame
 		Cleanup,
-		/// Called at the end of the scene
+		/// Called at the end of the scene (before scene is unloaded)
 		TearDown
 	};
 
@@ -43,11 +50,23 @@ namespace DYE::DYEditor
 		ExecutionPhase Phase = ExecutionPhase::Update;
 	};
 
+	enum class InitializeLoadType
+	{
+		Manual,
+		AfterSceneLoad,
+		BeforeEnterRuntimeMode
+	};
+
+	struct InitializeLoadParameters
+	{
+		InitializeLoadType LoadType = InitializeLoadType::AfterSceneLoad;
+	};
+
 	struct SystemBase
 	{
 		virtual ExecutionPhase GetPhase() const = 0;
+		virtual void InitializeLoad(DYE::DYEntity::World& world, DYE::DYEditor::InitializeLoadParameters) {}
 		virtual void Execute(DYE::DYEntity::World& world, DYE::DYEditor::ExecuteParameters params) = 0;
-
 		virtual void DrawInspector(DYE::DYEntity::World& world);
 		virtual ~SystemBase() = default;
 	};

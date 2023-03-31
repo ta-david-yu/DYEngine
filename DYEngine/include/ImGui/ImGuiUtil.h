@@ -4,7 +4,9 @@
 #include <imgui_internal.h>
 
 #include <glm/glm.hpp>
+#include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace DYE::Math
@@ -17,6 +19,7 @@ namespace DYE
 {
 	class CameraProperties;
 	class Material;
+	class Texture2D;
 }
 
 namespace DYE::ImGuiUtil
@@ -46,6 +49,7 @@ namespace DYE::ImGuiUtil
 	bool DrawToolbar(const std::string& label, int32_t& value, std::vector<std::string> const& texts);
 	//bool DrawDropdown(const std::string& label, int32_t& value, std::vector<char const*> const& texts);
 	bool DrawDropdown(const std::string& label, int32_t& value, std::vector<std::string> const& texts);
+	void DrawTexture2DPreviewWithLabel(std::string const& label, std::shared_ptr<Texture2D> const& texture);
 
 	void DrawHelpMarker(const char* description);
 

@@ -65,6 +65,10 @@ namespace DYE
 		/// \return a 1x1 white Texture2D
 		static std::shared_ptr<Texture2D> GetWhiteTexture();
 
+		/// Any unassigned texture should be default pointing to this.
+		/// It's basically the same as Texture2D::GetWhiteTexture().
+		static std::shared_ptr<Texture2D> GetDefaultTexture();
+
         Texture2D() = delete;
 
         explicit Texture2D(std::uint32_t width, std::uint32_t height);

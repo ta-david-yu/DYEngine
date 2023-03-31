@@ -34,6 +34,28 @@ namespace DYE::DYEditor
 		m_pSystemTable->insert_or_assign(SystemGroupNameKey, groupName);
 	}
 
+	bool SerializedSystemHandle::GetIsEnabledOr(bool defaultValue) const
+	{
+		auto pIsEnabledNode = m_pSystemTable->get(IsSystemEnabledKey);
+		if (pIsEnabledNode == nullptr)
+		{
+			return defaultValue;
+		}
+
+		auto tryGetIsEnabledResult = pIsEnabledNode->value<bool>();
+		if (!tryGetIsEnabledResult.has_value())
+		{
+			return defaultValue;
+		}
+
+		return tryGetIsEnabledResult.value();
+	}
+
+	void SerializedSystemHandle::SetIsEnabled(bool value)
+	{
+		m_pSystemTable->insert_or_assign(IsSystemEnabledKey, value);
+	}
+
 	SerializedSystemHandle::SerializedSystemHandle(toml::table *pSystemTable) : m_pSystemTable(pSystemTable)
 	{
 	}

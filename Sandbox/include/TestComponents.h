@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EditorCore.h"
+#include "Core/EditorCore.h"
 
 
 namespace TestNamespace

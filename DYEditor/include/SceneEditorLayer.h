@@ -2,43 +2,40 @@
 
 #include "Core/LayerBase.h"
 
-#include "TypeRegistry.h"
-#include "Scene.h"
+#include "Internal/TypeRegistry.h"
+#include "Core/Scene.h"
 
 #include "World.h"
 #include "Entity.h"
-#include "EditorSystem.h"
+#include "Core/EditorSystem.h"
 
+#include <memory>
 #include <concepts>
 
 namespace DYE::DYEditor
 {
-	class EntitySceneEditorLayer : public LayerBase
+	class SceneRuntimeLayer;
+
+	class SceneEditorLayer : public LayerBase
 	{
 	public:
-		EntitySceneEditorLayer();
-		~EntitySceneEditorLayer() override = default;
+		SceneEditorLayer();
+		~SceneEditorLayer() override = default;
 
 		void OnAttach() override;
 		void OnDetach() override;
 		void OnImGui() override;
 
+		void SetRuntimeLayer(std::shared_ptr<SceneRuntimeLayer> runtimeLayer) { m_RuntimeLayer = runtimeLayer; }
+
 	private:
+		std::shared_ptr<SceneRuntimeLayer> m_RuntimeLayer;
 
-		// DEBUGGING
-		DYEditor::Scene m_Scene;
-		DYEntity::Entity m_CurrentSelectedEntity;
-
-		DYEntity::World m_World;
-		DYEntity::Entity m_Entity;
-
+		DYEntity::Entity m_CurrentlySelectedEntityInHierarchyPanel;
 		static void drawMainMenuBar(Scene& currentScene);
-
 		static bool drawSceneEntityHierarchyPanel(Scene &scene, DYEntity::Entity *pCurrentSelectedEntity);
-
 		template<typename Func> requires std::predicate<Func, std::string const&, SystemBase const*>
 		static bool drawSceneSystemListPanel(Scene &scene, std::vector<SystemDescriptor> &systemDescriptors, Func addSystemFilterPredicate);
-
 		static bool drawEntityInspector(DYEntity::Entity &entity, std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> componentNamesAndFunctions);
 		static void drawRegisteredSystems(DYEntity::World& world);
 	};

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EditorProperty.h"
+#include "Core/EditorProperty.h"
 
 /// A class/struct marked with this macro will be identified by DYEditor code generator. DYEditor code generator will
 /// then generate code that registers the marked class/struct into TypeRegistry as a component.\n\n

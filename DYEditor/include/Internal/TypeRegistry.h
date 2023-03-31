@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Entity.h"
-#include "DefaultComponentFunctions.h"
+#include "Internal/DefaultComponentFunctions.h"
 
 #include <string>
 #include <vector>

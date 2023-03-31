@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EditorCore.h"
+#include "Core/EditorCore.h"
 #include "Math/Color.h"
 
 DYE_COMPONENT("TestC", TestComponentC)

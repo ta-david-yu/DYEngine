@@ -1,7 +1,7 @@
 #include "ImGui/EditorImGuiUtil.h"
 
 #include "ImGui/ImGuiUtil.h"
-#include "EditorSystem.h"
+#include "Core/EditorSystem.h"
 
 namespace DYE::ImGuiUtil
 {

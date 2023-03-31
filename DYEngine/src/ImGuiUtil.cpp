@@ -2,8 +2,10 @@
 
 #include "Graphics/CameraProperties.h"
 #include "Graphics/Material.h"
+#include "Graphics/Texture.h"
 #include "Graphics/Shader.h"
 #include "Math/AABB.h"
+#include "imgui.h"
 
 #include <imgui_stdlib.h>
 
@@ -24,11 +26,11 @@ namespace DYE::ImGuiUtil
 		}
 	}
 
-	bool DrawVector2Control(const std::string& label, glm::vec2& value, float resetValue)
+	bool DrawVector2Control(const std::string &label, glm::vec2 &value, float resetValue)
 	{
 		bool isValueChanged = false;
 
-		ImGuiIO& io = ImGui::GetIO();
+		ImGuiIO &io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 
 		ImGui::PushID(label.c_str());
@@ -39,10 +41,10 @@ namespace DYE::ImGuiUtil
 		ImGui::NextColumn();
 
 		ImGui::PushMultiItemsWidths(2, ImGui::CalcItemWidth());
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
 
 		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-		ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
+		ImVec2 buttonSize = {lineHeight + 3.0f, lineHeight};
 
 		{
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 {0.8f, 0.1f, 0.15f, 1.0f});
@@ -91,11 +93,11 @@ namespace DYE::ImGuiUtil
 		return isValueChanged;
 	}
 
-	bool DrawVector3Control(const std::string& label, glm::vec3& value, float resetValue)
+	bool DrawVector3Control(const std::string &label, glm::vec3 &value, float resetValue)
 	{
 		bool isValueChanged = false;
 
-		ImGuiIO& io = ImGui::GetIO();
+		ImGuiIO &io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 
 		ImGui::PushID(label.c_str());
@@ -106,14 +108,14 @@ namespace DYE::ImGuiUtil
 		ImGui::NextColumn();
 
 		ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
 
 		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-		ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
+		ImVec2 buttonSize = {lineHeight + 3.0f, lineHeight};
 
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 {0.8f, 0.1f, 0.15f, 1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 {0.9f, 0.2f, 0.2f, 1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 {0.8f, 0.1f, 0.15f, 1.0f});
 		ImGui::PushFont(boldFont);
 		if (ImGui::Button("X", buttonSize))
 		{
@@ -128,9 +130,9 @@ namespace DYE::ImGuiUtil
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.3f, 0.8f, 0.3f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 {0.2f, 0.7f, 0.2f, 1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 {0.3f, 0.8f, 0.3f, 1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 {0.2f, 0.7f, 0.2f, 1.0f});
 		ImGui::PushFont(boldFont);
 		if (ImGui::Button("Y", buttonSize))
 		{
@@ -145,9 +147,9 @@ namespace DYE::ImGuiUtil
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.2f, 0.35f, 0.9f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 {0.1f, 0.25f, 0.8f, 1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 {0.2f, 0.35f, 0.9f, 1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 {0.1f, 0.25f, 0.8f, 1.0f});
 		ImGui::PushFont(boldFont);
 		if (ImGui::Button("Z", buttonSize))
 		{
@@ -170,11 +172,11 @@ namespace DYE::ImGuiUtil
 		return isValueChanged;
 	}
 
-	bool DrawVector4Control(const std::string& label, glm::vec4& value, float resetValue)
+	bool DrawVector4Control(const std::string &label, glm::vec4 &value, float resetValue)
 	{
 		bool isValueChanged = false;
 
-		ImGuiIO& io = ImGui::GetIO();
+		ImGuiIO &io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 
 		ImGui::PushID(label.c_str());
@@ -185,14 +187,14 @@ namespace DYE::ImGuiUtil
 		ImGui::NextColumn();
 
 		ImGui::PushMultiItemsWidths(4, ImGui::CalcItemWidth());
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
 
 		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-		ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
+		ImVec2 buttonSize = {lineHeight + 3.0f, lineHeight};
 
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 {0.8f, 0.1f, 0.15f, 1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 {0.9f, 0.2f, 0.2f, 1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 {0.8f, 0.1f, 0.15f, 1.0f});
 		ImGui::PushFont(boldFont);
 		if (ImGui::Button("X", buttonSize))
 		{
@@ -207,9 +209,9 @@ namespace DYE::ImGuiUtil
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.3f, 0.8f, 0.3f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 {0.2f, 0.7f, 0.2f, 1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 {0.3f, 0.8f, 0.3f, 1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 {0.2f, 0.7f, 0.2f, 1.0f});
 		ImGui::PushFont(boldFont);
 		if (ImGui::Button("Y", buttonSize))
 		{
@@ -224,9 +226,9 @@ namespace DYE::ImGuiUtil
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.2f, 0.35f, 0.9f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 {0.1f, 0.25f, 0.8f, 1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 {0.2f, 0.35f, 0.9f, 1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 {0.1f, 0.25f, 0.8f, 1.0f});
 		ImGui::PushFont(boldFont);
 		if (ImGui::Button("Z", buttonSize))
 		{
@@ -241,9 +243,9 @@ namespace DYE::ImGuiUtil
 		ImGui::PopItemWidth();;
 		ImGui::SameLine();
 
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.2f, 0.35f, 0.9f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 {0.1f, 0.25f, 0.8f, 1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 {0.2f, 0.35f, 0.9f, 1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 {0.1f, 0.25f, 0.8f, 1.0f});
 		ImGui::PushFont(boldFont);
 		if (ImGui::Button("W", buttonSize))
 		{
@@ -266,11 +268,11 @@ namespace DYE::ImGuiUtil
 		return isValueChanged;
 	}
 
-	bool DrawBoolControl(const std::string& label, bool& value)
+	bool DrawBoolControl(const std::string &label, bool &value)
 	{
 		bool isValueChanged = false;
 
-		ImGuiIO& io = ImGui::GetIO();
+		ImGuiIO &io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 
 		ImGui::PushID(label.c_str());
@@ -281,7 +283,7 @@ namespace DYE::ImGuiUtil
 		ImGui::NextColumn();
 
 		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
 
 		isValueChanged |= ImGui::Checkbox("##Boolean", &value);
 
@@ -296,11 +298,11 @@ namespace DYE::ImGuiUtil
 		return isValueChanged;
 	}
 
-	bool DrawFloatControl(const std::string& label, float& value, float resetValue)
+	bool DrawFloatControl(const std::string &label, float &value, float resetValue)
 	{
 		bool isValueChanged = false;
 
-		ImGuiIO& io = ImGui::GetIO();
+		ImGuiIO &io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 
 		ImGui::PushID(label.c_str());
@@ -311,7 +313,7 @@ namespace DYE::ImGuiUtil
 		ImGui::NextColumn();
 
 		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
 
 		// Drag Float
 		{
@@ -346,11 +348,12 @@ namespace DYE::ImGuiUtil
 
 		return isValueChanged;
 	}
-	bool DrawIntControl(const std::string& label, int32_t & value, int32_t resetValue)
+
+	bool DrawIntControl(const std::string &label, int32_t &value, int32_t resetValue)
 	{
 		bool isValueChanged = false;
 
-		ImGuiIO& io = ImGui::GetIO();
+		ImGuiIO &io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 
 		ImGui::PushID(label.c_str());
@@ -361,7 +364,7 @@ namespace DYE::ImGuiUtil
 		ImGui::NextColumn();
 
 		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
 
 		// Drag int
 		{
@@ -397,11 +400,11 @@ namespace DYE::ImGuiUtil
 		return isValueChanged;
 	}
 
-	bool DrawColor4Control(const std::string& label, glm::vec4& value)
+	bool DrawColor4Control(const std::string &label, glm::vec4 &value)
 	{
 		bool isValueChanged = false;
 
-		ImGuiIO& io = ImGui::GetIO();
+		ImGuiIO &io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 
 		ImGui::PushID(label.c_str());
@@ -412,7 +415,7 @@ namespace DYE::ImGuiUtil
 		ImGui::NextColumn();
 
 		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
 
 		isValueChanged |= ImGui::ColorEdit4("##Color", glm::value_ptr(value));
 
@@ -427,11 +430,11 @@ namespace DYE::ImGuiUtil
 		return isValueChanged;
 	}
 
-	bool DrawRectControl(const std::string& label, Math::Rect& value, Math::Rect const& resetValue)
+	bool DrawRectControl(const std::string &label, Math::Rect &value, Math::Rect const &resetValue)
 	{
 		bool isValueChanged = false;
 
-		ImGuiIO& io = ImGui::GetIO();
+		ImGuiIO &io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 
 		ImGui::PushID(label.c_str());
@@ -442,14 +445,14 @@ namespace DYE::ImGuiUtil
 		ImGui::NextColumn();
 
 		ImGui::PushMultiItemsWidths(4, ImGui::CalcItemWidth());
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
 
 		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-		ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
+		ImVec2 buttonSize = {lineHeight + 3.0f, lineHeight};
 
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 {0.8f, 0.1f, 0.15f, 1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 {0.9f, 0.2f, 0.2f, 1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 {0.8f, 0.1f, 0.15f, 1.0f});
 		ImGui::PushFont(boldFont);
 		if (ImGui::Button("X", buttonSize))
 		{
@@ -464,9 +467,9 @@ namespace DYE::ImGuiUtil
 		ImGui::PopItemWidth();
 
 		ImGui::SameLine();
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.3f, 0.8f, 0.3f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 {0.2f, 0.7f, 0.2f, 1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 {0.3f, 0.8f, 0.3f, 1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 {0.2f, 0.7f, 0.2f, 1.0f});
 		ImGui::PushFont(boldFont);
 		if (ImGui::Button("Y", buttonSize))
 		{
@@ -481,9 +484,9 @@ namespace DYE::ImGuiUtil
 		ImGui::PopItemWidth();
 
 		ImGui::SameLine();
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.2f, 0.35f, 0.9f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 {0.1f, 0.25f, 0.8f, 1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 {0.2f, 0.35f, 0.9f, 1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 {0.1f, 0.25f, 0.8f, 1.0f});
 		ImGui::PushFont(boldFont);
 		if (ImGui::Button("W", buttonSize))
 		{
@@ -498,9 +501,9 @@ namespace DYE::ImGuiUtil
 		ImGui::PopItemWidth();
 
 		ImGui::SameLine();
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.2f, 0.35f, 0.9f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 {0.1f, 0.25f, 0.8f, 1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 {0.2f, 0.35f, 0.9f, 1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 {0.1f, 0.25f, 0.8f, 1.0f});
 		ImGui::PushFont(boldFont);
 		if (ImGui::Button("H", buttonSize))
 		{
@@ -523,11 +526,11 @@ namespace DYE::ImGuiUtil
 		return isValueChanged;
 	}
 
-	bool DrawTextControl(std::string const& label, std::string & text)
+	bool DrawTextControl(std::string const &label, std::string &text)
 	{
 		bool isValueChanged = false;
 
-		ImGuiIO& io = ImGui::GetIO();
+		ImGuiIO &io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 
 		ImGui::PushID(label.c_str());
@@ -554,7 +557,7 @@ namespace DYE::ImGuiUtil
 	{
 		bool isValueChanged = false;
 
-		ImGuiIO& io = ImGui::GetIO();
+		ImGuiIO &io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 
 		ImGui::PushID(label.c_str());
@@ -567,7 +570,8 @@ namespace DYE::ImGuiUtil
 		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
 		{
-			char buffer[2];	buffer[0] = character;
+			char buffer[2];
+			buffer[0] = character;
 			isValueChanged |= ImGui::InputText("##character", buffer, 2);
 			if (isValueChanged)
 			{
@@ -584,7 +588,7 @@ namespace DYE::ImGuiUtil
 
 	void DrawReadOnlyTextWithLabel(const std::string &label, const std::string &text)
 	{
-		ImGuiIO& io = ImGui::GetIO();
+		ImGuiIO &io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 
 		ImGui::PushID(label.c_str());
@@ -605,11 +609,11 @@ namespace DYE::ImGuiUtil
 		ImGui::PopID();
 	}
 
-	bool DrawToolbar(const std::string& label, int32_t & value, std::vector<std::string> const& texts)
+	bool DrawToolbar(const std::string &label, int32_t &value, std::vector<std::string> const &texts)
 	{
 		bool isValueChanged = false;
 
-		ImGuiIO& io = ImGui::GetIO();
+		ImGuiIO &io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 
 		ImGui::PushID(label.c_str());
@@ -637,11 +641,11 @@ namespace DYE::ImGuiUtil
 		return isValueChanged;
 	}
 
-	bool DrawDropdown(const std::string& label, int32_t& value, std::vector<std::string> const& texts)
+	bool DrawDropdown(const std::string &label, int32_t &value, std::vector<std::string> const &texts)
 	{
 		bool isValueChanged = false;
 
-		ImGuiIO& io = ImGui::GetIO();
+		ImGuiIO &io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 
 		ImGui::PushID(label.c_str());
@@ -678,6 +682,70 @@ namespace DYE::ImGuiUtil
 		ImGui::Columns(1);
 		ImGui::PopID();
 		return isValueChanged;
+	}
+
+	void DrawTexture2DPreviewWithLabel(const std::string &label, const std::shared_ptr<Texture2D> &texture)
+	{
+		ImGuiIO &io = ImGui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+
+		ImGui::PushID(label.c_str());
+
+		ImGui::Columns(2);
+		ImGui::SetColumnWidth(0, Parameters::ControlLabelWidth);
+		ImGui::Text(label.c_str());
+		ImGui::NextColumn();
+
+		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
+		{
+			if (texture)
+			{
+				if (texture == Texture2D::GetDefaultTexture())
+				{
+					ImGui::Text("Default White Texture"); ImGui::SameLine();
+					ImGuiUtil::DrawHelpMarker("When the given path is not a texture asset, Texture2D::GetDefaultTexture is used instead.");
+				}
+				else
+				{
+					auto imTexId = (void*)(intptr_t)(texture->GetID());
+					const char* previewWindowPopupId = "TexturePreviewWindow";
+					ImGui::Text("%dx%d", texture->GetWidth(), texture->GetHeight()); ImGui::Spacing();
+					ImVec2 const size = ImVec2(32.0f, 32.0f);
+					ImVec2 const uv0 = ImVec2(0, 1); ImVec2 const uv1 = ImVec2(1, 0);
+					ImVec4 const bgColor = ImVec4(0, 0, 0, 1);
+					ImVec4 const borderColor = ImGui::GetStyleColorVec4(ImGuiCol_Border);
+					if (ImGui::ImageButton("", imTexId, size, uv0, uv1, bgColor))
+					{
+						ImGui::OpenPopup(previewWindowPopupId);
+					}
+
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::BeginTooltip();
+						ImVec2 const textureSize = ImVec2(texture->GetWidth(), texture->GetHeight());
+						ImGui::Image(imTexId, textureSize, uv0, uv1);
+						ImGui::EndTooltip();
+					}
+
+					if (ImGui::BeginPopup(previewWindowPopupId))
+					{
+						ImVec2 const textureSize = ImVec2(texture->GetWidth(), texture->GetHeight());
+						ImGui::Image(imTexId, textureSize, uv0, uv1);
+						ImGui::EndPopup();
+					}
+				}
+			}
+			else
+			{
+				ImGui::Text("Invalid Texture");
+			}
+
+			ImGui::PopItemWidth();
+		}
+		ImGui::PopStyleVar();
+		ImGui::Columns(1);
+		ImGui::PopID();
 	}
 
 	void DrawHelpMarker(const char* description)

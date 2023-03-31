@@ -2,9 +2,9 @@
  * This is an example/template of the generated code
  */
 
-#include "UserTypeRegister.h"
+#include "Internal/UserTypeRegister.h"
 
-#include "TypeRegistry.h"
+#include "Internal/TypeRegistry.h"
 #include "Util/Logger.h"
 #include "ImGui/ImGuiUtil.h"
 

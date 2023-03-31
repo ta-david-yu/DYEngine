@@ -1,11 +1,17 @@
-#include "BuiltInTypeRegister.h"
+#include "Internal/BuiltInTypeRegister.h"
 
-#include "TypeRegistry.h"
+#include "Graphics/Texture.h"
+#include "Internal/TypeRegistry.h"
+#include "Core/EditorProperty.h"
 #include "Serialization/SerializedObjectFactory.h"
+#include "Math/Color.h"
 #include "ImGui/ImGuiUtil.h"
+#include "FileSystem/FileSystem.h"
 
-// All the built-in component types are in here.
+// All the built-in component & system types are in here.
 #include "Components.h"
+#include "Systems.h"
+#include "imgui.h"
 
 using namespace DYE::DYEntity;
 
@@ -18,7 +24,8 @@ namespace DYE::DYEditor
 			entity.AddComponent<NameComponent>("New Entity");
 		}
 
-		SerializationResult SerializeNameComponent(DYE::DYEntity::Entity& entity, SerializedComponentHandle& serializedComponent)
+		SerializationResult
+		SerializeNameComponent(DYE::DYEntity::Entity &entity, SerializedComponentHandle &serializedComponent)
 		{
 			// We don't do any error handling here (i.e. check if entity has NameComponent) because
 			// the function will only be called when the entity has NameComponent for sure.
@@ -27,9 +34,10 @@ namespace DYE::DYEditor
 			return {};
 		}
 
-		DeserializationResult DeserializeNameComponent(SerializedComponentHandle& serializedComponent, DYE::DYEntity::Entity& entity)
+		DeserializationResult
+		DeserializeNameComponent(SerializedComponentHandle &serializedComponent, DYE::DYEntity::Entity &entity)
 		{
-			auto& nameComponent = entity.AddOrGetComponent<NameComponent>();
+			auto &nameComponent = entity.AddOrGetComponent<NameComponent>();
 			nameComponent.Name = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::String>("Name");
 
 			return {};
@@ -46,9 +54,10 @@ namespace DYE::DYEditor
 			return changed;
 		}
 
-		SerializationResult SerializeTransformComponent(DYE::DYEntity::Entity& entity, SerializedComponentHandle& serializedComponent)
+		SerializationResult
+		SerializeTransformComponent(DYE::DYEntity::Entity &entity, SerializedComponentHandle &serializedComponent)
 		{
-			auto const& transformComponent = entity.GetComponent<TransformComponent>();
+			auto const &transformComponent = entity.GetComponent<TransformComponent>();
 			serializedComponent.SetPrimitiveTypePropertyValue("Position", transformComponent.Position);
 			serializedComponent.SetPrimitiveTypePropertyValue("Scale", transformComponent.Scale);
 			serializedComponent.SetPrimitiveTypePropertyValue("Rotation", transformComponent.Rotation);
@@ -56,12 +65,16 @@ namespace DYE::DYEditor
 			return {};
 		}
 
-		DeserializationResult DeserializeTransformComponent(SerializedComponentHandle& serializedComponent, DYE::DYEntity::Entity& entity)
+		DeserializationResult
+		DeserializeTransformComponent(SerializedComponentHandle &serializedComponent, DYE::DYEntity::Entity &entity)
 		{
-			auto& transformComponent = entity.AddOrGetComponent<TransformComponent>();
-			transformComponent.Position = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Vector3>("Position");
-			transformComponent.Scale = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Vector3>("Scale");
-			transformComponent.Rotation = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Quaternion>("Rotation");
+			auto &transformComponent = entity.AddOrGetComponent<TransformComponent>();
+			transformComponent.Position = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Vector3>(
+				"Position");
+			transformComponent.Scale = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Vector3>(
+				"Scale");
+			transformComponent.Rotation = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Quaternion>(
+				"Rotation");
 
 			return {};
 		}
@@ -85,6 +98,72 @@ namespace DYE::DYEditor
 
 				changed = true;
 			}
+
+			return changed;
+		}
+
+		SerializationResult
+		SerializeSpriteRendererComponent(DYE::DYEntity::Entity &entity, SerializedComponentHandle &serializedComponent)
+		{
+			auto const &component = entity.GetComponent<SpriteRendererComponent>();
+			serializedComponent.SetPrimitiveTypePropertyValue("Color", component.Color);
+			serializedComponent.SetPrimitiveTypePropertyValue("TextureAssetPath", component.TextureAssetPath);
+
+			return {};
+		}
+
+		DeserializationResult DeserializeSpriteRendererComponent(SerializedComponentHandle &serializedComponent,
+																 DYE::DYEntity::Entity &entity)
+		{
+			auto &component = entity.AddOrGetComponent<SpriteRendererComponent>();
+			component.Color = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Color4>("Color");
+			component.TextureAssetPath = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::FilePath>(
+				"TextureAssetPath");
+
+			return {};
+		}
+
+		bool DrawInspectorOfSpriteRendererComponent(Entity &entity)
+		{
+			auto &component = entity.GetComponent<SpriteRendererComponent>();
+
+			bool changed = false;
+
+			changed |= ImGuiUtil::DrawColor4Control("Color", component.Color);
+
+			// TODO: add a asset path imgui control
+			//  For now, we use a simple string editor,
+			// 	We will eventually use ImGuiUtil::DrawAssetPathStringControl("Texture Path", component.TextureAssetPath);
+			auto pathAsString = component.TextureAssetPath.string();
+			bool const isPathChanged = ImGuiUtil::DrawTextControl("Texture Asset Path", pathAsString);
+			if (isPathChanged)
+			{
+				component.TextureAssetPath = pathAsString;
+			}
+
+			changed |= isPathChanged;
+
+			ImGui::SameLine();
+			if (ImGui::Button("R"))
+			{
+				component.Texture = Texture2D::GetDefaultTexture();
+			}
+
+			ImGui::SameLine();
+			if (ImGui::Button("S"))
+			{
+				if (FileSystem::FileExists(component.TextureAssetPath))
+				{
+					component.Texture = Texture2D::Create(component.TextureAssetPath);
+				}
+				else
+				{
+					component.Texture = Texture2D::GetDefaultTexture();
+				}
+			}
+
+			// Draw a preview of the texture
+			ImGuiUtil::DrawTexture2DPreviewWithLabel("Texture Preview", component.Texture);
 
 			return changed;
 		}
@@ -116,5 +195,19 @@ namespace DYE::DYEditor
 						.DrawInspector = BuiltInFunctions::DrawInspectorOfTransformComponent
 					}
 			);
+
+		TypeRegistry::RegisterComponentType<SpriteRendererComponent>
+		    (
+				"SpriteRenderer",
+				ComponentTypeFunctionCollection
+					{
+						.Serialize = BuiltInFunctions::SerializeSpriteRendererComponent,
+						.Deserialize = BuiltInFunctions::DeserializeSpriteRendererComponent,
+						.DrawInspector = BuiltInFunctions::DrawInspectorOfSpriteRendererComponent
+					}
+			);
+
+		static Render2DSpriteSystem _Render2DSpriteSystem;
+		TypeRegistry::RegisterSystem("Render 2D Sprite System", &_Render2DSpriteSystem);
 	}
 }

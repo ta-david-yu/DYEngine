@@ -40,5 +40,11 @@ endif ()
 set(TEXT_ASSETS
         assets/Scenes/TestScene.tscene)
 
+set(BINARY_ASSETS
+        assets/Textures/DYE_logo_outlined.png
+        assets/Textures/Sprite_DYEIcon.png)
+
+
 include(../cmake/Modules/CopyAssets.cmake)
 CopyTextAssets(${TEXT_ASSETS})
+CopyBinaryAssets(${BINARY_ASSETS})

@@ -3,7 +3,8 @@
 
 #include "SandboxLayer.h"
 
-#include "EntitySceneEditorLayer.h"
+#include "SceneEditorLayer.h"
+#include "SceneRuntimeLayer.h"
 
 
 namespace DYE::Sandbox
@@ -17,8 +18,14 @@ namespace DYE::Sandbox
         explicit SandboxApp(const std::string &windowName, int fixedFramePerSecond = 60)
             : Application(windowName, fixedFramePerSecond)
         {
+			auto runtimeLayer = std::make_shared<DYEditor::SceneRuntimeLayer>();
+			auto editorLayer = std::make_shared<DYEditor::SceneEditorLayer>();
+			editorLayer->SetRuntimeLayer(runtimeLayer);
+
+			pushLayerImmediate(runtimeLayer);
+			pushLayerImmediate(editorLayer);
+
 			pushLayerImmediate(std::make_shared<SandboxLayer>());
-			pushLayerImmediate(std::make_shared<DYEditor::EntitySceneEditorLayer>());
         }
 
         ~SandboxApp() final = default;

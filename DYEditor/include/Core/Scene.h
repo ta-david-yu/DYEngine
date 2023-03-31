@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EditorSystem.h"
+#include "Core/EditorSystem.h"
 #include "World.h"
 
 #include <vector>
@@ -17,6 +17,9 @@ namespace DYE::DYEditor
 	{
 		std::string Name;
 		GroupID Group = NO_SYSTEM_GROUP_ID;
+		bool IsEnabled = true;
+		
+		SystemBase* Instance = nullptr;
 	};
 
 	class Scene

@@ -1,4 +1,5 @@
 #include "Serialization/SerializedComponentHandle.h"
+#include "Core/EditorProperty.h"
 
 namespace DYE::DYEditor
 {
@@ -92,6 +93,19 @@ namespace DYE::DYEditor
 	}
 
 	template<>
+	std::optional<DYE::FilePath> SerializedComponentHandle::TryGetPrimitiveTypePropertyValue(std::string_view const& propertyName) const
+	{
+		toml::node* pPropertyNode = m_pComponentTable->get(propertyName);
+		if (pPropertyNode == nullptr)
+		{
+			return {};
+		}
+
+		return pPropertyNode->value<DYE::String>();
+	}
+
+
+	template<>
 	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<DYE::Vector2>(std::string const& propertyName, DYE::Vector2 const& value)
 	{
 		toml::table table { {"x", value.x}, {"y", value.y} };
@@ -121,5 +135,11 @@ namespace DYE::DYEditor
 		toml::table table { {"x", value.x}, {"y", value.y}, {"z", value.z}, {"w", value.w} };
 		table.is_inline(true);
 		m_pComponentTable->insert_or_assign(propertyName, std::move(table));
+	}
+
+	template<>
+	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<DYE::FilePath>(std::string const& propertyName, DYE::FilePath const& value)
+	{
+		m_pComponentTable->insert_or_assign(propertyName, value.string());
 	}
 }

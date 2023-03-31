@@ -1,6 +1,6 @@
-#include "TypeRegistry.h"
+#include "Internal/TypeRegistry.h"
 
-#include "EditorSystem.h"
+#include "Core/EditorSystem.h"
 #include "Util/Logger.h"
 #include "ImGui/ImGuiUtil.h"
 

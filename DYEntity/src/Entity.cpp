@@ -1,6 +1,6 @@
 #include "Entity.h"
 
-#include "Components.h"
+#include "NameComponent.h"
 
 namespace DYE::DYEntity
 {

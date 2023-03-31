@@ -5,30 +5,46 @@ option(DYEDITOR_BUILD_CODE_GENERATOR "Enable building DYEditor code generator to
 # ===========================================================================================
 # Sources / Headers
 set(SOURCE_FILES
-        src/EntitySceneEditorLayer.cpp
-        src/EntitySceneRuntimeLayer.cpp
+        src/SceneEditorLayer.cpp
+        src/SceneRuntimeLayer.cpp
         src/TypeRegistry.cpp
         src/BuiltInTypeRegister.cpp
         src/UserTypeRegister.cpp
         src/EditorSystem.cpp
         src/EditorImGuiUtil.cpp
-        src/SerializedObjectFactory.cpp src/SerializedComponentHandle.cpp src/SerializedEntity.cpp src/SerializedScene.cpp src/SerializedSystemHandle.cpp src/Scene.cpp)
+        src/SerializedObjectFactory.cpp
+        src/SerializedComponentHandle.cpp
+        src/SerializedEntity.cpp
+        src/SerializedScene.cpp
+        src/SerializedSystemHandle.cpp
+        src/Scene.cpp
+        src/DYEditorApplication.cpp
+        src/ApplicationState.cpp
+        src/Render2DSpriteSystem.cpp src/FileSystem.cpp)
 set(HEADER_FILES
-        include/EntitySceneEditorLayer.h
-        include/EntitySceneRuntimeLayer.h
-        include/TypeRegistry.h
-        include/EditorCore.h
-        include/BuiltInTypeRegister.h
-        include/UserTypeRegister.h
-        include/DefaultComponentFunctions.h
-        include/EditorComponent.h
-        include/EditorSystem.h
-        include/EditorProperty.h
+        include/SceneEditorLayer.h
+        include/SceneRuntimeLayer.h
+        include/Internal/TypeRegistry.h
+        include/Core/EditorCore.h
+        include/Internal/BuiltInTypeRegister.h
+        include/Internal/UserTypeRegister.h
+        include/Internal/DefaultComponentFunctions.h
+        include/Core/EditorComponent.h
+        include/Core/EditorSystem.h
+        include/Core/EditorProperty.h
+        include/Core/Scene.h
         include/ImGui/EditorImGuiUtil.h
         include/Serialization/SerializedObjectFactory.h
         include/Serialization/SerializedEntity.h
         include/Serialization/SerializedComponentHandle.h
-        include/Serialization/SerializedScene.h include/Serialization/SerializedSystemHandle.h include/Scene.h)
+        include/Serialization/SerializedScene.h
+        include/Serialization/SerializedSystemHandle.h
+        include/DYEditorApplication.h
+        include/Core/ApplicationState.h
+        include/Components.h
+        include/Components/SpriteRendererComponent.h
+        include/Systems.h
+        include/Systems/Render2DSpriteSystem.h include/FileSystem/FileSystem.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")

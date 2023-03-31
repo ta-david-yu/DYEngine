@@ -134,6 +134,8 @@ namespace DYE::DYEditor
 			pSystemTable->insert_or_assign(SystemGroupNameKey, addSystemParams.SystemGroupName);
 		}
 
+		pSystemTable->insert_or_assign(IsSystemEnabledKey, addSystemParams.IsEnabled);
+
 		return SerializedSystemHandle(pSystemTable);
 	}
 

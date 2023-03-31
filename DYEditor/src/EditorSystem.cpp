@@ -1,4 +1,4 @@
-#include "EditorSystem.h"
+#include "Core/EditorSystem.h"
 
 #include "Util/Macro.h"
 #include "World.h"
@@ -6,11 +6,6 @@
 
 namespace DYE::DYEditor
 {
-	void SystemBase::DrawInspector(DYE::DYEntity::World &world)
-	{
-		ImGuiUtil::DrawHelpMarker("You could override SystemBase::DrawInspector in your system class to draw anything here!");
-	}
-
 	std::string CastExecutionPhaseToString(ExecutionPhase phase)
 	{
 		switch (phase)
@@ -74,5 +69,10 @@ namespace DYE::DYEditor
 
 		DYE_ASSERT(false && "Invalid Phase String");
 		return {};
+	}
+
+	void SystemBase::DrawInspector(DYE::DYEntity::World &world)
+	{
+		ImGuiUtil::DrawHelpMarker("You could override SystemBase::DrawInspector in your system class to draw anything here!");
 	}
 }

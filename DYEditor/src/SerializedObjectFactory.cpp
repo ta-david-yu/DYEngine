@@ -1,8 +1,8 @@
 #include "Serialization/SerializedObjectFactory.h"
 
-#include "TypeRegistry.h"
+#include "Internal/TypeRegistry.h"
 #include "Entity.h"
-#include "Scene.h"
+#include "Core/Scene.h"
 
 #include <fstream>
 #include <toml++/toml.h>
@@ -64,12 +64,15 @@ namespace DYE::DYEditor
 			SystemDescriptor systemDescriptor =
 				{
 					.Name = getTypeNameResult.value(),
-					.Group = hasGroup? scene.AddOrGetGroupID(getGroupResult.value()) : NO_SYSTEM_GROUP_ID
+					.Group = hasGroup? scene.AddOrGetGroupID(getGroupResult.value()) : NO_SYSTEM_GROUP_ID,
+					.IsEnabled = serializedSystemHandle.GetIsEnabledOr(true)
 				};
 
 			SystemBase* pSystemInstance = TypeRegistry::TryGetSystemInstance(getTypeNameResult.value());
 			if (pSystemInstance != nullptr)
 			{
+				systemDescriptor.Instance = pSystemInstance;
+
 				auto const phase = pSystemInstance->GetPhase();
 				scene.GetSystemDescriptorsOfPhase(phase).emplace_back(systemDescriptor);
 			}
@@ -153,7 +156,8 @@ namespace DYE::DYEditor
 									.SystemTypeName = systemDescriptor.Name,
 									.HasGroup = systemDescriptor.Group != NO_SYSTEM_GROUP_ID,
 									.SystemGroupName = (systemDescriptor.Group != NO_SYSTEM_GROUP_ID)
-													   ? scene.SystemGroupNames[systemDescriptor.Group] : ""
+													   ? scene.SystemGroupNames[systemDescriptor.Group] : "",
+									.IsEnabled = systemDescriptor.IsEnabled
 								}
 						);
 				}
@@ -168,7 +172,8 @@ namespace DYE::DYEditor
 						{
 							.SystemTypeName = unrecognizedSystemDescriptor.Name,
 							.HasGroup = unrecognizedSystemDescriptor.Group != NO_SYSTEM_GROUP_ID,
-							.SystemGroupName = (unrecognizedSystemDescriptor.Group != NO_SYSTEM_GROUP_ID) ? scene.SystemGroupNames[unrecognizedSystemDescriptor.Group] : ""
+							.SystemGroupName = (unrecognizedSystemDescriptor.Group != NO_SYSTEM_GROUP_ID) ? scene.SystemGroupNames[unrecognizedSystemDescriptor.Group] : "",
+							.IsEnabled = unrecognizedSystemDescriptor.IsEnabled
 						}
 				);
 		}

@@ -1,12 +1,12 @@
-#include "EntitySceneEditorLayer.h"
+#include "SceneEditorLayer.h"
 
-#include "BuiltInTypeRegister.h"
-#include "UserTypeRegister.h"
-#include "EditorSystem.h"
+#include "SceneRuntimeLayer.h"
+#include "Serialization/SerializedObjectFactory.h"
+#include "Internal/BuiltInTypeRegister.h"
+#include "Internal/UserTypeRegister.h"
+#include "Core/EditorSystem.h"
 
 #include "ImGui/ImGuiUtil.h"
-
-#include "Serialization/SerializedObjectFactory.h"
 
 #include <unordered_set>
 #include <stack>
@@ -17,26 +17,33 @@ using namespace DYE::DYEntity;
 
 namespace DYE::DYEditor
 {
-	EntitySceneEditorLayer::EntitySceneEditorLayer() : LayerBase("Editor")
+	SceneEditorLayer::SceneEditorLayer() : LayerBase("Editor")
 	{
 	}
 
-	void EntitySceneEditorLayer::OnAttach()
+	void SceneEditorLayer::OnAttach()
 	{
-		// DEBUGGING, Should be moved to EntityLevelEditorApplication so that both EntityLevelEditorLayer & EntityLevelRuntimeLayer could use it
+		// DEBUGGING, Should be moved to DYEditorApplication so that both EditorLayer & RuntimeLayer could use it
 		DYEditor::RegisterBuiltInTypes();
 		DYEditor::RegisterUserTypes();
 	}
 
-	void EntitySceneEditorLayer::OnDetach()
+	void SceneEditorLayer::OnDetach()
 	{
 		TypeRegistry::ClearRegisteredComponentTypes();
 		TypeRegistry::ClearRegisteredSystems();
 	}
 
-	void EntitySceneEditorLayer::OnImGui()
+	void SceneEditorLayer::OnImGui()
 	{
-		drawMainMenuBar(m_Scene);
+		if (!m_RuntimeLayer)
+		{
+			return;
+		}
+
+		Scene& activeScene = m_RuntimeLayer->ActiveMainScene;
+
+		drawMainMenuBar(activeScene);
 
 		// Set a default size for the window in case it has never been opened before.
 		const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
@@ -44,7 +51,7 @@ namespace DYE::DYEditor
 		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
 		if (ImGui::Begin("Registered Systems"))
 		{
-			drawRegisteredSystems(m_World);
+			drawRegisteredSystems(activeScene.World);
 		}
 		ImGui::End();
 
@@ -54,7 +61,7 @@ namespace DYE::DYEditor
 		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
 		if (ImGui::Begin("Scene Hierarchy"))
 		{
-			drawSceneEntityHierarchyPanel(m_Scene, &m_CurrentSelectedEntity);
+			drawSceneEntityHierarchyPanel(activeScene, &m_CurrentlySelectedEntityInHierarchyPanel);
 		}
 		ImGui::End();
 
@@ -74,7 +81,7 @@ namespace DYE::DYEditor
 				bool const showSystems = ImGui::CollapsingHeader(phaseId.c_str(), ImGuiTreeNodeFlags_AllowItemOverlap);
 				if (showSystems)
 				{
-					drawSceneSystemListPanel(m_Scene, m_Scene.GetSystemDescriptorsOfPhase(phase),
+					drawSceneSystemListPanel(activeScene, activeScene.GetSystemDescriptorsOfPhase(phase),
 											 [phase](std::string const &systemName, SystemBase const *pInstance)
 											 {
 												 return pInstance->GetPhase() == phase;
@@ -84,7 +91,7 @@ namespace DYE::DYEditor
 			}
 
 			ImGui::Separator();
-			if (!m_Scene.UnrecognizedSystems.empty())
+			if (!activeScene.UnrecognizedSystems.empty())
 			{
 				ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(1.000f, 0.000f, 0.000f, 0.310f));
 				bool const showUnrecognizedSystems = ImGui::CollapsingHeader("Unrecognized Systems");
@@ -94,14 +101,19 @@ namespace DYE::DYEditor
 					if (ImGui::BeginTable("Unrecognized System Table", 1, ImGuiTableFlags_RowBg))
 					{
 						int indexToRemove = -1;
-						for (int i = 0; i < m_Scene.UnrecognizedSystems.size(); ++i)
+						for (int i = 0; i < activeScene.UnrecognizedSystems.size(); ++i)
 						{
-							auto const& descriptor = m_Scene.UnrecognizedSystems[i];
+							auto const& descriptor = activeScene.UnrecognizedSystems[i];
 
 							ImGui::TableNextRow();
 							ImGui::TableSetColumnIndex(0);
 							ImGui::PushID(descriptor.Name.c_str());
-							ImGui::Text("System '%s' is unknown in the TypeRegistry.", descriptor.Name.c_str());
+
+							char label[128];
+							sprintf(label, "System '%s' is unknown in the TypeRegistry.", descriptor.Name.c_str());
+							ImGui::Bullet(); ImGui::Selectable(label, false);
+
+							//ImGui::Text("System '%s' is unknown in the TypeRegistry.", descriptor.Name.c_str());
 							char const *popupId = "Unknown system popup";
 							if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
 							{
@@ -125,7 +137,7 @@ namespace DYE::DYEditor
 
 						if (indexToRemove != -1)
 						{
-							m_Scene.UnrecognizedSystems.erase(m_Scene.UnrecognizedSystems.begin() + indexToRemove);
+							activeScene.UnrecognizedSystems.erase(activeScene.UnrecognizedSystems.begin() + indexToRemove);
 						}
 
 						ImGui::EndTable();
@@ -141,21 +153,21 @@ namespace DYE::DYEditor
 		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
 		if (ImGui::Begin("Entity Inspector"))
 		{
-			if (m_CurrentSelectedEntity.IsValid() && ImGui::Button("Save To TestPrefab.tprefab"))
+			if (m_CurrentlySelectedEntityInHierarchyPanel.IsValid() && ImGui::Button("Save To TestPrefab.tprefab"))
 			{
-				auto serializedEntity = SerializedObjectFactory::CreateSerializedEntity(m_CurrentSelectedEntity);
+				auto serializedEntity = SerializedObjectFactory::CreateSerializedEntity(m_CurrentlySelectedEntityInHierarchyPanel);
 				SerializedObjectFactory::SaveSerializedEntityToFile(serializedEntity, "assets\\Scenes\\TestPrefab.tprefab");
 			}
 			ImGui::Separator();
 
-			drawEntityInspector(m_CurrentSelectedEntity, TypeRegistry::GetComponentTypesNamesAndFunctionCollections());
+			drawEntityInspector(m_CurrentlySelectedEntityInHierarchyPanel, TypeRegistry::GetComponentTypesNamesAndFunctionCollections());
 		}
 		ImGui::End();
 
 		ImGui::ShowDemoWindow();
 	}
 
-	void EntitySceneEditorLayer::drawMainMenuBar(Scene& currentScene)
+	void SceneEditorLayer::drawMainMenuBar(Scene& currentScene)
 	{
 		if (ImGui::BeginMainMenuBar())
 		{
@@ -193,7 +205,7 @@ namespace DYE::DYEditor
 		}
 	}
 
-	bool EntitySceneEditorLayer::drawSceneEntityHierarchyPanel(Scene &scene, Entity *pCurrentSelectedEntity)
+	bool SceneEditorLayer::drawSceneEntityHierarchyPanel(Scene &scene, Entity *pCurrentSelectedEntity)
 	{
 		// Draw scene hierarchy context menu.
 		if (ImGui::BeginPopupContextWindow())
@@ -255,7 +267,7 @@ namespace DYE::DYEditor
 	}
 
 	template<typename Func> requires std::predicate<Func, std::string const&, SystemBase const*>
-	bool EntitySceneEditorLayer::drawSceneSystemListPanel(Scene &scene, std::vector<SystemDescriptor> &systemDescriptors, Func addSystemFilterPredicate)
+	bool SceneEditorLayer::drawSceneSystemListPanel(Scene &scene, std::vector<SystemDescriptor> &systemDescriptors, Func addSystemFilterPredicate)
 	{
 		bool changed = false;
 
@@ -274,7 +286,8 @@ namespace DYE::DYEditor
 		// Draw a 'Add System' button at the top of the inspector, and align it to the right side of the window.
 		char const* addSystemPopupId = "Add System Menu Popup";
 		ImVec2 const addButtonSize = ImVec2 {150, 0};
-		float const fullAddButtonWidth = ImGui::GetWindowWidth();
+		float const scrollBarWidth = ImGui::GetCurrentWindow()->ScrollbarY? ImGui::GetWindowScrollbarRect(ImGui::GetCurrentWindow(), ImGuiAxis_Y).GetWidth() : 0;
+		float const fullAddButtonWidth = ImGui::GetWindowWidth() - scrollBarWidth;
 		ImGui::SetCursorPosX(fullAddButtonWidth - addButtonSize.x);
 		if (ImGui::Button("Add System", addButtonSize))
 		{
@@ -314,7 +327,9 @@ namespace DYE::DYEditor
 							SystemDescriptor
 								{
 									.Name = systemName,
-									.Group = NO_SYSTEM_GROUP_ID
+									.Group = NO_SYSTEM_GROUP_ID,
+									.IsEnabled = true,
+									.Instance = pSystemInstance
 								}
 						);
 						changed = true;
@@ -351,10 +366,9 @@ namespace DYE::DYEditor
 				continue;
 			}
 
-			static bool isEnabled = true;
 			// Draw enabled toggle.
 			ImGui::SameLine();
-			ImGui::Checkbox("##Checkbox", &isEnabled);
+			ImGui::Checkbox("##IsEnabled", &systemDescriptor.IsEnabled);
 
 			// Draw header text (system name most likely).
 			ImGui::SameLine();
@@ -364,7 +378,7 @@ namespace DYE::DYEditor
 			bool const isTheFirst = i == 0;
 			bool const isTheLast = i == systemDescriptors.size() - 1;
 			float const offsetToRight = ImGui::GetFrameHeightWithSpacing();
-			float const fullReorderButtonWidth = ImGui::GetContentRegionAvail().x;
+			float const fullReorderButtonWidth = ImGui::GetWindowWidth() - scrollBarWidth;
 			if (!isTheFirst)
 			{
 				ImGui::SameLine();
@@ -410,6 +424,8 @@ namespace DYE::DYEditor
 				{
 					ImGui::TextWrapped("System '%s' cannot be found in the TypeRegistry.", systemDescriptor.Name.c_str());
 				}
+
+				ImGui::Spacing();
 			}
 
 			ImGui::PopID();
@@ -424,8 +440,8 @@ namespace DYE::DYEditor
 		return changed;
 	}
 
-	bool EntitySceneEditorLayer::drawEntityInspector(DYEntity::Entity &entity,
-													 std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> componentNamesAndFunctions)
+	bool SceneEditorLayer::drawEntityInspector(DYEntity::Entity &entity,
+											   std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> componentNamesAndFunctions)
 	{
 		if (!entity.IsValid())
 		{
@@ -534,7 +550,7 @@ namespace DYE::DYEditor
 		return changed;
 	}
 
-	void EntitySceneEditorLayer::drawRegisteredSystems(DYEntity::World &world)
+	void SceneEditorLayer::drawRegisteredSystems(DYEntity::World &world)
 	{
 		static auto systemNamesAndInstances = TypeRegistry::GetSystemNamesAndInstances();
 

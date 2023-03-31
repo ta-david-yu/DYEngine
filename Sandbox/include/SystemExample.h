@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EditorCore.h"
+#include "Core/EditorCore.h"
 
 DYE_SYSTEM("Update System A", UpdateSystemA)
 struct UpdateSystemA final : public DYE::DYEditor::SystemBase

@@ -5,9 +5,9 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-#include "UserTypeRegister.h"
+#include "Internal/UserTypeRegister.h"
 
-#include "TypeRegistry.h"
+#include "Internal/TypeRegistry.h"
 #include "Serialization/SerializedObjectFactory.h"
 #include "ImGui/ImGuiUtil.h"
 

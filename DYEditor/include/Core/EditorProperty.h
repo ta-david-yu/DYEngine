@@ -1,12 +1,13 @@
 #pragma once
 
 #include <cstdint>
+#include <filesystem>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include <glm/glm.hpp>
-#include <glm/gtx/quaternion.hpp>
+#include "glm/glm.hpp"
+#include "glm/gtx/quaternion.hpp"
 
 #define DYE_PROPERTY()
 
@@ -29,6 +30,7 @@ namespace DYE
 	using Vector4 	= glm::vec4;
 	using Color4 	= glm::vec4;
 	using String 	= std::string;
+	using FilePath  = std::filesystem::path;
 	using Quaternion = glm::quat;
 
 	// TODO: need to figure out a way to handle enum type
