@@ -120,6 +120,15 @@ namespace DYE::DYEditor
 			component.TextureAssetPath = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::FilePath>(
 				"TextureAssetPath");
 
+			if (FileSystem::FileExists(component.TextureAssetPath))
+			{
+				component.Texture = Texture2D::Create(component.TextureAssetPath);
+			}
+			else
+			{
+				component.Texture = Texture2D::GetDefaultTexture();
+			}
+			
 			return {};
 		}
 
@@ -129,6 +138,7 @@ namespace DYE::DYEditor
 
 			bool changed = false;
 
+			changed |= ImGuiUtil::DrawBoolControl("Is Enabled", component.IsEnabled);
 			changed |= ImGuiUtil::DrawColor4Control("Color", component.Color);
 
 			// TODO: add a asset path imgui control
