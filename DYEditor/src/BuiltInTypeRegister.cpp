@@ -160,7 +160,10 @@ namespace DYE::DYEditor
 			ImGui::SameLine();
 			if (ImGui::Button("S", buttonSize))
 			{
-				ImGuiUtil::OpenFilePathPopup("assets", component.TextureAssetPath);
+				ImGuiUtil::OpenFilePathPopup(
+					"assets",
+					component.TextureAssetPath,
+					{".jpg", ".jpeg", ".png", ".tga", ".bmp", ".psd"});
 			}
 			if (ImGui::IsItemHovered())
 			{
@@ -169,7 +172,13 @@ namespace DYE::DYEditor
 				ImGui::EndTooltip();
 			}
 
-			ImGuiUtil::FilePathPopupResult result = ImGuiUtil::DrawFilePathPopup(component.TextureAssetPath);
+			ImGuiUtil::FilePathPopupResult result =
+				ImGuiUtil::DrawFilePathPopup(component.TextureAssetPath,
+											 ImGuiUtil::FilePathPopupParameters
+											 {
+												.Title = "Select a file (*.jpg, *.jpeg, *.png, *.tga, *.bmp, *.psd)",
+												.ShowFilteredFilesAsDisabled = false
+											 });
 			if (result == ImGuiUtil::FilePathPopupResult::Save)
 			{
 				isPathChanged = true;
