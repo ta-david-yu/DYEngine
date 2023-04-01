@@ -713,6 +713,7 @@ namespace DYE::ImGuiUtil
 					auto imTexId = (void*)(intptr_t)(texture->GetID());
 					const char* previewWindowPopupId = "TexturePreviewWindow";
 					ImGui::Text("%dx%d", texture->GetWidth(), texture->GetHeight()); ImGui::Spacing();
+					ImVec2 const textureSize = ImVec2(texture->GetWidth(), texture->GetHeight());
 					ImVec2 const size = ImVec2(32.0f, 32.0f);
 					ImVec2 const uv0 = ImVec2(0, 1); ImVec2 const uv1 = ImVec2(1, 0);
 					ImVec4 const bgColor = ImVec4(0, 0, 0, 1);
@@ -720,25 +721,29 @@ namespace DYE::ImGuiUtil
 					if (ImGui::ImageButton("", imTexId, size, uv0, uv1, bgColor))
 					{
 						isTexturePreviewWindowOpen = true;
-					}
-
-					if (ImGui::IsItemHovered())
-					{
-						ImGui::BeginTooltip();
-						ImGui::TextUnformatted("Click to open a separate persistent texture preview window.");
-						ImVec2 const textureSize = ImVec2(texture->GetWidth(), texture->GetHeight());
-						ImGui::Image(imTexId, textureSize, uv0, uv1, ImVec4(1, 1, 1, 1), borderColor);
-						ImGui::EndTooltip();
+						float const previewWindowPadding = 48;
+						ImVec2 const previewWindowSize = ImVec2(textureSize.x + previewWindowPadding, textureSize.y + previewWindowPadding);
+						ImGui::SetNextWindowPos(ImGui::GetMousePos());
+						ImGui::SetNextWindowSize(previewWindowSize);
+						ImGui::SetNextWindowFocus();
 					}
 
 					if (isTexturePreviewWindowOpen)
 					{
 						if (ImGui::Begin("Texture Preview Window", &isTexturePreviewWindowOpen))
 						{
-							ImVec2 const textureSize = ImVec2(texture->GetWidth(), texture->GetHeight());
 							ImGui::Image(imTexId, textureSize, uv0, uv1, ImVec4(1, 1, 1, 1), borderColor);
 						}
 						ImGui::End();
+					}
+
+					bool const isImageButtonHovered = ImGui::IsItemHovered();
+					if (isImageButtonHovered)
+					{
+						ImGui::BeginTooltip();
+						ImGui::TextUnformatted("Click to open a separate persistent texture preview window.");
+						ImGui::Image(imTexId, textureSize, uv0, uv1, ImVec4(1, 1, 1, 1), borderColor);
+						ImGui::EndTooltip();
 					}
 				}
 			}
