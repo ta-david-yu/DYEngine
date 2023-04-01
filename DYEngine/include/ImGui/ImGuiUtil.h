@@ -1,13 +1,14 @@
 #pragma once
 
-#include <imgui.h>
-#include <imgui_internal.h>
-
-#include <glm/glm.hpp>
+#include <filesystem>
 #include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
+
+#include <imgui.h>
+#include <imgui_internal.h>
+#include <glm/glm.hpp>
 
 namespace DYE::Math
 {
@@ -24,7 +25,7 @@ namespace DYE
 
 namespace DYE::ImGuiUtil
 {
-	namespace Parameters
+	namespace Settings
 	{
 		constexpr float DefaultControlLabelWidth = 200.0f;
 		extern float ControlLabelWidth;

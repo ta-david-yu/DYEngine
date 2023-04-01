@@ -24,11 +24,11 @@ set(SOURCE_FILES
 set(HEADER_FILES
         include/SceneEditorLayer.h
         include/SceneRuntimeLayer.h
-        include/Internal/TypeRegistry.h
+        include/Type/TypeRegistry.h
         include/Core/EditorCore.h
-        include/Internal/BuiltInTypeRegister.h
-        include/Internal/UserTypeRegister.h
-        include/Internal/DefaultComponentFunctions.h
+        include/Type/BuiltInTypeRegister.h
+        include/Type/UserTypeRegister.h
+        include/Type/DefaultComponentFunctions.h
         include/Core/EditorComponent.h
         include/Core/EditorSystem.h
         include/Core/EditorProperty.h
@@ -44,7 +44,7 @@ set(HEADER_FILES
         include/Components.h
         include/Components/SpriteRendererComponent.h
         include/Systems.h
-        include/Systems/Render2DSpriteSystem.h include/FileSystem/FileSystem.h)
+        include/Systems/Render2DSpriteSystem.h include/FileSystem/FileSystem.h include/Panels/AssetPathPanel.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")

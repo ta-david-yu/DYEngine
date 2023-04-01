@@ -1,6 +1,6 @@
 #include "Serialization/SerializedObjectFactory.h"
 
-#include "Internal/TypeRegistry.h"
+#include "Type/TypeRegistry.h"
 #include "Entity.h"
 #include "Core/Scene.h"
 

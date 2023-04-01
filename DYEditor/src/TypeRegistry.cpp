@@ -1,4 +1,4 @@
-#include "Internal/TypeRegistry.h"
+#include "Type/TypeRegistry.h"
 
 #include "Core/EditorSystem.h"
 #include "Util/Logger.h"

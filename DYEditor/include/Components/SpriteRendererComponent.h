@@ -10,7 +10,7 @@ namespace DYE::DYEditor
 	{
 		bool IsEnabled = true;
 		glm::vec4 Color = Color::White;
-		DYE::FilePath TextureAssetPath;
+		DYE::AssetPath TextureAssetPath;
 		std::shared_ptr<Texture2D> Texture = Texture2D::GetDefaultTexture();
 	};
 }

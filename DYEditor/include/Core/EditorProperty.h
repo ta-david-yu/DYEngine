@@ -30,7 +30,8 @@ namespace DYE
 	using Vector4 	= glm::vec4;
 	using Color4 	= glm::vec4;
 	using String 	= std::string;
-	using FilePath  = std::filesystem::path;
+	/// Filepath relative to 'assets' folder
+	using AssetPath  = std::filesystem::path;
 	using Quaternion = glm::quat;
 
 	// TODO: need to figure out a way to handle enum type

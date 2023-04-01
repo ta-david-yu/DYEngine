@@ -2,7 +2,7 @@
 
 #include "Core/LayerBase.h"
 
-#include "Internal/TypeRegistry.h"
+#include "Type/TypeRegistry.h"
 #include "Core/Scene.h"
 
 #include "World.h"

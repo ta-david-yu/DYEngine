@@ -2,8 +2,8 @@
 
 #include "SceneRuntimeLayer.h"
 #include "Serialization/SerializedObjectFactory.h"
-#include "Internal/BuiltInTypeRegister.h"
-#include "Internal/UserTypeRegister.h"
+#include "Type/BuiltInTypeRegister.h"
+#include "Type/UserTypeRegister.h"
 #include "Core/EditorSystem.h"
 
 #include "ImGui/ImGuiUtil.h"

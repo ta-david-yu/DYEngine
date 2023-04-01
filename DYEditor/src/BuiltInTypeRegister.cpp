@@ -1,17 +1,20 @@
-#include "Internal/BuiltInTypeRegister.h"
+#include "Type/BuiltInTypeRegister.h"
 
 #include "Graphics/Texture.h"
-#include "Internal/TypeRegistry.h"
+#include "Type/TypeRegistry.h"
 #include "Core/EditorProperty.h"
 #include "Serialization/SerializedObjectFactory.h"
 #include "Math/Color.h"
 #include "ImGui/ImGuiUtil.h"
+#include "ImGui/EditorImGuiUtil.h"
 #include "FileSystem/FileSystem.h"
 
 // All the built-in component & system types are in here.
 #include "Components.h"
 #include "Systems.h"
-#include "imgui.h"
+
+#include <filesystem>
+#include <imgui.h>
 
 using namespace DYE::DYEntity;
 
@@ -117,7 +120,7 @@ namespace DYE::DYEditor
 		{
 			auto &component = entity.AddOrGetComponent<SpriteRendererComponent>();
 			component.Color = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Color4>("Color");
-			component.TextureAssetPath = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::FilePath>(
+			component.TextureAssetPath = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::AssetPath>(
 				"TextureAssetPath");
 
 			if (FileSystem::FileExists(component.TextureAssetPath))
@@ -150,13 +153,29 @@ namespace DYE::DYEditor
 			{
 				component.TextureAssetPath = pathAsString;
 			}
-			changed |= isPathChanged;
 			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 			ImVec2 const buttonSize = {lineHeight + 3.0f, lineHeight};
 
-			// Draw reload button.
+			// Draw path selection popup button.
 			ImGui::SameLine();
 			if (ImGui::Button("S", buttonSize))
+			{
+				ImGuiUtil::OpenFilePathPopup("assets", component.TextureAssetPath);
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::BeginTooltip();
+				ImGui::TextUnformatted("Open a path selection window");
+				ImGui::EndTooltip();
+			}
+
+			ImGuiUtil::FilePathPopupResult result = ImGuiUtil::DrawFilePathPopup(component.TextureAssetPath);
+			if (result == ImGuiUtil::FilePathPopupResult::Save)
+			{
+				isPathChanged = true;
+			}
+
+			if (isPathChanged)
 			{
 				if (FileSystem::FileExists(component.TextureAssetPath))
 				{
@@ -167,25 +186,8 @@ namespace DYE::DYEditor
 					component.Texture = Texture2D::GetDefaultTexture();
 				}
 			}
-			if (ImGui::IsItemHovered())
-			{
-				ImGui::BeginTooltip();
-				ImGui::TextUnformatted("Load the texture from the given path");
-				ImGui::EndTooltip();
-			}
 
-			// Draw reset button.
-			ImGui::SameLine();
-			if (ImGui::Button("R", buttonSize))
-			{
-				component.Texture = Texture2D::GetDefaultTexture();
-			}
-			if (ImGui::IsItemHovered())
-			{
-				ImGui::BeginTooltip();
-				ImGui::TextUnformatted("Reset to default white texture");
-				ImGui::EndTooltip();
-			}
+			changed |= isPathChanged;
 
 			// Draw a preview of the texture
 			ImGuiUtil::DrawTexture2DPreviewWithLabel("Texture Preview", component.Texture);

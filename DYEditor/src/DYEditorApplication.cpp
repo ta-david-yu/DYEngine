@@ -1,7 +1,7 @@
 #include "DYEditorApplication.h"
 
-#include "Internal/BuiltInTypeRegister.h"
-#include "Internal/UserTypeRegister.h"
+#include "Type/BuiltInTypeRegister.h"
+#include "Type/UserTypeRegister.h"
 
 namespace DYE::DYEditor
 {

@@ -161,8 +161,8 @@ namespace DYE
 			auto& selectedWindowPair = s_Windows[selectedWindowIndex];
 			WindowBase* pWindow = selectedWindowPair.second.get();
 
-			auto const originalControlLabelWidth = ImGuiUtil::Parameters::ControlLabelWidth;
-			ImGuiUtil::Parameters::ControlLabelWidth = 100;
+			auto const originalControlLabelWidth = ImGuiUtil::Settings::ControlLabelWidth;
+			ImGuiUtil::Settings::ControlLabelWidth = 100;
 
 			ImGui::BeginGroup();
 			ImGui::BeginChild("Selected Window Info", ImVec2(0, -ImGui::GetFrameHeightWithSpacing()), false, ImGuiWindowFlags_HorizontalScrollbar); // Leave room for 1 line below us
@@ -201,7 +201,7 @@ namespace DYE
 			ImGui::EndChild();
 			ImGui::EndGroup();
 
-			ImGuiUtil::Parameters::ControlLabelWidth = originalControlLabelWidth;
+			ImGuiUtil::Settings::ControlLabelWidth = originalControlLabelWidth;
 		}
 	}
 }

@@ -76,7 +76,7 @@ namespace DYE::DYEditor
 	template<>
 	std::optional<DYE::Quaternion> SerializedComponentHandle::TryGetPrimitiveTypePropertyValue(std::string_view const& propertyName) const;
 	template<>
-	std::optional<DYE::FilePath> SerializedComponentHandle::TryGetPrimitiveTypePropertyValue(std::string_view const& propertyName) const;
+	std::optional<DYE::AssetPath> SerializedComponentHandle::TryGetPrimitiveTypePropertyValue(std::string_view const& propertyName) const;
 
 	template<>
 	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<DYE::Vector2>(std::string const& propertyName, DYE::Vector2 const& value);
@@ -87,5 +87,5 @@ namespace DYE::DYEditor
 	template<>
 	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<DYE::Quaternion>(std::string const& propertyName, DYE::Quaternion const& value);
 	template<>
-	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<DYE::FilePath>(std::string const& propertyName, DYE::FilePath const& value);
+	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<DYE::AssetPath>(std::string const& propertyName, DYE::AssetPath const& value);
 }

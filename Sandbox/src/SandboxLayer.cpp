@@ -206,9 +206,9 @@ namespace DYE::Sandbox
 			if (ImGui::CollapsingHeader("Player", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				ImGuiUtil::DrawFloatControl("Horizontal Speed (unit/sec)", m_HorizontalMoveUnitsPerSecond, 3.0f);
-				ImGuiUtil::Parameters::FloatFormat = "%.4f";
+				ImGuiUtil::Settings::FloatFormat = "%.4f";
 				ImGuiUtil::DrawFloatControl("Player Skin Width", m_PlayerSkin, 0.015f);
-				ImGuiUtil::Parameters::FloatFormat = ImGuiUtil::Parameters::DefaultFloatFormat;
+				ImGuiUtil::Settings::FloatFormat = ImGuiUtil::Settings::DefaultFloatFormat;
 				ImGui::Spacing();
 				bool requireJumpParametersRecalculation = false;
 				requireJumpParametersRecalculation |= ImGuiUtil::DrawFloatControl("Time To Reach Apex", m_PlayerTimeToReachApex, 2);

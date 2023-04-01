@@ -93,7 +93,7 @@ namespace DYE::DYEditor
 	}
 
 	template<>
-	std::optional<DYE::FilePath> SerializedComponentHandle::TryGetPrimitiveTypePropertyValue(std::string_view const& propertyName) const
+	std::optional<DYE::AssetPath> SerializedComponentHandle::TryGetPrimitiveTypePropertyValue(std::string_view const& propertyName) const
 	{
 		toml::node* pPropertyNode = m_pComponentTable->get(propertyName);
 		if (pPropertyNode == nullptr)
@@ -138,7 +138,7 @@ namespace DYE::DYEditor
 	}
 
 	template<>
-	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<DYE::FilePath>(std::string const& propertyName, DYE::FilePath const& value)
+	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<DYE::AssetPath>(std::string const& propertyName, DYE::AssetPath const& value)
 	{
 		m_pComponentTable->insert_or_assign(propertyName, value.string());
 	}
