@@ -7,16 +7,16 @@
 #include <string>
 #include <unordered_map>
 
-#define NO_SYSTEM_GROUP_ID -1
-
 namespace DYE::DYEditor
 {
 	using GroupID = std::int32_t;
 
+	constexpr GroupID NoSystemGroupID = -1;
+
 	struct SystemDescriptor
 	{
 		std::string Name;
-		GroupID Group = NO_SYSTEM_GROUP_ID;
+		GroupID Group = NoSystemGroupID;
 		bool IsEnabled = true;
 		
 		SystemBase* Instance = nullptr;

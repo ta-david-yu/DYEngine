@@ -327,7 +327,7 @@ namespace DYE::DYEditor
 							SystemDescriptor
 								{
 									.Name = systemName,
-									.Group = NO_SYSTEM_GROUP_ID,
+									.Group = NoSystemGroupID,
 									.IsEnabled = true,
 									.Instance = pSystemInstance
 								}
@@ -412,7 +412,7 @@ namespace DYE::DYEditor
 
 			if (isShown)
 			{
-				if (systemDescriptor.Group != NO_SYSTEM_GROUP_ID)
+				if (systemDescriptor.Group != NoSystemGroupID)
 				{
 					ImGuiUtil::DrawReadOnlyTextWithLabel("Group", scene.SystemGroupNames[systemDescriptor.Group]);
 				}

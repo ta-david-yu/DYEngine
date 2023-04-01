@@ -64,7 +64,7 @@ namespace DYE::DYEditor
 			SystemDescriptor systemDescriptor =
 				{
 					.Name = getTypeNameResult.value(),
-					.Group = hasGroup? scene.AddOrGetGroupID(getGroupResult.value()) : NO_SYSTEM_GROUP_ID,
+					.Group = hasGroup? scene.AddOrGetGroupID(getGroupResult.value()) : NoSystemGroupID,
 					.IsEnabled = serializedSystemHandle.GetIsEnabledOr(true)
 				};
 
@@ -154,8 +154,8 @@ namespace DYE::DYEditor
 							SerializedScene::AddSystemParameters
 								{
 									.SystemTypeName = systemDescriptor.Name,
-									.HasGroup = systemDescriptor.Group != NO_SYSTEM_GROUP_ID,
-									.SystemGroupName = (systemDescriptor.Group != NO_SYSTEM_GROUP_ID)
+									.HasGroup = systemDescriptor.Group != NoSystemGroupID,
+									.SystemGroupName = (systemDescriptor.Group != NoSystemGroupID)
 													   ? scene.SystemGroupNames[systemDescriptor.Group] : "",
 									.IsEnabled = systemDescriptor.IsEnabled
 								}
@@ -171,8 +171,8 @@ namespace DYE::DYEditor
 					SerializedScene::AddSystemParameters
 						{
 							.SystemTypeName = unrecognizedSystemDescriptor.Name,
-							.HasGroup = unrecognizedSystemDescriptor.Group != NO_SYSTEM_GROUP_ID,
-							.SystemGroupName = (unrecognizedSystemDescriptor.Group != NO_SYSTEM_GROUP_ID) ? scene.SystemGroupNames[unrecognizedSystemDescriptor.Group] : "",
+							.HasGroup = unrecognizedSystemDescriptor.Group != NoSystemGroupID,
+							.SystemGroupName = (unrecognizedSystemDescriptor.Group != NoSystemGroupID) ? scene.SystemGroupNames[unrecognizedSystemDescriptor.Group] : "",
 							.IsEnabled = unrecognizedSystemDescriptor.IsEnabled
 						}
 				);
