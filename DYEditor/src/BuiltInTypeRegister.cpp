@@ -176,8 +176,7 @@ namespace DYE::DYEditor
 				ImGuiUtil::DrawFilePathPopup(component.TextureAssetPath,
 											 ImGuiUtil::FilePathPopupParameters
 											 {
-												.Title = "Select a file (*.jpg, *.jpeg, *.png, *.tga, *.bmp, *.psd)",
-												.ShowFilteredFilesAsDisabled = false
+												.Title = "Select a file (*.jpg, *.jpeg, *.png, *.tga, *.bmp, *.psd)"
 											 });
 			if (result == ImGuiUtil::FilePathPopupResult::Save)
 			{
