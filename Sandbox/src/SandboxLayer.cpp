@@ -174,10 +174,12 @@ namespace DYE::Sandbox
 
 	void SandboxLayer::OnRender()
 	{
-		m_StaticColliderManager.DrawGizmos();
-
 		// Camera system
 		RenderPipelineManager::RegisterCameraForNextRender(m_CameraProperties);
+
+		return;
+
+		m_StaticColliderManager.DrawGizmos();
 
 		// Render system
 		auto texture = Texture2D::GetWhiteTexture();
@@ -193,6 +195,8 @@ namespace DYE::Sandbox
 
     void SandboxLayer::OnImGui()
     {
+		return;
+
 		const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
 		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);

@@ -23,14 +23,14 @@ namespace DYE::ImGuiUtil
 			);
 	}
 
-	constexpr char const* FilePathPopupIdSuffix = "###FilePathPopup";
 	std::filesystem::path FilePathPopup_RootDirectory;
 	std::filesystem::path FilePathPopup_SelectedFilePath;
 	std::filesystem::path FilePathPopup_CurrentDirectory;
 	bool FilePathPopup_HasExtensionFilter = false;
 	std::set<std::filesystem::path> FilePathPopup_Extensions;
 
-	void OpenFilePathPopup(const std::filesystem::path &rootDirectory,
+	void OpenFilePathPopup(char const* popupId,
+						   const std::filesystem::path &rootDirectory,
 						   const std::filesystem::path& initiallySelectedFilePath,
 						   std::vector<std::filesystem::path> const& extensions)
 	{
@@ -52,24 +52,21 @@ namespace DYE::ImGuiUtil
 			FilePathPopup_Extensions = std::set<std::filesystem::path>(extensions.begin(), extensions.end());
 		}
 
-		ImGui::OpenPopup(FilePathPopupIdSuffix);
+		ImGui::OpenPopup(popupId);
 	}
 
-	FilePathPopupResult DrawFilePathPopup(std::filesystem::path &outputPath, FilePathPopupParameters params)
+	FilePathPopupResult DrawFilePathPopup(char const* popupId, std::filesystem::path &outputPath, FilePathPopupParameters params)
 	{
 		FilePathPopupResult result = FilePathPopupResult::StillOpen;
-
-		char popupTitleName[128];
-		sprintf(popupTitleName, "%s%s", params.Title, FilePathPopupIdSuffix);
 
 		ImVec2 const defaultPopupWindowSize(360, 320);
 		float const buttonHeight = ImGui::GetFrameHeightWithSpacing();
 		ImGui::SetNextWindowSize(defaultPopupWindowSize, ImGuiCond_Appearing);
 		ImGuiWindowFlags const popupFlags = ImGuiWindowFlags_None;
-		if (ImGui::BeginPopupModal(popupTitleName, nullptr, popupFlags))
+		if (ImGui::BeginPopupModal(popupId, nullptr, popupFlags))
 		{
-			// Draw current directory as a sequence of folder selectables.
 			// TODO: draw a folder icon here
+			// Draw current directory as a sequence of folder selectables.
 			std::filesystem::path currentPathSequence = "";
 			for (const auto &pathComponentItr: FilePathPopup_CurrentDirectory)
 			{
@@ -108,6 +105,7 @@ namespace DYE::ImGuiUtil
 					std::string const fileNameString = directoryEntry.path().filename().string();
 					if (directoryEntry.is_directory())
 					{
+						// Draw directory.
 						ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 1, 0, 1));
 						if (ImGui::Selectable(fileNameString.c_str(), false, ImGuiSelectableFlags_DontClosePopups))
 						{
@@ -117,14 +115,15 @@ namespace DYE::ImGuiUtil
 					}
 					else
 					{
-						bool isExcluded = false;
+						// Draw file.
+						bool isExtensionExcluded = false;
 						if (FilePathPopup_HasExtensionFilter)
 						{
 							auto const& fileExtension = directoryEntry.path().extension();
-							isExcluded = !FilePathPopup_Extensions.contains(fileExtension);
+							isExtensionExcluded = !FilePathPopup_Extensions.contains(fileExtension);
 						}
 
-						if (!isExcluded)
+						if (!isExtensionExcluded)
 						{
 							bool const isFileSelected = FilePathPopup_SelectedFilePath == directoryEntry.path();
 							if (ImGui::Selectable(fileNameString.c_str(), isFileSelected, ImGuiSelectableFlags_DontClosePopups))

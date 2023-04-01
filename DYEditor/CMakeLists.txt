@@ -44,7 +44,8 @@ set(HEADER_FILES
         include/Components.h
         include/Components/SpriteRendererComponent.h
         include/Systems.h
-        include/Systems/Render2DSpriteSystem.h include/FileSystem/FileSystem.h include/Panels/AssetPathPanel.h)
+        include/Systems/Render2DSpriteSystem.h
+        include/FileSystem/FileSystem.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")

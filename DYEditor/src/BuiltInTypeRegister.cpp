@@ -157,10 +157,12 @@ namespace DYE::DYEditor
 			ImVec2 const buttonSize = {lineHeight + 3.0f, lineHeight};
 
 			// Draw path selection popup button.
+			char const* popupId = "Select a file (*.jpg, *.jpeg, *.png, *.tga, *.bmp, *.psd)";
 			ImGui::SameLine();
 			if (ImGui::Button("S", buttonSize))
 			{
 				ImGuiUtil::OpenFilePathPopup(
+					popupId,
 					"assets",
 					component.TextureAssetPath,
 					{".jpg", ".jpeg", ".png", ".tga", ".bmp", ".psd"});
@@ -173,11 +175,7 @@ namespace DYE::DYEditor
 			}
 
 			ImGuiUtil::FilePathPopupResult result =
-				ImGuiUtil::DrawFilePathPopup(component.TextureAssetPath,
-											 ImGuiUtil::FilePathPopupParameters
-											 {
-												.Title = "Select a file (*.jpg, *.jpeg, *.png, *.tga, *.bmp, *.psd)"
-											 });
+				ImGuiUtil::DrawFilePathPopup(popupId, component.TextureAssetPath);
 			if (result == ImGuiUtil::FilePathPopupResult::Save)
 			{
 				isPathChanged = true;

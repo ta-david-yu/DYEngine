@@ -1,5 +1,6 @@
 #include "SceneEditorLayer.h"
 
+#include "ImGui/EditorImGuiUtil.h"
 #include "SceneRuntimeLayer.h"
 #include "Serialization/SerializedObjectFactory.h"
 #include "Type/BuiltInTypeRegister.h"
@@ -8,6 +9,7 @@
 
 #include "ImGui/ImGuiUtil.h"
 
+#include <filesystem>
 #include <unordered_set>
 #include <stack>
 #include <iostream>
@@ -41,13 +43,14 @@ namespace DYE::DYEditor
 			return;
 		}
 
-		Scene& activeScene = m_RuntimeLayer->ActiveMainScene;
+		Scene &activeScene = m_RuntimeLayer->ActiveMainScene;
 
 		drawMainMenuBar(activeScene);
 
 		// Set a default size for the window in case it has never been opened before.
-		const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
+		const ImGuiViewport *main_viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20),
+								ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
 		if (ImGui::Begin("Registered Systems"))
 		{
@@ -57,15 +60,17 @@ namespace DYE::DYEditor
 
 		// Set a default size for the window in case it has never been opened before.
 		main_viewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20),
+								ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
 		if (ImGui::Begin("Scene System"))
 		{
-			#pragma unroll
-			for (int phaseIndex = static_cast<int>(ExecutionPhase::Initialize); phaseIndex <= static_cast<int>(ExecutionPhase::TearDown); phaseIndex++)
+#pragma unroll
+			for (int phaseIndex = static_cast<int>(ExecutionPhase::Initialize);
+				 phaseIndex <= static_cast<int>(ExecutionPhase::TearDown); phaseIndex++)
 			{
 				auto const phase = static_cast<ExecutionPhase>(phaseIndex);
-				std::string const& phaseId = CastExecutionPhaseToString(phase);
+				std::string const &phaseId = CastExecutionPhaseToString(phase);
 				ImGui::PushID(phaseId.c_str());
 				ImGui::Separator();
 				bool const showSystems = ImGui::CollapsingHeader(phaseId.c_str(), ImGuiTreeNodeFlags_AllowItemOverlap);
@@ -93,7 +98,7 @@ namespace DYE::DYEditor
 						int indexToRemove = -1;
 						for (int i = 0; i < activeScene.UnrecognizedSystems.size(); ++i)
 						{
-							auto const& descriptor = activeScene.UnrecognizedSystems[i];
+							auto const &descriptor = activeScene.UnrecognizedSystems[i];
 
 							ImGui::TableNextRow();
 							ImGui::TableSetColumnIndex(0);
@@ -101,7 +106,8 @@ namespace DYE::DYEditor
 
 							char label[128];
 							sprintf(label, "System '%s' is unknown in the TypeRegistry.", descriptor.Name.c_str());
-							ImGui::Bullet(); ImGui::Selectable(label, false);
+							ImGui::Bullet();
+							ImGui::Selectable(label, false);
 
 							//ImGui::Text("System '%s' is unknown in the TypeRegistry.", descriptor.Name.c_str());
 							char const *popupId = "Unknown system popup";
@@ -127,7 +133,8 @@ namespace DYE::DYEditor
 
 						if (indexToRemove != -1)
 						{
-							activeScene.UnrecognizedSystems.erase(activeScene.UnrecognizedSystems.begin() + indexToRemove);
+							activeScene.UnrecognizedSystems.erase(
+								activeScene.UnrecognizedSystems.begin() + indexToRemove);
 						}
 
 						ImGui::EndTable();
@@ -139,7 +146,8 @@ namespace DYE::DYEditor
 
 		// Set a default size for the window in case it has never been opened before.
 		main_viewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20),
+								ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
 		if (ImGui::Begin("Scene Hierarchy"))
 		{
@@ -149,40 +157,55 @@ namespace DYE::DYEditor
 
 		// Set a default size for the window in case it has never been opened before.
 		main_viewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20),
+								ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
 		if (ImGui::Begin("Entity Inspector"))
 		{
 			if (m_CurrentlySelectedEntityInHierarchyPanel.IsValid() && ImGui::Button("Save To TestPrefab.tprefab"))
 			{
-				auto serializedEntity = SerializedObjectFactory::CreateSerializedEntity(m_CurrentlySelectedEntityInHierarchyPanel);
-				SerializedObjectFactory::SaveSerializedEntityToFile(serializedEntity, "assets\\Scenes\\TestPrefab.tprefab");
+				auto serializedEntity = SerializedObjectFactory::CreateSerializedEntity(
+					m_CurrentlySelectedEntityInHierarchyPanel);
+				SerializedObjectFactory::SaveSerializedEntityToFile(serializedEntity,
+																	"assets\\Scenes\\TestPrefab.tprefab");
 			}
 			ImGui::Separator();
 
-			drawEntityInspector(m_CurrentlySelectedEntityInHierarchyPanel, TypeRegistry::GetComponentTypesNamesAndFunctionCollections());
+			drawEntityInspector(m_CurrentlySelectedEntityInHierarchyPanel,
+								TypeRegistry::GetComponentTypesNamesAndFunctionCollections());
 		}
 		ImGui::End();
 
 		ImGui::ShowDemoWindow();
 	}
 
-	void SceneEditorLayer::drawMainMenuBar(Scene& currentScene)
+	void SceneEditorLayer::drawMainMenuBar(Scene &currentScene)
 	{
+		bool openLoadSceneFilePathPopup = false;
+
+		char const* loadPopupId = "Select a file (*.tscene)";
 		if (ImGui::BeginMainMenuBar())
 		{
 			if (ImGui::BeginMenu("File"))
 			{
-				if (ImGui::MenuItem("Save", "CTRL+S"))
-				{
-					auto serializedScene = SerializedObjectFactory::CreateSerializedScene(currentScene);
-					SerializedObjectFactory::SaveSerializedSceneToFile(serializedScene, "assets\\Scenes\\TestScene.tscene");
-				}
-
 				if (ImGui::MenuItem("Load"))
 				{
+					// We store a flag here and delay opening the popup
+					// because MenuItem is Selectable and Selectable by default calls CloseCurrentPopup().
+					openLoadSceneFilePathPopup = true;
+				}
+
+				if (ImGui::MenuItem("Save as TestScene.tscene", "CTRL+S"))
+				{
+					auto serializedScene = SerializedObjectFactory::CreateSerializedScene(currentScene);
+					SerializedObjectFactory::SaveSerializedSceneToFile(serializedScene,
+																	   "assets\\Scenes\\TestScene.tscene");
+				}
+
+				if (ImGui::MenuItem("Load TestSceneA.tscene"))
+				{
 					currentScene.Clear();
-					std::optional<SerializedScene> serializedScene = SerializedObjectFactory::TryLoadSerializedSceneFromFile("assets\\Scenes\\TestScene.tscene");
+					std::optional<SerializedScene> serializedScene = SerializedObjectFactory::TryLoadSerializedSceneFromFile("assets\\Scenes\\TestSceneA.tscene");
 					if (serializedScene.has_value())
 					{
 						SerializedObjectFactory::ApplySerializedSceneToEmptyScene(serializedScene.value(), currentScene);
@@ -191,6 +214,7 @@ namespace DYE::DYEditor
 
 				ImGui::EndMenu();
 			}
+
 			if (ImGui::BeginMenu("Edit"))
 			{
 				if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
@@ -202,6 +226,24 @@ namespace DYE::DYEditor
 				ImGui::EndMenu();
 			}
 			ImGui::EndMainMenuBar();
+		}
+
+		if (openLoadSceneFilePathPopup)
+		{
+			ImGuiUtil::OpenFilePathPopup(loadPopupId, "assets", "", { ".tscene" });
+		}
+
+		// Draw load scene file path popup.
+		static std::filesystem::path scenePath = "";
+		ImGuiUtil::FilePathPopupResult result = ImGuiUtil::DrawFilePathPopup(loadPopupId, scenePath);
+		if (result == ImGuiUtil::FilePathPopupResult::Save)
+		{
+			currentScene.Clear();
+			std::optional<SerializedScene> serializedScene = SerializedObjectFactory::TryLoadSerializedSceneFromFile(scenePath);
+			if (serializedScene.has_value())
+			{
+				SerializedObjectFactory::ApplySerializedSceneToEmptyScene(serializedScene.value(), currentScene);
+			}
 		}
 	}
 

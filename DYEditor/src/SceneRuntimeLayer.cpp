@@ -19,6 +19,11 @@ namespace DYE::DYEditor
 
 		for (auto& systemDescriptor : ActiveMainScene.FixedUpdateSystemDescriptors)
 		{
+			if (!systemDescriptor.IsEnabled)
+			{
+				continue;
+			}
+
 			systemDescriptor.Instance->Execute(ActiveMainScene.World, params);
 		}
 	}
@@ -31,15 +36,24 @@ namespace DYE::DYEditor
 		}
 
 		ExecuteParameters params { .Phase = ExecutionPhase::Update };
-
 		for (auto& systemDescriptor : ActiveMainScene.UpdateSystemDescriptors)
 		{
+			if (!systemDescriptor.IsEnabled)
+			{
+				continue;
+			}
+
 			systemDescriptor.Instance->Execute(ActiveMainScene.World, params);
 		}
 
 		params.Phase = ExecutionPhase::LateUpdate;
 		for (auto& systemDescriptor : ActiveMainScene.LateUpdateSystemDescriptors)
 		{
+			if (!systemDescriptor.IsEnabled)
+			{
+				continue;
+			}
+
 			systemDescriptor.Instance->Execute(ActiveMainScene.World, params);
 		}
 	}
@@ -50,6 +64,11 @@ namespace DYE::DYEditor
 
 		for (auto& systemDescriptor : ActiveMainScene.RenderSystemDescriptors)
 		{
+			if (!systemDescriptor.IsEnabled)
+			{
+				continue;
+			}
+
 			systemDescriptor.Instance->Execute(ActiveMainScene.World, params);
 		}
 	}
@@ -65,6 +84,11 @@ namespace DYE::DYEditor
 
 		for (auto& systemDescriptor : ActiveMainScene.ImGuiSystemDescriptors)
 		{
+			if (!systemDescriptor.IsEnabled)
+			{
+				continue;
+			}
+
 			systemDescriptor.Instance->Execute(ActiveMainScene.World, params);
 		}
 	}
