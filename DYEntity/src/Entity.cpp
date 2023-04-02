@@ -15,7 +15,8 @@ namespace DYE::DYEntity
 			return false;
 		}
 
-		return m_EntityHandle != entt::null;;
+		bool const isNullEntity = m_EntityHandle == entt::null;
+		return !isNullEntity && m_World->m_Registry.valid(m_EntityHandle);
 	}
 
 	std::optional<std::string> Entity::TryGetName()
