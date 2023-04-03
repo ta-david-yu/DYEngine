@@ -26,12 +26,12 @@ namespace DYE::Sandbox
 	void SandboxLayer::OnAttach()
 	{
 		auto mainWindowPtr = WindowManager::GetMainWindow();
-		m_CameraProperties.ClearColor = Color::Black;
-		m_CameraProperties.TargetWindowID = mainWindowPtr->GetWindowID();
-		m_CameraProperties.ManualAspectRatio = (float) mainWindowPtr->GetWidth() / (float) mainWindowPtr->GetHeight();
-		m_CameraProperties.Position = glm::vec3 {0, 0, 20};
-		m_CameraProperties.OrthographicSize = 20;
-		m_CameraProperties.IsOrthographic = true;
+		m_Camera.Properties.ClearColor = Color::Black;
+		m_Camera.Properties.TargetWindowID = mainWindowPtr->GetWindowID();
+		m_Camera.Properties.ManualAspectRatio = (float) mainWindowPtr->GetWidth() / (float) mainWindowPtr->GetHeight();
+		m_Camera.Position = glm::vec3 {0, 0, 20};
+		m_Camera.Properties.OrthographicSize = 20;
+		m_Camera.Properties.IsOrthographic = true;
 
 		recalculateJumpParameters();
 
@@ -175,7 +175,7 @@ namespace DYE::Sandbox
 	void SandboxLayer::OnRender()
 	{
 		// Camera system
-		RenderPipelineManager::RegisterCameraForNextRender(m_CameraProperties);
+		RenderPipelineManager::RegisterCameraForNextRender(m_Camera);
 
 		return;
 

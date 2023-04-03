@@ -26,8 +26,6 @@ namespace DYE
 	struct CameraProperties
 	{
 	public:
-		glm::vec3 Position{0, 0, 0};
-
 		glm::vec4 ClearColor = {0, 0, 0, 0};
 
 		/// The vertical field of view of the Camera, in degrees. The value is when IsOrthographic is true.
@@ -53,11 +51,20 @@ namespace DYE
 
 	public:
 		float GetAspectRatio() const;
-		glm::mat4 GetViewMatrix() const;
 		glm::mat4 GetProjectionMatrix(float aspectRatio) const;
 		glm::vec<2, std::uint32_t> GetTargetDimension() const;
 
 		Math::Rect GetAbsoluteViewportOfDimension(glm::vec<2, std::uint32_t> targetDimension) const;
 		float GetAutomaticAspectRatioOfDimension(glm::vec<2, std::uint32_t> targetDimension) const;
+	};
+
+	struct Camera
+	{
+	public:
+		glm::vec3 Position{0, 0, 0};
+		CameraProperties Properties;
+
+	public:
+		glm::mat4 GetViewMatrix() const;
 	};
 }

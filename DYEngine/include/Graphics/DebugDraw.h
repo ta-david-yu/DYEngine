@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Graphics/CameraProperties.h"
+#include "Graphics/Camera.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -68,8 +68,8 @@ namespace DYE
 		static std::shared_ptr<VertexArray> createWireCubeVAO();
 		static std::shared_ptr<VertexArray> createWireCircleVAO();
 
-		static void renderDebugDrawOnCamera(CameraProperties const& camera);
-		static void renderBatchedLineVAO(CameraProperties const& camera);
+		static void renderDebugDrawOnCamera(const Camera &camera);
+		static void renderBatchedLineVAO(const Camera &camera);
 		static void renderLineGeometryVAO(VertexArray const& vao, GeometryInstancedArrays & instancedArrays);
 		static void renderTriangleGeometryVAO(const VertexArray &vao, DebugDraw::GeometryInstancedArrays &instancedArrays);
 

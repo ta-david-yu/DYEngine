@@ -28,7 +28,7 @@ set(SOURCE_FILES
         src/RenderCommand.cpp
         src/ImageRenderer.cpp
         src/Texture.cpp
-        src/CameraProperties.cpp
+        src/Camera.cpp
         src/ImGuiUtil.cpp
         src/ShaderProcessorBase.cpp
         src/Material.cpp
@@ -87,7 +87,7 @@ set(HEADER_FILES
         include/Graphics/Texture.h
         include/Event/MouseEvent.h
         include/Message/Messaging.h
-        include/Graphics/CameraProperties.h
+        include/Graphics/Camera.h
         include/ImGui/ImGuiUtil.h
         include/Graphics/ShaderProcessorBase.h
         include/Graphics/Material.h

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Graphics/CameraProperties.h"
+#include "Graphics/Camera.h"
 #include "Graphics/MaterialPropertyBlock.h"
 #include "Math/Rect.h"
 
@@ -17,7 +17,7 @@ namespace DYE
 
 	struct RenderParameters
 	{
-		CameraProperties Camera;
+		Camera Camera;
 		std::shared_ptr<Material> Material;
 		MaterialPropertyBlock PropertyBlock;
 	};

@@ -2,7 +2,7 @@
 
 #include "Core/LayerBase.h"
 
-#include "Graphics/CameraProperties.h"
+#include "Graphics/Camera.h"
 #include "Math/AABB.h"
 
 #include "StaticAABBColliderManager.h"
@@ -27,6 +27,7 @@ namespace DYE::Sandbox
     private:
 		StaticAABBColliderManager m_StaticColliderManager;
 
+		Camera m_Camera;
 		CameraProperties m_CameraProperties;
 
 		glm::vec2 m_MovementInputBuffer {0, 0};

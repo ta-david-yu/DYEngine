@@ -1,4 +1,4 @@
-#include "Graphics/CameraProperties.h"
+#include "Graphics/Camera.h"
 
 #include "Graphics/WindowManager.h"
 #include "Util/Logger.h"
@@ -15,13 +15,6 @@ namespace DYE
 		{
 			return CachedAutomaticAspectRatio;
 		}
-	}
-
-	glm::mat4 CameraProperties::GetViewMatrix() const
-	{
-		// TODO: Add scale, rotation transformation
-		auto const viewMatrix = glm::mat4 {1.0f};
-		return glm::translate(viewMatrix, -Position);
 	}
 
 	glm::mat4 CameraProperties::GetProjectionMatrix(float aspectRatio) const
@@ -92,5 +85,12 @@ namespace DYE
 		}
 
 		return { targetWidth, targetHeight };
+	}
+
+	glm::mat4 Camera::GetViewMatrix() const
+	{
+		// TODO: Add scale, rotation transformation
+		auto const viewMatrix = glm::mat4 {1.0f};
+		return glm::translate(viewMatrix, -Position);
 	}
 }

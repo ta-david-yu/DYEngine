@@ -307,7 +307,7 @@ namespace DYE
 		return std::move(vao);
 	}
 
-	void DebugDraw::renderDebugDrawOnCamera(CameraProperties const& camera)
+	void DebugDraw::renderDebugDrawOnCamera(Camera const &camera)
 	{
 		if (!s_LineGizmoShaderProgram || !s_GeometryGizmoShaderProgram)
 		{
@@ -326,8 +326,8 @@ namespace DYE
 		glCall(glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix)));
 
 		// Projection matrix
-		float const aspectRatio = camera.GetAspectRatio();
-		glm::mat4 projectionMatrix = camera.GetProjectionMatrix(aspectRatio);
+		float const aspectRatio = camera.Properties.GetAspectRatio();
+		glm::mat4 projectionMatrix = camera.Properties.GetProjectionMatrix(aspectRatio);
 		auto projectionMatrixLoc = glGetUniformLocation(s_GeometryGizmoShaderProgram->GetID(), DefaultUniformNames::ProjectionMatrix);
 		glCall(glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, glm::value_ptr(projectionMatrix)));
 
@@ -336,7 +336,7 @@ namespace DYE
 		renderLineGeometryVAO(*s_CircleVAO, s_CircleInstancedArrays);
 	}
 
-	void DebugDraw::renderBatchedLineVAO(CameraProperties const& camera)
+	void DebugDraw::renderBatchedLineVAO(const Camera &camera)
 	{
 		if (s_BatchedLineVertices.empty() || s_BatchedLineIndices.empty())
 		{
@@ -352,8 +352,8 @@ namespace DYE
 		glCall(glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix)));
 
 		// Projection matrix
-		float const aspectRatio = camera.GetAspectRatio();
-		glm::mat4 projectionMatrix = camera.GetProjectionMatrix(aspectRatio);
+		float const aspectRatio = camera.Properties.GetAspectRatio();
+		glm::mat4 projectionMatrix = camera.Properties.GetProjectionMatrix(aspectRatio);
 		auto projectionMatrixLoc = glGetUniformLocation(s_LineGizmoShaderProgram->GetID(), DefaultUniformNames::ProjectionMatrix);
 		glCall(glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, glm::value_ptr(projectionMatrix)));
 

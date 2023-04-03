@@ -13,7 +13,7 @@
 namespace DYE
 {
 	std::shared_ptr<RenderPipelineBase> RenderPipelineManager::s_ActiveRenderPipeline = {};
-	std::vector<CameraProperties> RenderPipelineManager::s_CameraProperties = {};
+	std::vector<Camera> RenderPipelineManager::s_Cameras = {};
 	bool RenderPipelineManager::EnableDebugDraw = true;
 
 	void RenderPipelineManager::Initialize()
@@ -29,7 +29,7 @@ namespace DYE
 			return;
 		}
 
-		if (s_CameraProperties.empty())
+		if (s_Cameras.empty())
 		{
 			DYE_LOG("RenderPipelineManager::RenderWithActivePipeline is called, but no camera has been registered.");
 		}
@@ -38,17 +38,17 @@ namespace DYE
 		// to reduce the number of calls to window context swap.
 		std::stable_sort
 			(
-				s_CameraProperties.begin(),
-				s_CameraProperties.end(),
-				[](CameraProperties const &cameraA, CameraProperties const &cameraB)
+				s_Cameras.begin(),
+				s_Cameras.end(),
+				[](Camera const &cameraA, Camera const &cameraB)
 				{
-					if (cameraA.TargetType == RenderTargetType::Window && cameraB.TargetType == RenderTargetType::Window)
+					if (cameraA.Properties.TargetType == RenderTargetType::Window && cameraB.Properties.TargetType == RenderTargetType::Window)
 					{
-						return cameraA.TargetWindowID < cameraB.TargetWindowID;
+						return cameraA.Properties.TargetWindowID < cameraB.Properties.TargetWindowID;
 					}
 
 					// If only camera A is rendering to window, we render camera A first!
-					return cameraA.TargetType == RenderTargetType::Window;
+					return cameraA.Properties.TargetType == RenderTargetType::Window;
 				}
 			);
 
@@ -59,9 +59,9 @@ namespace DYE
 		WindowBase* pCurrentWindow = WindowManager::GetMainWindow();
 		pCurrentWindow->MakeCurrent();
 
-		for (auto& camera : s_CameraProperties)
+		for (auto& camera : s_Cameras)
 		{
-			if (camera.TargetType == RenderTargetType::RenderTexture)
+			if (camera.Properties.TargetType == RenderTargetType::RenderTexture)
 			{
 				// TODO: we skip render texture camera cuz we haven't implemented it yet!
 				continue;
@@ -70,7 +70,7 @@ namespace DYE
 			// Render to a window
 
 			// Configure the new window
-			if (camera.TargetWindowID != pCurrentWindow->GetWindowID())
+			if (camera.Properties.TargetWindowID != pCurrentWindow->GetWindowID())
 			{
 				// We are done rendering the previous window.
 				// Swap the buffer of the previous window so the buffer is actually drawn on the screen.
@@ -85,11 +85,11 @@ namespace DYE
 
 				// If the camera is rendering to a window other than the current one,
 				// Swap to the render target window and make the context current.
-				pCurrentWindow = WindowManager::GetWindowFromID(camera.TargetWindowID);
+				pCurrentWindow = WindowManager::GetWindowFromID(camera.Properties.TargetWindowID);
 
 				if (pCurrentWindow == nullptr)
 				{
-					DYE_LOG("The camera render window target (%d) doesn't exist. Skip the camera rendering.", camera.TargetWindowID);
+					DYE_LOG("The camera render window target (%d) doesn't exist. Skip the camera rendering.", camera.Properties.TargetWindowID);
 					continue;
 				}
 
@@ -97,12 +97,12 @@ namespace DYE
 			}
 
 			// Update camera's aspect ratio and set viewport.
-			auto targetDimension = camera.GetTargetDimension();
-			camera.CachedAutomaticAspectRatio = camera.GetAutomaticAspectRatioOfDimension(targetDimension);
-			Math::Rect const viewportDimension = camera.GetAbsoluteViewportOfDimension(targetDimension);
+			auto targetDimension = camera.Properties.GetTargetDimension();
+			camera.Properties.CachedAutomaticAspectRatio = camera.Properties.GetAutomaticAspectRatioOfDimension(targetDimension);
+			Math::Rect const viewportDimension = camera.Properties.GetAbsoluteViewportOfDimension(targetDimension);
 
 			RenderCommand::GetInstance().SetViewport(viewportDimension);
-			RenderCommand::GetInstance().SetClearColor(camera.ClearColor);
+			RenderCommand::GetInstance().SetClearColor(camera.Properties.ClearColor);
 			RenderCommand::GetInstance().Clear();
 
 			s_ActiveRenderPipeline->renderCamera(camera);
@@ -123,7 +123,7 @@ namespace DYE
 
 		DebugDraw::clearDebugDraw();
 
-		s_CameraProperties.clear();
+		s_Cameras.clear();
 	}
 
 
@@ -140,8 +140,8 @@ namespace DYE
 		s_ActiveRenderPipeline = std::move(renderPipeline);
 	}
 
-	void RenderPipelineManager::RegisterCameraForNextRender(CameraProperties cameraProperties)
+	void RenderPipelineManager::RegisterCameraForNextRender(Camera camera)
 	{
-		s_CameraProperties.push_back(cameraProperties);
+		s_Cameras.push_back(camera);
 	}
 }

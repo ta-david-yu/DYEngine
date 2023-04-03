@@ -1,6 +1,6 @@
 #include "ImGui/ImGuiUtil.h"
 
-#include "Graphics/CameraProperties.h"
+#include "Graphics/Camera.h"
 #include "Graphics/Material.h"
 #include "Graphics/Texture.h"
 #include "Graphics/Shader.h"
@@ -854,7 +854,6 @@ namespace DYE::ImGuiUtil
 
 		ImGui::PushID(label.c_str());
 
-		isValueChanged |= DrawVector3Control("Position", cameraProperties.Position);
 		isValueChanged |= DrawColor4Control("Clear Color", cameraProperties.ClearColor);
 		isValueChanged |= DrawBoolControl("Is Orthographic", cameraProperties.IsOrthographic);
 
