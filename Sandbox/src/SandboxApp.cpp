@@ -25,7 +25,7 @@ namespace DYE::Sandbox
 			pushLayerImmediate(runtimeLayer);
 			pushLayerImmediate(editorLayer);
 
-			pushLayerImmediate(std::make_shared<SandboxLayer>());
+			//pushLayerImmediate(std::make_shared<SandboxLayer>());
         }
 
         ~SandboxApp() final = default;

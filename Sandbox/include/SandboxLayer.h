@@ -28,7 +28,6 @@ namespace DYE::Sandbox
 		StaticAABBColliderManager m_StaticColliderManager;
 
 		Camera m_Camera;
-		CameraProperties m_CameraProperties;
 
 		glm::vec2 m_MovementInputBuffer {0, 0};
 		bool m_IsJumpPressed = false;

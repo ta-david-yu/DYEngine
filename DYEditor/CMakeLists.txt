@@ -20,7 +20,7 @@ set(SOURCE_FILES
         src/Scene.cpp
         src/DYEditorApplication.cpp
         src/ApplicationState.cpp
-        src/Render2DSpriteSystem.cpp src/FileSystem.cpp)
+        src/Render2DSpriteSystem.cpp src/FileSystem.cpp src/RegisterCameraSystem.cpp)
 set(HEADER_FILES
         include/SceneEditorLayer.h
         include/SceneRuntimeLayer.h
@@ -45,7 +45,7 @@ set(HEADER_FILES
         include/Components/SpriteRendererComponent.h
         include/Systems.h
         include/Systems/Render2DSpriteSystem.h
-        include/FileSystem/FileSystem.h include/Components/CameraComponent.h)
+        include/FileSystem/FileSystem.h include/Components/CameraComponent.h include/Systems/RegisterCameraSystem.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")

@@ -174,11 +174,7 @@ namespace DYE::Sandbox
 
 	void SandboxLayer::OnRender()
 	{
-		// Camera system
 		RenderPipelineManager::RegisterCameraForNextRender(m_Camera);
-
-		return;
-
 		m_StaticColliderManager.DrawGizmos();
 
 		// Render system
@@ -195,8 +191,6 @@ namespace DYE::Sandbox
 
     void SandboxLayer::OnImGui()
     {
-		return;
-
 		const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
 		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
@@ -204,7 +198,7 @@ namespace DYE::Sandbox
 		{
 			if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen))
 			{
-				ImGuiUtil::DrawCameraPropertiesControl("Camera", m_CameraProperties);
+				ImGuiUtil::DrawCameraPropertiesControl("Camera", m_Camera.Properties);
 			}
 
 			if (ImGui::CollapsingHeader("Player", ImGuiTreeNodeFlags_DefaultOpen))
