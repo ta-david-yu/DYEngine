@@ -45,7 +45,7 @@ namespace DYE::DYEditor
 
 		Scene &activeScene = m_RuntimeLayer->ActiveMainScene;
 
-		drawMainMenuBar(activeScene);
+		drawMainMenuBar(activeScene, m_CurrentSceneFilePath);
 
 		// Set a default size for the window in case it has never been opened before.
 		const ImGuiViewport *main_viewport = ImGui::GetMainViewport();
@@ -65,7 +65,7 @@ namespace DYE::DYEditor
 		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
 		if (ImGui::Begin("Scene System"))
 		{
-#pragma unroll
+			#pragma unroll
 			for (int phaseIndex = static_cast<int>(ExecutionPhase::Initialize);
 				 phaseIndex <= static_cast<int>(ExecutionPhase::TearDown); phaseIndex++)
 			{
@@ -179,7 +179,7 @@ namespace DYE::DYEditor
 		ImGui::ShowDemoWindow();
 	}
 
-	void SceneEditorLayer::drawMainMenuBar(Scene &currentScene)
+	void SceneEditorLayer::drawMainMenuBar(Scene &currentScene, std::filesystem::path &currentScenePathContext)
 	{
 		bool openLoadSceneFilePathPopup = false;
 		bool openSaveSceneFilePathPopup = false;
@@ -191,11 +191,33 @@ namespace DYE::DYEditor
 		{
 			if (ImGui::BeginMenu("File"))
 			{
-				if (ImGui::MenuItem("Load Scene"))
+				if (ImGui::MenuItem("New Scene"))
+				{
+					currentScenePathContext.clear();
+					currentScene.Clear();
+				}
+
+				if (ImGui::MenuItem("Open Scene"))
 				{
 					// We store a flag here and delay opening the popup
 					// because MenuItem is Selectable and Selectable by default calls CloseCurrentPopup().
 					openLoadSceneFilePathPopup = true;
+				}
+
+				ImGui::Separator();
+
+				if (ImGui::MenuItem("Save Scene"))
+				{
+					if (currentScenePathContext.empty())
+					{
+						// If the context filepath is empty, it's the same as 'Save Scene as...'.
+						openSaveSceneFilePathPopup = true;
+					}
+					else
+					{
+						auto serializedScene = SerializedObjectFactory::CreateSerializedScene(currentScene);
+						SerializedObjectFactory::SaveSerializedSceneToFile(serializedScene, currentScenePathContext);
+					}
 				}
 
 				if (ImGui::MenuItem("Save Scene as..."))
@@ -203,23 +225,6 @@ namespace DYE::DYEditor
 					// We store a flag here and delay opening the popup
 					// because MenuItem is Selectable and Selectable by default calls CloseCurrentPopup().
 					openSaveSceneFilePathPopup = true;
-				}
-
-				if (ImGui::MenuItem("Save as TestScene.tscene", "CTRL+S"))
-				{
-					auto serializedScene = SerializedObjectFactory::CreateSerializedScene(currentScene);
-					SerializedObjectFactory::SaveSerializedSceneToFile(serializedScene,
-																	   "assets\\Scenes\\TestScene.tscene");
-				}
-
-				if (ImGui::MenuItem("Load TestSceneA.tscene"))
-				{
-					currentScene.Clear();
-					std::optional<SerializedScene> serializedScene = SerializedObjectFactory::TryLoadSerializedSceneFromFile("assets\\Scenes\\TestSceneA.tscene");
-					if (serializedScene.has_value())
-					{
-						SerializedObjectFactory::ApplySerializedSceneToEmptyScene(serializedScene.value(), currentScene);
-					}
 				}
 
 				ImGui::EndMenu();
@@ -240,12 +245,11 @@ namespace DYE::DYEditor
 
 		static std::filesystem::path sceneFilePath = "";
 
+		// Draw open/load scene file path popup.
 		if (openLoadSceneFilePathPopup)
 		{
-			ImGuiUtil::OpenFilePathPopup(loadScenePopupId, "assets", "", {".tscene" });
+			ImGuiUtil::OpenFilePathPopup(loadScenePopupId, "assets", currentScenePathContext, {".tscene" });
 		}
-
-		// Draw open scene file path popup.
 		ImGuiUtil::FilePathPopupResult loadFilePathResult = ImGuiUtil::DrawFilePathPopup(loadScenePopupId, sceneFilePath, ImGuiUtil::FilePathPopupParameters
 			{
 				.IsSaveFilePanel = false
@@ -257,15 +261,15 @@ namespace DYE::DYEditor
 			if (serializedScene.has_value())
 			{
 				SerializedObjectFactory::ApplySerializedSceneToEmptyScene(serializedScene.value(), currentScene);
+				currentScenePathContext = sceneFilePath;
 			}
 		}
 
+		// Draw save scene file path popup.
 		if (openSaveSceneFilePathPopup)
 		{
-			ImGuiUtil::OpenFilePathPopup(saveScenePopupId, "assets", "", {".tscene"});
+			ImGuiUtil::OpenFilePathPopup(saveScenePopupId, "assets", currentScenePathContext, {".tscene"});
 		}
-
-		// Draw save scene file path popup.
 		ImGuiUtil::FilePathPopupResult saveFilePathResult = ImGuiUtil::DrawFilePathPopup(saveScenePopupId, sceneFilePath, ImGuiUtil::FilePathPopupParameters
 			{
 				.IsSaveFilePanel = true,
@@ -275,8 +279,10 @@ namespace DYE::DYEditor
 
 		if (saveFilePathResult == ImGuiUtil::FilePathPopupResult::Confirm)
 		{
+			currentScene.Name = sceneFilePath.filename().stem().string();
 			auto serializedScene = SerializedObjectFactory::CreateSerializedScene(currentScene);
 			SerializedObjectFactory::SaveSerializedSceneToFile(serializedScene, sceneFilePath);
+			currentScenePathContext = sceneFilePath;
 		}
 	}
 
@@ -293,7 +299,14 @@ namespace DYE::DYEditor
 		}
 
 		// Draw scene name as title.
-		ImGui::SeparatorText(scene.Name.c_str());
+		if (!scene.Name.empty())
+		{
+			ImGui::SeparatorText(scene.Name.c_str());
+		}
+		else
+		{
+			ImGui::SeparatorText("Untitled");
+		}
 
 		// Draw all entities.
 		scene.World.ForEachEntity
