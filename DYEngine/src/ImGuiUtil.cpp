@@ -855,6 +855,9 @@ namespace DYE::ImGuiUtil
 		ImGui::PushID(label.c_str());
 
 		isValueChanged |= DrawColor4Control("Clear Color", cameraProperties.ClearColor);
+
+		ImGui::Separator();
+
 		isValueChanged |= DrawBoolControl("Is Orthographic", cameraProperties.IsOrthographic);
 
 		if (cameraProperties.IsOrthographic)
@@ -868,6 +871,8 @@ namespace DYE::ImGuiUtil
 
 		isValueChanged |= DrawFloatControl("Clip Distance | Near", cameraProperties.NearClipDistance, 0.1f);
 		isValueChanged |= DrawFloatControl("Clip Distance | Far", cameraProperties.FarClipDistance, 100);
+
+		ImGui::Separator();
 
 		isValueChanged |= DrawBoolControl("Use Manual Aspect Ratio", cameraProperties.UseManualAspectRatio);
 		if (cameraProperties.UseManualAspectRatio)

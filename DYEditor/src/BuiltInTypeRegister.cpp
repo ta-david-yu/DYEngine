@@ -12,6 +12,7 @@
 // All the built-in component & system types are in here.
 #include "Components.h"
 #include "Systems.h"
+#include "World.h"
 
 #include <filesystem>
 #include <imgui.h>
@@ -22,13 +23,13 @@ namespace DYE::DYEditor
 {
 	namespace BuiltInFunctions
 	{
-		void AddNameComponent(Entity &entity)
+		void NameComponent_Add(Entity &entity)
 		{
 			entity.AddComponent<NameComponent>("New Entity");
 		}
 
 		SerializationResult
-		SerializeNameComponent(DYE::DYEntity::Entity &entity, SerializedComponentHandle &serializedComponent)
+		NameComponent_Serialize(DYE::DYEntity::Entity &entity, SerializedComponentHandle &serializedComponent)
 		{
 			// We don't do any error handling here (i.e. check if entity has NameComponent) because
 			// the function will only be called when the entity has NameComponent for sure.
@@ -38,7 +39,7 @@ namespace DYE::DYEditor
 		}
 
 		DeserializationResult
-		DeserializeNameComponent(SerializedComponentHandle &serializedComponent, DYE::DYEntity::Entity &entity)
+		NameComponent_Deserialize(SerializedComponentHandle &serializedComponent, DYE::DYEntity::Entity &entity)
 		{
 			auto &nameComponent = entity.AddOrGetComponent<NameComponent>();
 			nameComponent.Name = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::String>("Name");
@@ -46,7 +47,7 @@ namespace DYE::DYEditor
 			return {};
 		}
 
-		bool DrawInspectorOfNameComponent(Entity &entity)
+		bool NameComponent_DrawInspector(Entity &entity)
 		{
 			auto &nameComponent = entity.GetComponent<NameComponent>();
 
@@ -58,7 +59,7 @@ namespace DYE::DYEditor
 		}
 
 		SerializationResult
-		SerializeTransformComponent(DYE::DYEntity::Entity &entity, SerializedComponentHandle &serializedComponent)
+		TransformComponent_Serialize(DYE::DYEntity::Entity &entity, SerializedComponentHandle &serializedComponent)
 		{
 			auto const &transformComponent = entity.GetComponent<TransformComponent>();
 			serializedComponent.SetPrimitiveTypePropertyValue("Position", transformComponent.Position);
@@ -69,7 +70,7 @@ namespace DYE::DYEditor
 		}
 
 		DeserializationResult
-		DeserializeTransformComponent(SerializedComponentHandle &serializedComponent, DYE::DYEntity::Entity &entity)
+		TransformComponent_Deserialize(SerializedComponentHandle &serializedComponent, DYE::DYEntity::Entity &entity)
 		{
 			auto &transformComponent = entity.AddOrGetComponent<TransformComponent>();
 			transformComponent.Position = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Vector3>(
@@ -82,7 +83,7 @@ namespace DYE::DYEditor
 			return {};
 		}
 
-		bool DrawInspectorOfTransformComponent(Entity &entity)
+		bool TransformComponent_DrawInspector(Entity &entity)
 		{
 			auto &transformComponent = entity.GetComponent<TransformComponent>();
 
@@ -105,8 +106,87 @@ namespace DYE::DYEditor
 			return changed;
 		}
 
+		void CameraComponent_Add(Entity& entity)
+		{
+			entity.AddComponent<CameraComponent>();
+
+			// The component only makes sense with a transform component.
+			entity.AddOrGetComponent<TransformComponent>();
+		}
+
 		SerializationResult
-		SerializeSpriteRendererComponent(DYE::DYEntity::Entity &entity, SerializedComponentHandle &serializedComponent)
+		CameraComponent_Serialize(DYE::DYEntity::Entity &entity, SerializedComponentHandle &serializedComponent)
+		{
+			auto const &cameraProperties = entity.GetComponent<CameraComponent>().Properties;
+			serializedComponent.SetPrimitiveTypePropertyValue("ClearColor", cameraProperties.ClearColor);
+
+			serializedComponent.SetPrimitiveTypePropertyValue("FiledOfView", cameraProperties.FieldOfView);
+			serializedComponent.SetPrimitiveTypePropertyValue("IsOrthographic", cameraProperties.IsOrthographic);
+			serializedComponent.SetPrimitiveTypePropertyValue("OrthographicSize", cameraProperties.OrthographicSize);
+			serializedComponent.SetPrimitiveTypePropertyValue("NearClipDistance", cameraProperties.NearClipDistance);
+			serializedComponent.SetPrimitiveTypePropertyValue("FarClipDistance", cameraProperties.FarClipDistance);
+
+			// TODO: target type & target ID
+
+			serializedComponent.SetPrimitiveTypePropertyValue("UseManualAspectRatio", cameraProperties.UseManualAspectRatio);
+			serializedComponent.SetPrimitiveTypePropertyValue("ManualAspectRatio", cameraProperties.ManualAspectRatio);
+			serializedComponent.SetPrimitiveTypePropertyValue<DYE::String>("ViewportValueType",
+															  cameraProperties.ViewportValueType == ViewportValueType::RelativeDimension?
+															  "RelativeDimension" : "AbsoluteDimension");
+			serializedComponent.SetPrimitiveTypePropertyValue("Viewport", cameraProperties.Viewport);
+
+			return {};
+		}
+
+		DeserializationResult
+		CameraComponent_Deserialize(SerializedComponentHandle &serializedComponent, DYE::DYEntity::Entity &entity)
+		{
+			auto &cameraProperties = entity.AddOrGetComponent<CameraComponent>().Properties;
+			cameraProperties.ClearColor = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Color4>("ClearColor");
+
+			cameraProperties.FieldOfView = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Float>("FiledOfView");
+			cameraProperties.IsOrthographic = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Bool>("IsOrthographic");
+			cameraProperties.OrthographicSize = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Float>("OrthographicSize");
+			cameraProperties.NearClipDistance = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Float>("NearClipDistance");
+			cameraProperties.FarClipDistance = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Float>("FarClipDistance");
+
+			// TODO: target type & target ID
+
+			cameraProperties.UseManualAspectRatio = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Bool>("UseManualAspectRatio");
+			cameraProperties.ManualAspectRatio = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Float>("ManualAspectRatio");
+			auto const& viewportValueTypeAsString = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::String>("ViewportValueType");
+			if (viewportValueTypeAsString == "RelativeDimension")
+			{
+				cameraProperties.ViewportValueType = ViewportValueType::RelativeDimension;
+			}
+			else
+			{
+				cameraProperties.ViewportValueType = ViewportValueType::AbsoluteDimension;
+			}
+			cameraProperties.Viewport = serializedComponent.GetPrimitiveTypePropertyValueOr<Math::Rect>("Viewport", {0, 0, 0, 0});
+
+			return {};
+		}
+
+		bool CameraComponent_DrawInspector(Entity &entity)
+		{
+			auto &cameraComponent = entity.GetComponent<CameraComponent>();
+
+			bool changed = false;
+			changed |= ImGuiUtil::DrawCameraPropertiesControl("Camera Properties", cameraComponent.Properties);
+			return changed;
+		}
+
+		void SpriteRendererComponent_Add(DYEntity::Entity& entity)
+		{
+			entity.AddComponent<SpriteRendererComponent>();
+
+			// The component only makes sense with a transform component.
+			entity.AddOrGetComponent<TransformComponent>();
+		}
+
+		SerializationResult
+		SpriteRendererComponent_Serialize(DYE::DYEntity::Entity &entity, SerializedComponentHandle &serializedComponent)
 		{
 			auto const &component = entity.GetComponent<SpriteRendererComponent>();
 			serializedComponent.SetPrimitiveTypePropertyValue("Color", component.Color);
@@ -115,8 +195,8 @@ namespace DYE::DYEditor
 			return {};
 		}
 
-		DeserializationResult DeserializeSpriteRendererComponent(SerializedComponentHandle &serializedComponent,
-																 DYE::DYEntity::Entity &entity)
+		DeserializationResult SpriteRendererComponent_Deserialize(SerializedComponentHandle &serializedComponent,
+																  DYE::DYEntity::Entity &entity)
 		{
 			auto &component = entity.AddOrGetComponent<SpriteRendererComponent>();
 			component.Color = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Color4>("Color");
@@ -135,7 +215,7 @@ namespace DYE::DYEditor
 			return {};
 		}
 
-		bool DrawInspectorOfSpriteRendererComponent(Entity &entity)
+		bool SpriteRendererComponent_DrawInspector(Entity &entity)
 		{
 			auto &component = entity.GetComponent<SpriteRendererComponent>();
 
@@ -209,11 +289,11 @@ namespace DYE::DYEditor
 				"Name",
 				ComponentTypeFunctionCollection
 					{
-						.Add = BuiltInFunctions::AddNameComponent,
+						.Add = BuiltInFunctions::NameComponent_Add,
 
-						.Serialize = BuiltInFunctions::SerializeNameComponent,
-						.Deserialize = BuiltInFunctions::DeserializeNameComponent,
-						.DrawInspector = BuiltInFunctions::DrawInspectorOfNameComponent,
+						.Serialize = BuiltInFunctions::NameComponent_Serialize,
+						.Deserialize = BuiltInFunctions::NameComponent_Deserialize,
+						.DrawInspector = BuiltInFunctions::NameComponent_DrawInspector,
 					}
 			);
 
@@ -222,9 +302,22 @@ namespace DYE::DYEditor
 				"Transform",
 				ComponentTypeFunctionCollection
 					{
-						.Serialize = BuiltInFunctions::SerializeTransformComponent,
-						.Deserialize = BuiltInFunctions::DeserializeTransformComponent,
-						.DrawInspector = BuiltInFunctions::DrawInspectorOfTransformComponent
+						.Serialize = BuiltInFunctions::TransformComponent_Serialize,
+						.Deserialize = BuiltInFunctions::TransformComponent_Deserialize,
+						.DrawInspector = BuiltInFunctions::TransformComponent_DrawInspector
+					}
+			);
+
+		TypeRegistry::RegisterComponentType<CameraComponent>
+		    (
+				"Camera",
+				ComponentTypeFunctionCollection
+					{
+						.Add = BuiltInFunctions::CameraComponent_Add,
+
+						.Serialize = BuiltInFunctions::CameraComponent_Serialize,
+						.Deserialize = BuiltInFunctions::CameraComponent_Deserialize,
+						.DrawInspector = BuiltInFunctions::CameraComponent_DrawInspector
 					}
 			);
 
@@ -233,9 +326,11 @@ namespace DYE::DYEditor
 				"SpriteRenderer",
 				ComponentTypeFunctionCollection
 					{
-						.Serialize = BuiltInFunctions::SerializeSpriteRendererComponent,
-						.Deserialize = BuiltInFunctions::DeserializeSpriteRendererComponent,
-						.DrawInspector = BuiltInFunctions::DrawInspectorOfSpriteRendererComponent
+						.Add = BuiltInFunctions::SpriteRendererComponent_Add,
+
+						.Serialize = BuiltInFunctions::SpriteRendererComponent_Serialize,
+						.Deserialize = BuiltInFunctions::SpriteRendererComponent_Deserialize,
+						.DrawInspector = BuiltInFunctions::SpriteRendererComponent_DrawInspector
 					}
 			);
 

@@ -104,6 +104,22 @@ namespace DYE::DYEditor
 		return pPropertyNode->value<DYE::String>();
 	}
 
+	template<>
+	std::optional<Math::Rect> SerializedComponentHandle::TryGetPrimitiveTypePropertyValue(std::string_view const& propertyName) const
+	{
+		toml::node* pPropertyNode = m_pComponentTable->get(propertyName);
+		if (pPropertyNode == nullptr)
+		{
+			return {};
+		}
+
+		toml::table* pPropertyTable = pPropertyNode->as_table();
+		auto x = pPropertyTable->get("X")->value_or<float>(0);
+		auto y = pPropertyTable->get("Y")->value_or<float>(0);
+		auto width = pPropertyTable->get("Width")->value_or<float>(0);
+		auto height = pPropertyTable->get("Height")->value_or<float>(0);
+		return Math::Rect(x, y, width, height);
+	}
 
 	template<>
 	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<DYE::Vector2>(std::string const& propertyName, DYE::Vector2 const& value)
@@ -141,5 +157,13 @@ namespace DYE::DYEditor
 	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<DYE::AssetPath>(std::string const& propertyName, DYE::AssetPath const& value)
 	{
 		m_pComponentTable->insert_or_assign(propertyName, value.string());
+	}
+
+	template<>
+	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<Math::Rect>(std::string const& propertyName, Math::Rect const& value)
+	{
+		toml::table table { {"X", value.X}, {"Y", value.Y}, {"Width", value.Width}, {"Height", value.Height} };
+		table.is_inline(true);
+		m_pComponentTable->insert_or_assign(propertyName, table);
 	}
 }

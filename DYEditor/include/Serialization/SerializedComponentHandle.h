@@ -2,6 +2,7 @@
 
 #include "Core/EditorCore.h"
 #include "Core/EditorProperty.h"
+#include "Math/Rect.h"
 
 #include <string>
 #include <optional>
@@ -77,6 +78,8 @@ namespace DYE::DYEditor
 	std::optional<DYE::Quaternion> SerializedComponentHandle::TryGetPrimitiveTypePropertyValue(std::string_view const& propertyName) const;
 	template<>
 	std::optional<DYE::AssetPath> SerializedComponentHandle::TryGetPrimitiveTypePropertyValue(std::string_view const& propertyName) const;
+	template<>
+	std::optional<Math::Rect> SerializedComponentHandle::TryGetPrimitiveTypePropertyValue(std::string_view const& propertyName) const;
 
 	template<>
 	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<DYE::Vector2>(std::string const& propertyName, DYE::Vector2 const& value);
@@ -88,4 +91,6 @@ namespace DYE::DYEditor
 	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<DYE::Quaternion>(std::string const& propertyName, DYE::Quaternion const& value);
 	template<>
 	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<DYE::AssetPath>(std::string const& propertyName, DYE::AssetPath const& value);
+	template<>
+	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<Math::Rect>(std::string const& propertyName, Math::Rect const& value);
 }

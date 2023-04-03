@@ -28,9 +28,9 @@ namespace DYE
 	public:
 		glm::vec4 ClearColor = {0, 0, 0, 0};
 
-		/// The vertical field of view of the Camera, in degrees. The value is when IsOrthographic is true.
+		/// The vertical field of view of the Camera, in degrees. This is ignored when IsOrthographic is true.
 		float FieldOfView = 45;
-		bool IsOrthographic = false;
+		bool IsOrthographic = true;
 		/// Camera's half-size when in orthographic mode. This is ignored when IsOrthographic is false.
 		float OrthographicSize = 10;
 		float NearClipDistance = 0.1f;

@@ -7,4 +7,5 @@
 #include "TransformComponent.h"
 
 // DYEditor built-in
+#include "Components/CameraComponent.h"
 #include "Components/SpriteRendererComponent.h"
