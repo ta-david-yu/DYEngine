@@ -90,7 +90,7 @@ namespace DYE::DYEditor
 			bool changed = false;
 
 			changed |= ImGuiUtil::DrawVector3Control("Position", transformComponent.Position);
-			changed |= ImGuiUtil::DrawVector3Control("Scale", transformComponent.Scale);
+			changed |= ImGuiUtil::DrawVector3Control("Scale", transformComponent.Scale, 1.0f);
 
 			glm::vec3 rotationInEulerAnglesDegree = glm::eulerAngles(transformComponent.Rotation);
 			rotationInEulerAnglesDegree += glm::vec3(0.f);
