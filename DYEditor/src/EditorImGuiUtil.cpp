@@ -188,6 +188,7 @@ namespace DYE::ImGuiUtil
 		}
 		ImGui::EndChild();
 
+		// Draw selected file path as text OR input field.
 		if (params.IsSaveFilePanel)
 		{
 			std::string filenameAsString = FilePathPopup_SelectedFilePath.filename().string();
@@ -209,6 +210,7 @@ namespace DYE::ImGuiUtil
 			ImGui::Text(FilePathPopup_SelectedFilePath.string().c_str());
 		}
 
+		// Draw the rest of the buttons & confirmSaveAs popup.
 		float const buttonPadding = 10;
 		ImVec2 const buttonSize = ImVec2 {75, buttonHeight};
 		float const scrollBarWidth = ImGui::GetCurrentWindow()->ScrollbarY ? ImGui::GetWindowScrollbarRect(
@@ -227,9 +229,12 @@ namespace DYE::ImGuiUtil
 		bool closeMainModalPopupAfterConfirmSaveAsPopup = false;
 		if (params.IsSaveFilePanel)
 		{
-			// For a save panel, we need to do some filename extension checking
+			bool const isSelectedFilePathValid = !FilePathPopup_SelectedFilePath.filename().empty();
+
+			ImGui::BeginDisabled(!isSelectedFilePathValid);
 			if (ImGui::Button("Confirm", buttonSize))
 			{
+				// For a save panel, we need to do some filename extension checking
 				bool const hasAutoFileExtension = params.SaveFileExtension != nullptr;
 				auto selectedFileExtension = FilePathPopup_SelectedFilePath.extension();
 				if (hasAutoFileExtension && selectedFileExtension != params.SaveFileExtension)
@@ -252,6 +257,7 @@ namespace DYE::ImGuiUtil
 					result = FilePathPopupResult::Confirm;
 				}
 			}
+			ImGui::EndDisabled();
 
 			if (openConfirmSaveAsPopup)
 			{
