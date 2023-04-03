@@ -174,9 +174,8 @@ namespace DYE::DYEditor
 				ImGui::EndTooltip();
 			}
 
-			ImGuiUtil::FilePathPopupResult result =
-				ImGuiUtil::DrawFilePathPopup(popupId, component.TextureAssetPath);
-			if (result == ImGuiUtil::FilePathPopupResult::Save)
+			ImGuiUtil::FilePathPopupResult result = ImGuiUtil::DrawFilePathPopup(popupId, component.TextureAssetPath);
+			if (result == ImGuiUtil::FilePathPopupResult::Confirm)
 			{
 				isPathChanged = true;
 			}

@@ -182,17 +182,27 @@ namespace DYE::DYEditor
 	void SceneEditorLayer::drawMainMenuBar(Scene &currentScene)
 	{
 		bool openLoadSceneFilePathPopup = false;
+		bool openSaveSceneFilePathPopup = false;
 
-		char const* loadPopupId = "Select a file (*.tscene)";
+		char const* loadScenePopupId = "Select a scene file (*.tscene)";
+		char const* saveScenePopupId = "Save scene file as... ";
+
 		if (ImGui::BeginMainMenuBar())
 		{
 			if (ImGui::BeginMenu("File"))
 			{
-				if (ImGui::MenuItem("Load"))
+				if (ImGui::MenuItem("Load Scene"))
 				{
 					// We store a flag here and delay opening the popup
 					// because MenuItem is Selectable and Selectable by default calls CloseCurrentPopup().
 					openLoadSceneFilePathPopup = true;
+				}
+
+				if (ImGui::MenuItem("Save Scene as..."))
+				{
+					// We store a flag here and delay opening the popup
+					// because MenuItem is Selectable and Selectable by default calls CloseCurrentPopup().
+					openSaveSceneFilePathPopup = true;
 				}
 
 				if (ImGui::MenuItem("Save as TestScene.tscene", "CTRL+S"))
@@ -228,22 +238,45 @@ namespace DYE::DYEditor
 			ImGui::EndMainMenuBar();
 		}
 
+		static std::filesystem::path sceneFilePath = "";
+
 		if (openLoadSceneFilePathPopup)
 		{
-			ImGuiUtil::OpenFilePathPopup(loadPopupId, "assets", "", { ".tscene" });
+			ImGuiUtil::OpenFilePathPopup(loadScenePopupId, "assets", "", {".tscene" });
 		}
 
-		// Draw load scene file path popup.
-		static std::filesystem::path scenePath = "";
-		ImGuiUtil::FilePathPopupResult result = ImGuiUtil::DrawFilePathPopup(loadPopupId, scenePath);
-		if (result == ImGuiUtil::FilePathPopupResult::Save)
+		// Draw open scene file path popup.
+		ImGuiUtil::FilePathPopupResult loadFilePathResult = ImGuiUtil::DrawFilePathPopup(loadScenePopupId, sceneFilePath, ImGuiUtil::FilePathPopupParameters
+			{
+				.IsSaveFilePanel = false
+			});
+		if (loadFilePathResult == ImGuiUtil::FilePathPopupResult::Confirm)
 		{
 			currentScene.Clear();
-			std::optional<SerializedScene> serializedScene = SerializedObjectFactory::TryLoadSerializedSceneFromFile(scenePath);
+			std::optional<SerializedScene> serializedScene = SerializedObjectFactory::TryLoadSerializedSceneFromFile(sceneFilePath);
 			if (serializedScene.has_value())
 			{
 				SerializedObjectFactory::ApplySerializedSceneToEmptyScene(serializedScene.value(), currentScene);
 			}
+		}
+
+		if (openSaveSceneFilePathPopup)
+		{
+			ImGuiUtil::OpenFilePathPopup(saveScenePopupId, "assets", "", {".tscene"});
+		}
+
+		// Draw save scene file path popup.
+		ImGuiUtil::FilePathPopupResult saveFilePathResult = ImGuiUtil::DrawFilePathPopup(saveScenePopupId, sceneFilePath, ImGuiUtil::FilePathPopupParameters
+			{
+				.IsSaveFilePanel = true,
+				.SaveFileExtension = ".tscene",
+				.ShowOverwritePopupOnConfirmSave = true,
+			});
+
+		if (saveFilePathResult == ImGuiUtil::FilePathPopupResult::Confirm)
+		{
+			auto serializedScene = SerializedObjectFactory::CreateSerializedScene(currentScene);
+			SerializedObjectFactory::SaveSerializedSceneToFile(serializedScene, sceneFilePath);
 		}
 	}
 
@@ -329,8 +362,8 @@ namespace DYE::DYEditor
 		char const* addSystemPopupId = "Add System Menu Popup";
 		ImVec2 const addButtonSize = ImVec2 {150, 0};
 		float const scrollBarWidth = ImGui::GetCurrentWindow()->ScrollbarY? ImGui::GetWindowScrollbarRect(ImGui::GetCurrentWindow(), ImGuiAxis_Y).GetWidth() : 0;
-		float const fullAddButtonWidth = ImGui::GetWindowWidth() - scrollBarWidth;
-		ImGui::SetCursorPosX(fullAddButtonWidth - addButtonSize.x);
+		float const availableWidthForAddButton = ImGui::GetWindowWidth() - scrollBarWidth;
+		ImGui::SetCursorPosX(availableWidthForAddButton - addButtonSize.x);
 		if (ImGui::Button("Add System", addButtonSize))
 		{
 			ImGui::OpenPopup(addSystemPopupId);
@@ -420,11 +453,11 @@ namespace DYE::DYEditor
 			bool const isTheFirst = i == 0;
 			bool const isTheLast = i == systemDescriptors.size() - 1;
 			float const offsetToRight = ImGui::GetFrameHeightWithSpacing();
-			float const fullReorderButtonWidth = ImGui::GetWindowWidth() - scrollBarWidth;
+			float const availableWidthForReorderButtons = ImGui::GetWindowWidth() - scrollBarWidth;
 			if (!isTheFirst)
 			{
 				ImGui::SameLine();
-				ImGui::SetCursorPosX(fullReorderButtonWidth - offsetToRight * 2);    // * 2 because: close button + up button (itself)
+				ImGui::SetCursorPosX(availableWidthForReorderButtons - offsetToRight * 2);    // * 2 because: close button + up button (itself)
 				if (ImGui::ArrowButton("##up", ImGuiDir_Up))
 				{
 					// Swap with the previous system and return right away.
@@ -439,7 +472,7 @@ namespace DYE::DYEditor
 			if (!isTheLast)
 			{
 				ImGui::SameLine();
-				ImGui::SetCursorPosX(fullReorderButtonWidth - offsetToRight * 3);    // * 3 because: close button + up button + down button (itself)
+				ImGui::SetCursorPosX(availableWidthForReorderButtons - offsetToRight * 3);    // * 3 because: close button + up button + down button (itself)
 				if (ImGui::ArrowButton("##down", ImGuiDir_Down))
 				{
 					// Swap with the next system and return right away.
@@ -495,8 +528,9 @@ namespace DYE::DYEditor
 		// Draw a 'Add Component' button at the top of the inspector, and align it to the right side of the window.
 		char const* addComponentPopupId = "Add Component Menu Popup";
 		ImVec2 const addButtonSize = ImVec2 {150, 0};
-		float const fullAddButtonWidth = ImGui::GetWindowWidth();
-		ImGui::SetCursorPosX(fullAddButtonWidth - addButtonSize.x);
+		float const scrollBarWidth = ImGui::GetCurrentWindow()->ScrollbarY? ImGui::GetWindowScrollbarRect(ImGui::GetCurrentWindow(), ImGuiAxis_Y).GetWidth() : 0;
+		float const availableWidthForAddButton = ImGui::GetWindowWidth() - scrollBarWidth;
+		ImGui::SetCursorPosX(availableWidthForAddButton - addButtonSize.x);
 		if (ImGui::Button("Add Component", addButtonSize))
 		{
 			ImGui::OpenPopup(addComponentPopupId);
@@ -550,7 +584,8 @@ namespace DYE::DYEditor
 			}
 
 			bool isHeaderVisible = true;
-			bool const showInspector = ImGui::CollapsingHeader(name.c_str(), &isHeaderVisible);
+			ImGuiTreeNodeFlags const flags = ImGuiTreeNodeFlags_DefaultOpen;
+			bool const showInspector = ImGui::CollapsingHeader(name.c_str(), &isHeaderVisible, flags);
 
 			bool const isRemoved = !isHeaderVisible;
 			if (isRemoved)
