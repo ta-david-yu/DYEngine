@@ -71,6 +71,9 @@ namespace DYE::ImGuiUtil
 			return result;
 		}
 
+		char const* confirmSaveAsPopupId = "Confirm Save As";
+		bool openConfirmSaveAsPopup = false;
+
 		// TODO: draw a folder icon here
 		// Draw current directory as a sequence of folder selectables.
 		std::filesystem::path currentPathSequence = "";
@@ -156,8 +159,17 @@ namespace DYE::ImGuiUtil
 						if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 						{
 							outputPath = directoryEntry.path();
-							ImGui::CloseCurrentPopup();
-							result = FilePathPopupResult::Confirm;
+							if (params.IsSaveFilePanel && DYEditor::FileSystem::FileExists(outputPath))
+							{
+								// We store a flag here and delay opening the popup
+								// because MenuItem is Selectable and Selectable by default calls CloseCurrentPopup().
+								openConfirmSaveAsPopup = true;
+							}
+							else
+							{
+								ImGui::CloseCurrentPopup();
+								result = FilePathPopupResult::Confirm;
+							}
 						}
 						else
 						{
@@ -212,6 +224,7 @@ namespace DYE::ImGuiUtil
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(availableWidthForAddButton - buttonSize.x * 2 - buttonPadding * 2);
 
+		bool closeMainModalPopupAfterConfirmSaveAsPopup = false;
 		if (params.IsSaveFilePanel)
 		{
 			// For a save panel, we need to do some filename extension checking
@@ -224,13 +237,43 @@ namespace DYE::ImGuiUtil
 					// Append auto extension file if the filepath doesn't have a matching one.
 					FilePathPopup_SelectedFilePath += params.SaveFileExtension;
 				}
-
-				// TODO: do duplicate filename popup warning.
-
 				// The final save directory depends on the current directory.
 				outputPath = FilePathPopup_CurrentDirectory / FilePathPopup_SelectedFilePath.filename();
-				ImGui::CloseCurrentPopup();
-				result = FilePathPopupResult::Confirm;
+
+				if (DYEditor::FileSystem::FileExists(outputPath))
+				{
+					// We store a flag here and delay opening the popup
+					// because MenuItem is Selectable and Selectable by default calls CloseCurrentPopup().
+					openConfirmSaveAsPopup = true;
+				}
+				else
+				{
+					ImGui::CloseCurrentPopup();
+					result = FilePathPopupResult::Confirm;
+				}
+			}
+
+			if (openConfirmSaveAsPopup)
+			{
+				// Open duplicate filename warning popup.
+				ImGui::OpenPopup(confirmSaveAsPopupId);
+			}
+
+			if (ImGui::BeginPopupModal(confirmSaveAsPopupId))
+			{
+				ImGui::Text("'%s' already exists. Do you want to replace it?", outputPath.filename().string().c_str());
+				if (ImGui::Button("Yes"))
+				{
+					ImGui::CloseCurrentPopup();
+					closeMainModalPopupAfterConfirmSaveAsPopup = true;
+					result = FilePathPopupResult::Confirm;
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("No"))
+				{
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::EndPopup();
 			}
 		}
 		else
@@ -245,6 +288,11 @@ namespace DYE::ImGuiUtil
 				result = FilePathPopupResult::Confirm;
 			}
 			ImGui::EndDisabled();
+		}
+
+		if (closeMainModalPopupAfterConfirmSaveAsPopup)
+		{
+			ImGui::CloseCurrentPopup();
 		}
 
 		ImGui::EndPopup();
