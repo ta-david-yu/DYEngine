@@ -855,6 +855,7 @@ namespace DYE::ImGuiUtil
 		ImGui::PushID(label.c_str());
 
 		isValueChanged |= DrawColor4Control("Clear Color", cameraProperties.ClearColor);
+		isValueChanged |= DrawFloatControl("Depth ", cameraProperties.Depth);
 
 		ImGui::Separator();
 

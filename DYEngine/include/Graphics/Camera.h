@@ -39,6 +39,9 @@ namespace DYE
 		RenderTargetType TargetType = RenderTargetType::Window;
 		WindowID TargetWindowID = 0;
 
+		/// Cameras with a larger depth value will be drawn on top of cameras with a smaller value.
+		float Depth = -1;
+
 		/// The aspect ratio of the render viewport is normally calculated based on render target's size on each render pass automatically.
 		/// However you can still set the value manually by setting UseManualAspectRatio to true and assign the value to ManualAspectRatio.
 		float CachedAutomaticAspectRatio = 1;

@@ -119,6 +119,7 @@ namespace DYE::DYEditor
 		{
 			auto const &cameraProperties = entity.GetComponent<CameraComponent>().Properties;
 			serializedComponent.SetPrimitiveTypePropertyValue("ClearColor", cameraProperties.ClearColor);
+			serializedComponent.SetPrimitiveTypePropertyValue("Depth", cameraProperties.Depth);
 
 			serializedComponent.SetPrimitiveTypePropertyValue("FiledOfView", cameraProperties.FieldOfView);
 			serializedComponent.SetPrimitiveTypePropertyValue("IsOrthographic", cameraProperties.IsOrthographic);
@@ -143,25 +144,26 @@ namespace DYE::DYEditor
 		{
 			auto &cameraProperties = entity.AddOrGetComponent<CameraComponent>().Properties;
 			cameraProperties.ClearColor = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Color4>("ClearColor");
+			cameraProperties.Depth = serializedComponent.GetPrimitiveTypePropertyValueOr<DYE::Float>("Depth", -1);
 
-			cameraProperties.FieldOfView = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Float>("FiledOfView");
+			cameraProperties.FieldOfView = serializedComponent.GetPrimitiveTypePropertyValueOr<DYE::Float>("FiledOfView", 45);
 			cameraProperties.IsOrthographic = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Bool>("IsOrthographic");
-			cameraProperties.OrthographicSize = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Float>("OrthographicSize");
-			cameraProperties.NearClipDistance = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Float>("NearClipDistance");
-			cameraProperties.FarClipDistance = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Float>("FarClipDistance");
+			cameraProperties.OrthographicSize = serializedComponent.GetPrimitiveTypePropertyValueOr<DYE::Float>("OrthographicSize", 10);
+			cameraProperties.NearClipDistance = serializedComponent.GetPrimitiveTypePropertyValueOr<DYE::Float>("NearClipDistance", 0.1f);
+			cameraProperties.FarClipDistance = serializedComponent.GetPrimitiveTypePropertyValueOr<DYE::Float>("FarClipDistance", 100);
 
 			// TODO: target type & target ID
 
 			cameraProperties.UseManualAspectRatio = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Bool>("UseManualAspectRatio");
 			cameraProperties.ManualAspectRatio = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Float>("ManualAspectRatio");
 			auto const& viewportValueTypeAsString = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::String>("ViewportValueType");
-			if (viewportValueTypeAsString == "RelativeDimension")
+			if (viewportValueTypeAsString == "AbsoluteDimension")
 			{
-				cameraProperties.ViewportValueType = ViewportValueType::RelativeDimension;
+				cameraProperties.ViewportValueType = ViewportValueType::AbsoluteDimension;
 			}
 			else
 			{
-				cameraProperties.ViewportValueType = ViewportValueType::AbsoluteDimension;
+				cameraProperties.ViewportValueType = ViewportValueType::RelativeDimension;
 			}
 			cameraProperties.Viewport = serializedComponent.GetPrimitiveTypePropertyValueOr<Math::Rect>("Viewport", {0, 0, 0, 0});
 

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include "Graphics/Camera.h"
 #include "Util/Macro.h"
 #include "Graphics/RenderCommand.h"
 #include "Graphics/WindowManager.h"
@@ -34,21 +35,42 @@ namespace DYE
 			DYE_LOG("RenderPipelineManager::RenderWithActivePipeline is called, but no camera has been registered.");
 		}
 
-		// Sort the cameras based on their render target ID (for now only Window),
+		// Sort the cameras based on their render target ID.
+		// TODO: (for now only Window),
 		// to reduce the number of calls to window context swap.
+		// After that, sort them based on their Depth value (from low to high).
 		std::stable_sort
 			(
 				s_Cameras.begin(),
 				s_Cameras.end(),
 				[](Camera const &cameraA, Camera const &cameraB)
 				{
-					if (cameraA.Properties.TargetType == RenderTargetType::Window && cameraB.Properties.TargetType == RenderTargetType::Window)
+					if (cameraA.Properties.TargetType != cameraB.Properties.TargetType)
 					{
-						return cameraA.Properties.TargetWindowID < cameraB.Properties.TargetWindowID;
+						// Two cameras render to different target type,
+						// The one that targets a window goes first.
+						return cameraA.Properties.TargetType == RenderTargetType::Window;
 					}
 
-					// If only camera A is rendering to window, we render camera A first!
-					return cameraA.Properties.TargetType == RenderTargetType::Window;
+					RenderTargetType const targetType = cameraA.Properties.TargetType;
+					if (targetType == RenderTargetType::Window)
+					{
+						// In the case of both render to a window.
+						if (cameraA.Properties.TargetWindowID != cameraB.Properties.TargetWindowID)
+						{
+							return cameraA.Properties.TargetWindowID < cameraB.Properties.TargetWindowID;
+						}
+						else
+						{
+							// Always render camera that has a lower depth value,
+							// So the one with higher value is rendered on top of the others.
+							return cameraA.Properties.Depth < cameraB.Properties.Depth;
+						}
+					}
+					// TODO: else targetType == RenderTargetType::RenderTexture
+
+					// Default, always render A first.
+					return true;
 				}
 			);
 
