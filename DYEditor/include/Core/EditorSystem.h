@@ -34,6 +34,8 @@ namespace DYE::DYEditor
 		LateUpdate,
 		/// Called after all LateUpdates in Runtime Mode. It's also called in Edit Mode to render the scene in scene view.
 		Render,
+		/// It's also called in Edit Mode to render the scene in scene view.
+		PostRender,
 		ImGui,
 		/// Called at the end of each frame
 		Cleanup,

@@ -143,11 +143,16 @@ namespace DYE
             {
                 layer->OnRender();
             }
-            onPostRenderLayers();
 			glEnable(GL_CULL_FACE);
 			glCullFace(GL_BACK);
 			// Execute draw-calls on GPU
 			RenderPipelineManager::RenderWithActivePipeline();
+
+			for (auto& layer : m_LayerStack)
+			{
+				layer->OnPostRender();
+			}
+
 
             // ImGui
             m_ImGuiLayer->BeginImGui();

@@ -59,8 +59,6 @@ namespace DYE
 
         /// Called after ForEach.layer.OnUpdate(), before ForEach.layer.OnRender()
         virtual void onPreRenderLayers() { }
-        /// Called after ForEach.layer.OnRender(), before BeginImGui()
-        virtual void onPostRenderLayers() { }
 
     private:
 		void handleOnApplicationQuit(ApplicationQuitEvent const& event);

@@ -19,6 +19,8 @@ namespace DYE::DYEditor
 				return LateUpdateSystemDescriptors;
 			case ExecutionPhase::Render:
 				return RenderSystemDescriptors;
+			case ExecutionPhase::PostRender:
+				return PostRenderSystemDescriptors;
 			case ExecutionPhase::ImGui:
 				return ImGuiSystemDescriptors;
 			case ExecutionPhase::Cleanup:
@@ -54,6 +56,7 @@ namespace DYE::DYEditor
 		UpdateSystemDescriptors.clear();
 		LateUpdateSystemDescriptors.clear();
 		RenderSystemDescriptors.clear();
+		PostRenderSystemDescriptors.clear();
 		ImGuiSystemDescriptors.clear();
 		CleanupSystemDescriptors.clear();
 		TearDownSystemDescriptors.clear();

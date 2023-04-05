@@ -15,6 +15,7 @@ namespace DYE::DYEditor
 		void OnFixedUpdate() override;
 		void OnUpdate() override;
 		void OnRender() override;
+		void OnPostRender() override;
 		void OnImGui() override;
 
 	public:

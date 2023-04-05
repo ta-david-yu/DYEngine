@@ -20,6 +20,8 @@ namespace DYE::DYEditor
 				return "LateUpdate";
 			case ExecutionPhase::Render:
 				return "Render";
+			case ExecutionPhase::PostRender:
+				return "PostRender";
 			case ExecutionPhase::ImGui:
 				return "ImGui";
 			case ExecutionPhase::Cleanup:
@@ -53,6 +55,10 @@ namespace DYE::DYEditor
 		if (phaseInString == "Render")
 		{
 			return ExecutionPhase::Render;
+		}
+		if (phaseInString == "PostRender")
+		{
+			return ExecutionPhase::PostRender;
 		}
 		if (phaseInString == "ImGui")
 		{

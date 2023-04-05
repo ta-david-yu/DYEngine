@@ -55,6 +55,10 @@ namespace DYE::DYEditor
 			{
 				function(systemDescriptor, ExecutionPhase::Render);
 			}
+			for (const auto& systemDescriptor : PostRenderSystemDescriptors)
+			{
+				function(systemDescriptor, ExecutionPhase::PostRender);
+			}
 			for (const auto& systemDescriptor : ImGuiSystemDescriptors)
 			{
 				function(systemDescriptor, ExecutionPhase::ImGui);
@@ -83,6 +87,7 @@ namespace DYE::DYEditor
 		std::vector<SystemDescriptor> UpdateSystemDescriptors;
 		std::vector<SystemDescriptor> LateUpdateSystemDescriptors;
 		std::vector<SystemDescriptor> RenderSystemDescriptors;
+		std::vector<SystemDescriptor> PostRenderSystemDescriptors;
 		std::vector<SystemDescriptor> ImGuiSystemDescriptors;
 		std::vector<SystemDescriptor> CleanupSystemDescriptors;
 		std::vector<SystemDescriptor> TearDownSystemDescriptors;

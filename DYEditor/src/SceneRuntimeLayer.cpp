@@ -61,8 +61,21 @@ namespace DYE::DYEditor
 	void SceneRuntimeLayer::OnRender()
 	{
 		ExecuteParameters const params { .Phase = ExecutionPhase::Render };
-
 		for (auto& systemDescriptor : ActiveMainScene.RenderSystemDescriptors)
+		{
+			if (!systemDescriptor.IsEnabled)
+			{
+				continue;
+			}
+
+			systemDescriptor.Instance->Execute(ActiveMainScene.World, params);
+		}
+	}
+
+	void SceneRuntimeLayer::OnPostRender()
+	{
+		ExecuteParameters const params { .Phase = ExecutionPhase::PostRender };
+		for (auto& systemDescriptor : ActiveMainScene.PostRenderSystemDescriptors)
 		{
 			if (!systemDescriptor.IsEnabled)
 			{
