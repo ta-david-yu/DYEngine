@@ -291,7 +291,7 @@ namespace DYE::DYEditor
 		DYE_LOG("<< Register Built-in Types to DYEditor::TypeRegistry >>");
 		TypeRegistry::RegisterComponentType<NameComponent>
 			(
-				"Name",
+				NameComponentName,
 				ComponentTypeFunctionCollection
 					{
 						.Add = BuiltInFunctions::NameComponent_Add,

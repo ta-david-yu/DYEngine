@@ -5,6 +5,7 @@
 #include "Serialization/SerializedObjectFactory.h"
 #include "Type/BuiltInTypeRegister.h"
 #include "Type/UserTypeRegister.h"
+#include "NameComponent.h"
 #include "Graphics/RenderPipelineManager.h"
 #include "Graphics/WindowManager.h"
 #include "Input/InputManager.h"
@@ -18,6 +19,7 @@
 #include <stack>
 #include <iostream>
 #include <imgui.h>
+#include <imgui_stdlib.h>
 
 using namespace DYE::DYEntity;
 
@@ -445,7 +447,7 @@ namespace DYE::DYEditor
 
 		// Draw a 'Add System' button at the top of the inspector, and align it to the right side of the window.
 		char const* addSystemPopupId = "Add System Menu Popup";
-		ImVec2 const addButtonSize = ImVec2 {150, 0};
+		ImVec2 const addButtonSize = ImVec2 {120, 0};
 		float const scrollBarWidth = ImGui::GetCurrentWindow()->ScrollbarY? ImGui::GetWindowScrollbarRect(ImGui::GetCurrentWindow(), ImGuiAxis_Y).GetWidth() : 0;
 		float const availableWidthForAddButton = ImGui::GetWindowWidth() - scrollBarWidth;
 		ImGui::SetCursorPosX(availableWidthForAddButton - addButtonSize.x);
@@ -610,24 +612,33 @@ namespace DYE::DYEditor
 
 		bool changed = false;
 
+		ImVec2 const addComponentButtonSize = ImVec2 {120, 0};
+		float const scrollBarWidth = ImGui::GetCurrentWindow()->ScrollbarY? ImGui::GetWindowScrollbarRect(ImGui::GetCurrentWindow(), ImGuiAxis_Y).GetWidth() : 0;
+
+		// Draw entity's NameComponent as a InputField on the top.
+		auto& nameComponent = entity.AddOrGetComponent<NameComponent>();
+		ImGui::PushItemWidth(ImGui::GetWindowWidth() - scrollBarWidth - addComponentButtonSize.x - ImGui::Get());
+		changed |= ImGui::InputText("##EntityNameComponent", &nameComponent.Name);
+		ImGui::PopItemWidth();
+
 		// Draw a 'Add Component' button at the top of the inspector, and align it to the right side of the window.
 		char const* addComponentPopupId = "Add Component Menu Popup";
-		ImVec2 const addButtonSize = ImVec2 {150, 0};
-		float const scrollBarWidth = ImGui::GetCurrentWindow()->ScrollbarY? ImGui::GetWindowScrollbarRect(ImGui::GetCurrentWindow(), ImGuiAxis_Y).GetWidth() : 0;
 		float const availableWidthForAddButton = ImGui::GetWindowWidth() - scrollBarWidth;
-		ImGui::SetCursorPosX(availableWidthForAddButton - addButtonSize.x);
-		if (ImGui::Button("Add Component", addButtonSize))
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(availableWidthForAddButton - addComponentButtonSize.x);
+		if (ImGui::Button("Add Component", addComponentButtonSize))
 		{
 			ImGui::OpenPopup(addComponentPopupId);
 		}
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
 		{
 			ImGui::BeginTooltip();
-			ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
 			ImGui::TextUnformatted("Add a new component to the entity.");
-			ImGui::PopTextWrapPos();
 			ImGui::EndTooltip();
 		}
+
+		// Draw a separator between the header of the inspector and the component list.
+		ImGui::Separator();
 
 		if (ImGui::BeginPopup(addComponentPopupId))
 		{
@@ -655,8 +666,17 @@ namespace DYE::DYEditor
 		}
 
 		// Draw all components that the entity has.
+		bool isNameComponentSkipped = false;
 		for (auto& [name, functions] : componentNamesAndFunctions)
 		{
+			if (!isNameComponentSkipped && name == NameComponentName)
+			{
+				// We don't want to draw name component as a normal component.
+				// We've already drawn it on the top of the entity inspector.
+				isNameComponentSkipped = true;
+				continue;
+			}
+
 			if (functions.Has == nullptr)
 			{
 				ImGui::TextWrapped("Missing 'Has' function for component '%s'.", name.c_str());
@@ -677,16 +697,18 @@ namespace DYE::DYEditor
 				ImGuiTreeNodeFlags const flags = ImGuiTreeNodeFlags_DefaultOpen;
 				showComponentInspector = ImGui::CollapsingHeader("##Header", &isHeaderVisible, flags);
 
+				// Spacing ahead of the component name.
 				float const spacing = ImGui::GetFrameHeight();
-				ImGui::SameLine();
-				ImGui::ItemSize(ImVec2(spacing, 0));
+				ImGui::SameLine(); ImGui::ItemSize(ImVec2(spacing, 0));
+
+				// The name of the component.
 				ImGui::SameLine();
 				ImGui::TextUnformatted(name.c_str());
 
 			}
 			else
 			{
-				// Use custom header if provided.
+				// Use custom header drawer if provided.
 				showComponentInspector = functions.DrawHeader(entity, isHeaderVisible, changed, name);
 			}
 			ImGui::PopID();
