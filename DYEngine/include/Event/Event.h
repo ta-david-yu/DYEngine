@@ -16,7 +16,7 @@ namespace DYE
         ApplicationQuit,
         WindowClose, WindowSizeChange, WindowManualResize, WindowMove,
         KeyDown, KeyUp,
-        MouseButtonDown, MouseButtonUp, MouseMove, MouseDrag,
+        MouseButtonDown, MouseButtonUp, MouseMove, MouseScroll,
 		GamepadConnect, GamepadDisconnect
     };
 

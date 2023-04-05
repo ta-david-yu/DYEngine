@@ -91,6 +91,19 @@ namespace DYE
                     eventPtr.reset(new MouseButtonUpEvent(static_cast<MouseButton>(event.button.button)));
                     caught = true;
                     break;
+				case SDL_MOUSEWHEEL:
+					// TODO: update SDL to >= 2.0.18 so we can use wheel.preciseX/Y instead of wheel.X/Y.
+					// 	see - https://wiki.libsdl.org/SDL2/SDL_MouseWheelEvent#remarks for further information.
+					if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
+					{
+						eventPtr.reset(new MouseScrolledEvent(-event.wheel.x, -event.wheel.y));
+					}
+					else
+					{
+						eventPtr.reset(new MouseScrolledEvent(event.wheel.x, event.wheel.y));
+					}
+					caught = true;
+					break;
 				case SDL_CONTROLLERDEVICEADDED:
 					// Note that cdevice.which is not the instance id in ControllerAddedEvent, but index (location in the system array).
 					// To keep the event data symmetrical, we want to use the instance id instead.

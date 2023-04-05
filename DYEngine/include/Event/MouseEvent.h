@@ -25,6 +25,22 @@ namespace DYE
         float m_MouseDeltaX {0}, m_MouseDeltaY {0};
     };
 
+	class MouseScrolledEvent : public Event
+	{
+	public:
+		MouseScrolledEvent(float x, float y) : m_X(x), m_Y(y) {}
+
+		float GetX() const { return m_X; }
+		float GetY() const { return m_Y; }
+
+		EVENT_CLASS_TYPE(MouseScroll)
+		EVENT_CLASS_CATEGORY(EventCategory::Mouse | EventCategory::Input)
+
+	private:
+		float m_X {0};
+		float m_Y {0};
+	};
+
     class MouseButtonEvent : public Event
     {
     public:
