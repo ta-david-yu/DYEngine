@@ -617,7 +617,7 @@ namespace DYE::DYEditor
 
 		// Draw entity's NameComponent as a InputField on the top.
 		auto& nameComponent = entity.AddOrGetComponent<NameComponent>();
-		ImGui::PushItemWidth(ImGui::GetWindowWidth() - scrollBarWidth - addComponentButtonSize.x - ImGui::Get());
+		ImGui::PushItemWidth(ImGui::GetWindowWidth() - scrollBarWidth - addComponentButtonSize.x - ImGui::GetFontSize());
 		changed |= ImGui::InputText("##EntityNameComponent", &nameComponent.Name);
 		ImGui::PopItemWidth();
 
