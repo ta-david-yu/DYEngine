@@ -670,16 +670,26 @@ namespace DYE::DYEditor
 
 			bool isHeaderVisible = true;
 			bool showComponentInspector = true;
+
+			ImGui::PushID(name.c_str());
 			if (functions.DrawHeader == nullptr)
 			{
 				ImGuiTreeNodeFlags const flags = ImGuiTreeNodeFlags_DefaultOpen;
-				showComponentInspector = ImGui::CollapsingHeader(name.c_str(), &isHeaderVisible, flags);
+				showComponentInspector = ImGui::CollapsingHeader("##Header", &isHeaderVisible, flags);
+
+				float const spacing = ImGui::GetFrameHeight();
+				ImGui::SameLine();
+				ImGui::ItemSize(ImVec2(spacing, 0));
+				ImGui::SameLine();
+				ImGui::TextUnformatted(name.c_str());
+
 			}
 			else
 			{
 				// Use custom header if provided.
 				showComponentInspector = functions.DrawHeader(entity, isHeaderVisible, changed, name);
 			}
+			ImGui::PopID();
 
 			bool const isRemoved = !isHeaderVisible;
 			if (isRemoved)
