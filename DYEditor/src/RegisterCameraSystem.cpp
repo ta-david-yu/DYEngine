@@ -29,10 +29,11 @@ namespace DYE::DYEditor
 			Camera cameraToRegister;
 			cameraToRegister.Position = transform.Position;
 			cameraToRegister.Rotation = transform.Rotation;
-			cameraToRegister.Properties = camera.Properties;
 
-			// TODO: remove this one
-			cameraToRegister.Properties.TargetWindowID = WindowManager::GetMainWindow()->GetWindowID();
+			// TODO: remove this line
+			camera.Properties.TargetWindowID = WindowManager::GetMainWindow()->GetWindowID();
+
+			cameraToRegister.Properties = camera.Properties;
 
 			RenderPipelineManager::RegisterCameraForNextRender(cameraToRegister);
 

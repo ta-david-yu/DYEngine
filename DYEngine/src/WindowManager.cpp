@@ -42,7 +42,7 @@ namespace DYE
 		s_MainWindowID = id;
 	}
 
-	WindowBase *WindowManager::GetWindowFromID(WindowID id)
+	WindowBase *WindowManager::TryGetWindowFromID(WindowID id)
 	{
 		for (auto const &windowPair: s_Windows)
 		{
@@ -54,7 +54,6 @@ namespace DYE
 			return windowPair.second.get();
 		}
 
-		DYE_LOG_ERROR("GetWindowFromID: There is no window with the given id - %d.", id);
 		return nullptr;
 
 	}
@@ -72,13 +71,13 @@ namespace DYE
 			return nullptr;
 		}
 
-		return GetWindowFromID(s_MainWindowID.value());
+		return TryGetWindowFromID(s_MainWindowID.value());
 	}
 
-	WindowBase *WindowManager::GetMouseFocusedWindow()
+	WindowBase *WindowManager::TryGetMouseFocusedWindow()
 	{
 		WindowID const id = WindowBase::GetMouseFocusedWindowID();
-		return GetWindowFromID(id);
+		return TryGetWindowFromID(id);
 	}
 
 	bool WindowManager::HasWindowWithID(WindowID id)

@@ -64,7 +64,9 @@ namespace DYE
 	struct Camera
 	{
 	public:
-		glm::vec3 Position{0, 0, 0};
+		glm::vec3 Position {0, 0, 0};
+		glm::quat Rotation {glm::vec3 {0, 0, 0}};
+
 		CameraProperties Properties;
 
 	public:

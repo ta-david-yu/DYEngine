@@ -3,6 +3,8 @@
 #include "Graphics/WindowManager.h"
 #include "Util/Logger.h"
 
+#include <glm/gtx/quaternion.hpp>
+
 namespace DYE
 {
 	float CameraProperties::GetAspectRatio() const
@@ -70,7 +72,7 @@ namespace DYE
 
 		if (TargetType == RenderTargetType::Window)
 		{
-			auto windowPtr = WindowManager::GetWindowFromID(TargetWindowID);
+			auto windowPtr = WindowManager::TryGetWindowFromID(TargetWindowID);
 			if (windowPtr == nullptr)
 			{
 				return { targetWidth, targetHeight };
@@ -90,7 +92,7 @@ namespace DYE
 	glm::mat4 Camera::GetViewMatrix() const
 	{
 		// TODO: Add scale, rotation transformation
-		auto const viewMatrix = glm::mat4 {1.0f};
-		return glm::translate(viewMatrix, -Position);
+		auto viewMatrix = glm::translate(glm::mat4(1.0f), Position) * glm::toMat4(Rotation);
+		return glm::inverse(viewMatrix);
 	}
 }

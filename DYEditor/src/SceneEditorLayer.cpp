@@ -1,12 +1,13 @@
 #include "SceneEditorLayer.h"
 
-#include "ImGui/EditorImGuiUtil.h"
 #include "SceneRuntimeLayer.h"
+#include "Core/EditorSystem.h"
 #include "Serialization/SerializedObjectFactory.h"
 #include "Type/BuiltInTypeRegister.h"
 #include "Type/UserTypeRegister.h"
-#include "Core/EditorSystem.h"
-
+#include "Graphics/RenderPipelineManager.h"
+#include "Graphics/WindowManager.h"
+#include "ImGui/EditorImGuiUtil.h"
 #include "ImGui/ImGuiUtil.h"
 
 #include <filesystem>
@@ -28,12 +29,23 @@ namespace DYE::DYEditor
 		// DEBUGGING, Should be moved to DYEditorApplication so that both EditorLayer & RuntimeLayer could use it
 		DYEditor::RegisterBuiltInTypes();
 		DYEditor::RegisterUserTypes();
+
+		m_SceneViewCamera.Properties.TargetWindowID = WindowManager::GetMainWindow()->GetWindowID();
 	}
 
 	void SceneEditorLayer::OnDetach()
 	{
 		TypeRegistry::ClearRegisteredComponentTypes();
 		TypeRegistry::ClearRegisteredSystems();
+	}
+
+	void SceneEditorLayer::OnRender()
+	{
+		DYE::RenderPipelineManager::RegisterCameraForNextRender(m_SceneViewCamera);
+	}
+
+	void SceneEditorLayer::OnEvent(Event &event)
+	{
 	}
 
 	void SceneEditorLayer::OnImGui()
@@ -49,6 +61,20 @@ namespace DYE::DYEditor
 
 		// Set a default size for the window in case it has never been opened before.
 		const ImGuiViewport *main_viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
+		if (ImGui::Begin("Scene View Camera"))
+		{
+			ImGui::PushID("Scene View Camera");
+			ImGuiUtil::DrawVector3Control("Position", m_SceneViewCamera.Position);
+			ImGuiUtil::DrawCameraPropertiesControl("Properties", m_SceneViewCamera.Properties);
+			ImGui::PopID();
+		}
+		ImGui::End();
+
+
+		// Set a default size for the window in case it has never been opened before.
+		main_viewport = ImGui::GetMainViewport();
 		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20),
 								ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);

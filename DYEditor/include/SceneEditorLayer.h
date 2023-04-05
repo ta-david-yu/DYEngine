@@ -2,16 +2,17 @@
 
 #include "Core/LayerBase.h"
 
-#include "Type/TypeRegistry.h"
 #include "Core/Scene.h"
-
+#include "Core/EditorSystem.h"
+#include "Type/TypeRegistry.h"
 #include "World.h"
 #include "Entity.h"
-#include "Core/EditorSystem.h"
+#include "Graphics/Camera.h"
 
 #include <filesystem>
 #include <memory>
 #include <concepts>
+#include <utility>
 
 namespace DYE::DYEditor
 {
@@ -25,15 +26,18 @@ namespace DYE::DYEditor
 
 		void OnAttach() override;
 		void OnDetach() override;
+		void OnRender() override;
+		void OnEvent(DYE::Event &event) override;
 		void OnImGui() override;
 
-		void SetRuntimeLayer(std::shared_ptr<SceneRuntimeLayer> runtimeLayer) { m_RuntimeLayer = runtimeLayer; }
+		void SetRuntimeLayer(std::shared_ptr<SceneRuntimeLayer> runtimeLayer) { m_RuntimeLayer = std::move(runtimeLayer); }
 
 	private:
 		std::shared_ptr<SceneRuntimeLayer> m_RuntimeLayer;
 
 		DYEntity::Entity m_CurrentlySelectedEntityInHierarchyPanel;
 		std::filesystem::path m_CurrentSceneFilePath;
+		Camera m_SceneViewCamera;
 
 		static void drawMainMenuBar(Scene &currentScene, std::filesystem::path &currentScenePathContext);
 		static bool drawSceneEntityHierarchyPanel(Scene &scene, DYEntity::Entity *pCurrentSelectedEntity);

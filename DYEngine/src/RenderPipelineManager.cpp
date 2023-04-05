@@ -107,7 +107,7 @@ namespace DYE
 
 				// If the camera is rendering to a window other than the current one,
 				// Swap to the render target window and make the context current.
-				pCurrentWindow = WindowManager::GetWindowFromID(camera.Properties.TargetWindowID);
+				pCurrentWindow = WindowManager::TryGetWindowFromID(camera.Properties.TargetWindowID);
 
 				if (pCurrentWindow == nullptr)
 				{
