@@ -34,6 +34,8 @@ namespace DYE::DYEditor
 	using DeserializeComponentFunction = DeserializationResult (SerializedComponentHandle& serializedComponent, DYE::DYEntity::Entity& entity);
 	/// \return true if the content of the inspector is changed/dirty.
 	using DrawComponentInspectorFunction = bool (DYE::DYEntity::Entity& entity);
+	/// \return true if the content of the inspector is changed/dirty.
+	using DrawComponentHeaderFunction = bool (DYE::DYEntity::Entity& entity, bool &isHeaderVisible, bool &entityChanged, std::string const& headerLabel);
 
 	/// One should always provide 'Serialize', 'Deserialize' and 'DrawInspector' functions.
 	struct ComponentTypeFunctionCollection
@@ -45,6 +47,7 @@ namespace DYE::DYEditor
 		SerializeComponentFunction* Serialize = nullptr;
 		DeserializeComponentFunction* Deserialize = nullptr;
 		DrawComponentInspectorFunction* DrawInspector = nullptr;
+		DrawComponentHeaderFunction* DrawHeader = nullptr;
 	};
 
 	// TypeRegistry keeps track of all the types, so we could use them in runtime.

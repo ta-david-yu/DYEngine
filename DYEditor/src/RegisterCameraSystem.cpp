@@ -21,8 +21,14 @@ namespace DYE::DYEditor
 		{
 			auto [camera, transform] = view.get<CameraComponent, DYEntity::TransformComponent>(entity);
 
+			if (!camera.IsEnabled)
+			{
+				continue;
+			}
+
 			Camera cameraToRegister;
 			cameraToRegister.Position = transform.Position;
+			cameraToRegister.Rotation = transform.Rotation;
 			cameraToRegister.Properties = camera.Properties;
 
 			// TODO: remove this one

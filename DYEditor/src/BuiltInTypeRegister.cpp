@@ -117,7 +117,9 @@ namespace DYE::DYEditor
 		SerializationResult
 		CameraComponent_Serialize(DYE::DYEntity::Entity &entity, SerializedComponentHandle &serializedComponent)
 		{
-			auto const &cameraProperties = entity.GetComponent<CameraComponent>().Properties;
+			auto const &cameraComponent = entity.GetComponent<CameraComponent>();
+			auto const &cameraProperties = cameraComponent.Properties;
+			serializedComponent.SetPrimitiveTypePropertyValue("IsEnabled", cameraComponent.IsEnabled);
 			serializedComponent.SetPrimitiveTypePropertyValue("ClearColor", cameraProperties.ClearColor);
 			serializedComponent.SetPrimitiveTypePropertyValue("Depth", cameraProperties.Depth);
 
@@ -142,7 +144,9 @@ namespace DYE::DYEditor
 		DeserializationResult
 		CameraComponent_Deserialize(SerializedComponentHandle &serializedComponent, DYE::DYEntity::Entity &entity)
 		{
-			auto &cameraProperties = entity.AddOrGetComponent<CameraComponent>().Properties;
+			auto &cameraComponent = entity.AddOrGetComponent<CameraComponent>();
+			auto &cameraProperties = cameraComponent.Properties;
+			cameraComponent.IsEnabled = serializedComponent.GetPrimitiveTypePropertyValueOr<DYE::Bool>("IsEnabled", true);
 			cameraProperties.ClearColor = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Color4>("ClearColor");
 			cameraProperties.Depth = serializedComponent.GetPrimitiveTypePropertyValueOr<DYE::Float>("Depth", -1);
 
@@ -223,7 +227,6 @@ namespace DYE::DYEditor
 
 			bool changed = false;
 
-			changed |= ImGuiUtil::DrawBoolControl("Is Enabled", component.IsEnabled);
 			changed |= ImGuiUtil::DrawColor4Control("Color", component.Color);
 
 			// TODO: add a asset path imgui control
@@ -319,7 +322,8 @@ namespace DYE::DYEditor
 
 						.Serialize = BuiltInFunctions::CameraComponent_Serialize,
 						.Deserialize = BuiltInFunctions::CameraComponent_Deserialize,
-						.DrawInspector = BuiltInFunctions::CameraComponent_DrawInspector
+						.DrawInspector = BuiltInFunctions::CameraComponent_DrawInspector,
+						.DrawHeader = DefaultDrawComponentHeaderWithIsEnabled<CameraComponent>
 					}
 			);
 
@@ -332,7 +336,8 @@ namespace DYE::DYEditor
 
 						.Serialize = BuiltInFunctions::SpriteRendererComponent_Serialize,
 						.Deserialize = BuiltInFunctions::SpriteRendererComponent_Deserialize,
-						.DrawInspector = BuiltInFunctions::SpriteRendererComponent_DrawInspector
+						.DrawInspector = BuiltInFunctions::SpriteRendererComponent_DrawInspector,
+						.DrawHeader = DefaultDrawComponentHeaderWithIsEnabled<SpriteRendererComponent>
 					}
 			);
 

@@ -597,8 +597,17 @@ namespace DYE::DYEditor
 			}
 
 			bool isHeaderVisible = true;
-			ImGuiTreeNodeFlags const flags = ImGuiTreeNodeFlags_DefaultOpen;
-			bool const showInspector = ImGui::CollapsingHeader(name.c_str(), &isHeaderVisible, flags);
+			bool showComponentInspector = true;
+			if (functions.DrawHeader == nullptr)
+			{
+				ImGuiTreeNodeFlags const flags = ImGuiTreeNodeFlags_DefaultOpen;
+				showComponentInspector = ImGui::CollapsingHeader(name.c_str(), &isHeaderVisible, flags);
+			}
+			else
+			{
+				// Use custom header if provided.
+				showComponentInspector = functions.DrawHeader(entity, isHeaderVisible, changed, name);
+			}
 
 			bool const isRemoved = !isHeaderVisible;
 			if (isRemoved)
@@ -609,7 +618,7 @@ namespace DYE::DYEditor
 				continue;
 			}
 
-			if (!showInspector)
+			if (!showComponentInspector)
 			{
 				continue;
 			}

@@ -6,6 +6,7 @@ namespace DYE::DYEditor
 {
 	struct CameraComponent
 	{
+		bool IsEnabled = true;
 		CameraProperties Properties;
 	};
 }
