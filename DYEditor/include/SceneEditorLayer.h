@@ -26,8 +26,9 @@ namespace DYE::DYEditor
 
 		void OnAttach() override;
 		void OnDetach() override;
-		void OnRender() override;
+		void OnUpdate() override;
 		void OnEvent(DYE::Event &event) override;
+		void OnRender() override;
 		void OnImGui() override;
 
 		void SetRuntimeLayer(std::shared_ptr<SceneRuntimeLayer> runtimeLayer) { m_RuntimeLayer = std::move(runtimeLayer); }
@@ -37,7 +38,11 @@ namespace DYE::DYEditor
 
 		DYEntity::Entity m_CurrentlySelectedEntityInHierarchyPanel;
 		std::filesystem::path m_CurrentSceneFilePath;
+
 		Camera m_SceneViewCamera;
+		float m_CameraKeyboardMoveUnitPerSecond = 10.0f;
+		float m_CameraMousePanMoveUnitPerSecond = 2.0f;
+		float m_CameraOrthographicSizeZoomSpeedMultiplier = 200.0f;
 
 		static void drawMainMenuBar(Scene &currentScene, std::filesystem::path &currentScenePathContext);
 		static bool drawSceneEntityHierarchyPanel(Scene &scene, DYEntity::Entity *pCurrentSelectedEntity);

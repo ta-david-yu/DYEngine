@@ -7,6 +7,9 @@
 #include "Type/UserTypeRegister.h"
 #include "Graphics/RenderPipelineManager.h"
 #include "Graphics/WindowManager.h"
+#include "Input/InputManager.h"
+#include "Event/MouseEvent.h"
+#include "Util/Time.h"
 #include "ImGui/EditorImGuiUtil.h"
 #include "ImGui/ImGuiUtil.h"
 
@@ -31,6 +34,7 @@ namespace DYE::DYEditor
 		DYEditor::RegisterUserTypes();
 
 		m_SceneViewCamera.Properties.TargetWindowID = WindowManager::GetMainWindow()->GetWindowID();
+		m_SceneViewCamera.Position = {0, 0, 10};
 	}
 
 	void SceneEditorLayer::OnDetach()
@@ -39,13 +43,55 @@ namespace DYE::DYEditor
 		TypeRegistry::ClearRegisteredSystems();
 	}
 
-	void SceneEditorLayer::OnRender()
+	void SceneEditorLayer::OnUpdate()
 	{
-		DYE::RenderPipelineManager::RegisterCameraForNextRender(m_SceneViewCamera);
+		if (INPUT.GetKey(KeyCode::W))
+		{
+			m_SceneViewCamera.Position.y += m_CameraKeyboardMoveUnitPerSecond * TIME.DeltaTime();
+		}
+		if (INPUT.GetKey(KeyCode::S))
+		{
+			m_SceneViewCamera.Position.y -= m_CameraKeyboardMoveUnitPerSecond * TIME.DeltaTime();
+		}
+		if (INPUT.GetKey(KeyCode::D))
+		{
+			m_SceneViewCamera.Position.x += m_CameraKeyboardMoveUnitPerSecond * TIME.DeltaTime();
+		}
+		if (INPUT.GetKey(KeyCode::A))
+		{
+			m_SceneViewCamera.Position.x -= m_CameraKeyboardMoveUnitPerSecond * TIME.DeltaTime();
+		}
+
+		if (INPUT.GetMouseButton(MouseButton::Middle))
+		{
+			auto mouseDelta = INPUT.GetGlobalMouseDelta();
+
+			glm::vec2 panMove = mouseDelta; panMove *= m_CameraMousePanMoveUnitPerSecond * TIME.DeltaTime();
+			float const multiplierBasedOnCameraDistance = m_SceneViewCamera.Properties.OrthographicSize / 10.0f;
+			panMove *= multiplierBasedOnCameraDistance;
+
+			// Invert x so when the mouse cursor moves left, the camera moves right.
+			// We don't need to invert y because the Y direction in screen coordinate (i.e. mouse delta) is opposite to 2d world coordinate.
+			m_SceneViewCamera.Position += glm::vec3 {-panMove.x, panMove.y, 0};
+		}
 	}
 
 	void SceneEditorLayer::OnEvent(Event &event)
 	{
+		if (event.GetEventType() == EventType::MouseScroll)
+		{
+			auto mouseScrolledEvent = (MouseScrolledEvent&) event;
+			m_SceneViewCamera.Properties.OrthographicSize -= TIME.DeltaTime() * m_CameraOrthographicSizeZoomSpeedMultiplier * mouseScrolledEvent.GetY();
+			if (m_SceneViewCamera.Properties.OrthographicSize < 0.1f)
+			{
+				m_SceneViewCamera.Properties.OrthographicSize = 0.1f;
+			}
+		}
+	}
+
+	void SceneEditorLayer::OnRender()
+	{
+		DYE::RenderPipelineManager::RegisterCameraForNextRender(m_SceneViewCamera);
 	}
 
 	void SceneEditorLayer::OnImGui()
