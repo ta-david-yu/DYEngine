@@ -49,6 +49,6 @@ namespace DYE::DYEditor
 		template<typename Func> requires std::predicate<Func, std::string const&, SystemBase const*>
 		static bool drawSceneSystemListPanel(Scene &scene, std::vector<SystemDescriptor> &systemDescriptors, Func addSystemFilterPredicate);
 		static bool drawEntityInspector(DYEntity::Entity &entity, std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> componentNamesAndFunctions);
-		static void drawRegisteredSystems(DYEntity::World& world);
+		static void drawRegisteredSystems();
 	};
 }

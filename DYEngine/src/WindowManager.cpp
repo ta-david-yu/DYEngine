@@ -127,14 +127,14 @@ namespace DYE
 		}
 	}
 
-	void WindowManager::DrawWindowManagerImGui()
+	void WindowManager::DrawWindowManagerImGui(bool *pIsOpen)
 	{
 		// Set a default size for the window in case it has never been opened before.
 		const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
 		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
 
-		if (!ImGui::Begin("Window Manager"))
+		if (!ImGui::Begin("Window Manager", pIsOpen))
 		{
 			ImGui::End();
 			return;

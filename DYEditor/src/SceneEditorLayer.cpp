@@ -11,6 +11,7 @@
 #include "Input/InputManager.h"
 #include "Event/MouseEvent.h"
 #include "Util/Time.h"
+#include "EditorConfig.h"
 #include "ImGui/EditorImGuiUtil.h"
 #include "ImGui/ImGuiUtil.h"
 
@@ -37,6 +38,9 @@ namespace DYE::DYEditor
 
 		m_SceneViewCamera.Properties.TargetWindowIndex = WindowManager::MainWindowIndex;
 		m_SceneViewCamera.Position = {0, 0, 10};
+
+		auto windowPtr = WindowManager::CreateWindow(WindowProperty("Test Window", 640, 480));
+		windowPtr->SetContext(WindowManager::GetMainWindow()->GetContext());
 	}
 
 	void SceneEditorLayer::OnDetach()
@@ -117,18 +121,6 @@ namespace DYE::DYEditor
 			ImGuiUtil::DrawVector3Control("Position", m_SceneViewCamera.Position);
 			ImGuiUtil::DrawCameraPropertiesControl("Properties", m_SceneViewCamera.Properties);
 			ImGui::PopID();
-		}
-		ImGui::End();
-
-
-		// Set a default size for the window in case it has never been opened before.
-		main_viewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20),
-								ImGuiCond_FirstUseEver);
-		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
-		if (ImGui::Begin("Registered Systems"))
-		{
-			drawRegisteredSystems(activeScene.World);
 		}
 		ImGui::End();
 
@@ -250,7 +242,28 @@ namespace DYE::DYEditor
 		}
 		ImGui::End();
 
-		ImGui::ShowDemoWindow();
+		// Draw other extra windows here (managed by EditorConfig for now).
+		// TODO: Implement EditorWindowManager for other generic windows.
+		if (EditorConfig::ShowWindowManagerWindow)
+		{
+			WindowManager::DrawWindowManagerImGui(&EditorConfig::ShowWindowManagerWindow);
+		}
+		if (EditorConfig::ShowInputManagerWindow)
+		{
+			INPUT.DrawInputManagerImGui(&EditorConfig::ShowInputManagerWindow);
+		}
+		if (EditorConfig::ShowImGuiDemoWindow)
+		{
+			ImGui::ShowDemoWindow(&EditorConfig::ShowImGuiDemoWindow);
+		}
+		if (EditorConfig::ShowRegisteredSystemsWindow)
+		{
+			if (ImGui::Begin("Registered Systems", &EditorConfig::ShowRegisteredSystemsWindow))
+			{
+				drawRegisteredSystems();
+			}
+			ImGui::End();
+		}
 	}
 
 	void SceneEditorLayer::drawMainMenuBar(Scene &currentScene, std::filesystem::path &currentScenePathContext)
@@ -303,7 +316,6 @@ namespace DYE::DYEditor
 
 				ImGui::EndMenu();
 			}
-
 			if (ImGui::BeginMenu("Edit"))
 			{
 				if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
@@ -312,6 +324,26 @@ namespace DYE::DYEditor
 				if (ImGui::MenuItem("Cut", "CTRL+X")) {}
 				if (ImGui::MenuItem("Copy", "CTRL+C")) {}
 				if (ImGui::MenuItem("Paste", "CTRL+V")) {}
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu("Window"))
+			{
+				if (ImGui::MenuItem("Window Manager Window", nullptr, EditorConfig::ShowWindowManagerWindow))
+				{
+					EditorConfig::ShowWindowManagerWindow = !EditorConfig::ShowWindowManagerWindow;
+				}
+				if (ImGui::MenuItem("Input Manager Window", nullptr, EditorConfig::ShowInputManagerWindow))
+				{
+					EditorConfig::ShowInputManagerWindow = !EditorConfig::ShowInputManagerWindow;
+				}
+				if (ImGui::MenuItem("ImGui Demo Window", nullptr, EditorConfig::ShowImGuiDemoWindow))
+				{
+					EditorConfig::ShowImGuiDemoWindow = !EditorConfig::ShowImGuiDemoWindow;
+				}
+				if (ImGui::MenuItem("Registered Systems Window", nullptr, EditorConfig::ShowRegisteredSystemsWindow))
+				{
+					EditorConfig::ShowRegisteredSystemsWindow = !EditorConfig::ShowRegisteredSystemsWindow;
+				}
 				ImGui::EndMenu();
 			}
 			ImGui::EndMainMenuBar();
@@ -753,7 +785,7 @@ namespace DYE::DYEditor
 		return changed;
 	}
 
-	void SceneEditorLayer::drawRegisteredSystems(DYEntity::World &world)
+	void SceneEditorLayer::drawRegisteredSystems()
 	{
 		static auto systemNamesAndInstances = TypeRegistry::GetSystemNamesAndInstances();
 
@@ -765,11 +797,6 @@ namespace DYE::DYEditor
 			if (show)
 			{
 				ImGui::TextWrapped(CastExecutionPhaseToString(systemBasePtr->GetPhase()).c_str());
-				if (ImGui::Button("Execute System Function"))
-				{
-					systemBasePtr->Execute(world, { .Phase = ExecutionPhase::Initialize });
-				}
-				systemBasePtr->DrawInspector(world);
 			}
 			ImGui::PopID();
 		}

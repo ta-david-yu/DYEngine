@@ -38,7 +38,7 @@ namespace DYE
 		static WindowBase* TryGetMouseFocusedWindow();
 		static void UpdateWindows();
 
-		static void DrawWindowManagerImGui();
+		static void DrawWindowManagerImGui(bool *pIsOpen = nullptr);
 
 	private:
 		static void drawRegisteredWindowsInspectorImGui();

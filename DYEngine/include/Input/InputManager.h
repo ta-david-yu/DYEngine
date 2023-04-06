@@ -88,7 +88,7 @@ namespace DYE
 		void EnableGamepadInputEventInBackground();
 		void DisableGamepadInputEventInBackground();
 
-		void DrawInputManagerImGui() const;
+		void DrawInputManagerImGui(bool* pIsOpen = nullptr) const;
 
 	private:
 		void handleOnGamepadConnected(GamepadConnectEvent const& connectEvent);

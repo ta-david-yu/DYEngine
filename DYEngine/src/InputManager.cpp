@@ -391,14 +391,14 @@ namespace DYE
 		return &m_GamepadStates[denseArrayIndex];
 	}
 
-	void InputManager::DrawInputManagerImGui() const
+	void InputManager::DrawInputManagerImGui(bool* pIsOpen) const
 	{
 		// Set a default size for the window in case it has never been opened before.
 		const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
 		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
 
-		if (!ImGui::Begin("Input Manager"))
+		if (!ImGui::Begin("Input Manager", pIsOpen))
 		{
 			ImGui::End();
 			return;
