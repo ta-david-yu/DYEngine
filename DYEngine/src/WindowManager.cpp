@@ -168,7 +168,7 @@ namespace DYE
 			for (int i = 0; i < s_Windows.size(); ++i)
 			{
 				auto& windowPair = s_Windows[i];
-				char label[128]; sprintf(label, "%03d: %s", windowPair.first, windowPair.second->GetTitle().c_str());
+				char label[128]; sprintf(label, "%03d: %s", i, windowPair.second->GetTitle().c_str());
 				label[127] = 0;	// Set the last character to 0 to avoid longer names overflowing the buffer.
 				if (ImGui::Selectable(label, selectedWindowIndex == i))
 				{
@@ -192,11 +192,11 @@ namespace DYE
 
 			if (IsMainWindow(*pWindow))
 			{
-				ImGui::Text("%03d: (Main Window) %s", selectedWindowPair.first, pWindow->GetTitle().c_str());
+				ImGui::Text("(Main Window) %s", pWindow->GetTitle().c_str());
 			}
 			else
 			{
-				ImGui::Text("%03d: %s", selectedWindowPair.first, pWindow->GetTitle().c_str());
+				ImGui::Text("%s", pWindow->GetTitle().c_str());
 			}
 
 			ImGui::Separator();
