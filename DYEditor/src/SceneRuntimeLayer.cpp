@@ -16,7 +16,6 @@ namespace DYE::DYEditor
 		}
 
 		ExecuteParameters const params { .Phase = ExecutionPhase::FixedUpdate };
-
 		for (auto& systemDescriptor : ActiveMainScene.FixedUpdateSystemDescriptors)
 		{
 			if (!systemDescriptor.IsEnabled)
@@ -60,7 +59,7 @@ namespace DYE::DYEditor
 
 	void SceneRuntimeLayer::OnRender()
 	{
-		ExecuteParameters const params { .Phase = ExecutionPhase::Render };
+		ExecuteParameters const params { .Mode = ApplicationState::IsPlaying()? ExecutionMode::Play : ExecutionMode::Edit, .Phase = ExecutionPhase::Render };
 		for (auto& systemDescriptor : ActiveMainScene.RenderSystemDescriptors)
 		{
 			if (!systemDescriptor.IsEnabled)
@@ -74,7 +73,7 @@ namespace DYE::DYEditor
 
 	void SceneRuntimeLayer::OnPostRender()
 	{
-		ExecuteParameters const params { .Phase = ExecutionPhase::PostRender };
+		ExecuteParameters const params { .Mode = ApplicationState::IsPlaying()? ExecutionMode::Play : ExecutionMode::Edit, .Phase = ExecutionPhase::PostRender };
 		for (auto& systemDescriptor : ActiveMainScene.PostRenderSystemDescriptors)
 		{
 			if (!systemDescriptor.IsEnabled)

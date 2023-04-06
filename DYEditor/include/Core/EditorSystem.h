@@ -20,8 +20,8 @@ namespace DYE::DYEditor
 {
 	enum class ExecutionMode
 	{
-		Runtime,
-		Editor
+		Play,
+		Edit
 	};
 
 	enum class ExecutionPhase
@@ -49,6 +49,7 @@ namespace DYE::DYEditor
 
 	struct ExecuteParameters
 	{
+		ExecutionMode Mode = ExecutionMode::Play;
 		ExecutionPhase Phase = ExecutionPhase::Update;
 	};
 
