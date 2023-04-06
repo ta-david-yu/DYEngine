@@ -1,6 +1,7 @@
 #include "SceneEditorLayer.h"
 
 #include "SceneRuntimeLayer.h"
+#include "Core/ApplicationState.h"
 #include "Core/EditorSystem.h"
 #include "Serialization/SerializedObjectFactory.h"
 #include "Type/BuiltInTypeRegister.h"
@@ -136,13 +137,39 @@ namespace DYE::DYEditor
 				 phaseIndex <= static_cast<int>(ExecutionPhase::TearDown); phaseIndex++)
 			{
 				auto const phase = static_cast<ExecutionPhase>(phaseIndex);
+				bool const isPhaseRunning = ApplicationState::IsPlaying() || (phase == ExecutionPhase::Render || phase == ExecutionPhase::PostRender);
+
 				std::string const &phaseId = CastExecutionPhaseToString(phase);
+				auto& systemDescriptors = activeScene.GetSystemDescriptorsOfPhase(phase);
+
 				ImGui::PushID(phaseId.c_str());
 				ImGui::Separator();
+
+				if (!isPhaseRunning)
+				{
+					ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
+				}
 				bool const showSystems = ImGui::CollapsingHeader(phaseId.c_str(), ImGuiTreeNodeFlags_AllowItemOverlap);
+				if (!systemDescriptors.empty())
+				{
+					// Draw number of systems in this phase category on the header for easier read.
+					ImGui::SameLine();
+					ImGui::Text("(%d)", systemDescriptors.size());
+				}
+				if (!isPhaseRunning)
+				{
+					ImGui::PopStyleColor();
+				}
+
+				if (phase == ExecutionPhase::Render || phase == ExecutionPhase::PostRender)
+				{
+					ImGui::SameLine();
+					ImGuiUtil::DrawHelpMarker("Render & PostRender systems are executed in both Play Mode & Edit Mode.");
+				}
+				
 				if (showSystems)
 				{
-					drawSceneSystemListPanel(activeScene, activeScene.GetSystemDescriptorsOfPhase(phase),
+					drawSceneSystemListPanel(activeScene, systemDescriptors,
 											 [phase](std::string const &systemName, SystemBase const *pInstance)
 											 {
 												 return pInstance->GetPhase() == phase;
@@ -473,9 +500,6 @@ namespace DYE::DYEditor
 					  	{
 							alreadyIncludedSystems.insert(descriptor.Name);
 					 	});
-
-		ImGui::TextWrapped("Number Of Systems: %d", systemDescriptors.size());
-		ImGui::SameLine();
 
 		// Draw a 'Add System' button at the top of the inspector, and align it to the right side of the window.
 		char const* addSystemPopupId = "Add System Menu Popup";
