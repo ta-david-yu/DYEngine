@@ -58,6 +58,17 @@ namespace DYE
 
 	}
 
+	WindowBase *WindowManager::TryGetWindowAt(std::uint32_t index)
+	{
+		if (index >= s_Windows.size())
+		{
+			// The index is out of bounds.
+			return nullptr;
+		}
+
+		return s_Windows[index].second.get();
+	}
+
 	std::optional<WindowID> WindowManager::TryGetMainWindowID()
 	{
 		return s_MainWindowID;
@@ -71,7 +82,7 @@ namespace DYE
 			return nullptr;
 		}
 
-		return TryGetWindowFromID(s_MainWindowID.value());
+		return s_Windows[MainWindowIndex].second.get();
 	}
 
 	WindowBase *WindowManager::TryGetMouseFocusedWindow()

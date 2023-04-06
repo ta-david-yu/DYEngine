@@ -11,6 +11,9 @@ namespace DYE
 {
 	class WindowManager
 	{
+	public:
+		static constexpr std::uint32_t MainWindowIndex = 0;
+
 	private:
 		static std::vector<std::pair<WindowID, std::unique_ptr<WindowBase>>> s_Windows;
 		static std::optional<WindowID> s_MainWindowID;
@@ -25,6 +28,7 @@ namespace DYE
 		static bool CloseWindow(WindowID id);
 		static void SetMainWindow(WindowID id);
 		static WindowBase* TryGetWindowFromID(WindowID id);
+		static WindowBase* TryGetWindowAt(std::uint32_t index);
 		static bool HasWindowWithID(WindowID id);
 		static bool IsMainWindow(WindowBase const& window);
 		static std::optional<WindowID> TryGetMainWindowID();
