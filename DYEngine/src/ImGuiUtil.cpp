@@ -917,7 +917,8 @@ namespace DYE::ImGuiUtil
 		int index = cameraProperties.TargetWindowIndex;
 		bool const indexChanged = DrawDropdown("Target Window Index", index, s_WindowIndexDropDownOptions);
 		ImGui::SameLine();
-		ImGuiUtil::DrawHelpMarker("If there is no window with the given index, the camera will be skipped when rendering.");
+		ImGuiUtil::DrawHelpMarker("If there is no window with the given index, the camera will be skipped when rendering. "
+								  "You can check how many windows there are in");
 		if (indexChanged)
 		{
 			cameraProperties.TargetWindowIndex = index;
