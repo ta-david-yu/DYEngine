@@ -2,6 +2,7 @@
 #include "Graphics/SDLWindow.h"
 
 #include "Util/Logger.h"
+#include "Util/Macro.h"
 
 #include <SDL.h>
 
@@ -41,6 +42,7 @@ namespace DYE
 		{
 			DYE_LOG_ERROR("WindowBase::MakeCurrent: Make current failed because m_Context is null. "
 						  "You might have forget to call SetContext() for window %d.", GetWindowID());
+			DYE_ASSERT(false && "WindowBase::MakeCurrent: Make current failed because m_Context is null. See log for further details.")
 		}
 
 		m_Context->MakeCurrentForWindow(*this);

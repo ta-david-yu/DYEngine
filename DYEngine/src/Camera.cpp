@@ -72,7 +72,7 @@ namespace DYE
 
 		if (TargetType == RenderTargetType::Window)
 		{
-			auto windowPtr = WindowManager::TryGetWindowFromID(TargetWindowID);
+			auto windowPtr = WindowManager::TryGetWindowAt(TargetWindowIndex);
 			if (windowPtr == nullptr)
 			{
 				return { targetWidth, targetHeight };

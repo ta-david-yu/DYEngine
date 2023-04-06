@@ -56,9 +56,9 @@ namespace DYE
 					if (targetType == RenderTargetType::Window)
 					{
 						// In the case of both render to a window.
-						if (cameraA.Properties.TargetWindowID != cameraB.Properties.TargetWindowID)
+						if (cameraA.Properties.TargetWindowIndex != cameraB.Properties.TargetWindowIndex)
 						{
-							return cameraA.Properties.TargetWindowID < cameraB.Properties.TargetWindowID;
+							return cameraA.Properties.TargetWindowIndex < cameraB.Properties.TargetWindowIndex;
 						}
 						else
 						{
@@ -79,6 +79,7 @@ namespace DYE
 		// We always render the main window first.
 		// Make the main window's context current!
 		WindowBase* pCurrentWindow = WindowManager::GetMainWindow();
+		std::uint32_t currentWindowIndex = WindowManager::MainWindowIndex;
 		pCurrentWindow->MakeCurrent();
 
 		for (auto& camera : s_Cameras)
@@ -92,7 +93,7 @@ namespace DYE
 			// Render to a window
 
 			// Configure the new window
-			if (camera.Properties.TargetWindowID != pCurrentWindow->GetWindowID())
+			if (camera.Properties.TargetWindowIndex != currentWindowIndex)
 			{
 				// We are done rendering the previous window.
 				// Swap the buffer of the previous window so the buffer is actually drawn on the screen.
@@ -107,14 +108,14 @@ namespace DYE
 
 				// If the camera is rendering to a window other than the current one,
 				// Swap to the render target window and make the context current.
-				pCurrentWindow = WindowManager::TryGetWindowFromID(camera.Properties.TargetWindowID);
-
+				pCurrentWindow = WindowManager::TryGetWindowAt(camera.Properties.TargetWindowIndex);
 				if (pCurrentWindow == nullptr)
 				{
-					DYE_LOG("The camera render window target (%d) doesn't exist. Skip the camera rendering.", camera.Properties.TargetWindowID);
+					DYE_LOG("The camera render window target (index=%d) doesn't exist. Skip the camera rendering.", camera.Properties.TargetWindowIndex);
 					continue;
 				}
 
+				currentWindowIndex = camera.Properties.TargetWindowIndex;
 				pCurrentWindow->MakeCurrent();
 			}
 

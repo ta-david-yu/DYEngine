@@ -35,7 +35,7 @@ namespace DYE::DYEditor
 		DYEditor::RegisterBuiltInTypes();
 		DYEditor::RegisterUserTypes();
 
-		m_SceneViewCamera.Properties.TargetWindowID = WindowManager::GetMainWindow()->GetWindowID();
+		m_SceneViewCamera.Properties.TargetWindowIndex = WindowManager::MainWindowIndex;
 		m_SceneViewCamera.Position = {0, 0, 10};
 	}
 

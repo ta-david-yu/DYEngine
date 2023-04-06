@@ -400,6 +400,41 @@ namespace DYE::ImGuiUtil
 		return isValueChanged;
 	}
 
+
+	bool DrawIntSliderControl(const std::string& label, int32_t & value, int32_t minValue, int32_t maxValue)
+	{
+		bool isValueChanged = false;
+
+		ImGuiIO &io = ImGui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+
+		ImGui::PushID(label.c_str());
+
+		ImGui::Columns(2);
+		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::Text(label.c_str());
+		ImGui::NextColumn();
+
+		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
+
+		// Drag int
+		{
+			isValueChanged |= ImGui::SliderInt("##IntSlider", &value, minValue, maxValue);
+			//isValueChanged |= ImGui::DragInt("##SignedInt", &value, 1, 0, 0);
+			ImGui::PopItemWidth();
+			ImGui::SameLine();
+		}
+
+		ImGui::PopStyleVar();
+
+		ImGui::Columns(1);
+
+		ImGui::PopID();
+
+		return isValueChanged;
+	}
+
 	bool DrawColor4Control(const std::string &label, glm::vec4 &value)
 	{
 		bool isValueChanged = false;
@@ -848,6 +883,10 @@ namespace DYE::ImGuiUtil
 		return isValueChanged;
 	}
 
+	const static std::vector<std::string> s_WindowIndexDropDownOptions =
+		{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15",
+		 "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"};
+
 	bool DrawCameraPropertiesControl(const std::string& label, CameraProperties& cameraProperties)
 	{
 		bool isValueChanged = false;
@@ -874,6 +913,16 @@ namespace DYE::ImGuiUtil
 		isValueChanged |= DrawFloatControl("Clip Distance | Far", cameraProperties.FarClipDistance, 100);
 
 		ImGui::Separator();
+
+		int index = cameraProperties.TargetWindowIndex;
+		bool const indexChanged = DrawDropdown("Target Window Index", index, s_WindowIndexDropDownOptions);
+		ImGui::SameLine();
+		ImGuiUtil::DrawHelpMarker("If there is no window with the given index, the camera will be skipped when rendering.");
+		if (indexChanged)
+		{
+			cameraProperties.TargetWindowIndex = index;
+		}
+		isValueChanged |= indexChanged;
 
 		isValueChanged |= DrawBoolControl("Use Manual Aspect Ratio", cameraProperties.UseManualAspectRatio);
 		if (cameraProperties.UseManualAspectRatio)

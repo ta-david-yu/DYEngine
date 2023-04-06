@@ -29,6 +29,7 @@ namespace DYE
 		static void SetMainWindow(WindowID id);
 		static WindowBase* TryGetWindowFromID(WindowID id);
 		static WindowBase* TryGetWindowAt(std::uint32_t index);
+		static std::optional<std::uint32_t> TryGetWindowIndexFromID(WindowID id);
 		static bool HasWindowWithID(WindowID id);
 		static bool IsMainWindow(WindowBase const& window);
 		static std::optional<WindowID> TryGetMainWindowID();

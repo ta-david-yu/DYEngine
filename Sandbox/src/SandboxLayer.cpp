@@ -27,7 +27,7 @@ namespace DYE::Sandbox
 	{
 		auto mainWindowPtr = WindowManager::GetMainWindow();
 		m_Camera.Properties.ClearColor = Color::Black;
-		m_Camera.Properties.TargetWindowID = mainWindowPtr->GetWindowID();
+		m_Camera.Properties.TargetWindowIndex = WindowManager::MainWindowIndex;
 		m_Camera.Properties.ManualAspectRatio = (float) mainWindowPtr->GetWidth() / (float) mainWindowPtr->GetHeight();
 		m_Camera.Position = glm::vec3 {0, 0, 20};
 		m_Camera.Properties.OrthographicSize = 20;

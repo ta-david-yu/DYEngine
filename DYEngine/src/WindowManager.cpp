@@ -69,6 +69,19 @@ namespace DYE
 		return s_Windows[index].second.get();
 	}
 
+	std::optional<std::uint32_t> WindowManager::TryGetWindowIndexFromID(WindowID id)
+	{
+		for (std::uint32_t index = 0; index < s_Windows.size(); index++)
+		{
+			if (s_Windows[index].first == id)
+			{
+				return index;
+			}
+		}
+
+		return {};
+	}
+
 	std::optional<WindowID> WindowManager::TryGetMainWindowID()
 	{
 		return s_MainWindowID;

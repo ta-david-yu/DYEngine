@@ -37,7 +37,7 @@ namespace DYE
 		float FarClipDistance = 100;
 
 		RenderTargetType TargetType = RenderTargetType::Window;
-		WindowID TargetWindowID = 0;
+		std::uint32_t TargetWindowIndex = 0;	/// 0 is normally the main window.
 
 		/// Cameras with a larger depth value will be drawn on top of cameras with a smaller value.
 		float Depth = -1;
