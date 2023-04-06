@@ -30,17 +30,13 @@ namespace DYE::DYEditor
 	/// A concept that checks if the given type has a public member variable of type 'bool' with the name of 'IsEnabled'
 	concept HasIsEnabled = requires(T instance)
 	{
-		{ instance.IsEnabled } -> std::same_as<bool>;
+		{ instance.IsEnabled } -> std::same_as<bool&>;
 	};
 
 	template<typename T>
 	bool DefaultDrawComponentHeaderWithIsEnabled(DYE::DYEntity::Entity &entity, bool &isHeaderVisible, bool &entityChanged, std::string const &headerLabel)
 	{
-		// I wanted to use the 'HasIsEnabled' concept to do static_assert when the given type doesn't have a 'IsEnabled' bool member variable.
-		// But for some reasons it never works as I expected, so I would just leave it like this :P
-		// This is an internal syntactic sugar function anyway, so no one other than I would use it in rare occasions.
-
-		//static_assert(HasIsEnabled<T>, "Type T does not have a public member variable named IsEnabled of type bool.");
+		static_assert(HasIsEnabled<T>, "Type T does not have a public member variable named 'IsEnabled' of type bool.");
 
 		ImGuiTreeNodeFlags const flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_AllowItemOverlap;
 		bool const showInspector = ImGui::CollapsingHeader("##Header", &isHeaderVisible, flags);

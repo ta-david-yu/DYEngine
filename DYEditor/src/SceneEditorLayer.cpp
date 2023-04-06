@@ -398,7 +398,7 @@ namespace DYE::DYEditor
 
 				bool const isSelected = entity == *pCurrentSelectedEntity;
 
-				ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow;
+				ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
 				if (isSelected) flags |= ImGuiTreeNodeFlags_Selected;
 
 				bool const isNodeOpen = ImGui::TreeNodeEx((void*)(std::uint64_t) entity.GetID(), flags, name.c_str());
