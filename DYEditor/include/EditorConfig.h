@@ -8,6 +8,5 @@ namespace DYE::DYEditor
 		static bool ShowWindowManagerWindow;
 		static bool ShowInputManagerWindow;
 		static bool ShowImGuiDemoWindow;
-		static bool ShowRegisteredSystemsWindow;
 	};
 }

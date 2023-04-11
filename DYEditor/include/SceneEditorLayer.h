@@ -44,11 +44,12 @@ namespace DYE::DYEditor
 		float m_CameraMousePanMoveUnitPerSecond = 2.0f;
 		float m_CameraOrthographicSizeZoomSpeedMultiplier = 200.0f;
 
-		static void drawMainMenuBar(Scene &currentScene, std::filesystem::path &currentScenePathContext);
+
+
+		static void drawEditorWindowMenuBar(Scene &currentScene, std::filesystem::path &currentScenePathContext);
 		static bool drawSceneEntityHierarchyPanel(Scene &scene, DYEntity::Entity *pCurrentSelectedEntity);
 		template<typename Func> requires std::predicate<Func, std::string const&, SystemBase const*>
 		static bool drawSceneSystemListPanel(Scene &scene, std::vector<SystemDescriptor> &systemDescriptors, Func addSystemFilterPredicate);
 		static bool drawEntityInspector(DYEntity::Entity &entity, std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> componentNamesAndFunctions);
-		static void drawRegisteredSystems();
 	};
 }

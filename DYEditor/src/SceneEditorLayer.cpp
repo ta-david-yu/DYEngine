@@ -27,6 +27,11 @@ using namespace DYE::DYEntity;
 
 namespace DYE::DYEditor
 {
+	constexpr char const* k_SceneHierarchyWindowId = "Scene Hierarchy";
+	constexpr char const* k_SceneSystemWindowId = "Scene System";
+	constexpr char const* k_EntityInspectorWindowId = "Entity Inspector";
+	constexpr char const* k_SceneViewWindowId = "Scene View";
+
 	SceneEditorLayer::SceneEditorLayer() : LayerBase("Editor")
 	{
 	}
@@ -110,12 +115,95 @@ namespace DYE::DYEditor
 
 		Scene &activeScene = m_RuntimeLayer->ActiveMainScene;
 
-		drawMainMenuBar(activeScene, m_CurrentSceneFilePath);
+		ImGuiWindowFlags mainEditorWindowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+		ImGuiDockNodeFlags mainEditorWindowDockSpaceFlags = ImGuiDockNodeFlags_None | ImGuiDockNodeFlags_PassthruCentralNode;
+
+		const ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(viewport->WorkPos, ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(viewport->WorkSize, ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+		ImGui::Begin("DYEditor Window", nullptr, mainEditorWindowFlags);
+		ImGui::PopStyleVar();
+		ImGuiIO& io = ImGui::GetIO();
+		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+		{
+			ImGuiID dockSpaceId = ImGui::GetID("DYEditor Window DockSpace");
+			if (ImGui::DockBuilderGetNode(dockSpaceId) == nullptr)
+			{
+				ImGui::DockBuilderRemoveNode(dockSpaceId);
+				ImGui::DockBuilderAddNode(dockSpaceId, ImGuiDockNodeFlags_DockSpace);
+				ImGui::DockBuilderSetNodeSize(dockSpaceId, viewport->WorkSize);
+
+				/*
+				 * We want to create a dock space layout like this:
+				  ____ ____ ____ ____
+				 | L1 |         |  R |
+				 |____|    C    |    |
+				 | L2 |         |    |
+				 |____|____ ____|____|
+				 * L1: Scene Hierarchy
+				 * L2: Scene System
+				 * C : Scene View
+				 * R : Entity Inspector
+				 */
+
+				ImGuiID centerId = dockSpaceId;
+				ImGuiID left1_Id = ImGui::DockBuilderSplitNode(centerId, ImGuiDir_Left, 0.25f, nullptr, &centerId);
+				ImGuiID left2_Id = ImGui::DockBuilderSplitNode(left1_Id, ImGuiDir_Down, 0.5f, nullptr, &left1_Id);
+				ImGuiID rightId = ImGui::DockBuilderSplitNode(centerId, ImGuiDir_Right, 0.33f, nullptr, &centerId);
+
+				ImGui::DockBuilderDockWindow(k_SceneHierarchyWindowId, left1_Id);
+				ImGui::DockBuilderDockWindow(k_SceneSystemWindowId, left2_Id);
+				ImGui::DockBuilderDockWindow(k_EntityInspectorWindowId, rightId);
+				ImGui::DockBuilderDockWindow(k_SceneViewWindowId, centerId);
+
+				ImGui::DockBuilderFinish(dockSpaceId);
+			}
+			ImGui::DockSpace(dockSpaceId, ImVec2(0.0f, 0.0f), mainEditorWindowDockSpaceFlags);
+		}
+		drawEditorWindowMenuBar(activeScene, m_CurrentSceneFilePath);
+		ImGui::End();
+
+		// Draw other extra windows here (managed by EditorConfig for now).
+		// TODO: Implement EditorWindowManager for other generic windows.
+		if (EditorConfig::ShowImGuiDemoWindow)
+		{
+			ImGui::ShowDemoWindow(&EditorConfig::ShowImGuiDemoWindow);
+		}
+		if (EditorConfig::ShowWindowManagerWindow)
+		{
+			WindowManager::DrawWindowManagerImGui(&EditorConfig::ShowWindowManagerWindow);
+		}
+		if (EditorConfig::ShowInputManagerWindow)
+		{
+			INPUT.DrawInputManagerImGui(&EditorConfig::ShowInputManagerWindow);
+		}
+
+		ImGuiWindowFlags const sceneViewWindowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoBackground;
+		if (ImGui::Begin(k_SceneViewWindowId, nullptr, sceneViewWindowFlags))
+		{
+			// TODO: render a texture of the scene camera framebuffer.
+			// TODO: capture scene view input events when the scene view window is focused OR hovered.
+			if (ImGui::BeginMenuBar())
+			{
+				ImGui::MenuItem("Settings");
+				if (ImGui::BeginMenu("Camera"))
+				{
+					ImGui::MenuItem("Settings");
+					ImGui::EndMenu();
+				}
+
+				ImGui::EndMenuBar();
+			}
+		}
+		ImGui::End();
 
 		// Set a default size for the window in case it has never been opened before.
-		const ImGuiViewport *main_viewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
-		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
+		const ImGuiViewport *mainEditorWindowViewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(ImVec2(mainEditorWindowViewport->WorkPos.x + 650, mainEditorWindowViewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_Once);
 		if (ImGui::Begin("Scene View Camera"))
 		{
 			ImGui::PushID("Scene View Camera");
@@ -125,12 +213,7 @@ namespace DYE::DYEditor
 		}
 		ImGui::End();
 
-		// Set a default size for the window in case it has never been opened before.
-		main_viewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20),
-								ImGuiCond_FirstUseEver);
-		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
-		if (ImGui::Begin("Scene System"))
+		if (ImGui::Begin(k_SceneSystemWindowId))
 		{
 			#pragma unroll
 			for (int phaseIndex = static_cast<int>(ExecutionPhase::Initialize);
@@ -237,23 +320,13 @@ namespace DYE::DYEditor
 		}
 		ImGui::End();
 
-		// Set a default size for the window in case it has never been opened before.
-		main_viewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20),
-								ImGuiCond_FirstUseEver);
-		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
-		if (ImGui::Begin("Scene Hierarchy"))
+		if (ImGui::Begin(k_SceneHierarchyWindowId))
 		{
 			drawSceneEntityHierarchyPanel(activeScene, &m_CurrentlySelectedEntityInHierarchyPanel);
 		}
 		ImGui::End();
 
-		// Set a default size for the window in case it has never been opened before.
-		main_viewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20),
-								ImGuiCond_FirstUseEver);
-		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
-		if (ImGui::Begin("Entity Inspector"))
+		if (ImGui::Begin(k_EntityInspectorWindowId))
 		{
 			if (m_CurrentlySelectedEntityInHierarchyPanel.IsValid() && ImGui::Button("Save To TestPrefab.tprefab"))
 			{
@@ -268,32 +341,9 @@ namespace DYE::DYEditor
 								TypeRegistry::GetComponentTypesNamesAndFunctionCollections());
 		}
 		ImGui::End();
-
-		// Draw other extra windows here (managed by EditorConfig for now).
-		// TODO: Implement EditorWindowManager for other generic windows.
-		if (EditorConfig::ShowWindowManagerWindow)
-		{
-			WindowManager::DrawWindowManagerImGui(&EditorConfig::ShowWindowManagerWindow);
-		}
-		if (EditorConfig::ShowInputManagerWindow)
-		{
-			INPUT.DrawInputManagerImGui(&EditorConfig::ShowInputManagerWindow);
-		}
-		if (EditorConfig::ShowImGuiDemoWindow)
-		{
-			ImGui::ShowDemoWindow(&EditorConfig::ShowImGuiDemoWindow);
-		}
-		if (EditorConfig::ShowRegisteredSystemsWindow)
-		{
-			if (ImGui::Begin("Registered Systems", &EditorConfig::ShowRegisteredSystemsWindow))
-			{
-				drawRegisteredSystems();
-			}
-			ImGui::End();
-		}
 	}
 
-	void SceneEditorLayer::drawMainMenuBar(Scene &currentScene, std::filesystem::path &currentScenePathContext)
+	void SceneEditorLayer::drawEditorWindowMenuBar(Scene &currentScene, std::filesystem::path &currentScenePathContext)
 	{
 		bool openLoadSceneFilePathPopup = false;
 		bool openSaveSceneFilePathPopup = false;
@@ -301,7 +351,7 @@ namespace DYE::DYEditor
 		char const* loadScenePopupId = "Select a scene file (*.tscene)";
 		char const* saveScenePopupId = "Save scene file as... ";
 
-		if (ImGui::BeginMainMenuBar())
+		if (ImGui::BeginMenuBar())
 		{
 			if (ImGui::BeginMenu("File"))
 			{
@@ -367,13 +417,9 @@ namespace DYE::DYEditor
 				{
 					EditorConfig::ShowImGuiDemoWindow = !EditorConfig::ShowImGuiDemoWindow;
 				}
-				if (ImGui::MenuItem("Registered Systems Window", nullptr, EditorConfig::ShowRegisteredSystemsWindow))
-				{
-					EditorConfig::ShowRegisteredSystemsWindow = !EditorConfig::ShowRegisteredSystemsWindow;
-				}
 				ImGui::EndMenu();
 			}
-			ImGui::EndMainMenuBar();
+			ImGui::EndMenuBar();
 		}
 
 		static std::filesystem::path sceneFilePath = "";
@@ -383,6 +429,10 @@ namespace DYE::DYEditor
 		{
 			ImGuiUtil::OpenFilePathPopup(loadScenePopupId, "assets", currentScenePathContext, {".tscene" });
 		}
+
+		const ImGuiViewport *mainEditorWindowViewport = ImGui::GetWindowViewport();
+		//ImGui::SetNextWindowViewport(mainEditorWindowViewport->ID);
+
 		ImGuiUtil::FilePathPopupResult loadFilePathResult = ImGuiUtil::DrawFilePathPopup(loadScenePopupId, sceneFilePath, ImGuiUtil::FilePathPopupParameters
 			{
 				.IsSaveFilePanel = false
@@ -807,22 +857,5 @@ namespace DYE::DYEditor
 		}
 
 		return changed;
-	}
-
-	void SceneEditorLayer::drawRegisteredSystems()
-	{
-		static auto systemNamesAndInstances = TypeRegistry::GetSystemNamesAndInstances();
-
-		for (auto& [name, systemBasePtr] : systemNamesAndInstances)
-		{
-			ImGui::PushID(name.c_str());
-			bool const show = ImGui::CollapsingHeader(name.c_str());
-
-			if (show)
-			{
-				ImGui::TextWrapped(CastExecutionPhaseToString(systemBasePtr->GetPhase()).c_str());
-			}
-			ImGui::PopID();
-		}
 	}
 }
