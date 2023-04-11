@@ -188,28 +188,18 @@ namespace DYE::DYEditor
 			// TODO: capture scene view input events when the scene view window is focused OR hovered.
 			if (ImGui::BeginMenuBar())
 			{
-				ImGui::MenuItem("Settings");
 				if (ImGui::BeginMenu("Camera"))
 				{
-					ImGui::MenuItem("Settings");
+					// Scene View Camera Settings
+					ImGui::PushID("Scene View Camera");
+					ImGuiUtil::DrawVector3Control("Position", m_SceneViewCamera.Position);
+					ImGuiUtil::DrawCameraPropertiesControl("Properties", m_SceneViewCamera.Properties);
+					ImGui::PopID();
 					ImGui::EndMenu();
 				}
 
 				ImGui::EndMenuBar();
 			}
-		}
-		ImGui::End();
-
-		// Set a default size for the window in case it has never been opened before.
-		const ImGuiViewport *mainEditorWindowViewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos(ImVec2(mainEditorWindowViewport->WorkPos.x + 650, mainEditorWindowViewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
-		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_Once);
-		if (ImGui::Begin("Scene View Camera"))
-		{
-			ImGui::PushID("Scene View Camera");
-			ImGuiUtil::DrawVector3Control("Position", m_SceneViewCamera.Position);
-			ImGuiUtil::DrawCameraPropertiesControl("Properties", m_SceneViewCamera.Properties);
-			ImGui::PopID();
 		}
 		ImGui::End();
 
