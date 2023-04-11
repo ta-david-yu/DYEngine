@@ -430,9 +430,6 @@ namespace DYE::DYEditor
 			ImGuiUtil::OpenFilePathPopup(loadScenePopupId, "assets", currentScenePathContext, {".tscene" });
 		}
 
-		const ImGuiViewport *mainEditorWindowViewport = ImGui::GetWindowViewport();
-		//ImGui::SetNextWindowViewport(mainEditorWindowViewport->ID);
-
 		ImGuiUtil::FilePathPopupResult loadFilePathResult = ImGuiUtil::DrawFilePathPopup(loadScenePopupId, sceneFilePath, ImGuiUtil::FilePathPopupParameters
 			{
 				.IsSaveFilePanel = false

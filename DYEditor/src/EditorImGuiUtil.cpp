@@ -61,6 +61,11 @@ namespace DYE::ImGuiUtil
 		FilePathPopupResult result = FilePathPopupResult::StillOpen;
 
 		ImVec2 const defaultPopupWindowSize(440, 320);
+		ImGuiViewport const* windowViewport = ImGui::GetWindowViewport();
+
+		ImVec2 const popupPosition = {windowViewport->GetWorkCenter().x - defaultPopupWindowSize.x / 2, windowViewport->GetWorkCenter().y - defaultPopupWindowSize.y / 2};
+		ImGui::SetNextWindowPos(popupPosition, ImGuiCond_Appearing);
+
 		float const selectedFilepathTextHeight = ImGui::GetFrameHeightWithSpacing();
 		float const buttonHeight = ImGui::GetFrameHeightWithSpacing();
 		ImGui::SetNextWindowSize(defaultPopupWindowSize, ImGuiCond_Appearing);
