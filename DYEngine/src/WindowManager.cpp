@@ -10,9 +10,9 @@ namespace DYE
 	std::vector<std::pair<WindowID, std::unique_ptr<WindowBase>>> WindowManager::s_Windows = {};
 	std::optional<WindowID> WindowManager::s_MainWindowID = {};
 
-	WindowBase *WindowManager::CreateWindow(WindowProperty const& windowProperty)
+	WindowBase *WindowManager::CreateWindow(WindowProperties const& windowProperties)
 	{
-		auto window = WindowBase::Create(windowProperty);
+		auto window = WindowBase::Create(windowProperties);
 		auto cachePtr = window.get(); 						// We cache the raw pointer because unique_ptr would be moved into vector later.
 		WindowID const id = window->GetWindowID();
 		s_Windows.emplace_back(id, std::move(window));

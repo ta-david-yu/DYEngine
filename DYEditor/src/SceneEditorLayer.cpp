@@ -83,7 +83,7 @@ namespace DYE::DYEditor
 		m_SceneViewCamera.Properties.TargetWindowIndex = WindowManager::MainWindowIndex;
 		m_SceneViewCamera.Position = {0, 0, 10};
 
-		auto windowPtr = WindowManager::CreateWindow(WindowProperty("Test Window", 640, 480));
+		auto windowPtr = WindowManager::CreateWindow(WindowProperties("Test Window", 640, 480));
 		windowPtr->SetContext(WindowManager::GetMainWindow()->GetContext());
 	}
 

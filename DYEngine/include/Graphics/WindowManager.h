@@ -22,9 +22,9 @@ namespace DYE
 		/// Unlike WindowBase::Create(), this function creates a window that is registered under WindowManager.
 		/// It still first calls WindowBase::Create(). If the window created is the first window, it's set as the main window.
 		/// Registered window could be acquired through TryGetWindowFromID(id).
-		/// \param windowProperty
+		/// \param windowProperties
 		/// \return a raw pointer to the new window
-		static WindowBase* CreateWindow(WindowProperty const& windowProperty);
+		static WindowBase* CreateWindow(WindowProperties const& windowProperties);
 		static bool CloseWindow(WindowID id);
 		static void SetMainWindow(WindowID id);
 		static WindowBase* TryGetWindowFromID(WindowID id);

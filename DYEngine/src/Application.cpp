@@ -64,7 +64,7 @@ namespace DYE
 		if (WindowManager::GetNumberOfWindows() == 0)
 		{
 			// If there is no window, we create one first as the main window!
-			mainWindowPtr = WindowManager::CreateWindow(WindowProperty(windowName));
+			mainWindowPtr = WindowManager::CreateWindow(WindowProperties(windowName));
 			auto context = ContextBase::Create(mainWindowPtr);
 			mainWindowPtr->SetContext(context);
 			mainWindowPtr->MakeCurrent();
