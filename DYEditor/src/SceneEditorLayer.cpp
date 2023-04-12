@@ -13,6 +13,7 @@
 #include "Event/MouseEvent.h"
 #include "Util/Time.h"
 #include "EditorConfig.h"
+#include "ImGui/EditorWindowManager.h"
 #include "ImGui/EditorImGuiUtil.h"
 #include "ImGui/ImGuiUtil.h"
 
@@ -42,6 +43,43 @@ namespace DYE::DYEditor
 		DYEditor::RegisterBuiltInTypes();
 		DYEditor::RegisterUserTypes();
 
+		EditorWindowManager::RegisterEditorWindow(
+			RegisterEditorWindowParameters
+			{
+				.Name = "ImGui Demo",
+				.isConfigOpenByDefault = false
+			},
+			[](char const *name, bool *pIsOpen, ImGuiViewport const *pMainViewportHint)
+			{
+				ImGui::ShowDemoWindow(pIsOpen);
+			}
+		);
+
+		EditorWindowManager::RegisterEditorWindow(
+			RegisterEditorWindowParameters
+				{
+					.Name = "Window Manager",
+					.isConfigOpenByDefault = false
+				},
+			[](char const *name, bool *pIsOpen, ImGuiViewport const *pMainViewportHint)
+			{
+				WindowManager::DrawWindowManagerImGui(pIsOpen);
+			}
+		);
+
+		EditorWindowManager::RegisterEditorWindow(
+			RegisterEditorWindowParameters
+				{
+					.Name = "Input Manager",
+					.isConfigOpenByDefault = false
+				},
+			[](char const *name, bool *pIsOpen, ImGuiViewport const *pMainViewportHint)
+			{
+				INPUT.DrawInputManagerImGui(pIsOpen);
+			}
+		);
+
+		// DEBUGGING Camera & Window Setup
 		m_SceneViewCamera.Properties.TargetWindowIndex = WindowManager::MainWindowIndex;
 		m_SceneViewCamera.Position = {0, 0, 10};
 
@@ -51,6 +89,7 @@ namespace DYE::DYEditor
 
 	void SceneEditorLayer::OnDetach()
 	{
+		EditorWindowManager::ClearRegisteredEditorWindows();
 		TypeRegistry::ClearRegisteredComponentTypes();
 		TypeRegistry::ClearRegisteredSystems();
 	}
@@ -115,7 +154,9 @@ namespace DYE::DYEditor
 
 		Scene &activeScene = m_RuntimeLayer->ActiveMainScene;
 
-		ImGuiWindowFlags mainEditorWindowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+		// Create the main editor window that can be docked by other editor windows.
+		// By default, it also hosts all the major windows such as Scene Hierarchy Panel, Entity Inspector & Scene View etc.
+		ImGuiWindowFlags mainEditorWindowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 		ImGuiDockNodeFlags mainEditorWindowDockSpaceFlags = ImGuiDockNodeFlags_None | ImGuiDockNodeFlags_PassthruCentralNode;
 
 		const ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -132,74 +173,23 @@ namespace DYE::DYEditor
 			ImGuiID dockSpaceId = ImGui::GetID("DYEditor Window DockSpace");
 			if (ImGui::DockBuilderGetNode(dockSpaceId) == nullptr)
 			{
-				ImGui::DockBuilderRemoveNode(dockSpaceId);
-				ImGui::DockBuilderAddNode(dockSpaceId, ImGuiDockNodeFlags_DockSpace);
-				ImGui::DockBuilderSetNodeSize(dockSpaceId, viewport->WorkSize);
-
-				/*
-				 * We want to create a dock space layout like this:
-				  ____ ____ ____ ____
-				 | L1 |         |  R |
-				 |____|    C    |    |
-				 | L2 |         |    |
-				 |____|____ ____|____|
-				 * L1: Scene Hierarchy
-				 * L2: Scene System
-				 * C : Scene View
-				 * R : Entity Inspector
-				 */
-
-				ImGuiID centerId = dockSpaceId;
-				ImGuiID left1_Id = ImGui::DockBuilderSplitNode(centerId, ImGuiDir_Left, 0.25f, nullptr, &centerId);
-				ImGuiID left2_Id = ImGui::DockBuilderSplitNode(left1_Id, ImGuiDir_Down, 0.5f, nullptr, &left1_Id);
-				ImGuiID rightId = ImGui::DockBuilderSplitNode(centerId, ImGuiDir_Right, 0.33f, nullptr, &centerId);
-
-				ImGui::DockBuilderDockWindow(k_SceneHierarchyWindowId, left1_Id);
-				ImGui::DockBuilderDockWindow(k_SceneSystemWindowId, left2_Id);
-				ImGui::DockBuilderDockWindow(k_EntityInspectorWindowId, rightId);
-				ImGui::DockBuilderDockWindow(k_SceneViewWindowId, centerId);
-
-				ImGui::DockBuilderFinish(dockSpaceId);
+				setEditorWindowDefaultLayout(dockSpaceId);
 			}
 			ImGui::DockSpace(dockSpaceId, ImVec2(0.0f, 0.0f), mainEditorWindowDockSpaceFlags);
 		}
+
 		drawEditorWindowMenuBar(activeScene, m_CurrentSceneFilePath);
+		ImGuiViewport const *mainEditorWindowViewport = ImGui::GetWindowViewport();
 		ImGui::End();
 
-		// Draw other extra windows here (managed by EditorConfig for now).
-		// TODO: Implement EditorWindowManager for other generic windows.
-		if (EditorConfig::ShowImGuiDemoWindow)
-		{
-			ImGui::ShowDemoWindow(&EditorConfig::ShowImGuiDemoWindow);
-		}
-		if (EditorConfig::ShowWindowManagerWindow)
-		{
-			WindowManager::DrawWindowManagerImGui(&EditorConfig::ShowWindowManagerWindow);
-		}
-		if (EditorConfig::ShowInputManagerWindow)
-		{
-			INPUT.DrawInputManagerImGui(&EditorConfig::ShowInputManagerWindow);
-		}
+		// Draw other extra windows here.
+		EditorWindowManager::DrawEditorWindows(mainEditorWindowViewport);
 
+		// Draw all the major editor windows.
 		ImGuiWindowFlags const sceneViewWindowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoBackground;
 		if (ImGui::Begin(k_SceneViewWindowId, nullptr, sceneViewWindowFlags))
 		{
-			// TODO: render a texture of the scene camera framebuffer.
-			// TODO: capture scene view input events when the scene view window is focused OR hovered.
-			if (ImGui::BeginMenuBar())
-			{
-				if (ImGui::BeginMenu("Camera"))
-				{
-					// Scene View Camera Settings
-					ImGui::PushID("Scene View Camera");
-					ImGuiUtil::DrawVector3Control("Position", m_SceneViewCamera.Position);
-					ImGuiUtil::DrawCameraPropertiesControl("Properties", m_SceneViewCamera.Properties);
-					ImGui::PopID();
-					ImGui::EndMenu();
-				}
-
-				ImGui::EndMenuBar();
-			}
+			drawSceneView(m_SceneViewCamera);
 		}
 		ImGui::End();
 
@@ -242,11 +232,11 @@ namespace DYE::DYEditor
 				
 				if (showSystems)
 				{
-					drawSceneSystemListPanel(activeScene, systemDescriptors,
-											 [phase](std::string const &systemName, SystemBase const *pInstance)
-											 {
-												 return pInstance->GetPhase() == phase;
-											 });
+					drawSceneSystemList(activeScene, systemDescriptors,
+										[phase](std::string const &systemName, SystemBase const *pInstance)
+										{
+											return pInstance->GetPhase() == phase;
+										});
 				}
 				ImGui::PopID();
 			}
@@ -332,6 +322,57 @@ namespace DYE::DYEditor
 		}
 		ImGui::End();
 	}
+	void SceneEditorLayer::setEditorWindowDefaultLayout(ImGuiID dockSpaceId)
+	{
+		ImGui::DockBuilderRemoveNode(dockSpaceId);
+		ImGui::DockBuilderAddNode(dockSpaceId, ImGuiDockNodeFlags_DockSpace);
+		ImGui::DockBuilderSetNodeSize(dockSpaceId, ImGui::GetWindowViewport()->Size);
+
+		/*
+		 * We want to create a dock space layout like this:
+		  ____ ____ ____ ____
+		 | L1 |         |  R |
+		 |____|    C    |    |
+		 | L2 |         |    |
+		 |____|____ ____|____|
+		 * L1: Scene Hierarchy
+		 * L2: Scene System
+		 * C : Scene View
+		 * R : Entity Inspector
+		 */
+
+		ImGuiID centerId = dockSpaceId;
+		ImGuiID left1_Id = ImGui::DockBuilderSplitNode(centerId, ImGuiDir_Left, 0.25f, nullptr, &centerId);
+		ImGuiID left2_Id = ImGui::DockBuilderSplitNode(left1_Id, ImGuiDir_Down, 0.5f, nullptr, &left1_Id);
+		ImGuiID rightId = ImGui::DockBuilderSplitNode(centerId, ImGuiDir_Right, 0.33f, nullptr, &centerId);
+
+		ImGui::DockBuilderDockWindow(k_SceneHierarchyWindowId, left1_Id);
+		ImGui::DockBuilderDockWindow(k_SceneSystemWindowId, left2_Id);
+		ImGui::DockBuilderDockWindow(k_EntityInspectorWindowId, rightId);
+		ImGui::DockBuilderDockWindow(k_SceneViewWindowId, centerId);
+
+		ImGui::DockBuilderFinish(dockSpaceId);
+	}
+
+	void SceneEditorLayer::drawSceneView(Camera &sceneViewCamera)
+	{
+		// TODO: render a texture of the scene camera framebuffer.
+		// TODO: capture scene view input events when the scene view window is focused OR hovered.
+		if (ImGui::BeginMenuBar())
+		{
+			if (ImGui::BeginMenu("Camera"))
+			{
+				// Scene View Camera Settings
+				ImGui::PushID("Scene View Camera");
+				ImGuiUtil::DrawVector3Control("Position", sceneViewCamera.Position);
+				ImGuiUtil::DrawCameraPropertiesControl("Properties", sceneViewCamera.Properties);
+				ImGui::PopID();
+				ImGui::EndMenu();
+			}
+
+			ImGui::EndMenuBar();
+		}
+	}
 
 	void SceneEditorLayer::drawEditorWindowMenuBar(Scene &currentScene, std::filesystem::path &currentScenePathContext)
 	{
@@ -383,30 +424,17 @@ namespace DYE::DYEditor
 
 				ImGui::EndMenu();
 			}
-			if (ImGui::BeginMenu("Edit"))
-			{
-				if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
-				if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
-				ImGui::Separator();
-				if (ImGui::MenuItem("Cut", "CTRL+X")) {}
-				if (ImGui::MenuItem("Copy", "CTRL+C")) {}
-				if (ImGui::MenuItem("Paste", "CTRL+V")) {}
-				ImGui::EndMenu();
-			}
 			if (ImGui::BeginMenu("Window"))
 			{
-				if (ImGui::MenuItem("Window Manager Window", nullptr, EditorConfig::ShowWindowManagerWindow))
-				{
-					EditorConfig::ShowWindowManagerWindow = !EditorConfig::ShowWindowManagerWindow;
-				}
-				if (ImGui::MenuItem("Input Manager Window", nullptr, EditorConfig::ShowInputManagerWindow))
-				{
-					EditorConfig::ShowInputManagerWindow = !EditorConfig::ShowInputManagerWindow;
-				}
-				if (ImGui::MenuItem("ImGui Demo Window", nullptr, EditorConfig::ShowImGuiDemoWindow))
-				{
-					EditorConfig::ShowImGuiDemoWindow = !EditorConfig::ShowImGuiDemoWindow;
-				}
+				EditorWindowManager::ForEachEditorWindow(
+					[](EditorWindow& editorWindow)
+					{
+						if (ImGui::MenuItem(editorWindow.Name, nullptr, editorWindow.IsConfigOpen))
+						{
+							editorWindow.IsConfigOpen = !editorWindow.IsConfigOpen;
+						}
+					});
+
 				ImGui::EndMenu();
 			}
 			ImGui::EndMenuBar();
@@ -525,7 +553,7 @@ namespace DYE::DYEditor
 	}
 
 	template<typename Func> requires std::predicate<Func, std::string const&, SystemBase const*>
-	bool SceneEditorLayer::drawSceneSystemListPanel(Scene &scene, std::vector<SystemDescriptor> &systemDescriptors, Func addSystemFilterPredicate)
+	bool SceneEditorLayer::drawSceneSystemList(Scene &scene, std::vector<SystemDescriptor> &systemDescriptors, Func addSystemFilterPredicate)
 	{
 		bool changed = false;
 
@@ -845,4 +873,5 @@ namespace DYE::DYEditor
 
 		return changed;
 	}
+
 }
