@@ -182,9 +182,6 @@ namespace DYE::DYEditor
 		ImGuiViewport const *mainEditorWindowViewport = ImGui::GetWindowViewport();
 		ImGui::End();
 
-		// Draw other extra windows here.
-		EditorWindowManager::DrawEditorWindows(mainEditorWindowViewport);
-
 		// Draw all the major editor windows.
 		ImGuiWindowFlags const sceneViewWindowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoBackground;
 		if (ImGui::Begin(k_SceneViewWindowId, nullptr, sceneViewWindowFlags))
@@ -195,108 +192,7 @@ namespace DYE::DYEditor
 
 		if (ImGui::Begin(k_SceneSystemWindowId))
 		{
-			#pragma unroll
-			for (int phaseIndex = static_cast<int>(ExecutionPhase::Initialize);
-				 phaseIndex <= static_cast<int>(ExecutionPhase::TearDown); phaseIndex++)
-			{
-				auto const phase = static_cast<ExecutionPhase>(phaseIndex);
-				bool const isPhaseRunning = ApplicationState::IsPlaying() || (phase == ExecutionPhase::Render || phase == ExecutionPhase::PostRender);
-
-				std::string const &phaseId = CastExecutionPhaseToString(phase);
-				auto& systemDescriptors = activeScene.GetSystemDescriptorsOfPhase(phase);
-
-				ImGui::PushID(phaseId.c_str());
-				ImGui::Separator();
-
-				if (!isPhaseRunning)
-				{
-					ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
-				}
-				bool const showSystems = ImGui::CollapsingHeader(phaseId.c_str(), ImGuiTreeNodeFlags_AllowItemOverlap);
-				if (!systemDescriptors.empty())
-				{
-					// Draw number of systems in this phase category on the header for easier read.
-					ImGui::SameLine();
-					ImGui::Text("(%d)", systemDescriptors.size());
-				}
-				if (!isPhaseRunning)
-				{
-					ImGui::PopStyleColor();
-				}
-
-				if (phase == ExecutionPhase::Render || phase == ExecutionPhase::PostRender)
-				{
-					ImGui::SameLine();
-					ImGuiUtil::DrawHelpMarker("Render & PostRender systems are executed in both Play Mode & Edit Mode.");
-				}
-				
-				if (showSystems)
-				{
-					drawSceneSystemList(activeScene, systemDescriptors,
-										[phase](std::string const &systemName, SystemBase const *pInstance)
-										{
-											return pInstance->GetPhase() == phase;
-										});
-				}
-				ImGui::PopID();
-			}
-
-			ImGui::Separator();
-			if (!activeScene.UnrecognizedSystems.empty())
-			{
-				ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(1.000f, 0.000f, 0.000f, 0.310f));
-				bool const showUnrecognizedSystems = ImGui::CollapsingHeader("Unrecognized Systems");
-				ImGui::PopStyleColor();
-				if (showUnrecognizedSystems)
-				{
-					if (ImGui::BeginTable("Unrecognized System Table", 1, ImGuiTableFlags_RowBg))
-					{
-						int indexToRemove = -1;
-						for (int i = 0; i < activeScene.UnrecognizedSystems.size(); ++i)
-						{
-							auto const &descriptor = activeScene.UnrecognizedSystems[i];
-
-							ImGui::TableNextRow();
-							ImGui::TableSetColumnIndex(0);
-							ImGui::PushID(descriptor.Name.c_str());
-
-							char label[128];
-							sprintf(label, "System '%s' is unknown in the TypeRegistry.", descriptor.Name.c_str());
-							ImGui::Bullet();
-							ImGui::Selectable(label, false);
-
-							//ImGui::Text("System '%s' is unknown in the TypeRegistry.", descriptor.Name.c_str());
-							char const *popupId = "Unknown system popup";
-							if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
-							{
-								ImGui::OpenPopup(popupId);
-							}
-
-							if (ImGui::BeginPopup(popupId))
-							{
-								if (ImGui::Selectable("Copy Name"))
-								{
-									ImGui::SetClipboardText(descriptor.Name.c_str());
-								}
-								if (ImGui::Selectable("Delete"))
-								{
-									indexToRemove = i;
-								}
-								ImGui::EndPopup();
-							}
-							ImGui::PopID();
-						}
-
-						if (indexToRemove != -1)
-						{
-							activeScene.UnrecognizedSystems.erase(
-								activeScene.UnrecognizedSystems.begin() + indexToRemove);
-						}
-
-						ImGui::EndTable();
-					}
-				}
-			}
+			drawSceneSystemPanel(activeScene);
 		}
 		ImGui::End();
 
@@ -308,20 +204,14 @@ namespace DYE::DYEditor
 
 		if (ImGui::Begin(k_EntityInspectorWindowId))
 		{
-			if (m_CurrentlySelectedEntityInHierarchyPanel.IsValid() && ImGui::Button("Save To TestPrefab.tprefab"))
-			{
-				auto serializedEntity = SerializedObjectFactory::CreateSerializedEntity(
-					m_CurrentlySelectedEntityInHierarchyPanel);
-				SerializedObjectFactory::SaveSerializedEntityToFile(serializedEntity,
-																	"assets\\Scenes\\TestPrefab.tprefab");
-			}
-			ImGui::Separator();
-
-			drawEntityInspector(m_CurrentlySelectedEntityInHierarchyPanel,
-								TypeRegistry::GetComponentTypesNamesAndFunctionCollections());
+			drawEntityInspector(m_CurrentlySelectedEntityInHierarchyPanel, TypeRegistry::GetComponentTypesNamesAndFunctionCollections());
 		}
 		ImGui::End();
+
+		// Draw other generic editor windows.
+		EditorWindowManager::DrawEditorWindows(mainEditorWindowViewport);
 	}
+
 	void SceneEditorLayer::setEditorWindowDefaultLayout(ImGuiID dockSpaceId)
 	{
 		ImGui::DockBuilderRemoveNode(dockSpaceId);
@@ -352,26 +242,6 @@ namespace DYE::DYEditor
 		ImGui::DockBuilderDockWindow(k_SceneViewWindowId, centerId);
 
 		ImGui::DockBuilderFinish(dockSpaceId);
-	}
-
-	void SceneEditorLayer::drawSceneView(Camera &sceneViewCamera)
-	{
-		// TODO: render a texture of the scene camera framebuffer.
-		// TODO: capture scene view input events when the scene view window is focused OR hovered.
-		if (ImGui::BeginMenuBar())
-		{
-			if (ImGui::BeginMenu("Camera"))
-			{
-				// Scene View Camera Settings
-				ImGui::PushID("Scene View Camera");
-				ImGuiUtil::DrawVector3Control("Position", sceneViewCamera.Position);
-				ImGuiUtil::DrawCameraPropertiesControl("Properties", sceneViewCamera.Properties);
-				ImGui::PopID();
-				ImGui::EndMenu();
-			}
-
-			ImGui::EndMenuBar();
-		}
 	}
 
 	void SceneEditorLayer::drawEditorWindowMenuBar(Scene &currentScene, std::filesystem::path &currentScenePathContext)
@@ -484,6 +354,26 @@ namespace DYE::DYEditor
 		}
 	}
 
+	void SceneEditorLayer::drawSceneView(Camera &sceneViewCamera)
+	{
+		// TODO: render a texture of the scene camera framebuffer.
+		// TODO: capture scene view input events when the scene view window is focused OR hovered.
+		if (ImGui::BeginMenuBar())
+		{
+			if (ImGui::BeginMenu("Camera"))
+			{
+				// Scene View Camera Settings
+				ImGui::PushID("Scene View Camera");
+				ImGuiUtil::DrawVector3Control("Position", sceneViewCamera.Position);
+				ImGuiUtil::DrawCameraPropertiesControl("Properties", sceneViewCamera.Properties);
+				ImGui::PopID();
+				ImGui::EndMenu();
+			}
+
+			ImGui::EndMenuBar();
+		}
+	}
+
 	bool SceneEditorLayer::drawSceneEntityHierarchyPanel(Scene &scene, Entity *pCurrentSelectedEntity)
 	{
 		// Draw scene hierarchy context menu.
@@ -550,6 +440,116 @@ namespace DYE::DYEditor
 		);
 
 		return false;
+	}
+
+	bool SceneEditorLayer::drawSceneSystemPanel(Scene& scene)
+	{
+		bool changed = false;
+
+		#pragma unroll
+		for (int phaseIndex = static_cast<int>(ExecutionPhase::Initialize);
+			 phaseIndex <= static_cast<int>(ExecutionPhase::TearDown); phaseIndex++)
+		{
+			auto const phase = static_cast<ExecutionPhase>(phaseIndex);
+			bool const isPhaseRunning = ApplicationState::IsPlaying() || (phase == ExecutionPhase::Render || phase == ExecutionPhase::PostRender);
+
+			std::string const &phaseId = CastExecutionPhaseToString(phase);
+			auto& systemDescriptors = scene.GetSystemDescriptorsOfPhase(phase);
+
+			ImGui::PushID(phaseId.c_str());
+			ImGui::Separator();
+
+			if (!isPhaseRunning)
+			{
+				ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
+			}
+			bool const showSystems = ImGui::CollapsingHeader(phaseId.c_str(), ImGuiTreeNodeFlags_AllowItemOverlap);
+			if (!systemDescriptors.empty())
+			{
+				// Draw number of systems in this phase category on the header for easier read.
+				ImGui::SameLine();
+				ImGui::Text("(%d)", systemDescriptors.size());
+			}
+			if (!isPhaseRunning)
+			{
+				ImGui::PopStyleColor();
+			}
+
+			if (phase == ExecutionPhase::Render || phase == ExecutionPhase::PostRender)
+			{
+				ImGui::SameLine();
+				ImGuiUtil::DrawHelpMarker("Render & PostRender systems are executed in both Play Mode & Edit Mode.");
+			}
+
+			if (showSystems)
+			{
+				changed |= drawSceneSystemList(scene, systemDescriptors,
+									[phase](std::string const &systemName, SystemBase const *pInstance)
+									{
+										return pInstance->GetPhase() == phase;
+									});
+			}
+			ImGui::PopID();
+		}
+
+		ImGui::Separator();
+		if (!scene.UnrecognizedSystems.empty())
+		{
+			ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(1.000f, 0.000f, 0.000f, 0.310f));
+			bool const showUnrecognizedSystems = ImGui::CollapsingHeader("Unrecognized Systems");
+			ImGui::PopStyleColor();
+			if (showUnrecognizedSystems)
+			{
+				if (ImGui::BeginTable("Unrecognized System Table", 1, ImGuiTableFlags_RowBg))
+				{
+					int indexToRemove = -1;
+					for (int i = 0; i < scene.UnrecognizedSystems.size(); ++i)
+					{
+						auto const &descriptor = scene.UnrecognizedSystems[i];
+
+						ImGui::TableNextRow();
+						ImGui::TableSetColumnIndex(0);
+						ImGui::PushID(descriptor.Name.c_str());
+
+						char label[128];
+						sprintf(label, "System '%s' is unknown in the TypeRegistry.", descriptor.Name.c_str());
+						ImGui::Bullet();
+						ImGui::Selectable(label, false);
+
+						//ImGui::Text("System '%s' is unknown in the TypeRegistry.", descriptor.Name.c_str());
+						char const *popupId = "Unknown system popup";
+						if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+						{
+							ImGui::OpenPopup(popupId);
+						}
+
+						if (ImGui::BeginPopup(popupId))
+						{
+							if (ImGui::Selectable("Copy Name"))
+							{
+								ImGui::SetClipboardText(descriptor.Name.c_str());
+							}
+							if (ImGui::Selectable("Delete"))
+							{
+								indexToRemove = i;
+							}
+							ImGui::EndPopup();
+						}
+						ImGui::PopID();
+					}
+
+					if (indexToRemove != -1)
+					{
+						scene.UnrecognizedSystems.erase(scene.UnrecognizedSystems.begin() + indexToRemove);
+						changed = true;
+					}
+
+					ImGui::EndTable();
+				}
+			}
+		}
+
+		return changed;
 	}
 
 	template<typename Func> requires std::predicate<Func, std::string const&, SystemBase const*>
