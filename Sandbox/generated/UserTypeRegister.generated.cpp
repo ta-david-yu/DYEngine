@@ -196,6 +196,35 @@ namespace DYE::DYEditor
 					}
 			);
 
+		// Component located in include/TestComponents.h
+		TypeRegistry::RegisterComponentType<HasAngularVelocity>
+			(
+				"HasAngularVelocity",
+				ComponentTypeFunctionCollection
+					{
+						.Serialize = [](Entity& entity, SerializedComponentHandle& serializedComponent)
+						{
+							auto const& component = entity.GetComponent<HasAngularVelocity>();
+							serializedComponent.SetPrimitiveTypePropertyValue("AngleDegreePerSecond", component.AngleDegreePerSecond);
+							return SerializationResult {};
+						},
+						.Deserialize = [](SerializedComponentHandle& serializedComponent, DYE::DYEntity::Entity& entity)
+						{
+							auto& component = entity.AddOrGetComponent<HasAngularVelocity>();
+							component.AngleDegreePerSecond = serializedComponent.GetPrimitiveTypePropertyValueOr<Float>("AngleDegreePerSecond", 30.0f);
+							return DeserializationResult {};
+						},
+						.DrawInspector = [](Entity &entity)
+						{
+							bool changed = false;
+							auto& component = entity.GetComponent<HasAngularVelocity>();
+							ImGui::TextWrapped("HasAngularVelocity");
+							changed |= ImGuiUtil::DrawFloatControl("AngleDegreePerSecond", component.AngleDegreePerSecond);
+							return changed;
+						}
+					}
+			);
+
 		// Component located in include/AnotherTestComponents.h
 		TypeRegistry::RegisterComponentType<TestComponentC>
 			(
@@ -259,6 +288,10 @@ namespace DYE::DYEditor
 		// System located in include/SystemExample.h
 		static SystemNamespace::InitializeSystemA _InitializeSystemA;
 		TypeRegistry::RegisterSystem("Initialize System A", &_InitializeSystemA);
+
+		// System located in include/SystemExample.h
+		static RotateHasAngularVelocitySystem _RotateHasAngularVelocitySystem;
+		TypeRegistry::RegisterSystem("Rotate Has Angular Velocity System", &_RotateHasAngularVelocitySystem);
 
 	}
 

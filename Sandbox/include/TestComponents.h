@@ -106,3 +106,11 @@ struct ComponentWithAllPrimitiveProperties
 	DYE_PROPERTY()
 	DYE::Quaternion QuaternionVar;
 };
+
+
+DYE_COMPONENT("HasAngularVelocity", HasAngularVelocity)
+struct HasAngularVelocity
+{
+	DYE_PROPERTY()
+	DYE::Float AngleDegreePerSecond = 30.0f;
+};
