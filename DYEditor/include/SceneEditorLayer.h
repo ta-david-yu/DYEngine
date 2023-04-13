@@ -14,6 +14,11 @@
 #include <concepts>
 #include <utility>
 
+namespace DYE
+{
+	class Framebuffer;
+}
+
 namespace DYE::DYEditor
 {
 	class SceneRuntimeLayer;
@@ -40,6 +45,7 @@ namespace DYE::DYEditor
 		std::filesystem::path m_CurrentSceneFilePath;
 
 		Camera m_SceneViewCamera;
+		std::shared_ptr<Framebuffer> m_SceneViewCameraTargetFramebuffer;
 		float m_CameraKeyboardMoveUnitPerSecond = 10.0f;
 		float m_CameraMousePanMoveUnitPerSecond = 2.0f;
 		float m_CameraOrthographicSizeZoomSpeedMultiplier = 200.0f;

@@ -1,6 +1,7 @@
 #include "Graphics/Camera.h"
 
 #include "Graphics/WindowManager.h"
+#include "Graphics/Framebuffer.h"
 #include "Util/Logger.h"
 
 #include <glm/gtx/quaternion.hpp>
@@ -83,7 +84,9 @@ namespace DYE
 		}
 		else
 		{
-			// TODO: render texture dimension
+			auto const& properties = pTargetRenderTexture->GetProperties();
+			targetWidth = properties.Width;
+			targetHeight = properties.Height;
 		}
 
 		return { targetWidth, targetHeight };

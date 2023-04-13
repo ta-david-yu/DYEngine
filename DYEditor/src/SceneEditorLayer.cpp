@@ -9,6 +9,7 @@
 #include "NameComponent.h"
 #include "Graphics/RenderPipelineManager.h"
 #include "Graphics/WindowManager.h"
+#include "Graphics/Framebuffer.h"
 #include "Input/InputManager.h"
 #include "Event/MouseEvent.h"
 #include "Util/Time.h"
@@ -80,7 +81,10 @@ namespace DYE::DYEditor
 		);
 
 		// DEBUGGING Camera & Window Setup
-		m_SceneViewCamera.Properties.TargetWindowIndex = WindowManager::MainWindowIndex;
+		//m_SceneViewCamera.Properties.TargetWindowIndex = WindowManager::MainWindowIndex;
+		m_SceneViewCameraTargetFramebuffer = Framebuffer::Create(FramebufferProperties { .Width = 1600, .Height = 900 });
+		m_SceneViewCamera.Properties.TargetType = RenderTargetType::RenderTexture;
+		m_SceneViewCamera.Properties.pTargetRenderTexture = m_SceneViewCameraTargetFramebuffer.get();
 		m_SceneViewCamera.Position = {0, 0, 10};
 
 		auto windowPtr = WindowManager::CreateWindow(WindowProperties("Test Window", 640, 480));
@@ -372,6 +376,14 @@ namespace DYE::DYEditor
 
 			ImGui::EndMenuBar();
 		}
+
+		// Render SceneView as a texture image.
+		ImVec2 const size = ImVec2(640, 360); // TODO: change this based on window size.
+		// TODO: update framebuffer size based on window size.
+		ImVec2 const uv0 = ImVec2(0, 1); ImVec2 const uv1 = ImVec2(1, 0);
+		auto sceneViewRenderTextureID = sceneViewCamera.Properties.pTargetRenderTexture->GetColorAttachmentID();
+		auto imTexID = (void*)(intptr_t)(sceneViewRenderTextureID);
+		ImGui::Image(imTexID, size, uv0, uv1);
 	}
 
 	bool SceneEditorLayer::drawSceneEntityHierarchyPanel(Scene &scene, Entity *pCurrentSelectedEntity)

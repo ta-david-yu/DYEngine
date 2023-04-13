@@ -8,6 +8,8 @@
 
 namespace DYE
 {
+	class Framebuffer;
+
 	enum class RenderTargetType
 	{
 		Window,
@@ -37,7 +39,8 @@ namespace DYE
 		float FarClipDistance = 100;
 
 		RenderTargetType TargetType = RenderTargetType::Window;
-		std::uint32_t TargetWindowIndex = 0;	/// 0 is normally the main window.
+		std::uint32_t TargetWindowIndex = 0;					/// 0 is normally the main window.
+		Framebuffer* pTargetRenderTexture = nullptr;	/// TODO: At some point we will use a reference to RenderTexture instead of Framebuffer.
 
 		/// Cameras with a larger depth value will be drawn on top of cameras with a smaller value.
 		float Depth = -1;

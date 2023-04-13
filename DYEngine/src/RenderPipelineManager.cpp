@@ -7,6 +7,7 @@
 #include "Graphics/RenderCommand.h"
 #include "Graphics/WindowManager.h"
 #include "Graphics/ContextBase.h"
+#include "Graphics/Framebuffer.h"
 #include "Graphics/DebugDraw.h"
 
 #include <optional>
@@ -60,17 +61,30 @@ namespace DYE
 						{
 							return cameraA.Properties.TargetWindowIndex < cameraB.Properties.TargetWindowIndex;
 						}
-						else
+					}
+					else // TargetType == RenderTargetType::RenderTexture
+					{
+						if (cameraA.Properties.pTargetRenderTexture == nullptr)
 						{
-							// Always render camera that has a lower depth value,
-							// So the one with higher value is rendered on top of the others.
-							return cameraA.Properties.Depth < cameraB.Properties.Depth;
+							return false;
+						}
+
+						if (cameraB.Properties.pTargetRenderTexture == nullptr)
+						{
+							return true;
+						}
+
+						auto const colorAttachmentA = cameraA.Properties.pTargetRenderTexture->GetColorAttachmentID();
+						auto const colorAttachmentB = cameraB.Properties.pTargetRenderTexture->GetColorAttachmentID();
+						if (colorAttachmentA != colorAttachmentB)
+						{
+							return colorAttachmentA < colorAttachmentB;
 						}
 					}
-					// TODO: else targetType == RenderTargetType::RenderTexture
 
-					// Default, always render A first.
-					return true;
+					// If both cameras render to the same target, always render camera that has a lower depth value,
+					// so the one with higher value is rendered on top of the others.
+					return cameraA.Properties.Depth <= cameraB.Properties.Depth;
 				}
 			);
 
@@ -80,43 +94,64 @@ namespace DYE
 		// Make the main window's context current!
 		WindowBase* pCurrentWindow = WindowManager::GetMainWindow();
 		std::uint32_t currentWindowIndex = WindowManager::MainWindowIndex;
+
+		Framebuffer* pCurrentFramebuffer = nullptr;
 		pCurrentWindow->MakeCurrent();
 
 		for (auto& camera : s_Cameras)
 		{
-			if (camera.Properties.TargetType == RenderTargetType::RenderTexture)
-			{
-				// TODO: we skip render texture camera cuz we haven't implemented it yet!
-				continue;
-			}
-
 			// Render to a window
-
-			// Configure the new window
-			if (camera.Properties.TargetWindowIndex != currentWindowIndex)
+			if (camera.Properties.TargetType == RenderTargetType::Window)
 			{
-				// We are done rendering the previous window.
-				// Swap the buffer of the previous window so the buffer is actually drawn on the screen.
-
-				// Note that we only swap buffers of non-main windows because we want to render
-				// imgui contexts to the main window later. Therefore, main window will be flushed/swapped
-				// after imgui rendering.
-				if (!WindowManager::IsMainWindow(*pCurrentWindow))
+				// Configure the new window
+				if (camera.Properties.TargetWindowIndex != currentWindowIndex)
 				{
-					RenderCommand::GetInstance().SwapWindowBuffer(*pCurrentWindow);
+					// We are done rendering the previous window.
+					// Swap the buffer of the previous window so the buffer is actually drawn on the screen.
+
+					// Note that we only swap buffers of non-main windows because we want to render
+					// imgui contexts to the main window later. Therefore, main window will be flushed/swapped
+					// after imgui rendering.
+					if (!WindowManager::IsMainWindow(*pCurrentWindow))
+					{
+						RenderCommand::GetInstance().SwapWindowBuffer(*pCurrentWindow);
+					}
+
+					// If the camera is rendering to a window other than the current one,
+					// Swap to the render target window and make the context current.
+					pCurrentWindow = WindowManager::TryGetWindowAt(camera.Properties.TargetWindowIndex);
+					if (pCurrentWindow == nullptr)
+					{
+						DYE_LOG("The camera render window target (index=%d) doesn't exist. Skip the camera rendering.",
+								camera.Properties.TargetWindowIndex);
+						continue;
+					}
+
+					currentWindowIndex = camera.Properties.TargetWindowIndex;
+					pCurrentWindow->MakeCurrent();
 				}
-
-				// If the camera is rendering to a window other than the current one,
-				// Swap to the render target window and make the context current.
-				pCurrentWindow = WindowManager::TryGetWindowAt(camera.Properties.TargetWindowIndex);
-				if (pCurrentWindow == nullptr)
+			}
+			else // TargetType == RenderTargetType::RenderTexture
+			{
+				if (camera.Properties.pTargetRenderTexture == nullptr)
 				{
-					DYE_LOG("The camera render window target (index=%d) doesn't exist. Skip the camera rendering.", camera.Properties.TargetWindowIndex);
+					// TargetRenderTexture is not specified! Skip it.
+					DYE_LOG("The camera pTargetRenderTexture is null. Skip the camera rendering.");
 					continue;
 				}
 
-				currentWindowIndex = camera.Properties.TargetWindowIndex;
-				pCurrentWindow->MakeCurrent();
+				if (camera.Properties.pTargetRenderTexture != pCurrentFramebuffer)
+				{
+					// We are done rendering the previous framebuffer.
+					if (pCurrentFramebuffer != nullptr)
+					{
+						// Unbind the previous framebuffer.
+						pCurrentFramebuffer->Unbind();
+					}
+
+					pCurrentFramebuffer = camera.Properties.pTargetRenderTexture;
+					pCurrentFramebuffer->Bind();
+				}
 			}
 
 			// Update camera's aspect ratio and set viewport.
@@ -140,6 +175,12 @@ namespace DYE
 			// Note that we only swap buffers of non-main windows because we want to render
 			// imgui contexts to the main window later.
 			RenderCommand::GetInstance().SwapWindowBuffer(*pCurrentWindow);
+		}
+
+		if (pCurrentFramebuffer != nullptr)
+		{
+			// Unbind the final rendered framebuffer.
+			pCurrentFramebuffer->Unbind();
 		}
 
 		s_ActiveRenderPipeline->onPostRender();
