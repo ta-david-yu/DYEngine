@@ -28,7 +28,7 @@ namespace DYE
 	struct CameraProperties
 	{
 	public:
-		glm::vec4 ClearColor = {0, 0, 0, 0};
+		glm::vec4 ClearColor = {0, 0, 0, 1};
 
 		/// The vertical field of view of the Camera, in degrees. This is ignored when IsOrthographic is true.
 		float FieldOfView = 45;
