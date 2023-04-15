@@ -19,7 +19,7 @@ set(SOURCE_FILES
         src/SerializedSystemHandle.cpp
         src/Scene.cpp
         src/DYEditorApplication.cpp
-        src/ApplicationState.cpp
+        src/RuntimeState.cpp
         src/Render2DSpriteSystem.cpp src/FileSystem.cpp src/RegisterCameraSystem.cpp src/EditorWindowManager.cpp)
 set(HEADER_FILES
         include/SceneEditorLayer.h
@@ -40,7 +40,7 @@ set(HEADER_FILES
         include/Serialization/SerializedScene.h
         include/Serialization/SerializedSystemHandle.h
         include/DYEditorApplication.h
-        include/Core/ApplicationState.h
+        include/Core/RuntimeState.h
         include/Components.h
         include/Components/SpriteRendererComponent.h
         include/Systems.h

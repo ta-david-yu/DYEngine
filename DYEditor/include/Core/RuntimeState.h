@@ -2,7 +2,7 @@
 
 namespace DYE::DYEditor
 {
-	struct ApplicationState
+	struct RuntimeState
 	{
 		friend class SceneEditorLayer;
 		friend class SceneRuntimeLayer;
@@ -12,10 +12,7 @@ namespace DYE::DYEditor
 		static bool IsEditor();
 		static bool IsRuntime();
 
-	private:
-		// TODO: use compile definition to make it const in runtime build.
-		static bool s_IsPlaying;
-		static const bool s_IsEditor;
-		static const bool s_IsRuntime;
+		/// This method will do nothing in runtime build.
+		static void SetIsPlaying(bool value);
 	};
 }

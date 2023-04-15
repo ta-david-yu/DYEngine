@@ -1,6 +1,6 @@
 #include "SceneRuntimeLayer.h"
 
-#include "Core/ApplicationState.h"
+#include "Core/RuntimeState.h"
 
 namespace DYE::DYEditor
 {
@@ -10,7 +10,7 @@ namespace DYE::DYEditor
 
 	void SceneRuntimeLayer::OnFixedUpdate()
 	{
-		if (!ApplicationState::IsPlaying())
+		if (!RuntimeState::IsPlaying())
 		{
 			return;
 		}
@@ -29,7 +29,7 @@ namespace DYE::DYEditor
 
 	void SceneRuntimeLayer::OnUpdate()
 	{
-		if (!ApplicationState::IsPlaying())
+		if (!RuntimeState::IsPlaying())
 		{
 			return;
 		}
@@ -59,7 +59,7 @@ namespace DYE::DYEditor
 
 	void SceneRuntimeLayer::OnRender()
 	{
-		ExecuteParameters const params { .Mode = ApplicationState::IsPlaying()? ExecutionMode::Play : ExecutionMode::Edit, .Phase = ExecutionPhase::Render };
+		ExecuteParameters const params { .Mode = RuntimeState::IsPlaying() ? ExecutionMode::Play : ExecutionMode::Edit, .Phase = ExecutionPhase::Render };
 		for (auto& systemDescriptor : ActiveMainScene.RenderSystemDescriptors)
 		{
 			if (!systemDescriptor.IsEnabled)
@@ -73,7 +73,7 @@ namespace DYE::DYEditor
 
 	void SceneRuntimeLayer::OnPostRender()
 	{
-		ExecuteParameters const params { .Mode = ApplicationState::IsPlaying()? ExecutionMode::Play : ExecutionMode::Edit, .Phase = ExecutionPhase::PostRender };
+		ExecuteParameters const params { .Mode = RuntimeState::IsPlaying() ? ExecutionMode::Play : ExecutionMode::Edit, .Phase = ExecutionPhase::PostRender };
 		for (auto& systemDescriptor : ActiveMainScene.PostRenderSystemDescriptors)
 		{
 			if (!systemDescriptor.IsEnabled)
@@ -87,7 +87,7 @@ namespace DYE::DYEditor
 
 	void SceneRuntimeLayer::OnImGui()
 	{
-		if (!ApplicationState::IsPlaying())
+		if (!RuntimeState::IsPlaying())
 		{
 			return;
 		}

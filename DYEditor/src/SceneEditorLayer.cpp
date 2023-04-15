@@ -2,7 +2,7 @@
 
 #include "SceneRuntimeLayer.h"
 #include "Core/Application.h"
-#include "Core/ApplicationState.h"
+#include "Core/RuntimeState.h"
 #include "Core/EditorSystem.h"
 #include "Serialization/SerializedObjectFactory.h"
 #include "Type/BuiltInTypeRegister.h"
@@ -341,6 +341,17 @@ namespace DYE::DYEditor
 
 				ImGui::EndMenu();
 			}
+
+			if (ImGui::BeginMenu("Edit"))
+			{
+				if (ImGui::MenuItem("Play", "Ctrl+P", RuntimeState::IsPlaying()))
+				{
+					RuntimeState::SetIsPlaying(!RuntimeState::IsPlaying());
+				}
+
+				ImGui::EndMenu();
+			}
+
 			if (ImGui::BeginMenu("Window"))
 			{
 				if (ImGui::BeginMenu("Layouts"))
@@ -551,7 +562,7 @@ namespace DYE::DYEditor
 			 phaseIndex <= static_cast<int>(ExecutionPhase::TearDown); phaseIndex++)
 		{
 			auto const phase = static_cast<ExecutionPhase>(phaseIndex);
-			bool const isPhaseRunning = ApplicationState::IsPlaying() || (phase == ExecutionPhase::Render || phase == ExecutionPhase::PostRender);
+			bool const isPhaseRunning = RuntimeState::IsPlaying() || (phase == ExecutionPhase::Render || phase == ExecutionPhase::PostRender);
 
 			std::string const &phaseId = CastExecutionPhaseToString(phase);
 			auto& systemDescriptors = scene.GetSystemDescriptorsOfPhase(phase);
