@@ -30,6 +30,8 @@ using namespace DYE::DYEntity;
 
 namespace DYE::DYEditor
 {
+	constexpr char const* k_DYEditorWindowId = "DYEditor";
+	constexpr char const* k_DYEditorDockSpaceId = "DYEditor DockSpace";
 	constexpr char const* k_SceneHierarchyWindowId = "Scene Hierarchy";
 	constexpr char const* k_SceneSystemWindowId = "Scene System";
 	constexpr char const* k_EntityInspectorWindowId = "Entity Inspector";
@@ -192,17 +194,22 @@ namespace DYE::DYEditor
 		ImGuiDockNodeFlags mainEditorWindowDockSpaceFlags = ImGuiDockNodeFlags_None | ImGuiDockNodeFlags_PassthruCentralNode;
 
 		const ImGuiViewport* viewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos(viewport->WorkPos, ImGuiCond_FirstUseEver);
-		ImGui::SetNextWindowSize(viewport->WorkSize, ImGuiCond_FirstUseEver);
-		ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
+		float const editorLayerWindowPadding = 10;
+		ImVec2 const editorLayerWindowPos = { viewport->WorkPos.x + editorLayerWindowPadding, viewport->WorkPos.y };
+		ImVec2 const editorLayerWindowSize = { viewport->WorkSize.x - editorLayerWindowPadding * 2, viewport->WorkSize.y - editorLayerWindowPadding };
+		ImGui::SetNextWindowPos(editorLayerWindowPos, ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(editorLayerWindowSize, ImGuiCond_FirstUseEver);
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-		ImGui::Begin("DYEditor Window", nullptr, mainEditorWindowFlags);
+		ImGui::Begin(k_DYEditorWindowId, nullptr, mainEditorWindowFlags);
 		ImGui::PopStyleVar();
+
+		drawEditorWindowMenuBar(activeScene, m_CurrentSceneFilePath);
+
 		ImGuiIO& io = ImGui::GetIO();
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 		{
-			ImGuiID dockSpaceId = ImGui::GetID("DYEditor Window DockSpace");
+			ImGuiID dockSpaceId = ImGui::GetID(k_DYEditorDockSpaceId);
 			if (ImGui::DockBuilderGetNode(dockSpaceId) == nullptr)
 			{
 				setEditorWindowDefaultLayout(dockSpaceId);
@@ -210,7 +217,6 @@ namespace DYE::DYEditor
 			ImGui::DockSpace(dockSpaceId, ImVec2(0.0f, 0.0f), mainEditorWindowDockSpaceFlags);
 		}
 
-		drawEditorWindowMenuBar(activeScene, m_CurrentSceneFilePath);
 		ImGuiViewport const *mainEditorWindowViewport = ImGui::GetWindowViewport();
 		ImGui::End();
 
@@ -326,7 +332,7 @@ namespace DYE::DYEditor
 					}
 				}
 
-				if (ImGui::MenuItem("Save Scene as..."))
+				if (ImGui::MenuItem("Save Scene As..."))
 				{
 					// We store a flag here and delay opening the popup
 					// because MenuItem is Selectable and Selectable by default calls CloseCurrentPopup().
@@ -337,6 +343,38 @@ namespace DYE::DYEditor
 			}
 			if (ImGui::BeginMenu("Window"))
 			{
+				if (ImGui::BeginMenu("Layouts"))
+				{
+					if (ImGui::MenuItem("Default"))
+					{
+						DYE_MSG_BOX(SDL_MESSAGEBOX_WARNING, "NOT IMPLEMENTED FEATURE",
+									"Default Layout is not properly implemented.\n"
+									"You can delete imgui.ini file to reset the layout manually.");
+						//setEditorWindowDefaultLayout(ImGui::GetID(k_DYEditorDockSpaceId));
+					}
+
+					ImGui::Separator();
+
+					bool const attachDYEditorToWindow = ImGui::MenuItem("Attach DYEditor");
+					ImGui::SameLine();
+					ImGuiUtil::DrawHelpMarker("Attach DYEditor to Main Viewport at the default position with the default size.");
+					if (attachDYEditorToWindow)
+					{
+						const ImGuiViewport *viewport = ImGui::GetMainViewport();
+						float const editorLayerWindowPadding = 10;
+						ImVec2 const editorLayerWindowPos = {viewport->WorkPos.x + editorLayerWindowPadding,
+															 viewport->WorkPos.y};
+						ImVec2 const editorLayerWindowSize = {viewport->WorkSize.x - editorLayerWindowPadding * 2,
+															  viewport->WorkSize.y - editorLayerWindowPadding};
+						ImGui::SetWindowPos(k_DYEditorWindowId, editorLayerWindowPos);
+						ImGui::SetWindowSize(k_DYEditorWindowId, editorLayerWindowSize);
+					}
+
+					ImGui::EndMenu();
+				}
+
+				ImGui::Separator();
+
 				EditorWindowManager::ForEachEditorWindow(
 					[](EditorWindow& editorWindow)
 					{
