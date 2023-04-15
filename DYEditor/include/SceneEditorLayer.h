@@ -36,9 +36,11 @@ namespace DYE::DYEditor
 		void OnRender() override;
 		void OnImGui() override;
 
+		void SetApplication(Application* application) { m_pApplication = application; }
 		void SetRuntimeLayer(std::shared_ptr<SceneRuntimeLayer> runtimeLayer) { m_RuntimeLayer = std::move(runtimeLayer); }
 
 	private:
+		Application* m_pApplication;
 		std::shared_ptr<SceneRuntimeLayer> m_RuntimeLayer;
 
 		DYEntity::Entity m_CurrentlySelectedEntityInHierarchyPanel;
@@ -49,6 +51,9 @@ namespace DYE::DYEditor
 		float m_CameraKeyboardMoveUnitPerSecond = 10.0f;
 		float m_CameraMousePanMoveUnitPerSecond = 2.0f;
 		float m_CameraOrthographicSizeZoomSpeedMultiplier = 200.0f;
+
+		bool m_IsSceneViewWindowFocused = false;
+		bool m_IsSceneViewWindowHovered = false;
 
 		static void setEditorWindowDefaultLayout(ImGuiID dockSpaceId);
 		static void drawEditorWindowMenuBar(Scene &currentScene, std::filesystem::path &currentScenePathContext);

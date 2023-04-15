@@ -48,16 +48,18 @@ namespace DYE
     }
 
     void ImGuiLayer::OnEvent(Event& event)
-    {
-        if (m_BlockEvents)
-        {
-            // Use up an event if ImGui wants it
-            //auto& io = ImGui::GetIO();
-            //event.IsUsed |= event.IsInCategory(EventCategory::Mouse) && io.WantCaptureMouse;
-            //event.IsUsed |= event.IsInCategory(EventCategory::Keyboard) && io.WantCaptureKeyboard;
-            // TODO: use EventCategory::TextInput
-        }
-    }
+	{
+		if (!m_BlockEvents)
+		{
+			return;
+		}
+
+		// Use up an event if ImGui wants it
+		auto &io = ImGui::GetIO();
+		event.IsUsed |= event.IsInCategory(EventCategory::Mouse) && io.WantCaptureMouse;
+		event.IsUsed |= event.IsInCategory(EventCategory::Keyboard) && io.WantCaptureKeyboard;
+		// TODO: use EventCategory::TextInput
+	}
 
     void ImGuiLayer::BeginImGui()
     {

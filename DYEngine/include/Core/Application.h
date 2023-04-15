@@ -50,6 +50,7 @@ namespace DYE
 		void PopLayer(std::shared_ptr<LayerBase> &layer);
 		void PushOverlay(std::shared_ptr<LayerBase> &overlay);
 		void PopOverlay(std::shared_ptr<LayerBase> &overlay);
+		ImGuiLayer& GetImGuiLayer() { return *m_ImGuiLayer; }
 
     protected:
         void pushLayerImmediate(const std::shared_ptr<LayerBase> &layer);

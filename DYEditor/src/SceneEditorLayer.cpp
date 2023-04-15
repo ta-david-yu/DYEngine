@@ -1,6 +1,7 @@
 #include "SceneEditorLayer.h"
 
 #include "SceneRuntimeLayer.h"
+#include "Core/Application.h"
 #include "Core/ApplicationState.h"
 #include "Core/EditorSystem.h"
 #include "Serialization/SerializedObjectFactory.h"
@@ -100,6 +101,21 @@ namespace DYE::DYEditor
 
 	void SceneEditorLayer::OnUpdate()
 	{
+		bool const isMiddleMouseButtonPressed = INPUT.GetMouseButton(MouseButton::Middle);
+
+		if (isMiddleMouseButtonPressed && m_IsSceneViewWindowHovered)
+		{
+			// Focus SceneView window if middle mouse button is pressed over the SceneView window.
+			ImGui::SetWindowFocus(k_SceneViewWindowId);
+		}
+
+		if (!m_IsSceneViewWindowFocused)
+		{
+			// Skip SceneView camera input if the SceneView window is not focused.
+			return;
+		}
+
+		// Scene View Camera Input.
 		if (INPUT.GetKey(KeyCode::W))
 		{
 			m_SceneViewCamera.Position.y += m_CameraKeyboardMoveUnitPerSecond * TIME.DeltaTime();
@@ -117,13 +133,14 @@ namespace DYE::DYEditor
 			m_SceneViewCamera.Position.x -= m_CameraKeyboardMoveUnitPerSecond * TIME.DeltaTime();
 		}
 
-		if (INPUT.GetMouseButton(MouseButton::Middle))
+		if (isMiddleMouseButtonPressed)
 		{
 			// TODO: the delta should be scaled based on the dimensions of the scene view window.
 			//		So the camera panning speed matches up with the mouse delta.
 			auto mouseDelta = INPUT.GetGlobalMouseDelta();
 
-			glm::vec2 panMove = mouseDelta; panMove *= m_CameraMousePanMoveUnitPerSecond * TIME.DeltaTime();
+			glm::vec2 panMove = mouseDelta;
+			panMove *= m_CameraMousePanMoveUnitPerSecond * TIME.DeltaTime();
 			float const multiplierBasedOnCameraDistance = m_SceneViewCamera.Properties.OrthographicSize / 10.0f;
 			panMove *= multiplierBasedOnCameraDistance;
 
@@ -137,12 +154,21 @@ namespace DYE::DYEditor
 	{
 		if (event.GetEventType() == EventType::MouseScroll)
 		{
+			if (!m_IsSceneViewWindowHovered)
+			{
+				return;
+			}
+
+			// When SceneView window hovered, zooming should always work no matter focused or not.
 			auto mouseScrolledEvent = (MouseScrolledEvent&) event;
 			m_SceneViewCamera.Properties.OrthographicSize -= TIME.DeltaTime() * m_CameraOrthographicSizeZoomSpeedMultiplier * mouseScrolledEvent.GetY();
 			if (m_SceneViewCamera.Properties.OrthographicSize < 0.1f)
 			{
 				m_SceneViewCamera.Properties.OrthographicSize = 0.1f;
 			}
+
+			// Use the event up.
+			mouseScrolledEvent.IsUsed = true;
 		}
 	}
 
@@ -193,6 +219,13 @@ namespace DYE::DYEditor
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2 {0, 0});
 		if (ImGui::Begin(k_SceneViewWindowId, nullptr, sceneViewWindowFlags))
 		{
+			m_IsSceneViewWindowFocused = ImGui::IsWindowFocused();
+			m_IsSceneViewWindowHovered = ImGui::IsWindowHovered();
+
+			// ImGuiLayer shouldn't block events when SceneView window is focused OR hovered.
+			bool const editorShouldReceiveCameraInputEvent = m_IsSceneViewWindowFocused || m_IsSceneViewWindowHovered;
+			m_pApplication->GetImGuiLayer().SetBlockEvents(!editorShouldReceiveCameraInputEvent);
+
 			drawSceneView(m_SceneViewCamera);
 		}
 		ImGui::End();

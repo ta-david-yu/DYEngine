@@ -19,7 +19,9 @@ namespace DYE::Sandbox
             : Application(windowName, fixedFramePerSecond)
         {
 			auto runtimeLayer = std::make_shared<DYEditor::SceneRuntimeLayer>();
+
 			auto editorLayer = std::make_shared<DYEditor::SceneEditorLayer>();
+			editorLayer->SetApplication(this);
 			editorLayer->SetRuntimeLayer(runtimeLayer);
 
 			pushLayerImmediate(runtimeLayer);
