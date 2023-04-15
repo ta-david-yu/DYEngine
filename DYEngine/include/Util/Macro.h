@@ -16,8 +16,19 @@
 #ifdef DYE_ENABLE_ASSERTS
     /// \param condition Condition expression to check
     #define DYE_ASSERT(condition) SDL_assert((condition));
+	#define DYE_ASSERT_LOG(condition, logFmt, ...) 		\
+	do                                             		\
+	{                                              		\
+		if (!(condition))                           	\
+		{                                              	\
+			DYE_LOG("<< Assertion Failure Log >>");		\
+			DYE_LOG(logFmt, ##__VA_ARGS__); 			\
+			SDL_assert((condition)); 					\
+		}												\
+	} while (false)
 #else
     #define DYE_ASSERT(condition)
+	#define DYE_ASSERT_LOG(condition, logFmt, ...)
 #endif
 
 #ifndef NAME_OF

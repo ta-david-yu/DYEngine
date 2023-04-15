@@ -35,11 +35,7 @@ namespace DYE
 
 	void Framebuffer::Resize(std::uint32_t width, std::uint32_t height)
 	{
-		if (width < 1 || height < 1)
-		{
-			DYE_ASSERT(false && "Framebuffer::Resize: both width or height must be at least 1.");
-			return;
-		}
+		DYE_ASSERT_LOG(width > 0 && height > 0, "Framebuffer::Resize: both width or height must be at least 1.");
 
 		m_Properties.Width = width;
 		m_Properties.Height = height;
