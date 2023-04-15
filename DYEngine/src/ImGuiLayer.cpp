@@ -52,9 +52,9 @@ namespace DYE
         if (m_BlockEvents)
         {
             // Use up an event if ImGui wants it
-            auto& io = ImGui::GetIO();
-            event.IsUsed |= event.IsInCategory(EventCategory::Mouse) && io.WantCaptureMouse;
-            event.IsUsed |= event.IsInCategory(EventCategory::Keyboard) && io.WantCaptureKeyboard;
+            //auto& io = ImGui::GetIO();
+            //event.IsUsed |= event.IsInCategory(EventCategory::Mouse) && io.WantCaptureMouse;
+            //event.IsUsed |= event.IsInCategory(EventCategory::Keyboard) && io.WantCaptureKeyboard;
             // TODO: use EventCategory::TextInput
         }
     }
