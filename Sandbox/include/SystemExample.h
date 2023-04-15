@@ -65,7 +65,7 @@ namespace SystemNamespace
 DYE_SYSTEM("Rotate Has Angular Velocity System", RotateHasAngularVelocitySystem)
 struct RotateHasAngularVelocitySystem final : public DYE::DYEditor::SystemBase
 {
-	inline DYE::DYEditor::ExecutionPhase GetPhase() const override { return DYE::DYEditor::ExecutionPhase::Update; }
+	inline DYE::DYEditor::ExecutionPhase GetPhase() const override { return DYE::DYEditor::ExecutionPhase::Update ; }
 	void Execute(DYE::DYEntity::World &world, DYE::DYEditor::ExecuteParameters params) final;
 };
 
