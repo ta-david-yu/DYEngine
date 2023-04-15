@@ -119,6 +119,8 @@ namespace DYE::DYEditor
 
 		if (INPUT.GetMouseButton(MouseButton::Middle))
 		{
+			// TODO: the delta should be scaled based on the dimensions of the scene view window.
+			//		So the camera panning speed matches up with the mouse delta.
 			auto mouseDelta = INPUT.GetGlobalMouseDelta();
 
 			glm::vec2 panMove = mouseDelta; panMove *= m_CameraMousePanMoveUnitPerSecond * TIME.DeltaTime();
@@ -188,11 +190,13 @@ namespace DYE::DYEditor
 
 		// Draw all the major editor windows.
 		ImGuiWindowFlags const sceneViewWindowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoBackground;
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2 {0, 0});
 		if (ImGui::Begin(k_SceneViewWindowId, nullptr, sceneViewWindowFlags))
 		{
 			drawSceneView(m_SceneViewCamera);
 		}
 		ImGui::End();
+		ImGui::PopStyleVar();
 
 		if (ImGui::Begin(k_SceneSystemWindowId))
 		{
@@ -360,7 +364,6 @@ namespace DYE::DYEditor
 
 	void SceneEditorLayer::drawSceneView(Camera &sceneViewCamera)
 	{
-		// TODO: render a texture of the scene camera framebuffer.
 		// TODO: capture scene view input events when the scene view window is focused OR hovered.
 		if (ImGui::BeginMenuBar())
 		{
@@ -378,12 +381,26 @@ namespace DYE::DYEditor
 		}
 
 		// Render SceneView as a texture image.
-		ImVec2 const size = ImVec2(640, 360); // TODO: change this based on window size.
-		// TODO: update framebuffer size based on window size.
-		ImVec2 const uv0 = ImVec2(0, 1); ImVec2 const uv1 = ImVec2(1, 0);
+		ImVec2 const sceneViewWindowSize = ImGui::GetContentRegionAvail();
+
+		if (sceneViewWindowSize.x <= 0 || sceneViewWindowSize.y <= 0)
+		{
+			// If either width or height is 0, we don't need to draw the texture OR resize the framebuffer.
+			// Because the scene view window is very likely folded.
+			return;
+		}
+
+		auto const& renderTextureProperties = sceneViewCamera.Properties.pTargetRenderTexture->GetProperties();
+		if (renderTextureProperties.Width != sceneViewWindowSize.x || renderTextureProperties.Height != sceneViewWindowSize.y)
+		{
+			// Resize the target framebuffer (render texture) if the window avail region size is different with the framebuffer size.
+			sceneViewCamera.Properties.pTargetRenderTexture->Resize(sceneViewWindowSize.x, sceneViewWindowSize.y);
+		}
+
 		auto sceneViewRenderTextureID = sceneViewCamera.Properties.pTargetRenderTexture->GetColorAttachmentID();
 		auto imTexID = (void*)(intptr_t)(sceneViewRenderTextureID);
-		ImGui::Image(imTexID, size, uv0, uv1);
+		ImVec2 const uv0 = ImVec2(0, 1); ImVec2 const uv1 = ImVec2(1, 0);
+		ImGui::Image(imTexID, sceneViewWindowSize, uv0, uv1);
 	}
 
 	bool SceneEditorLayer::drawSceneEntityHierarchyPanel(Scene &scene, Entity *pCurrentSelectedEntity)

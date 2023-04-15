@@ -29,6 +29,8 @@ namespace DYE
 		void Bind();
 		void Unbind();
 
+		void Resize(std::uint32_t width, std::uint32_t height);
+
 		/// Create the actual underlying implementation instance of the framebuffer.
 		/// If it's already created, it will be reset and re-created based on the internal properties.
 		void CreateOrReset();

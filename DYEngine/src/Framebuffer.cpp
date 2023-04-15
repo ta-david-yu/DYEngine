@@ -33,8 +33,29 @@ namespace DYE
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
+	void Framebuffer::Resize(std::uint32_t width, std::uint32_t height)
+	{
+		if (width < 1 || height < 1)
+		{
+			DYE_ASSERT(false && "Framebuffer::Resize: both width or height must be at least 1.");
+			return;
+		}
+
+		m_Properties.Width = width;
+		m_Properties.Height = height;
+		CreateOrReset();
+	}
+
 	void Framebuffer::CreateOrReset()
 	{
+		bool const isCreated = m_ID != 0;
+		if (isCreated)
+		{
+			glDeleteFramebuffers(1, &m_ID);
+			glDeleteTextures(1, &m_ColorAttachmentID);
+			glDeleteTextures(1, &m_DepthStencilAttachmentID);
+		}
+
 		glCreateFramebuffers(1, &m_ID);
 
 		// Create a color attachment (texture 2d) for the framebuffer.
