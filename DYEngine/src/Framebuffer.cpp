@@ -1,6 +1,7 @@
 #include "Graphics/Framebuffer.h"
 
 #include "Graphics/OpenGL.h"
+#include "Graphics/RenderCommand.h"
 #include "Util/Logger.h"
 #include "Util/Macro.h"
 
@@ -35,7 +36,9 @@ namespace DYE
 
 	void Framebuffer::Resize(std::uint32_t width, std::uint32_t height)
 	{
-		DYE_ASSERT_LOG(width > 0 && height > 0, "Framebuffer::Resize: both width or height must be at least 1.");
+		auto maxDimensions = RenderCommand::GetInstance().GetMaxFramebufferSize();
+		DYE_ASSERT_LOG(width != 0 && height != 0 && width <= maxDimensions.x && height <= maxDimensions.y,
+					   "Framebuffer::Resize: attempted to resize framebuffer [%d] to %d, %d.", m_ID, width, height);
 
 		m_Properties.Width = width;
 		m_Properties.Height = height;

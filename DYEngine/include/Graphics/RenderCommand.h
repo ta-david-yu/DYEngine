@@ -36,6 +36,8 @@ namespace DYE
 		RenderCommand() = default; // TODO: delete default constructor, because eventually the base class will become abstract/interface.
 		RenderCommand(const RenderCommand &) = delete;
 
+		glm::vec<2, std::uint32_t> GetMaxFramebufferSize() const;
+
 		/// Before calling this function, you have to call window.MakeCurrent() first.
 		void SwapWindowBuffer(WindowBase const& windowBase);
 

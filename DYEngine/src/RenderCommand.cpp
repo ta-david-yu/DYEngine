@@ -176,4 +176,12 @@ namespace DYE
 		std::uint32_t const indexCount = vertexArray.GetIndexBuffer()->GetCount();
 		glCall(glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr));
 	}
+
+	glm::vec<2, std::uint32_t> RenderCommand::GetMaxFramebufferSize() const
+	{
+		std::int32_t width, height;
+		glGetIntegerv(GL_MAX_FRAMEBUFFER_WIDTH, &width);
+		glGetIntegerv(GL_MAX_FRAMEBUFFER_HEIGHT, &height);
+		return { width, height };
+	}
 }
