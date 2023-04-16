@@ -6,8 +6,6 @@
 #include "Graphics/RenderPipelineManager.h"
 #include "ImGui/ImGuiUtil.h"
 
-#include "Graphics/WindowManager.h"
-
 #include <string>
 
 namespace DYE::DYEditor

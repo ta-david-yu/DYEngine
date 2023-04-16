@@ -16,8 +16,8 @@ namespace DYE::ImGuiUtil
 {
 	namespace Settings
 	{
-		float ControlLabelWidth = 200.0f;
-		std::string FloatFormat = "%.2f";
+		float ControlLabelWidth = DefaultControlLabelWidth;
+		std::string FloatFormat = DefaultFloatFormat;
 
 		void ResetParametersToDefaultValues()
 		{
