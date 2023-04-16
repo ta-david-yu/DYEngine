@@ -37,8 +37,8 @@ namespace DYE
 	void Framebuffer::Resize(std::uint32_t width, std::uint32_t height)
 	{
 		auto maxDimensions = RenderCommand::GetInstance().GetMaxFramebufferSize();
-		DYE_ASSERT_LOG(width != 0 && height != 0 && width <= maxDimensions.x && height <= maxDimensions.y,
-					   "Framebuffer::Resize: attempted to resize framebuffer [%d] to %d, %d.", m_ID, width, height);
+		DYE_ASSERT_LOG_WARN(width != 0 && height != 0 && width <= maxDimensions.x && height <= maxDimensions.y,
+							"Framebuffer::Resize: attempted to resize framebuffer [%d] to %d, %d.", m_ID, width, height);
 
 		m_Properties.Width = width;
 		m_Properties.Height = height;

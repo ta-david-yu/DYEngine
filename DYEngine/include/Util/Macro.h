@@ -3,6 +3,7 @@
 #include "Logger.h"
 
 #include <utility>
+#include <cstdio>
 #include <cassert>
 
 #ifdef DYE_DEBUG
@@ -16,13 +17,14 @@
 #ifdef DYE_ENABLE_ASSERTS
     /// \param condition Condition expression to check
     #define DYE_ASSERT(condition) SDL_assert((condition));
-	#define DYE_ASSERT_LOG(condition, logFmt, ...) 		\
+	#define DYE_ASSERT_LOG_WARN(condition, logFmt, ...) 		\
 	do                                             		\
 	{                                              		\
 		if (!(condition))                           	\
-		{                                              	\
-			DYE_LOG("<< Assertion Failure Log >>");		\
-			DYE_LOG(logFmt, ##__VA_ARGS__); 			\
+		{                                               \
+            char assertMessageBuffer[2048]; 			\
+			int const result = sprintf(assertMessageBuffer, logFmt, ##__VA_ARGS__);	\
+			DYE_LOG_WARN("Assertion Failed: %s", assertMessageBuffer);				\
 			SDL_assert((condition)); 					\
 		}												\
 	} while (false)
