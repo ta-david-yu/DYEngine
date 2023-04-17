@@ -344,9 +344,9 @@ namespace DYE::DYEditor
 			);
 
 		static Render2DSpriteSystem _Render2DSpriteSystem;
-		TypeRegistry::RegisterSystem("Render 2D Sprite System", &_Render2DSpriteSystem);
+		TypeRegistry::RegisterSystem(Render2DSpriteSystem::TypeName, &_Render2DSpriteSystem);
 
 		static RegisterCameraSystem _RegisterCameraSystem;
-		TypeRegistry::RegisterSystem("Register Camera System", &_RegisterCameraSystem);
+		TypeRegistry::RegisterSystem(RegisterCameraSystem::TypeName, &_RegisterCameraSystem);
 	}
 }
