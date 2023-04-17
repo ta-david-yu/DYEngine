@@ -104,7 +104,7 @@ namespace DYE::DYEditor
 					return;
 				}
 
-				GetEditorConfig().DrawConfigurationBrowserImGui(pIsOpen);
+				GetEditorConfig().DrawGenericConfigurationBrowserImGui(pIsOpen);
 
 				ImGui::End();
 			}

@@ -68,7 +68,7 @@ namespace DYE::DYEditor
 		FileStream.flush();
 	}
 
-	bool ProjectConfig::DrawConfigurationBrowserImGui(bool *pIsOpen)
+	bool ProjectConfig::DrawGenericConfigurationBrowserImGui(bool *pIsOpen)
 	{
 		if (!ImGui::Begin("Editor Configuration", pIsOpen))
 		{
@@ -83,9 +83,6 @@ namespace DYE::DYEditor
 		{
 			std::string key(iterator->first.str());
 			auto &value = iterator->second;
-			ProjectConfigValueType valueType;
-
-			std::string valueAsStr;
 			if (value.is_boolean())
 			{
 				changed |= ImGuiUtil::DrawBoolControl(key, value.as_boolean()->get());
