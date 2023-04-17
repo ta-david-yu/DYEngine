@@ -45,7 +45,7 @@ set(HEADER_FILES
         include/Components/SpriteRendererComponent.h
         include/Systems.h
         include/Systems/Render2DSpriteSystem.h
-        include/FileSystem/FileSystem.h include/Components/CameraComponent.h include/Systems/RegisterCameraSystem.h include/EditorConfig.h src/EditorConfig.cpp include/ImGui/EditorWindowManager.h)
+        include/FileSystem/FileSystem.h include/Components/CameraComponent.h include/Systems/RegisterCameraSystem.h include/ProjectConfig.h src/ProjectConfig.cpp include/ImGui/EditorWindowManager.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")

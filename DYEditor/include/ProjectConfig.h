@@ -5,7 +5,7 @@
 
 namespace DYE::DYEditor
 {
-	struct EditorConfig
+	struct ProjectConfig
 	{
 		static constexpr char const* DefaultEditorConfigFilePath = "editor.ini";
 

@@ -1,4 +1,4 @@
-#include "EditorConfig.h"
+#include "ProjectConfig.h"
 
 #include "Util/Logger.h"
 #include "Util/Macro.h"
@@ -51,7 +51,7 @@ namespace DYE::DYEditor
 
 	EditorConfigData s_Data;
 
-	void EditorConfig::ResetToDefault()
+	void ProjectConfig::ResetToDefault()
 	{
 		if (!s_Data.IsLoaded)
 		{
@@ -59,8 +59,8 @@ namespace DYE::DYEditor
 		}
 
 		// Open the file and clean everything in it.
-		s_Data.Table = toml::table();
 		s_Data.FileStream.open(s_Data.CurrentLoadedFilePath, std::ios::trunc);
+		s_Data.Table = toml::table();
 
 		// Set some default values here.
 		// ...
@@ -69,7 +69,7 @@ namespace DYE::DYEditor
 		s_Data.FileStream.close();
 	}
 
-	void EditorConfig::LoadFromOrCreateDefaultAt(const std::filesystem::path &path)
+	void ProjectConfig::LoadFromOrCreateDefaultAt(const std::filesystem::path &path)
 	{
 		if (s_Data.IsLoaded)
 		{
@@ -104,7 +104,7 @@ namespace DYE::DYEditor
 		s_Data.Table = std::move(result.table());
 	}
 
-	void EditorConfig::Save()
+	void ProjectConfig::Save()
 	{
 		s_Data.FileStream.open(s_Data.CurrentLoadedFilePath, std::ios::trunc);
 		s_Data.FileStream << s_Data.Table;
@@ -112,7 +112,7 @@ namespace DYE::DYEditor
 	}
 
 	template<typename T>
-	T EditorConfig::GetOrDefault(const std::string &keyPath, T const &defaultValue)
+	T ProjectConfig::GetOrDefault(const std::string &keyPath, T const &defaultValue)
 	{
 		if (!s_Data.IsLoaded)
 		{
@@ -137,14 +137,14 @@ namespace DYE::DYEditor
 	}
 
 
-	template bool EditorConfig::GetOrDefault<bool>(const std::string &key, bool const &defaultValue);
-	template float EditorConfig::GetOrDefault<float>(const std::string &key, float const &defaultValue);
-	template int EditorConfig::GetOrDefault<int>(const std::string &key, int const &defaultValue);
-	template std::string EditorConfig::GetOrDefault<std::string>(const std::string &key, std::string const &defaultValue);
-	template std::string_view EditorConfig::GetOrDefault<std::string_view>(const std::string &key, std::string_view const &defaultValue);
+	template bool ProjectConfig::GetOrDefault<bool>(const std::string &key, bool const &defaultValue);
+	template float ProjectConfig::GetOrDefault<float>(const std::string &key, float const &defaultValue);
+	template int ProjectConfig::GetOrDefault<int>(const std::string &key, int const &defaultValue);
+	template std::string ProjectConfig::GetOrDefault<std::string>(const std::string &key, std::string const &defaultValue);
+	template std::string_view ProjectConfig::GetOrDefault<std::string_view>(const std::string &key, std::string_view const &defaultValue);
 
 	template<typename T>
-	void EditorConfig::SetAndSave(const std::string &keyPath, const T &value)
+	void ProjectConfig::SetAndSave(const std::string &keyPath, const T &value)
 	{
 		if (!s_Data.IsLoaded)
 		{
@@ -159,21 +159,21 @@ namespace DYE::DYEditor
 		s_Data.FileStream.flush();
 	}
 
-	template void EditorConfig::SetAndSave<bool>(const std::string &key, const bool &value);
-	template void EditorConfig::SetAndSave<float>(const std::string &key, const float &value);
-	template void EditorConfig::SetAndSave<int>(const std::string &key, const int &value);
-	template void EditorConfig::SetAndSave<std::string>(const std::string &key, const std::string &value);
-	template void EditorConfig::SetAndSave<std::string_view>(const std::string &key, const std::string_view &value);
+	template void ProjectConfig::SetAndSave<bool>(const std::string &key, const bool &value);
+	template void ProjectConfig::SetAndSave<float>(const std::string &key, const float &value);
+	template void ProjectConfig::SetAndSave<int>(const std::string &key, const int &value);
+	template void ProjectConfig::SetAndSave<std::string>(const std::string &key, const std::string &value);
+	template void ProjectConfig::SetAndSave<std::string_view>(const std::string &key, const std::string_view &value);
 
 	template<typename T>
-	void EditorConfig::Set(const std::string &keyPath, const T &value)
+	void ProjectConfig::Set(const std::string &keyPath, const T &value)
 	{
 		s_Data.Table.insert_or_assign(keyPath, value);
 	}
 
-	template void EditorConfig::Set<bool>(const std::string &key, const bool &value);
-	template void EditorConfig::Set<float>(const std::string &key, const float &value);
-	template void EditorConfig::Set<int>(const std::string &key, const int &value);
-	template void EditorConfig::Set<std::string>(const std::string &key, const std::string &value);
-	template void EditorConfig::Set<std::string_view>(const std::string &key, const std::string_view &value);
+	template void ProjectConfig::Set<bool>(const std::string &key, const bool &value);
+	template void ProjectConfig::Set<float>(const std::string &key, const float &value);
+	template void ProjectConfig::Set<int>(const std::string &key, const int &value);
+	template void ProjectConfig::Set<std::string>(const std::string &key, const std::string &value);
+	template void ProjectConfig::Set<std::string_view>(const std::string &key, const std::string_view &value);
 }

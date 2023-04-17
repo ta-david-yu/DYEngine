@@ -13,7 +13,7 @@
 #include "Input/InputManager.h"
 #include "Event/MouseEvent.h"
 #include "Util/Time.h"
-#include "EditorConfig.h"
+#include "ProjectConfig.h"
 #include "ImGui/EditorWindowManager.h"
 #include "ImGui/EditorImGuiUtil.h"
 #include "ImGui/ImGuiUtil.h"
@@ -54,7 +54,7 @@ namespace DYE::DYEditor
 		DYEditor::RegisterUserTypes();
 
 		// Load editor config file.
-		EditorConfig::LoadFromOrCreateDefaultAt(EditorConfig::DefaultEditorConfigFilePath);
+		ProjectConfig::LoadFromOrCreateDefaultAt(ProjectConfig::DefaultEditorConfigFilePath);
 
 		// Register built-in editor windows.
 		EditorWindowManager::RegisterEditorWindow(
@@ -93,7 +93,7 @@ namespace DYE::DYEditor
 			}
 		);
 
-		std::string const& defaultScenePath = EditorConfig::GetOrDefault<std::string>("Editor.DefaultScene", "");
+		std::string const& defaultScenePath = ProjectConfig::GetOrDefault<std::string>("Editor.DefaultScene", "");
 		if (defaultScenePath.empty())
 		{
 			// Create an untitled new scene.
@@ -134,7 +134,7 @@ namespace DYE::DYEditor
 		RuntimeState::UnregisterListener(this);
 
 		// Save current active scene as default scene for the next launch.
-		EditorConfig::SetAndSave<std::string>("Editor.DefaultScene", m_CurrentSceneFilePath.string());
+		ProjectConfig::SetAndSave<std::string>("Editor.DefaultScene", m_CurrentSceneFilePath.string());
 
 		EditorWindowManager::ClearRegisteredEditorWindows();
 		TypeRegistry::ClearRegisteredComponentTypes();
