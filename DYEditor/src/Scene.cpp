@@ -1,10 +1,10 @@
 #include "Core/Scene.h"
 
+#include "Type/TypeRegistry.h"
 #include "Util/Macro.h"
 
 namespace DYE::DYEditor
 {
-
 	std::vector<SystemDescriptor>& Scene::GetSystemDescriptorsOfPhase(ExecutionPhase phase)
 	{
 		switch (phase)
@@ -47,6 +47,32 @@ namespace DYE::DYEditor
 		return SystemGroupNames.size() - 1;
 	}
 
+	SystemDescriptor Scene::TryAddSystemByName(const std::string &systemName)
+	{
+		SystemDescriptor systemDescriptor =
+			{
+				.Name = systemName,
+				.Group = NoSystemGroupID,
+				.IsEnabled = true
+			};
+
+		SystemBase* pSystemInstance = TypeRegistry::TryGetSystemInstance(systemName);
+		if (pSystemInstance != nullptr)
+		{
+			systemDescriptor.Instance = pSystemInstance;
+
+			auto const phase = pSystemInstance->GetPhase();
+			GetSystemDescriptorsOfPhase(phase).emplace_back(systemDescriptor);
+		}
+		else
+		{
+			// Unrecognized system in TypeRegistry.
+			UnrecognizedSystems.emplace_back(systemDescriptor);
+		}
+
+		return systemDescriptor;
+	}
+
 	void Scene::Clear()
 	{
 		Name.clear();
@@ -65,6 +91,27 @@ namespace DYE::DYEditor
 		SystemGroupNames.clear();
 
 		World.Clear();
+	}
+
+	bool Scene::IsEmpty() const
+	{
+		bool const noSystem =
+			{
+				InitializeSystemDescriptors.empty() &&
+				FixedUpdateSystemDescriptors.empty() &&
+				UpdateSystemDescriptors.empty() &&
+				LateUpdateSystemDescriptors.empty() &&
+				RenderSystemDescriptors.empty() &&
+				PostRenderSystemDescriptors.empty() &&
+				ImGuiSystemDescriptors.empty() &&
+				CleanupSystemDescriptors.empty() &&
+				TearDownSystemDescriptors.empty() &&
+				UnrecognizedSystems.empty()
+			};
+
+		bool const noEntity = World.IsEmpty();
+
+		return noSystem && noEntity;
 	}
 }
 

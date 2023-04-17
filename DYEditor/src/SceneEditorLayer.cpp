@@ -19,6 +19,10 @@
 #include "ImGui/EditorImGuiUtil.h"
 #include "ImGui/ImGuiUtil.h"
 
+#include "TransformComponent.h"
+#include "Components/CameraComponent.h"
+#include "Systems/RegisterCameraSystem.h"
+
 #include <filesystem>
 #include <unordered_set>
 #include <stack>
@@ -82,6 +86,16 @@ namespace DYE::DYEditor
 				INPUT.DrawInputManagerImGui(pIsOpen);
 			}
 		);
+
+		// TODO: load the default scene according to project settings OR create an untitled new scene
+		{
+			// FIXME: right now the first scene is always an untitled empty scene.
+			// Add a camera entity & camera system by default if the active scene is untitled and empty.
+			auto cameraEntity = m_RuntimeLayer->ActiveMainScene.World.CreateEntity("Camera");
+			cameraEntity.AddComponent<TransformComponent>().Position = {0, 0, 10};
+			cameraEntity.AddComponent<CameraComponent>();
+			m_RuntimeLayer->ActiveMainScene.TryAddSystemByName(RegisterCameraSystem::TypeName);
+		}
 
 		// DEBUGGING Camera & Window Setup
 		//m_SceneViewCamera.Properties.TargetWindowIndex = WindowManager::MainWindowIndex;
@@ -314,6 +328,11 @@ namespace DYE::DYEditor
 				{
 					currentScenePathContext.clear();
 					currentScene.Clear();
+
+					auto cameraEntity = currentScene.World.CreateEntity("Camera");
+					cameraEntity.AddComponent<TransformComponent>().Position = {0, 0, 10};
+					cameraEntity.AddComponent<CameraComponent>();
+					currentScene.TryAddSystemByName(RegisterCameraSystem::TypeName);
 				}
 
 				if (ImGui::MenuItem("Open Scene"))
