@@ -50,7 +50,6 @@ namespace DYE::DYEditor
 		}
 
 		// Populate systems.
-		scene.InitializeSystemDescriptors.reserve(serializedSystemHandles.size());
 		for (auto& serializedSystemHandle : serializedSystemHandles)
 		{
 			auto getTypeNameResult = serializedSystemHandle.TryGetTypeName();
