@@ -222,6 +222,8 @@ namespace DYE::DYEditor
 		ImGui::End();
 
 		// Draw all the major editor windows.
+		// TODO: right now we make all the major windows transparent (alpha = 0.35f)
+		//		We might want to make it configurable for the users & having two values for Edit Mode and Play Mode
 		ImGuiWindowFlags const sceneViewWindowFlags = ImGuiWindowFlags_MenuBar;
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2 {0, 0});
 		ImGui::SetNextWindowBgAlpha(0.35f);
