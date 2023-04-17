@@ -199,6 +199,7 @@ namespace DYE::DYEditor
 		ImVec2 const editorLayerWindowSize = { viewport->WorkSize.x - editorLayerWindowPadding * 2, viewport->WorkSize.y - editorLayerWindowPadding };
 		ImGui::SetNextWindowPos(editorLayerWindowPos, ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(editorLayerWindowSize, ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowBgAlpha(0.35f);
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 		ImGui::Begin(k_DYEditorWindowId, nullptr, mainEditorWindowFlags);
@@ -221,8 +222,9 @@ namespace DYE::DYEditor
 		ImGui::End();
 
 		// Draw all the major editor windows.
-		ImGuiWindowFlags const sceneViewWindowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoBackground;
+		ImGuiWindowFlags const sceneViewWindowFlags = ImGuiWindowFlags_MenuBar;
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2 {0, 0});
+		ImGui::SetNextWindowBgAlpha(0.35f);
 		if (ImGui::Begin(k_SceneViewWindowId, nullptr, sceneViewWindowFlags))
 		{
 			m_IsSceneViewWindowFocused = ImGui::IsWindowFocused();
@@ -237,18 +239,21 @@ namespace DYE::DYEditor
 		ImGui::End();
 		ImGui::PopStyleVar();
 
+		ImGui::SetNextWindowBgAlpha(0.35f);
 		if (ImGui::Begin(k_SceneSystemWindowId))
 		{
 			drawSceneSystemPanel(activeScene);
 		}
 		ImGui::End();
 
+		ImGui::SetNextWindowBgAlpha(0.35f);
 		if (ImGui::Begin(k_SceneHierarchyWindowId))
 		{
 			drawSceneEntityHierarchyPanel(activeScene, &m_CurrentlySelectedEntityInHierarchyPanel);
 		}
 		ImGui::End();
 
+		ImGui::SetNextWindowBgAlpha(0.35f);
 		if (ImGui::Begin(k_EntityInspectorWindowId))
 		{
 			drawEntityInspector(m_CurrentlySelectedEntityInHierarchyPanel, TypeRegistry::GetComponentTypesNamesAndFunctionCollections());
