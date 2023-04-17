@@ -41,7 +41,9 @@ namespace DYE::DYEditor
 	constexpr char const* k_EntityInspectorWindowId = "Entity Inspector";
 	constexpr char const* k_SceneViewWindowId = "Scene View";
 
-	SceneEditorLayer::SceneEditorLayer() : LayerBase("Editor")
+	SceneEditorLayer::SceneEditorLayer() :
+		LayerBase("Editor"),
+		m_SerializedSceneCacheWhenEnterPlayMode(SerializedObjectFactory::CreateEmptySerializedScene())
 	{
 	}
 
@@ -97,19 +99,24 @@ namespace DYE::DYEditor
 			m_RuntimeLayer->ActiveMainScene.TryAddSystemByName(RegisterCameraSystem::TypeName);
 		}
 
-		// DEBUGGING Camera & Window Setup
-		//m_SceneViewCamera.Properties.TargetWindowIndex = WindowManager::MainWindowIndex;
 		m_SceneViewCameraTargetFramebuffer = Framebuffer::Create(FramebufferProperties { .Width = 1600, .Height = 900 });
 		m_SceneViewCamera.Properties.TargetType = RenderTargetType::RenderTexture;
 		m_SceneViewCamera.Properties.pTargetRenderTexture = m_SceneViewCameraTargetFramebuffer.get();
 		m_SceneViewCamera.Position = {0, 0, 10};
 
+		// Register events.
+		RuntimeState::RegisterListener(this);
+
+		// FIXME: Remove temp secondary window setup
 		auto windowPtr = WindowManager::CreateWindow(WindowProperties("Test Window", 640, 480));
 		windowPtr->SetContext(WindowManager::GetMainWindow()->GetContext());
 	}
 
 	void SceneEditorLayer::OnDetach()
 	{
+		// Unregister events.
+		RuntimeState::UnregisterListener(this);
+
 		EditorWindowManager::ClearRegisteredEditorWindows();
 		TypeRegistry::ClearRegisteredComponentTypes();
 		TypeRegistry::ClearRegisteredSystems();
@@ -193,12 +200,55 @@ namespace DYE::DYEditor
 		DYE::RenderPipelineManager::RegisterCameraForNextRender(m_SceneViewCamera);
 	}
 
+	void SceneEditorLayer::OnPlayModeStateChanged(DYE::DYEditor::PlayModeStateChange stateChange)
+	{
+		if (stateChange == PlayModeStateChange::BeforeEnterPlayMode)
+		{
+			// Initialize systems.
+			auto &scene = m_RuntimeLayer->ActiveMainScene;
+			scene.ForEachSystemDescriptor
+			(
+				[&scene](SystemDescriptor &systemDescriptor, ExecutionPhase phase)
+				{
+					systemDescriptor.Instance->InitializeLoad(
+						scene.World,
+						InitializeLoadParameters
+						{
+							.LoadType = InitializeLoadType::BeforeEnterPlayMode
+						});
+				}
+			);
+
+			// Save a copy of the active scene as a serialized scene.
+			m_SerializedSceneCacheWhenEnterPlayMode = SerializedObjectFactory::CreateSerializedScene(scene);
+		}
+		else if (stateChange == PlayModeStateChange::BeforeEnterEditMode)
+		{
+			// Initialize systems.
+			auto &scene = m_RuntimeLayer->ActiveMainScene;
+			scene.ForEachSystemDescriptor
+			(
+				[&scene](SystemDescriptor &systemDescriptor, ExecutionPhase phase)
+				{
+					systemDescriptor.Instance->InitializeLoad(
+						scene.World,
+						InitializeLoadParameters
+						{
+							.LoadType = InitializeLoadType::BeforeEnterEditMode
+						});
+				}
+			);
+
+			// Reapply the serialized scene back to the active scene.
+			// TODO: have an option to keep the changes in play mode.
+			scene.Clear();
+			SerializedObjectFactory::ApplySerializedSceneToEmptyScene(m_SerializedSceneCacheWhenEnterPlayMode, scene);
+		}
+	}
+
 	void SceneEditorLayer::OnImGui()
 	{
-		if (!m_RuntimeLayer)
-		{
-			return;
-		}
+		DYE_ASSERT_LOG_WARN(m_RuntimeLayer, "SceneRuntimeLayer is null. You might have forgot to call SetRuntimeLayer.");
 
 		Scene &activeScene = m_RuntimeLayer->ActiveMainScene;
 
@@ -1010,5 +1060,4 @@ namespace DYE::DYEditor
 
 		return changed;
 	}
-
 }

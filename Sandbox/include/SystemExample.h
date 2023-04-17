@@ -6,6 +6,10 @@ DYE_SYSTEM("Update System A", UpdateSystemA)
 struct UpdateSystemA final : public DYE::DYEditor::SystemBase
 {
 	inline DYE::DYEditor::ExecutionPhase GetPhase() const override { return DYE::DYEditor::ExecutionPhase::Update; }
+	void InitializeLoad(DYE::DYEntity::World &world, DYE::DYEditor::InitializeLoadParameters) override
+	{
+		m_ExecutionCount = 0;
+	}
 	void Execute(DYE::DYEntity::World &world, DYE::DYEditor::ExecuteParameters params) final;
 	void DrawInspector(DYE::DYEntity::World &world) final;
 
@@ -17,6 +21,10 @@ DYE_SYSTEM("Update System B", UpdateSystemB)
 struct UpdateSystemB final : public DYE::DYEditor::SystemBase
 {
 	inline DYE::DYEditor::ExecutionPhase GetPhase() const override { return DYE::DYEditor::ExecutionPhase::Update; }
+	void InitializeLoad(DYE::DYEntity::World &world, DYE::DYEditor::InitializeLoadParameters) override
+	{
+		m_ExecutionCount = 0;
+	}
 	void Execute(DYE::DYEntity::World &world, DYE::DYEditor::ExecuteParameters params) final;
 	void DrawInspector(DYE::DYEntity::World &world) final;
 

@@ -57,7 +57,11 @@ namespace DYE::DYEditor
 	{
 		Manual,
 		AfterSceneLoad,
-		BeforeEnterRuntimeMode
+
+		// This will only happen in Editor.
+		BeforeEnterPlayMode,
+		// This will only happen in Editor.
+		BeforeEnterEditMode
 	};
 
 	struct InitializeLoadParameters

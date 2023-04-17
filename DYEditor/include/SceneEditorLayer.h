@@ -2,8 +2,10 @@
 
 #include "Core/LayerBase.h"
 
+#include "Core/RuntimeState.h"
 #include "Core/Scene.h"
 #include "Core/EditorSystem.h"
+#include "Serialization/SerializedScene.h"
 #include "Type/TypeRegistry.h"
 #include "World.h"
 #include "Entity.h"
@@ -23,7 +25,7 @@ namespace DYE::DYEditor
 {
 	class SceneRuntimeLayer;
 
-	class SceneEditorLayer : public LayerBase
+	class SceneEditorLayer : public LayerBase, public RuntimeStateListenerBase
 	{
 	public:
 		SceneEditorLayer();
@@ -36,12 +38,16 @@ namespace DYE::DYEditor
 		void OnRender() override;
 		void OnImGui() override;
 
+		// Inherit from RuntimeStateListenerBase
+		void OnPlayModeStateChanged(DYE::DYEditor::PlayModeStateChange stateChange) override;
+
 		void SetApplication(Application* application) { m_pApplication = application; }
 		void SetRuntimeLayer(std::shared_ptr<SceneRuntimeLayer> runtimeLayer) { m_RuntimeLayer = std::move(runtimeLayer); }
 
 	private:
 		Application* m_pApplication;
 		std::shared_ptr<SceneRuntimeLayer> m_RuntimeLayer;
+		SerializedScene m_SerializedSceneCacheWhenEnterPlayMode;
 
 		DYEntity::Entity m_CurrentlySelectedEntityInHierarchyPanel;
 		std::filesystem::path m_CurrentSceneFilePath;

@@ -33,7 +33,7 @@ namespace DYE::DYEditor
 
 		/// Foreach for all system descriptor from different event phases, this does not include systems which are unrecognized.
 		template<typename Func>
-		void ForEachSystemDescriptor(Func function)
+		void ForEachSystemDescriptor(Func function) const
 		{
 			for (const auto& systemDescriptor : InitializeSystemDescriptors)
 			{
@@ -68,6 +68,48 @@ namespace DYE::DYEditor
 				function(systemDescriptor, ExecutionPhase::Cleanup);
 			}
 			for (const auto& systemDescriptor : TearDownSystemDescriptors)
+			{
+				function(systemDescriptor, ExecutionPhase::TearDown);
+			}
+		}
+
+		/// Foreach for all system descriptor from different event phases, this does not include systems which are unrecognized.
+		template<typename Func>
+		void ForEachSystemDescriptor(Func function)
+		{
+			for (auto& systemDescriptor : InitializeSystemDescriptors)
+			{
+				function(systemDescriptor, ExecutionPhase::Initialize);
+			}
+			for (auto& systemDescriptor : FixedUpdateSystemDescriptors)
+			{
+				function(systemDescriptor, ExecutionPhase::FixedUpdate);
+			}
+			for (auto& systemDescriptor : UpdateSystemDescriptors)
+			{
+				function(systemDescriptor, ExecutionPhase::Update);
+			}
+			for (auto& systemDescriptor : LateUpdateSystemDescriptors)
+			{
+				function(systemDescriptor, ExecutionPhase::LateUpdate);
+			}
+			for (auto& systemDescriptor : RenderSystemDescriptors)
+			{
+				function(systemDescriptor, ExecutionPhase::Render);
+			}
+			for (auto& systemDescriptor : PostRenderSystemDescriptors)
+			{
+				function(systemDescriptor, ExecutionPhase::PostRender);
+			}
+			for (auto& systemDescriptor : ImGuiSystemDescriptors)
+			{
+				function(systemDescriptor, ExecutionPhase::ImGui);
+			}
+			for (auto& systemDescriptor : CleanupSystemDescriptors)
+			{
+				function(systemDescriptor, ExecutionPhase::Cleanup);
+			}
+			for (auto& systemDescriptor : TearDownSystemDescriptors)
 			{
 				function(systemDescriptor, ExecutionPhase::TearDown);
 			}
