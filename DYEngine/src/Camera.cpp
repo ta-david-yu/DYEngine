@@ -94,7 +94,6 @@ namespace DYE
 
 	glm::mat4 Camera::GetViewMatrix() const
 	{
-		// TODO: Add scale, rotation transformation
 		auto viewMatrix = glm::translate(glm::mat4(1.0f), Position) * glm::toMat4(Rotation);
 		return glm::inverse(viewMatrix);
 	}

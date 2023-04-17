@@ -274,7 +274,7 @@ namespace DYE::DYEditor
 			);
 
 			// Reapply the serialized scene back to the active scene.
-			// TODO: have an option to keep the changes in play mode.
+			// TODO: maybe have an option to keep the changes in play mode?
 			scene.Clear();
 			SerializedObjectFactory::ApplySerializedSceneToEmptyScene(m_SerializedSceneCacheWhenEnterPlayMode, scene);
 		}
@@ -556,7 +556,6 @@ namespace DYE::DYEditor
 
 	void SceneEditorLayer::drawSceneView(Camera &sceneViewCamera)
 	{
-		// TODO: capture scene view input events when the scene view window is focused OR hovered.
 		if (ImGui::BeginMenuBar())
 		{
 			if (ImGui::BeginMenu("Camera"))

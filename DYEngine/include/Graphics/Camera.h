@@ -13,7 +13,7 @@ namespace DYE
 	enum class RenderTargetType
 	{
 		Window,
-		RenderTexture 	/// TODO: To be implemented
+		RenderTexture
 	};
 
 	enum class ViewportValueType

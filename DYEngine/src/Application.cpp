@@ -165,7 +165,7 @@ namespace DYE
 			// Swap the buffer of the main application window
 			// We swap the main window here instead of in the render pipeline manager
 			// because some imgui viewports are rendered inside main window, and we want to do those first before the swap.
-			// TODO: right now we call swap buffer directly because EndImGui() call already set
+			// FIXME: right now we call swap buffer directly because EndImGui() call already set
 			//  the main window context as current. Otherwise we will have to call
 			// 	mainWindow->GetContext()->MakeCurrentForWindow(mainWindow) first.
 			//  At some point we want to fix this cuz it's kinda awkward and non-explicit enough

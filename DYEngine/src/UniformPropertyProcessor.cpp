@@ -155,7 +155,7 @@ namespace DYE::ShaderProcessor
 
 				textureUnitSlotCounter++;
 			}
-			// TODO: add more texture type here (sampler)
+			// TODO: add more texture types of uniforms here (other sampler types)
 
 			infos.push_back(info);
 		}

@@ -972,7 +972,7 @@ namespace DYE::ImGuiUtil
 			bool isPropertyValueChanged = false;
 			auto& propertyName = propertyInfo.UniformName;
 
-			// TODO: Add more type UI support
+			// TODO: Material imgui interface, add more type UI support
 			float floatValue;
 			glm::vec4 float4Value;
 			switch (propertyInfo.Type)

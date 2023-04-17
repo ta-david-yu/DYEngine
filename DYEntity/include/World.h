@@ -38,7 +38,7 @@ namespace DYE::DYEntity
 	private:
 		entt::registry m_Registry;
 
-		// TODO: vector<Entity>?
+		// TODO: have a list of Entity (entity wrapper to keep track of UUID, entity metadata)
 
 	};
 

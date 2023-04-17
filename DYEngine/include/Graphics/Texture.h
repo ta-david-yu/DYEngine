@@ -13,14 +13,14 @@ namespace DYE
 
 	enum class WrapMode
 	{
-		// TODO: to add more
+		// TODO: to add more texture wrap modes
 		Repeat,
 		Clamp
 	};
 
 	enum class FilterMode
 	{
-		// TODO: to add more
+		// TODO: to add more texture filter modes
 		Nearest,
 		Linear
 	};

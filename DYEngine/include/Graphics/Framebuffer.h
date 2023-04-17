@@ -35,7 +35,7 @@ namespace DYE
 		/// If it's already created, it will be reset and re-created based on the internal properties.
 		void CreateOrReset();
 
-		// TODO: later we want to create a color texture 2d handle so others could access the color attachment as if it's
+		// TODO: maybe later we want to create a color texture 2d handle so others could access the color attachment as if it's
 		// 		a texture 2d, OR MAYBE NOT.
 		TextureID GetColorAttachmentID() const { return m_ColorAttachmentID; }
 		FramebufferProperties const& GetProperties() const { return m_Properties; }

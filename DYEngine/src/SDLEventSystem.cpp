@@ -18,7 +18,7 @@ namespace DYE
         while (SDL_PollEvent(&event))
         {
 			// TODO: move this to some place in ImGuiLayer,
-			// TODO: so we don't have to know about imgui here.
+			// 	so we don't have to know about imgui here.
             // Pass SDL_Event to ImGui
 			bool isPreprocessedByImGui = false;
             if (m_PreProcessImGuiEvent)

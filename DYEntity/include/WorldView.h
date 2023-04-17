@@ -5,7 +5,7 @@
 
 namespace DYE::DYEntity
 {
-	// TODO:
+	// TODO: WorldView -> a wrapper for entt::view. We might not need this in the end.
 
 	template<typename, typename, typename, typename = void>
 	class WorldView;

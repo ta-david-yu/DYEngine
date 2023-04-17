@@ -37,7 +37,6 @@ namespace DYE
 		}
 
 		// Sort the cameras based on their render target ID.
-		// TODO: (for now only Window),
 		// to reduce the number of calls to window context swap.
 		// After that, sort them based on their Depth value (from low to high).
 		std::stable_sort

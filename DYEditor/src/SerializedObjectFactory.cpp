@@ -14,7 +14,6 @@ namespace DYE::DYEditor
 		auto result = toml::parse_file(path.string());
 		if (!result)
 		{
-			// TODO: log error message here
 			return {};
 		}
 
@@ -26,7 +25,6 @@ namespace DYE::DYEditor
 		auto result = toml::parse_file(path.string());
 		if (!result)
 		{
-			// TODO: log error message here
 			return {};
 		}
 
@@ -111,7 +109,7 @@ namespace DYE::DYEditor
 			{
 				// Cannot find the given component type and its related functions, add the component name
 				// to the unrecognized component list OR component.
-				// TODO:
+				// TODO: Keep track of unrecognized component so we could show it in the entity inspector.
 				DYE_LOG("Entity has an unrecognized component of type '%s'.", typeName.c_str());
 				continue;
 			}
@@ -120,8 +118,7 @@ namespace DYE::DYEditor
 			if (componentTypeFunctions.Deserialize == nullptr)
 			{
 				// The component type doesn't have a corresponding Deserialize function.
-				// Ignored and add the component name to the unrecognized component list.
-				// TODO:
+				// // TODO: Ignore and add the component name to the unrecognized component list.
 				DYE_LOG("Component of type '%s' will not be deserialized because its Deserialize function is not provided.", typeName.c_str());
 				continue;
 			}
@@ -238,7 +235,7 @@ namespace DYE::DYEditor
 		std::ofstream fileStream(path, std::ios::trunc);
 		if (serializedEntity.IsHandle())
 		{
-			// TODO: do some extra work to include children entities
+			// TODO: do some extra work to include children entities (i.e. nested prefab)
 			fileStream << *serializedEntity.m_pEntityTableHandle;
 		}
 		else
