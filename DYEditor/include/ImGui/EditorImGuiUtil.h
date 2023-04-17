@@ -10,8 +10,6 @@ namespace DYE::DYEditor
 
 namespace DYE::ImGuiUtil
 {
-	bool DrawExecutionPhaseControl(std::string const& label, DYE::DYEditor::ExecutionPhase& phase);
-
 	void OpenFilePathPopup(char const* popupId,
 						   std::filesystem::path const& rootDirectory,
 						   std::filesystem::path const& initiallySelectedFilePath,
