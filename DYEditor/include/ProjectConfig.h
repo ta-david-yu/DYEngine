@@ -18,6 +18,8 @@ namespace DYE::DYEditor
 
 		void Save();
 
+		bool DrawConfigurationBrowserImGui(bool *pIsOpen);
+
 		template<typename T>
 		T GetOrDefault(std::string const &keyPath, T const &defaultValue);
 

@@ -27,7 +27,7 @@ namespace DYE::ImGuiUtil
 {
 	namespace Settings
 	{
-		constexpr float DefaultControlLabelWidth = 200.0f;
+		constexpr float DefaultControlLabelWidth = 160.0f;
 		extern float ControlLabelWidth;
 
 		constexpr const char DefaultFloatFormat[] = "%.2f";

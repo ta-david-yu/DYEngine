@@ -3,6 +3,7 @@
 #include "Util/Logger.h"
 #include "Util/Macro.h"
 #include "FileSystem/FileSystem.h"
+#include "ImGui/ImGuiUtil.h"
 
 #include <optional>
 #include <fstream>
@@ -65,6 +66,64 @@ namespace DYE::DYEditor
 		FileStream.open(CurrentLoadedFilePath, std::ios::trunc);
 		FileStream << Table;
 		FileStream.flush();
+	}
+
+	bool ProjectConfig::DrawConfigurationBrowserImGui(bool *pIsOpen)
+	{
+		if (!ImGui::Begin("Editor Configuration", pIsOpen))
+		{
+			ImGui::End();
+			return false;
+		}
+
+		bool changed = false;
+
+		ImGui::PushID("Editor Config");
+		for (auto iterator = Table.begin(); iterator != Table.end(); iterator++)
+		{
+			std::string key(iterator->first.str());
+			auto &value = iterator->second;
+			ProjectConfigValueType valueType;
+
+			std::string valueAsStr;
+			if (value.is_boolean())
+			{
+				changed |= ImGuiUtil::DrawBoolControl(key, value.as_boolean()->get());
+			}
+			else if (value.is_floating_point())
+			{
+				// We need to do this extra double -> float conversion because toml++ stores floating point as double.
+				float tempFloat = value.as_floating_point()->get();
+				if (ImGuiUtil::DrawFloatControl(key, tempFloat))
+				{
+					changed = true;
+					value.as_floating_point()->get() = tempFloat;
+				}
+			}
+			else if (value.is_integer())
+			{
+				// We need to do this extra double -> float conversion because toml++ stores floating point as double.
+				int tempInt = value.as_integer()->get();
+				if (ImGuiUtil::DrawIntControl(key, tempInt))
+				{
+					changed = true;
+					value.as_integer()->get() = tempInt;
+				}
+			}
+			else if (value.is_string())
+			{
+				changed |= ImGuiUtil::DrawTextControl(key, value.as_string()->get());
+			}
+			else
+			{
+				// TODO: Not supported type. Kinda lazy to implement error handling now :P
+			}
+		}
+
+		ImGui::PopID();
+
+		ImGui::End();
+		return changed;
 	}
 
 	template<typename T>

@@ -90,6 +90,26 @@ namespace DYE::DYEditor
 			}
 		);
 
+		EditorWindowManager::RegisterEditorWindow(
+			RegisterEditorWindowParameters
+				{
+					.Name = "Editor Configuration",
+					.isConfigOpenByDefault = false
+				},
+			[](char const *name, bool *pIsOpen, ImGuiViewport const *pMainViewportHint)
+			{
+				if (!ImGui::Begin("Editor Configuration", pIsOpen))
+				{
+					ImGui::End();
+					return;
+				}
+
+				GetEditorConfig().DrawConfigurationBrowserImGui(pIsOpen);
+
+				ImGui::End();
+			}
+		);
+
 		// Load the default scene indicated in editor config file.
 		std::string const &defaultScenePath = GetEditorConfig().GetOrDefault<std::string>("Editor.DefaultScene", "");
 		std::optional<SerializedScene> serializedScene = SerializedObjectFactory::TryLoadSerializedSceneFromFile(defaultScenePath);
