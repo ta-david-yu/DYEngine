@@ -53,16 +53,13 @@ namespace DYE::DYEditor
 		DYEditor::RegisterBuiltInTypes();
 		DYEditor::RegisterUserTypes();
 
-		// Load editor config file.
-		ProjectConfig::LoadFromOrCreateDefaultAt(ProjectConfig::DefaultEditorConfigFilePath);
-
 		// Register built-in editor windows.
 		EditorWindowManager::RegisterEditorWindow(
 			RegisterEditorWindowParameters
-			{
-				.Name = "ImGui Demo",
-				.isConfigOpenByDefault = false
-			},
+				{
+					.Name = "ImGui Demo",
+					.isConfigOpenByDefault = false
+				},
 			[](char const *name, bool *pIsOpen, ImGuiViewport const *pMainViewportHint)
 			{
 				ImGui::ShowDemoWindow(pIsOpen);
@@ -93,37 +90,35 @@ namespace DYE::DYEditor
 			}
 		);
 
-		std::string const& defaultScenePath = ProjectConfig::GetOrDefault<std::string>("Editor.DefaultScene", "");
-		if (defaultScenePath.empty())
+		// Load the default scene indicated in editor config file.
+		std::string const &defaultScenePath = GetEditorConfig().GetOrDefault<std::string>("Editor.DefaultScene", "");
+		std::optional<SerializedScene> serializedScene = SerializedObjectFactory::TryLoadSerializedSceneFromFile(defaultScenePath);
+		if (serializedScene.has_value())
 		{
-			// Create an untitled new scene.
-
+			SerializedObjectFactory::ApplySerializedSceneToEmptyScene(serializedScene.value(), m_RuntimeLayer->ActiveMainScene);
+			m_CurrentSceneFilePath = defaultScenePath;
+		}
+		else
+		{
+			// Failed to load the default scene, therefore we create an untitled new scene.
 			// Add a camera entity & camera system by default if the active scene is untitled and empty.
 			auto cameraEntity = m_RuntimeLayer->ActiveMainScene.World.CreateEntity("Camera");
 			cameraEntity.AddComponent<TransformComponent>().Position = {0, 0, 10};
 			cameraEntity.AddComponent<CameraComponent>();
 			m_RuntimeLayer->ActiveMainScene.TryAddSystemByName(RegisterCameraSystem::TypeName);
 		}
-		else
-		{
-			// Load the default scene.
-			std::optional<SerializedScene> serializedScene = SerializedObjectFactory::TryLoadSerializedSceneFromFile(defaultScenePath);
-			if (serializedScene.has_value())
-			{
-				SerializedObjectFactory::ApplySerializedSceneToEmptyScene(serializedScene.value(), m_RuntimeLayer->ActiveMainScene);
-				m_CurrentSceneFilePath = defaultScenePath;
-			}
-		}
-
-		m_SceneViewCameraTargetFramebuffer = Framebuffer::Create(FramebufferProperties { .Width = 1600, .Height = 900 });
-		m_SceneViewCamera.Properties.TargetType = RenderTargetType::RenderTexture;
-		m_SceneViewCamera.Properties.pTargetRenderTexture = m_SceneViewCameraTargetFramebuffer.get();
-		m_SceneViewCamera.Position = {0, 0, 10};
 
 		// Register events.
 		RuntimeState::RegisterListener(this);
 
-		// FIXME: Remove temp secondary window setup
+		// Initialize SceneView framebuffer.
+		m_SceneViewCameraTargetFramebuffer = Framebuffer::Create(FramebufferProperties {.Width = 1600, .Height = 900});
+		m_SceneViewCamera.Properties.TargetType = RenderTargetType::RenderTexture;
+		m_SceneViewCamera.Properties.pTargetRenderTexture = m_SceneViewCameraTargetFramebuffer.get();
+		m_SceneViewCamera.Position = {0, 0, 10};
+
+		// FIXME: Window setup should be made according to runtime config file (i.e. GetRuntimeConfig().GetOrDefault("Window.NumberOfInitialWindows")...).
+		//		For now we create a secondary window manually.
 		auto windowPtr = WindowManager::CreateWindow(WindowProperties("Test Window", 640, 480));
 		windowPtr->SetContext(WindowManager::GetMainWindow()->GetContext());
 	}
@@ -134,7 +129,7 @@ namespace DYE::DYEditor
 		RuntimeState::UnregisterListener(this);
 
 		// Save current active scene as default scene for the next launch.
-		ProjectConfig::SetAndSave<std::string>("Editor.DefaultScene", m_CurrentSceneFilePath.string());
+		GetEditorConfig().SetAndSave<std::string>("Editor.DefaultScene", m_CurrentSceneFilePath.string());
 
 		EditorWindowManager::ClearRegisteredEditorWindows();
 		TypeRegistry::ClearRegisteredComponentTypes();

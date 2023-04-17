@@ -45,7 +45,7 @@ namespace DYE::DYEditor
 		void SetRuntimeLayer(std::shared_ptr<SceneRuntimeLayer> runtimeLayer) { m_RuntimeLayer = std::move(runtimeLayer); }
 
 	private:
-		Application* m_pApplication;
+		Application* m_pApplication = nullptr;
 		std::shared_ptr<SceneRuntimeLayer> m_RuntimeLayer;
 		SerializedScene m_SerializedSceneCacheWhenEnterPlayMode;
 

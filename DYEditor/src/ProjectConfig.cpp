@@ -10,36 +10,6 @@
 
 namespace DYE::DYEditor
 {
-	enum class PathComponentType
-	{
-		First,
-		Intermediate,
-		Last
-	};
-
-	template<typename Func>
-	void ForeachKeyPathComponent(std::string const &keyPath, Func func)
-	{
-		size_t start = 0;
-		size_t pos = 0;
-
-		bool isFirst = true;
-
-		while ((pos = keyPath.find('.', start)) != std::string::npos)
-		{
-			std::string component = keyPath.substr(start, pos - start);
-
-			// Execute function on each component.
-			func(component, isFirst? PathComponentType::First : PathComponentType::Intermediate);
-			isFirst = false;
-
-			start = pos + 1;
-		}
-
-		std::string component = keyPath.substr(start);
-		func(component, PathComponentType::Last);
-	}
-
 	struct EditorConfigData
 	{
 		bool IsLoaded = false;
@@ -49,44 +19,16 @@ namespace DYE::DYEditor
 		toml::table Table;
 	};
 
-	EditorConfigData s_Data;
-
-	void ProjectConfig::ResetToDefault()
+	std::optional<ProjectConfig> ProjectConfig::TryLoadFromOrCreateDefaultAt(const std::filesystem::path &path)
 	{
-		if (!s_Data.IsLoaded)
-		{
-			return;
-		}
-
-		// Open the file and clean everything in it.
-		s_Data.FileStream.open(s_Data.CurrentLoadedFilePath, std::ios::trunc);
-		s_Data.Table = toml::table();
-
-		// Set some default values here.
-		// ...
-
-		s_Data.FileStream << s_Data.Table;
-		s_Data.FileStream.close();
-	}
-
-	void ProjectConfig::LoadFromOrCreateDefaultAt(const std::filesystem::path &path)
-	{
-		if (s_Data.IsLoaded)
-		{
-			// Save the previous loaded config data to the file.
-			s_Data.FileStream.open(s_Data.CurrentLoadedFilePath, std::ios::trunc);
-			s_Data.FileStream << s_Data.Table;
-			s_Data.FileStream.flush();
-			s_Data.IsLoaded = false;
-		}
-
+		ProjectConfig config;
 		if (!FileSystem::FileExists(path))
 		{
 			// The file doesn't exist yet, create one with default values.
-			s_Data.IsLoaded = true;
-			s_Data.CurrentLoadedFilePath = path;
-			ResetToDefault();
-			return;
+			config.IsLoaded = true;
+			config.CurrentLoadedFilePath = path;
+			config.InitializeAndSave();
+			return std::move(config);
 		}
 
 		auto result = toml::parse_file(path.string());
@@ -96,32 +38,46 @@ namespace DYE::DYEditor
 			std::string errorDescription(result.error().description());
 			DYE_LOG("Failed to parse editor configuration file at '%s'.\n"
 					"Error: %s", path.string().c_str(), errorDescription.c_str());
+			return {};
+		}
+
+		config.IsLoaded = true;
+		config.CurrentLoadedFilePath = path;
+		config.Table = std::move(result.table());
+		return std::move(config);
+	}
+
+	void ProjectConfig::InitializeAndSave()
+	{
+		if (!IsLoaded)
+		{
 			return;
 		}
 
-		s_Data.IsLoaded = true;
-		s_Data.CurrentLoadedFilePath = path;
-		s_Data.Table = std::move(result.table());
+		// Open the file and clean everything in it.
+		Table = toml::table();
+		FileStream.open(CurrentLoadedFilePath, std::ios::trunc);
+		FileStream.flush();
 	}
 
 	void ProjectConfig::Save()
 	{
-		s_Data.FileStream.open(s_Data.CurrentLoadedFilePath, std::ios::trunc);
-		s_Data.FileStream << s_Data.Table;
-		s_Data.FileStream.flush();
+		FileStream.open(CurrentLoadedFilePath, std::ios::trunc);
+		FileStream << Table;
+		FileStream.flush();
 	}
 
 	template<typename T>
 	T ProjectConfig::GetOrDefault(const std::string &keyPath, T const &defaultValue)
 	{
-		if (!s_Data.IsLoaded)
+		if (!IsLoaded)
 		{
 			DYE_LOG("Editor Config hasn't been loaded. You might have forgot to call %s first.",
-					NAME_OF(LoadFromOrCreateDefaultAt));
+					NAME_OF(TryLoadFromOrCreateDefaultAt));
 			return defaultValue;
 		}
 
-		toml::node *node = s_Data.Table.get(keyPath);
+		toml::node *node = Table.get(keyPath);
 		if (node == nullptr)
 		{
 			return defaultValue;
@@ -146,17 +102,17 @@ namespace DYE::DYEditor
 	template<typename T>
 	void ProjectConfig::SetAndSave(const std::string &keyPath, const T &value)
 	{
-		if (!s_Data.IsLoaded)
+		if (!IsLoaded)
 		{
 			DYE_LOG("Editor Config hasn't been loaded. You might have forgot to call %s first.",
-					NAME_OF(LoadFromOrCreateDefaultAt));
+					NAME_OF(TryLoadFromOrCreateDefaultAt));
 			return;
 		}
 
-		s_Data.Table.insert_or_assign(keyPath, value);
-		s_Data.FileStream.open(s_Data.CurrentLoadedFilePath, std::ios::trunc);
-		s_Data.FileStream << s_Data.Table;
-		s_Data.FileStream.flush();
+		Table.insert_or_assign(keyPath, value);
+		FileStream.open(CurrentLoadedFilePath, std::ios::trunc);
+		FileStream << Table;
+		FileStream.flush();
 	}
 
 	template void ProjectConfig::SetAndSave<bool>(const std::string &key, const bool &value);
@@ -168,7 +124,7 @@ namespace DYE::DYEditor
 	template<typename T>
 	void ProjectConfig::Set(const std::string &keyPath, const T &value)
 	{
-		s_Data.Table.insert_or_assign(keyPath, value);
+		Table.insert_or_assign(keyPath, value);
 	}
 
 	template void ProjectConfig::Set<bool>(const std::string &key, const bool &value);
@@ -176,4 +132,16 @@ namespace DYE::DYEditor
 	template void ProjectConfig::Set<int>(const std::string &key, const int &value);
 	template void ProjectConfig::Set<std::string>(const std::string &key, const std::string &value);
 	template void ProjectConfig::Set<std::string_view>(const std::string &key, const std::string_view &value);
+
+	ProjectConfig& GetEditorConfig()
+	{
+		static ProjectConfig config = ProjectConfig::TryLoadFromOrCreateDefaultAt(DefaultEditorConfigFilePath).value();
+		return config;
+	}
+
+	ProjectConfig& GetRuntimeConfig()
+	{
+		static ProjectConfig config = ProjectConfig::TryLoadFromOrCreateDefaultAt(DefaultRuntimeConfigFilePath).value();
+		return config;
+	}
 }

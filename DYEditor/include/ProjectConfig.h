@@ -1,26 +1,41 @@
 #pragma once
 
+#include <optional>
 #include <filesystem>
 #include <string>
+#include <toml++/toml.h>
 
 namespace DYE::DYEditor
 {
+	constexpr char const* DefaultEditorConfigFilePath = "editor.ini";
+	constexpr char const* DefaultRuntimeConfigFilePath = "runtime.ini";
+
 	struct ProjectConfig
 	{
-		static constexpr char const* DefaultEditorConfigFilePath = "editor.ini";
+		static std::optional<ProjectConfig> TryLoadFromOrCreateDefaultAt(const std::filesystem::path &path);
 
-		static void ResetToDefault();
+		void InitializeAndSave();
 
-		static void LoadFromOrCreateDefaultAt(const std::filesystem::path &path);
-		static void Save();
-
-		template<typename T>
-		static T GetOrDefault(std::string const &keyPath, T const &defaultValue);
+		void Save();
 
 		template<typename T>
-		static void SetAndSave(std::string const &keyPath, T const &value);
+		T GetOrDefault(std::string const &keyPath, T const &defaultValue);
 
 		template<typename T>
-		static void Set(std::string const &keyPath, T const &value);
+		void SetAndSave(std::string const &keyPath, T const &value);
+
+		template<typename T>
+		void Set(std::string const &keyPath, T const &value);
+
+	private:
+		bool IsLoaded = false;
+		std::filesystem::path CurrentLoadedFilePath;
+
+		std::ofstream FileStream;
+		// I hate that I have to include toml here, which is totally unnecessary if C++ was designed better.
+		toml::table Table;
 	};
+
+	ProjectConfig& GetEditorConfig();
+	ProjectConfig& GetRuntimeConfig();
 }
