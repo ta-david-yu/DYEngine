@@ -1,16 +1,18 @@
 #include "Core/RuntimeState.h"
 
+#include <vector>
+
 namespace DYE::DYEditor
 {
-	struct ApplicationStateData
+	struct RuntimeStateData
 	{
 		// TODO: use compile definition to make it true by default in runtime build.
 		bool IsPlaying = false;
+
+		std::vector<RuntimeStateListenerBase*> RuntimeStateListeners = {};
 	};
 
-	static ApplicationStateData s_Data;
-
-	std::vector<RuntimeStateListenerBase*> RuntimeState::s_RuntimeStateListeners = {};
+	static RuntimeStateData s_Data;
 
 	bool RuntimeState::IsPlaying()
 	{
@@ -51,12 +53,12 @@ namespace DYE::DYEditor
 
 	void RuntimeState::RegisterListener(RuntimeStateListenerBase *listener)
 	{
-		s_RuntimeStateListeners.push_back(listener);
+		s_Data.RuntimeStateListeners.push_back(listener);
 	}
 
 	void RuntimeState::UnregisterListener(RuntimeStateListenerBase *listenerToRemove)
 	{
-		std::remove_if(s_RuntimeStateListeners.begin(), s_RuntimeStateListeners.end(),
+		std::remove_if(s_Data.RuntimeStateListeners.begin(), s_Data.RuntimeStateListeners.end(),
 					   [listenerToRemove](RuntimeStateListenerBase* listener)
 					   {
 						   return  listener == listenerToRemove;
@@ -65,7 +67,7 @@ namespace DYE::DYEditor
 
 	void RuntimeState::broadcastPlayModeStateChangedEvent(PlayModeStateChange stateChange)
 	{
-		for (auto listener : s_RuntimeStateListeners)
+		for (auto listener : s_Data.RuntimeStateListeners)
 		{
 			listener->OnPlayModeStateChanged(stateChange);
 		}

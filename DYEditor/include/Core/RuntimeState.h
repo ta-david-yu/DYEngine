@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-
 namespace DYE::DYEditor
 {
 	enum class PlayModeStateChange
@@ -42,8 +40,5 @@ namespace DYE::DYEditor
 
 	private:
 		static void broadcastPlayModeStateChangedEvent(PlayModeStateChange stateChange);
-
-	private:
-		static std::vector<RuntimeStateListenerBase*> s_RuntimeStateListeners;
 	};
 }
