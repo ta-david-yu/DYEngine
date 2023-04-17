@@ -7,7 +7,6 @@
 #include "Serialization/SerializedObjectFactory.h"
 #include "Type/BuiltInTypeRegister.h"
 #include "Type/UserTypeRegister.h"
-#include "NameComponent.h"
 #include "Graphics/RenderPipelineManager.h"
 #include "Graphics/WindowManager.h"
 #include "Graphics/Framebuffer.h"
@@ -19,6 +18,7 @@
 #include "ImGui/EditorImGuiUtil.h"
 #include "ImGui/ImGuiUtil.h"
 
+#include "NameComponent.h"
 #include "TransformComponent.h"
 #include "Components/CameraComponent.h"
 #include "Systems/RegisterCameraSystem.h"
@@ -53,6 +53,10 @@ namespace DYE::DYEditor
 		DYEditor::RegisterBuiltInTypes();
 		DYEditor::RegisterUserTypes();
 
+		// Load editor config file.
+		EditorConfig::LoadFromOrCreateDefaultAt(EditorConfig::DefaultEditorConfigFilePath);
+
+		// Register built-in editor windows.
 		EditorWindowManager::RegisterEditorWindow(
 			RegisterEditorWindowParameters
 			{
@@ -89,14 +93,26 @@ namespace DYE::DYEditor
 			}
 		);
 
-		// TODO: load the default scene according to project settings OR create an untitled new scene
+		std::string const& defaultScenePath = EditorConfig::GetOrDefault<std::string>("Editor.DefaultScene", "");
+		if (defaultScenePath.empty())
 		{
-			// FIXME: right now the first scene is always an untitled empty scene.
+			// Create an untitled new scene.
+
 			// Add a camera entity & camera system by default if the active scene is untitled and empty.
 			auto cameraEntity = m_RuntimeLayer->ActiveMainScene.World.CreateEntity("Camera");
 			cameraEntity.AddComponent<TransformComponent>().Position = {0, 0, 10};
 			cameraEntity.AddComponent<CameraComponent>();
 			m_RuntimeLayer->ActiveMainScene.TryAddSystemByName(RegisterCameraSystem::TypeName);
+		}
+		else
+		{
+			// Load the default scene.
+			std::optional<SerializedScene> serializedScene = SerializedObjectFactory::TryLoadSerializedSceneFromFile(defaultScenePath);
+			if (serializedScene.has_value())
+			{
+				SerializedObjectFactory::ApplySerializedSceneToEmptyScene(serializedScene.value(), m_RuntimeLayer->ActiveMainScene);
+				m_CurrentSceneFilePath = defaultScenePath;
+			}
 		}
 
 		m_SceneViewCameraTargetFramebuffer = Framebuffer::Create(FramebufferProperties { .Width = 1600, .Height = 900 });
@@ -116,6 +132,9 @@ namespace DYE::DYEditor
 	{
 		// Unregister events.
 		RuntimeState::UnregisterListener(this);
+
+		// Save current active scene as default scene for the next launch.
+		EditorConfig::SetAndSave<std::string>("Editor.DefaultScene", m_CurrentSceneFilePath.string());
 
 		EditorWindowManager::ClearRegisteredEditorWindows();
 		TypeRegistry::ClearRegisteredComponentTypes();
