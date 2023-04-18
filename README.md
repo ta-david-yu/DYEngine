@@ -8,6 +8,8 @@ DYEngine is divided into several sub-projects:
 * **DYEntity** (WIP): The main object model of DYEngine is ECS-based and DYEntity provides that. For now it's essentially a wrapper around entt.
 * **DYEditor** (WIP): It provides an editor UI on top of DYEngine & DYEntity to edit your worlds & entities. It comes with a code generation tool for generating runtime type information of user-defined components & systems. 
 
+Both DYEntity & DYEditor are under implementation on branch: [feature/dyentity-dyeditor-implementation](https://github.com/ta-david-yu/DYEngine/tree/feature/dyentity-dyeditor-implementation)
+
 ## Environment Setup
 ### Most of the following tools come with CLion as bundles
 - **IDE**: CLion (CMake)
@@ -28,11 +30,9 @@ You can download **SDL2-devel-2.0.12-VC.zip** in the release page of [SDL2 repos
 ### DYEntity
 - **entt**: use as the main object model in DYEngine. I might implement my own ECS framework if time allows it.
 ### DYEditor Code Generator
-- **fmt**: for easier and more efficient source code generation process.
+- **fmt**: for easier and more efficient source code generation process. Will replace it with c++ std::format library once it's widely supported by different compilers. 
 ### Pending (to include/included but not used)
-- **rttr**: use for generating RTTI code for editor. I might implement a simple C++ parser/code generator myself.
-- **yaml-cpp**: most of the text-based files in DYEngine will be stored as yaml (i.e. scene/level files, asset meta files).
-- **tomlplusplus**: another candidate as text-based file format in DYEngine.
+- **tomlplusplus**: most of the custom text-based files in DYEngine will be stored as toml (i.e. world/level files, asset meta files).
 - **OpenAL-Soft**: audio system
 
 
