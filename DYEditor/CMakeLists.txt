@@ -1,6 +1,6 @@
 project(DYEditor)
 
-option(DYEDITOR_BUILD_CODE_GENERATOR "Enable building DYEditor code generator tools" ON)
+option(DYE_BUILD_CODE_GENERATOR "Enable building DYEditor code generator tools" ON)
 
 # ===========================================================================================
 # Sources / Headers
@@ -77,6 +77,6 @@ target_link_libraries(DYEditor PUBLIC DYEntity)
 target_link_libraries(DYEditor PRIVATE tomlplusplus::tomlplusplus)
 
 # ===========================================================================================
-if(DYEDITOR_BUILD_CODE_GENERATOR)
+if(DYE_BUILD_CODE_GENERATOR)
     add_subdirectory(DYEditorCodeGenerator)
 endif()

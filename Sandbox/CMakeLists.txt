@@ -13,28 +13,13 @@ set(HEADER_FILES
         include/TestComponents.h
         include/AnotherTestComponents.h include/SystemExample.h)
 
-set(GENERATED_FILES
-        generated/UserTypeRegister.generated.cpp)
+set(INCLUDE_DIRS
+        include
+        ${CMAKE_CURRENT_SOURCE_DIR})
 
-message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")
-message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
-
-add_executable(Sandbox ${SOURCE_FILES} ${HEADER_FILES} ${GENERATED_FILES})
-
-include(../DYEditor/cmake/Modules/CodeGenerationCommand.cmake)
-GenerateDYEditorRTTICode(${CMAKE_CURRENT_SOURCE_DIR} ${HEADER_FILES})
-
-target_include_directories(Sandbox PRIVATE include)
-target_include_directories(Sandbox PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-
-target_link_libraries(Sandbox DYEngine)
-target_link_libraries(Sandbox DYEntity)
-target_link_libraries(Sandbox DYEditor)
-
-if(CMAKE_BUILD_TYPE MATCHES Release)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive")
-    target_link_libraries(Sandbox -static-libgcc)
-endif ()
+# Be sure to add "" around INCLUDE_DIRS, SOURCE_FILES and HEADER_FILES to make them arrays.
+include(../DYEditor/cmake/Modules/DYEditorProject.cmake)
+DYEditor_AddEditorExecutable(${PROJECT_NAME} "${CMAKE_CURRENT_SOURCE_DIR}" "${INCLUDE_DIRS}" "${SOURCE_FILES}" "${HEADER_FILES}")
 
 # Copy assets to the output directory
 set(TEXT_ASSETS
@@ -43,7 +28,6 @@ set(TEXT_ASSETS
 set(BINARY_ASSETS
         assets/Textures/DYE_logo_outlined.png
         assets/Textures/Sprite_DYEIcon.png)
-
 
 include(../cmake/Modules/CopyAssets.cmake)
 CopyTextAssets(${TEXT_ASSETS})

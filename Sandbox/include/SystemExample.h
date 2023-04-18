@@ -53,13 +53,6 @@ struct FixedUpdateSystem3 final : public DYE::DYEditor::SystemBase
 	void Execute(DYE::DYEntity::World &world, DYE::DYEditor::ExecuteParameters params) final { }
 };
 
-DYE_SYSTEM("Fixed Update System 4", FixedUpdateSystem4)
-struct FixedUpdateSystem4 final : public DYE::DYEditor::SystemBase
-{
-	inline DYE::DYEditor::ExecutionPhase GetPhase() const override { return DYE::DYEditor::ExecutionPhase::FixedUpdate; }
-	void Execute(DYE::DYEntity::World &world, DYE::DYEditor::ExecuteParameters params) final { }
-};
-
 namespace SystemNamespace
 {
 	DYE_SYSTEM("Initialize System A", SystemNamespace::InitializeSystemA)
