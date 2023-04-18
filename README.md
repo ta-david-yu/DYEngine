@@ -8,6 +8,8 @@ DYEngine is divided into several sub-projects:
 * **DYEntity** (WIP): The main object model of DYEngine is ECS-based and DYEntity provides that. For now it's essentially a wrapper around entt.
 * **DYEditor** (WIP): It provides an editor UI on top of DYEngine & DYEntity to edit your worlds & entities. It comes with a code generation tool for generating runtime type information of user-defined components & systems. 
 
+Both DYEntity & DYEditor are under implementation on branch: [feature/dyentity-dyeditor-implementation](https://github.com/ta-david-yu/DYEngine/tree/feature/dyentity-dyeditor-implementation)
+
 ## Environment Setup
 ### Most of the following tools come with CLion as bundles
 - **IDE**: CLion (CMake)
