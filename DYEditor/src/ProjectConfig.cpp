@@ -230,7 +230,14 @@ namespace DYE::DYEditor
 		auto projectName = config.GetOrDefault<std::string>("Project.Name", "Sandbox");
 		if (ImGuiUtil::DrawTextControl("Project Name", projectName))
 		{
-			config.Set<std::string>("Project.Name", projectName);
+			config.Set("Project.Name", projectName);
+			changed = true;
+		}
+
+		auto firstScenePath = (std::filesystem::path) config.GetOrDefault<std::string>("Project.FirstScene", "");
+		if (ImGuiUtil::DrawAssetPathStringControl("First Scene", firstScenePath, { ".tscene" }))
+		{
+			config.Set("Project.FirstScene", firstScenePath.string());
 			changed = true;
 		}
 
