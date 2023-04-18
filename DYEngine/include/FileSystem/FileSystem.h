@@ -2,7 +2,7 @@
 
 #include <filesystem>
 
-namespace DYE::DYEditor
+namespace DYE
 {
 	namespace FileSystem
 	{

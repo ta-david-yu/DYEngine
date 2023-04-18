@@ -1,14 +1,15 @@
 #pragma once
 
 #include <optional>
+#include <functional>
 #include <filesystem>
 #include <string>
 #include <toml++/toml.h>
 
 namespace DYE::DYEditor
 {
-	constexpr char const* DefaultEditorConfigFilePath = "editor.ini";
-	constexpr char const* DefaultRuntimeConfigFilePath = "runtime.ini";
+	constexpr char const* DefaultEditorConfigFilePath = "settings//editor.ini";
+	constexpr char const* DefaultRuntimeConfigFilePath = "settings//runtime.ini";
 
 	struct ProjectConfig
 	{
@@ -18,7 +19,7 @@ namespace DYE::DYEditor
 
 		void Save();
 
-		bool DrawGenericConfigurationBrowserImGui(bool *pIsOpen);
+		bool DrawGenericConfigurationBrowserImGui(char const* title, bool *pIsOpen);
 
 		template<typename T>
 		T GetOrDefault(std::string const &keyPath, T const &defaultValue);
@@ -40,4 +41,7 @@ namespace DYE::DYEditor
 
 	ProjectConfig& GetEditorConfig();
 	ProjectConfig& GetRuntimeConfig();
+
+	// FIXME: move this function to a separate file that stores all the important editor window calls.
+	bool DrawRuntimeConfigurationWindow(bool *pIsOpen);
 }

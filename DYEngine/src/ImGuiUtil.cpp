@@ -1,11 +1,13 @@
 #include "ImGui/ImGuiUtil.h"
 
+#include "FileSystem/FileSystem.h"
 #include "Graphics/Camera.h"
 #include "Graphics/Material.h"
 #include "Graphics/Texture.h"
 #include "Graphics/Shader.h"
 #include "Math/AABB.h"
 
+#include <set>
 #include <imgui.h>
 #include <imgui_stdlib.h>
 
@@ -621,6 +623,46 @@ namespace DYE::ImGuiUtil
 		return isValueChanged;
 	}
 
+	bool DrawAssetPathStringControl(std::string const &label, std::filesystem::path &path, std::vector<std::filesystem::path> const& extensions)
+	{
+		bool changed = false;
+
+		ImGui::PushID(label.c_str());
+
+		auto pathAsString = path.string();
+		bool isPathChanged = ImGuiUtil::DrawTextControl(label, pathAsString);
+		if (isPathChanged)
+		{
+			path = pathAsString;
+		}
+		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+		ImVec2 const buttonSize = {lineHeight + 3.0f, lineHeight};
+
+		char const *popupId = "Select a file";
+		ImGui::SameLine();
+		if (ImGui::Button("S", buttonSize))
+		{
+			ImGuiUtil::OpenFilePathPopup(popupId, "assets", path, extensions);
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::BeginTooltip();
+			ImGui::TextUnformatted("Open a path selection window");
+			ImGui::EndTooltip();
+		}
+
+		ImGuiUtil::FilePathPopupResult result = ImGuiUtil::DrawFilePathPopup(popupId, path);
+		if (result == ImGuiUtil::FilePathPopupResult::Confirm)
+		{
+			isPathChanged = true;
+		}
+
+		changed |= isPathChanged;
+		ImGui::PopID();
+
+		return changed;
+	}
+
 	void DrawReadOnlyTextWithLabel(const std::string &label, const std::string &text)
 	{
 		ImGuiIO &io = ImGui::GetIO();
@@ -1022,5 +1064,292 @@ namespace DYE::ImGuiUtil
 		}
 
 		return isValueChanged;
+	}
+
+	std::filesystem::path FilePathPopup_RootDirectory;
+	std::filesystem::path FilePathPopup_SelectedFilePath;
+	std::filesystem::path FilePathPopup_CurrentDirectory;
+	bool FilePathPopup_HasExtensionFilter = false;
+	std::set<std::filesystem::path> FilePathPopup_Extensions;
+
+	void OpenFilePathPopup(char const* popupId,
+						   const std::filesystem::path &rootDirectory,
+						   const std::filesystem::path& initiallySelectedFilePath,
+						   std::vector<std::filesystem::path> const& extensions)
+	{
+		FilePathPopup_RootDirectory = rootDirectory;
+		FilePathPopup_SelectedFilePath = initiallySelectedFilePath;
+
+		if (FileSystem::FileExists(initiallySelectedFilePath))
+		{
+			FilePathPopup_CurrentDirectory = initiallySelectedFilePath.parent_path();
+		}
+		else
+		{
+			FilePathPopup_CurrentDirectory = rootDirectory;
+		}
+
+		FilePathPopup_HasExtensionFilter = !extensions.empty();
+		if (FilePathPopup_HasExtensionFilter)
+		{
+			FilePathPopup_Extensions = std::set<std::filesystem::path>(extensions.begin(), extensions.end());
+		}
+
+		ImGui::OpenPopup(popupId);
+	}
+
+	FilePathPopupResult DrawFilePathPopup(char const* popupId, std::filesystem::path &outputPath, FilePathPopupParameters params)
+	{
+		FilePathPopupResult result = FilePathPopupResult::StillOpen;
+
+		ImVec2 const defaultPopupWindowSize(440, 320);
+		ImGuiViewport const* windowViewport = ImGui::GetWindowViewport();
+
+		ImVec2 const popupPosition = {windowViewport->GetWorkCenter().x - defaultPopupWindowSize.x / 2, windowViewport->GetWorkCenter().y - defaultPopupWindowSize.y / 2};
+		ImGui::SetNextWindowPos(popupPosition, ImGuiCond_Appearing);
+
+		float const selectedFilepathTextHeight = ImGui::GetFrameHeightWithSpacing();
+		float const buttonHeight = ImGui::GetFrameHeightWithSpacing();
+		ImGui::SetNextWindowSize(defaultPopupWindowSize, ImGuiCond_Appearing);
+		ImGuiWindowFlags const popupFlags = ImGuiWindowFlags_None;
+
+		if (!ImGui::BeginPopupModal(popupId, nullptr, popupFlags))
+		{
+			return result;
+		}
+
+		char const* confirmSaveAsPopupId = "Confirm Save As";
+		bool openConfirmSaveAsPopup = false;
+
+		// TODO: draw a folder icon here
+		// Draw current directory as a sequence of folder selectables.
+		std::filesystem::path currentPathSequence = "";
+		for (const auto &pathComponentItr: FilePathPopup_CurrentDirectory)
+		{
+			currentPathSequence /= pathComponentItr;
+
+			ImGui::SameLine();
+			char const *pathComponent = pathComponentItr.string().c_str();
+			ImVec2 const textSize = ImGui::CalcTextSize(pathComponent);
+			ImGuiSelectableFlags const flags =
+				ImGuiSelectableFlags_DontClosePopups | ImGuiSelectableFlags_AllowItemOverlap;
+			if (ImGui::Selectable(pathComponentItr.string().c_str(), false, flags, textSize))
+			{
+				FilePathPopup_CurrentDirectory = currentPathSequence;
+				break;
+			}
+			ImGui::SameLine();
+			ImGui::TextUnformatted(">");
+		}
+
+		ImGuiWindowFlags const childFlags = ImGuiWindowFlags_None;
+		if (ImGui::BeginChild("File Browser", ImVec2(0, -buttonHeight - selectedFilepathTextHeight), true, childFlags))
+		{
+			if (FilePathPopup_CurrentDirectory != FilePathPopup_RootDirectory)
+			{
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 1, 0, 1));
+				if (ImGui::Selectable("...", false, ImGuiSelectableFlags_DontClosePopups))
+				{
+					FilePathPopup_CurrentDirectory = FilePathPopup_CurrentDirectory.parent_path();
+				}
+				ImGui::PopStyleColor();
+			}
+
+			for (auto &directoryEntry: std::filesystem::directory_iterator(FilePathPopup_CurrentDirectory))
+			{
+				std::string const pathString = directoryEntry.path().string();
+				std::string const fileNameString = directoryEntry.path().filename().string();
+				if (directoryEntry.is_directory())
+				{
+					// Draw directory.
+					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 1, 0, 1));
+					ImGuiSelectableFlags const flags = ImGuiSelectableFlags_DontClosePopups;
+					if (ImGui::Selectable(fileNameString.c_str(), false, flags))
+					{
+						FilePathPopup_CurrentDirectory /= directoryEntry.path().filename();
+					}
+					ImGui::PopStyleColor();
+				}
+				else
+				{
+					// Draw file.
+					bool isFileExcludedByExtension = false;
+					if (FilePathPopup_HasExtensionFilter)
+					{
+						auto const &fileExtension = directoryEntry.path().extension();
+						isFileExcludedByExtension = !FilePathPopup_Extensions.contains(fileExtension);
+					}
+
+					ImGuiSelectableFlags flags =
+						ImGuiSelectableFlags_DontClosePopups | ImGuiSelectableFlags_AllowDoubleClick;
+					bool drawFileSelectable = true;
+					if (isFileExcludedByExtension)
+					{
+						if (params.ShowFilteredFilesAsDisabled)
+						{
+							flags |= ImGuiSelectableFlags_Disabled;
+						}
+						else
+						{
+							drawFileSelectable = false;
+						}
+					}
+
+					if (!drawFileSelectable)
+					{
+						continue;
+					}
+
+					bool const isFileSelected = FilePathPopup_SelectedFilePath == directoryEntry.path();
+					if (ImGui::Selectable(fileNameString.c_str(), isFileSelected, flags))
+					{
+						if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+						{
+							outputPath = directoryEntry.path();
+							if (params.IsSaveFilePanel && FileSystem::FileExists(outputPath))
+							{
+								// We store a flag here and delay opening the popup
+								// because MenuItem is Selectable and Selectable by default calls CloseCurrentPopup().
+								openConfirmSaveAsPopup = true;
+							}
+							else
+							{
+								ImGui::CloseCurrentPopup();
+								result = FilePathPopupResult::Confirm;
+							}
+						}
+						else
+						{
+							FilePathPopup_SelectedFilePath = directoryEntry.path();
+
+							bool const hasAutoFileExtension = params.SaveFileExtension != nullptr;
+							if (params.IsSaveFilePanel && hasAutoFileExtension)
+							{
+								// Remove the extension if auto file extension is provided.
+								FilePathPopup_SelectedFilePath.replace_extension("");
+							}
+						}
+					}
+				}
+			}
+		}
+		ImGui::EndChild();
+
+		// Draw selected file path as text OR input field.
+		if (params.IsSaveFilePanel)
+		{
+			std::string filenameAsString = FilePathPopup_SelectedFilePath.filename().string();
+			bool const changed = ImGui::InputText("##SaveFilename", &filenameAsString);
+			if (changed)
+			{
+				FilePathPopup_SelectedFilePath.replace_filename(filenameAsString);
+			}
+
+			bool const hasAutoFileExtension = params.SaveFileExtension != nullptr;
+			if (hasAutoFileExtension)
+			{
+				ImGui::SameLine();
+				ImGui::TextUnformatted(params.SaveFileExtension);
+			}
+		}
+		else
+		{
+			ImGui::Text(FilePathPopup_SelectedFilePath.string().c_str());
+		}
+
+		// Draw the rest of the buttons & confirmSaveAs popup.
+		float const buttonPadding = 10;
+		ImVec2 const buttonSize = ImVec2 {75, buttonHeight};
+		float const scrollBarWidth = ImGui::GetCurrentWindow()->ScrollbarY ? ImGui::GetWindowScrollbarRect(
+			ImGui::GetCurrentWindow(), ImGuiAxis_Y).GetWidth() : 0;
+		float const availableWidthForAddButton = ImGui::GetWindowWidth() - scrollBarWidth;
+		ImGui::SetCursorPosX(availableWidthForAddButton - buttonSize.x - buttonPadding);
+		if (ImGui::Button("Cancel", buttonSize))
+		{
+			ImGui::CloseCurrentPopup();
+			result = FilePathPopupResult::Cancel;
+		}
+
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(availableWidthForAddButton - buttonSize.x * 2 - buttonPadding * 2);
+
+		bool closeMainModalPopupAfterConfirmSaveAsPopup = false;
+		if (params.IsSaveFilePanel)
+		{
+			bool const isSelectedFilePathValid = !FilePathPopup_SelectedFilePath.filename().empty();
+
+			ImGui::BeginDisabled(!isSelectedFilePathValid);
+			if (ImGui::Button("Confirm", buttonSize))
+			{
+				// For a save panel, we need to do some filename extension checking
+				bool const hasAutoFileExtension = params.SaveFileExtension != nullptr;
+				auto selectedFileExtension = FilePathPopup_SelectedFilePath.extension();
+				if (hasAutoFileExtension && selectedFileExtension != params.SaveFileExtension)
+				{
+					// Append auto extension file if the filepath doesn't have a matching one.
+					FilePathPopup_SelectedFilePath += params.SaveFileExtension;
+				}
+				// The final save directory depends on the current directory.
+				outputPath = FilePathPopup_CurrentDirectory / FilePathPopup_SelectedFilePath.filename();
+
+				if (FileSystem::FileExists(outputPath))
+				{
+					// We store a flag here and delay opening the popup
+					// because MenuItem is Selectable and Selectable by default calls CloseCurrentPopup().
+					openConfirmSaveAsPopup = true;
+				}
+				else
+				{
+					ImGui::CloseCurrentPopup();
+					result = FilePathPopupResult::Confirm;
+				}
+			}
+			ImGui::EndDisabled();
+
+			if (openConfirmSaveAsPopup)
+			{
+				// Open duplicate filename warning popup.
+				ImGui::OpenPopup(confirmSaveAsPopupId);
+			}
+
+			if (ImGui::BeginPopupModal(confirmSaveAsPopupId))
+			{
+				ImGui::Text("'%s' already exists. Do you want to replace it?", outputPath.filename().string().c_str());
+				if (ImGui::Button("Yes"))
+				{
+					ImGui::CloseCurrentPopup();
+					closeMainModalPopupAfterConfirmSaveAsPopup = true;
+					result = FilePathPopupResult::Confirm;
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("No"))
+				{
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::EndPopup();
+			}
+		}
+		else
+		{
+			bool const isSelectedFilePathValid = FileSystem::FileExists(FilePathPopup_SelectedFilePath);
+
+			ImGui::BeginDisabled(!isSelectedFilePathValid);
+			if (ImGui::Button("Confirm", buttonSize))
+			{
+				outputPath = FilePathPopup_SelectedFilePath;
+				ImGui::CloseCurrentPopup();
+				result = FilePathPopupResult::Confirm;
+			}
+			ImGui::EndDisabled();
+		}
+
+		if (closeMainModalPopupAfterConfirmSaveAsPopup)
+		{
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::EndPopup();
+
+		return result;
 	}
 }

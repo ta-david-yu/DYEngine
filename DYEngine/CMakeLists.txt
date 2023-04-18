@@ -52,7 +52,9 @@ set(SOURCE_FILES
         src/GamepadEvent.cpp
         src/Gamepad.cpp
         src/FPSCounter.cpp
-        src/EasingFunctions.cpp src/Framebuffer.cpp)
+        src/EasingFunctions.cpp
+        src/Framebuffer.cpp
+        src/FileSystem.cpp)
 set(HEADER_FILES
         include/Core/Application.h
         include/Graphics/WindowBase.h
@@ -113,7 +115,9 @@ set(HEADER_FILES
         include/Input/MouseButton.h
         include/Input/Gamepad.h
         include/Util/FPSCounter.h
-        include/Math/EasingFunctions.h include/Graphics/Framebuffer.h)
+        include/Math/EasingFunctions.h
+        include/Graphics/Framebuffer.h
+        include/FileSystem/FileSystem.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")

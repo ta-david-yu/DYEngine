@@ -25,6 +25,9 @@ namespace DYE::DYEditor
 		ProjectConfig config;
 		if (!FileSystem::FileExists(path))
 		{
+			std::filesystem::create_directories(path.parent_path());
+			std::filesystem::permissions(path.parent_path(), std::filesystem::perms::all);
+
 			// The file doesn't exist yet, create one with default values.
 			config.IsLoaded = true;
 			config.CurrentLoadedFilePath = path;
@@ -58,19 +61,20 @@ namespace DYE::DYEditor
 		// Open the file and clean everything in it.
 		Table = toml::table();
 		FileStream.open(CurrentLoadedFilePath, std::ios::trunc);
-		FileStream.flush();
+		FileStream.close();
 	}
 
 	void ProjectConfig::Save()
 	{
 		FileStream.open(CurrentLoadedFilePath, std::ios::trunc);
 		FileStream << Table;
-		FileStream.flush();
+		FileStream.close();
 	}
 
-	bool ProjectConfig::DrawGenericConfigurationBrowserImGui(bool *pIsOpen)
+	/// \return true if the configuration has been changed. Otherwise false.
+	bool ProjectConfig::DrawGenericConfigurationBrowserImGui(char const* title, bool *pIsOpen)
 	{
-		if (!ImGui::Begin("Editor Configuration", pIsOpen))
+		if (!ImGui::Begin(title, pIsOpen))
 		{
 			ImGui::End();
 			return false;
@@ -78,7 +82,7 @@ namespace DYE::DYEditor
 
 		bool changed = false;
 
-		ImGui::PushID("Editor Config");
+		ImGui::PushID(CurrentLoadedFilePath.string().c_str());
 		for (auto iterator = Table.begin(); iterator != Table.end(); iterator++)
 		{
 			std::string key(iterator->first.str());
@@ -117,8 +121,12 @@ namespace DYE::DYEditor
 			}
 		}
 
-		ImGui::PopID();
+		if (ImGui::Button("Save"))
+		{
+			Save();
+		}
 
+		ImGui::PopID();
 		ImGui::End();
 		return changed;
 	}
@@ -128,7 +136,7 @@ namespace DYE::DYEditor
 	{
 		if (!IsLoaded)
 		{
-			DYE_LOG("Editor Config hasn't been loaded. You might have forgot to call %s first.",
+			DYE_LOG("Config hasn't been loaded. You might have forgot to call %s first.",
 					NAME_OF(TryLoadFromOrCreateDefaultAt));
 			return defaultValue;
 		}
@@ -148,19 +156,17 @@ namespace DYE::DYEditor
 		return result.value();
 	}
 
-
 	template bool ProjectConfig::GetOrDefault<bool>(const std::string &key, bool const &defaultValue);
 	template float ProjectConfig::GetOrDefault<float>(const std::string &key, float const &defaultValue);
 	template int ProjectConfig::GetOrDefault<int>(const std::string &key, int const &defaultValue);
 	template std::string ProjectConfig::GetOrDefault<std::string>(const std::string &key, std::string const &defaultValue);
-	template std::string_view ProjectConfig::GetOrDefault<std::string_view>(const std::string &key, std::string_view const &defaultValue);
 
 	template<typename T>
 	void ProjectConfig::SetAndSave(const std::string &keyPath, const T &value)
 	{
 		if (!IsLoaded)
 		{
-			DYE_LOG("Editor Config hasn't been loaded. You might have forgot to call %s first.",
+			DYE_LOG("Config hasn't been loaded. You might have forgot to call %s first.",
 					NAME_OF(TryLoadFromOrCreateDefaultAt));
 			return;
 		}
@@ -175,11 +181,17 @@ namespace DYE::DYEditor
 	template void ProjectConfig::SetAndSave<float>(const std::string &key, const float &value);
 	template void ProjectConfig::SetAndSave<int>(const std::string &key, const int &value);
 	template void ProjectConfig::SetAndSave<std::string>(const std::string &key, const std::string &value);
-	template void ProjectConfig::SetAndSave<std::string_view>(const std::string &key, const std::string_view &value);
 
 	template<typename T>
 	void ProjectConfig::Set(const std::string &keyPath, const T &value)
 	{
+		if (!IsLoaded)
+		{
+			DYE_LOG("Config hasn't been loaded. You might have forgot to call %s first.",
+					NAME_OF(TryLoadFromOrCreateDefaultAt));
+			return;
+		}
+
 		Table.insert_or_assign(keyPath, value);
 	}
 
@@ -187,7 +199,6 @@ namespace DYE::DYEditor
 	template void ProjectConfig::Set<float>(const std::string &key, const float &value);
 	template void ProjectConfig::Set<int>(const std::string &key, const int &value);
 	template void ProjectConfig::Set<std::string>(const std::string &key, const std::string &value);
-	template void ProjectConfig::Set<std::string_view>(const std::string &key, const std::string_view &value);
 
 	ProjectConfig& GetEditorConfig()
 	{
@@ -199,5 +210,38 @@ namespace DYE::DYEditor
 	{
 		static ProjectConfig config = ProjectConfig::TryLoadFromOrCreateDefaultAt(DefaultRuntimeConfigFilePath).value();
 		return config;
+	}
+
+
+
+	bool DrawRuntimeConfigurationWindow(bool *pIsOpen)
+	{
+		if (!ImGui::Begin("Runtime Configuration", pIsOpen))
+		{
+			ImGui::End();
+			return false;
+		}
+
+		ProjectConfig& config = GetRuntimeConfig();
+
+		bool changed = false;
+		ImGui::PushID("Runtime Configuration");
+
+		auto projectName = config.GetOrDefault<std::string>("Project.Name", "Sandbox");
+		if (ImGuiUtil::DrawTextControl("Project Name", projectName))
+		{
+			config.Set<std::string>("Project.Name", projectName);
+			changed = true;
+		}
+
+		if (ImGui::Button("Save"))
+		{
+			config.Save();
+		}
+
+		ImGui::PopID();
+		ImGui::End();
+
+		return changed;
 	}
 }

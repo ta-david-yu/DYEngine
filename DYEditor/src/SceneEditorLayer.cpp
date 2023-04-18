@@ -49,7 +49,7 @@ namespace DYE::DYEditor
 
 	void SceneEditorLayer::OnAttach()
 	{
-		// DEBUGGING, Should be moved to DYEditorApplication so that both EditorLayer & RuntimeLayer could use it
+		// FIXME: Should be moved to DYEditorApplication so that both EditorLayer & RuntimeLayer could use it
 		DYEditor::RegisterBuiltInTypes();
 		DYEditor::RegisterUserTypes();
 
@@ -98,15 +98,19 @@ namespace DYE::DYEditor
 				},
 			[](char const *name, bool *pIsOpen, ImGuiViewport const *pMainViewportHint)
 			{
-				if (!ImGui::Begin("Editor Configuration", pIsOpen))
+				GetEditorConfig().DrawGenericConfigurationBrowserImGui("Editor Configuration", pIsOpen);
+			}
+		);
+
+		EditorWindowManager::RegisterEditorWindow(
+			RegisterEditorWindowParameters
 				{
-					ImGui::End();
-					return;
-				}
-
-				GetEditorConfig().DrawGenericConfigurationBrowserImGui(pIsOpen);
-
-				ImGui::End();
+					.Name = "Runtime Configuration",
+					.isConfigOpenByDefault = false
+				},
+			[](char const *name, bool *pIsOpen, ImGuiViewport const *pMainViewportHint)
+			{
+				DrawRuntimeConfigurationWindow(pIsOpen);
 			}
 		);
 
