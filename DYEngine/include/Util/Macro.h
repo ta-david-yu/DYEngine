@@ -30,7 +30,7 @@
 	} while (false)
 #else
     #define DYE_ASSERT(condition)
-	#define DYE_ASSERT_LOG(condition, logFmt, ...)
+	#define DYE_ASSERT_LOG_WARN(condition, logFmt, ...)
 #endif
 
 #ifndef NAME_OF
