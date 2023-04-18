@@ -231,42 +231,7 @@ namespace DYE::DYEditor
 
 			changed |= ImGuiUtil::DrawColor4Control("Color", component.Color);
 
-			// TODO: add a asset path imgui control
-			//  For now, we use a simple string editor,
-			// 	We will eventually use ImGuiUtil::DrawAssetPathStringControl("Texture Path", component.TextureAssetPath);
-			auto pathAsString = component.TextureAssetPath.string();
-			bool isPathChanged = ImGuiUtil::DrawTextControl("Texture Asset Path", pathAsString);
-			if (isPathChanged)
-			{
-				component.TextureAssetPath = pathAsString;
-			}
-			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-			ImVec2 const buttonSize = {lineHeight + 3.0f, lineHeight};
-
-			// Draw path selection popup button.
-			char const* popupId = "Select a file (*.jpg, *.jpeg, *.png, *.tga, *.bmp, *.psd)";
-			ImGui::SameLine();
-			if (ImGui::Button("S", buttonSize))
-			{
-				ImGuiUtil::OpenFilePathPopup(
-					popupId,
-					"assets",
-					component.TextureAssetPath,
-					{".jpg", ".jpeg", ".png", ".tga", ".bmp", ".psd"});
-			}
-			if (ImGui::IsItemHovered())
-			{
-				ImGui::BeginTooltip();
-				ImGui::TextUnformatted("Open a path selection window");
-				ImGui::EndTooltip();
-			}
-
-			ImGuiUtil::FilePathPopupResult result = ImGuiUtil::DrawFilePathPopup(popupId, component.TextureAssetPath);
-			if (result == ImGuiUtil::FilePathPopupResult::Confirm)
-			{
-				isPathChanged = true;
-			}
-
+			bool isPathChanged = ImGuiUtil::DrawAssetPathStringControl("Texture Asset Path", component.TextureAssetPath, {".jpg", ".jpeg", ".png", ".tga", ".bmp", ".psd"});
 			if (isPathChanged)
 			{
 				if (FileSystem::FileExists(component.TextureAssetPath))
