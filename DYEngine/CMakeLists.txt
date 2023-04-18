@@ -164,11 +164,16 @@ target_include_directories(DYEngine PUBLIC extern/yaml-cpp/include)
 
 # SDL2MAIN_LIBRARY is also specified within SDL2_LIBRARY by the FindSDL2 module. It's needed for Windows specific main function. If I don't use FindSDL2 module, I have to link it as well.
 #target_link_libraries(DYEngine ${SDL2MAIN_LIBRARY})
-target_link_libraries(DYEngine ${SDL2_LIBRARY} -mconsole) # Add -mconsole so the console window is shown.
-target_link_libraries(DYEngine glad)
-target_link_libraries(DYEngine imgui)
-target_link_libraries(DYEngine glm)
-target_link_libraries(DYEngine stb)
+target_link_libraries(DYEngine PRIVATE ${SDL2_LIBRARY} -mconsole) # Add -mconsole so the console window is shown.
+target_link_libraries(DYEngine PRIVATE glad)
+target_link_libraries(DYEngine PRIVATE imgui)
+target_link_libraries(DYEngine PRIVATE glm)
+target_link_libraries(DYEngine PRIVATE stb)
+
+# Link winpthread because SDL2 needs it.
+# We need to specify -static because winpthread is included in the bundled MinGW distribution that comes with CLion.
+# We would have to modify this for other compilers at some point.
+target_link_libraries(DYEngine PRIVATE -static winpthread)
 
 # ===========================================================================================
 # Copy SDL2.dll to the output directory post-build

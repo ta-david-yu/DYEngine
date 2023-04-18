@@ -11,73 +11,52 @@
 # Build editor executable target called <NAME> from the given sources and generated code.
 function(DYEditor_AddEditorExecutable NAME SOURCE_ROOT_DIR INCLUDE_DIRS SOURCE_FILES HEADER_FILES)
 
-    set(DYE_PROJECT_NAME ${NAME})
-    set(DYE_PROJECT_SOURCE_FILES ${SOURCE_FILES} generated/UserTypeRegister.generated.cpp) # Include generated code in the source as well
-    set(DYE_PROJECT_HEADER_FILES ${HEADER_FILES})
+    message(STATUS "Build DYEditor Editor Executable '${NAME}'")
 
-    message(STATUS "Build DYEditor Editor Executable '${DYE_PROJECT_NAME}'")
-    message(STATUS "[${DYE_PROJECT_NAME}] Source Files: ${DYE_PROJECT_SOURCE_FILES}")
-    message(STATUS "[${DYE_PROJECT_NAME}] Header Files: ${DYE_PROJECT_HEADER_FILES}")
+    DYEditor_AddExecutable(${NAME} ${SOURCE_ROOT_DIR} "${INCLUDE_DIRS}" "${SOURCE_FILES}" "${HEADER_FILES}")
 
-    add_executable(${DYE_PROJECT_NAME} WIN32 ${DYE_PROJECT_SOURCE_FILES} ${DYE_PROJECT_HEADER_FILES})
+    target_compile_definitions(${NAME} PUBLIC DYE_EDITOR)
+    target_compile_definitions(DYEditor PUBLIC DYE_EDITOR)
 
-    target_compile_definitions(${DYE_PROJECT_NAME} PUBLIC DYE_EDITOR)
-
-    target_link_libraries(${DYE_PROJECT_NAME} DYEngine)
-    target_link_libraries(${DYE_PROJECT_NAME} DYEntity)
-    target_link_libraries(${DYE_PROJECT_NAME} DYEditor)
-
-    if (CMAKE_BUILD_TYPE MATCHES Release)
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive")
-        target_link_libraries(${DYE_PROJECT_NAME} -static-libgcc)
-    endif ()
-
-    target_include_directories(${DYE_PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
-
-    option(DYE_FORCE_GENERATE_CODE "If enabled, always re-generate code for DYEditor::TypeRegistry even if the code is unchanged." OFF)
-    if (DYE_FORCE_GENERATE_CODE)
-        ForceGenerateDYEditorTypeRegistryCode(${SOURCE_ROOT_DIR} ${HEADER_FILES})
-    else ()
-        GenerateDYEditorTypeRegistryCode(${SOURCE_ROOT_DIR} ${HEADER_FILES})
-    endif ()
-    
 endfunction()
 
 # Build runtime executable target called <NAME> from the given sources and generated code.
-function(DYEditor_AddRuntimeExecutable NAME SOURCE_DIR SOURCE_FILES HEADER_FILES)
+function(DYEditor_AddRuntimeExecutable NAME SOURCE_ROOT_DIR INCLUDE_DIRS SOURCE_FILES HEADER_FILES)
+
+    message(STATUS "Build DYEditor Runtime Executable '${NAME}'")
+
+    DYEditor_AddExecutable(${NAME} ${SOURCE_ROOT_DIR} "${INCLUDE_DIRS}" "${SOURCE_FILES}" "${HEADER_FILES}")
+
+    target_compile_definitions(${NAME} PUBLIC DYE_RUNTIME)
+    target_compile_definitions(DYEditor PUBLIC DYE_RUNTIME)
+
+endfunction()
+
+function(DYEditor_AddExecutable NAME SOURCE_ROOT_DIR INCLUDE_DIRS SOURCE_FILES HEADER_FILES)
 
     set(DYE_PROJECT_NAME ${NAME})
     set(DYE_PROJECT_SOURCE_FILES ${SOURCE_FILES} generated/UserTypeRegister.generated.cpp) # Include generated code in the source as well
     set(DYE_PROJECT_HEADER_FILES ${HEADER_FILES})
 
-    message(STATUS "Build DYEditor Editor Executable '${DYE_PROJECT_NAME}'")
     message(STATUS "[${DYE_PROJECT_NAME}] Source Files: ${DYE_PROJECT_SOURCE_FILES}")
     message(STATUS "[${DYE_PROJECT_NAME}] Header Files: ${DYE_PROJECT_HEADER_FILES}")
 
     add_executable(${DYE_PROJECT_NAME} WIN32 ${DYE_PROJECT_SOURCE_FILES} ${DYE_PROJECT_HEADER_FILES})
 
-    target_compile_definitions(${DYE_PROJECT_NAME} PUBLIC DYE_RUNTIME)
-
     target_link_libraries(${DYE_PROJECT_NAME} DYEngine)
     target_link_libraries(${DYE_PROJECT_NAME} DYEntity)
     target_link_libraries(${DYE_PROJECT_NAME} DYEditor)
-
-    if (CMAKE_BUILD_TYPE MATCHES Release)
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive")
-        target_link_libraries(${DYE_PROJECT_NAME} -static-libgcc)
-    endif ()
 
     target_include_directories(${DYE_PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
 
     option(DYE_FORCE_GENERATE_CODE "If enabled, always re-generate code for DYEditor::TypeRegistry even if the code is unchanged." OFF)
     if (DYE_FORCE_GENERATE_CODE)
-        ForceGenerateDYEditorTypeRegistryCode(${SOURCE_ROOT_DIR} ${HEADER_FILES})
+        ForceGenerateDYEditorTypeRegistryCode(${SOURCE_ROOT_DIR} ${DYE_PROJECT_HEADER_FILES})
     else ()
-        GenerateDYEditorTypeRegistryCode(${SOURCE_ROOT_DIR} ${HEADER_FILES})
+        GenerateDYEditorTypeRegistryCode(${SOURCE_ROOT_DIR} ${DYE_PROJECT_HEADER_FILES})
     endif ()
 
 endfunction()
-
 
 # Generate DYEditor runtime type information code from a list of header files.
 # The command in the function would be executed whenever any of the given headers is modified.

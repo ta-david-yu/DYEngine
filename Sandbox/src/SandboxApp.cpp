@@ -24,6 +24,14 @@ namespace DYE::Sandbox
 			editorLayer->SetApplication(this);
 			editorLayer->SetRuntimeLayer(runtimeLayer);
 
+#ifdef DYE_EDITOR
+			printf("Editor Call!\n");
+#endif
+
+#ifdef DYE_RUNTIME
+			printf("Runtime Call!\n");
+#endif
+
 			pushLayerImmediate(runtimeLayer);
 			pushLayerImmediate(editorLayer);
 

@@ -7,8 +7,11 @@ namespace DYE::DYEditor
 	struct RuntimeStateData
 	{
 		// TODO: use compile definition to make it true by default in runtime build.
+#ifdef DYE_EDITOR
 		bool IsPlaying = false;
-
+#else
+		static constexpr const bool IsPlaying = true;
+#endif
 		std::vector<RuntimeStateListenerBase*> RuntimeStateListeners = {};
 	};
 
@@ -22,17 +25,26 @@ namespace DYE::DYEditor
 	bool RuntimeState::IsEditor()
 	{
 		// TODO: use compile definition to return constant value based on whether it's a runtime OR editor build.
+#ifdef DYE_EDITOR
 		return true;
+#else
+		return false;
+#endif
 	}
 
 	bool RuntimeState::IsRuntime()
 	{
 		// TODO: use compile definition to return constant value based on whether it's a runtime OR editor build.
+#ifdef DYE_EDITOR
 		return false;
+#else
+		return true;
+#endif
 	}
 
 	void RuntimeState::SetIsPlaying(bool value)
 	{
+#ifdef DYE_EDITOR
 		bool const prevIsPlaying = s_Data.IsPlaying;
 		bool const playModeChanged = value != prevIsPlaying;
 
@@ -49,6 +61,7 @@ namespace DYE::DYEditor
 		{
 			broadcastPlayModeStateChangedEvent(value ? PlayModeStateChange::AfterEnterPlayMode : PlayModeStateChange::AfterEnterEditMode);
 		}
+#endif
 	}
 
 	void RuntimeState::RegisterListener(RuntimeStateListenerBase *listener)

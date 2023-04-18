@@ -15,8 +15,12 @@ if (CMAKE_BUILD_TYPE MATCHES Debug)
     RedirectOutputTo("build/Debug")
     add_compile_definitions(DYE_DEBUG)
     add_compile_definitions(DYE_OPENGL_DEBUG)
+elseif (CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
+    RedirectOutputTo("build/MinSizeRel")
 elseif (CMAKE_BUILD_TYPE MATCHES Release)
     RedirectOutputTo("build/Release")
+elseif (CMAKE_BUILD_TYPE MATCHES MinSizeRel)
+    RedirectOutputTo("build/MinSizeRel")
 endif ()
 
 # DYEngine library
