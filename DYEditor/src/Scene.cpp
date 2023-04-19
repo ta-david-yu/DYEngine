@@ -113,5 +113,33 @@ namespace DYE::DYEditor
 
 		return noSystem && noEntity;
 	}
+
+	void Scene::ExecuteInitializeSystems()
+	{
+		ExecuteParameters const params { .Phase = ExecutionPhase::Initialize };
+		for (auto& systemDescriptor : InitializeSystemDescriptors)
+		{
+			if (!systemDescriptor.IsEnabled)
+			{
+				continue;
+			}
+
+			systemDescriptor.Instance->Execute(World, params);
+		}
+	}
+
+	void Scene::ExecuteTeardownSystems()
+	{
+		ExecuteParameters const params { .Phase = ExecutionPhase::TearDown };
+		for (auto& systemDescriptor : TearDownSystemDescriptors)
+		{
+			if (!systemDescriptor.IsEnabled)
+			{
+				continue;
+			}
+
+			systemDescriptor.Instance->Execute(World, params);
+		}
+	}
 }
 

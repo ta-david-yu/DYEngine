@@ -114,3 +114,20 @@ struct HasAngularVelocity
 	DYE_PROPERTY()
 	DYE::Float AngleDegreePerSecond = 30.0f;
 };
+
+DYE_COMPONENT("CreateEntity", CreateEntity)
+struct CreateEntity
+{
+	DYE_PROPERTY()
+	DYE::String EntityNamePrefix;
+
+	DYE_PROPERTY()
+	DYE::Int32 NumberOfEntitiesToCreate = 10;
+};
+
+DYE_COMPONENT("PrintMessageOnTeardown", PrintMessageOnTeardown)
+struct PrintMessageOnTeardown
+{
+	DYE_PROPERTY()
+	DYE::String Message = "";
+};

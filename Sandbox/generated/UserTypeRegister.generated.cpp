@@ -225,6 +225,67 @@ namespace DYE::DYEditor
 					}
 			);
 
+		// Component located in include/TestComponents.h
+		TypeRegistry::RegisterComponentType<CreateEntity>
+			(
+				"CreateEntity",
+				ComponentTypeFunctionCollection
+					{
+						.Serialize = [](Entity& entity, SerializedComponentHandle& serializedComponent)
+						{
+							auto const& component = entity.GetComponent<CreateEntity>();
+							serializedComponent.SetPrimitiveTypePropertyValue("EntityNamePrefix", component.EntityNamePrefix);
+							serializedComponent.SetPrimitiveTypePropertyValue("NumberOfEntitiesToCreate", component.NumberOfEntitiesToCreate);
+							return SerializationResult {};
+						},
+						.Deserialize = [](SerializedComponentHandle& serializedComponent, DYE::DYEntity::Entity& entity)
+						{
+							auto& component = entity.AddOrGetComponent<CreateEntity>();
+							component.EntityNamePrefix = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<String>("EntityNamePrefix");
+							component.NumberOfEntitiesToCreate = serializedComponent.GetPrimitiveTypePropertyValueOr<Int32>("NumberOfEntitiesToCreate", 10);
+							return DeserializationResult {};
+						},
+						.DrawInspector = [](Entity &entity)
+						{
+							bool changed = false;
+							auto& component = entity.GetComponent<CreateEntity>();
+							ImGui::TextWrapped("CreateEntity");
+							changed |= ImGuiUtil::DrawTextControl("EntityNamePrefix", component.EntityNamePrefix);
+							changed |= ImGuiUtil::DrawIntControl("NumberOfEntitiesToCreate", component.NumberOfEntitiesToCreate);
+							return changed;
+						}
+					}
+			);
+
+		// Component located in include/TestComponents.h
+		TypeRegistry::RegisterComponentType<PrintMessageOnTeardown>
+			(
+				"PrintMessageOnTeardown",
+				ComponentTypeFunctionCollection
+					{
+						.Serialize = [](Entity& entity, SerializedComponentHandle& serializedComponent)
+						{
+							auto const& component = entity.GetComponent<PrintMessageOnTeardown>();
+							serializedComponent.SetPrimitiveTypePropertyValue("Message", component.Message);
+							return SerializationResult {};
+						},
+						.Deserialize = [](SerializedComponentHandle& serializedComponent, DYE::DYEntity::Entity& entity)
+						{
+							auto& component = entity.AddOrGetComponent<PrintMessageOnTeardown>();
+							component.Message = serializedComponent.GetPrimitiveTypePropertyValueOr<String>("Message", "");
+							return DeserializationResult {};
+						},
+						.DrawInspector = [](Entity &entity)
+						{
+							bool changed = false;
+							auto& component = entity.GetComponent<PrintMessageOnTeardown>();
+							ImGui::TextWrapped("PrintMessageOnTeardown");
+							changed |= ImGuiUtil::DrawTextControl("Message", component.Message);
+							return changed;
+						}
+					}
+			);
+
 		// Component located in include/AnotherTestComponents.h
 		TypeRegistry::RegisterComponentType<TestComponentC>
 			(
@@ -288,6 +349,14 @@ namespace DYE::DYEditor
 		// System located in include/SystemExample.h
 		static RotateHasAngularVelocitySystem _RotateHasAngularVelocitySystem;
 		TypeRegistry::RegisterSystem("Rotate Has Angular Velocity System", &_RotateHasAngularVelocitySystem);
+
+		// System located in include/SystemExample.h
+		static CreateEntitiesSystem _CreateEntitiesSystem;
+		TypeRegistry::RegisterSystem("Create Entities System", &_CreateEntitiesSystem);
+
+		// System located in include/SystemExample.h
+		static PrintMessageOnTeardownSystem _PrintMessageOnTeardownSystem;
+		TypeRegistry::RegisterSystem("Print Message On Teardown System", &_PrintMessageOnTeardownSystem);
 
 	}
 

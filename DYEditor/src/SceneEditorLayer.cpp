@@ -240,10 +240,13 @@ namespace DYE::DYEditor
 
 	void SceneEditorLayer::OnPlayModeStateChanged(DYE::DYEditor::PlayModeStateChange stateChange)
 	{
+		auto &scene = m_RuntimeLayer->ActiveMainScene;
 		if (stateChange == PlayModeStateChange::BeforeEnterPlayMode)
 		{
+			// Save a copy of the active scene as a serialized scene.
+			m_SerializedSceneCacheWhenEnterPlayMode = SerializedObjectFactory::CreateSerializedScene(scene);
+
 			// Initialize systems.
-			auto &scene = m_RuntimeLayer->ActiveMainScene;
 			scene.ForEachSystemDescriptor
 			(
 				[&scene](SystemDescriptor &systemDescriptor, ExecutionPhase phase)
@@ -257,13 +260,15 @@ namespace DYE::DYEditor
 				}
 			);
 
-			// Save a copy of the active scene as a serialized scene.
-			m_SerializedSceneCacheWhenEnterPlayMode = SerializedObjectFactory::CreateSerializedScene(scene);
+			// Execute initialize systems.
+			scene.ExecuteInitializeSystems();
 		}
 		else if (stateChange == PlayModeStateChange::BeforeEnterEditMode)
 		{
+			// Execute teardown systems.
+			scene.ExecuteTeardownSystems();
+
 			// Initialize systems.
-			auto &scene = m_RuntimeLayer->ActiveMainScene;
 			scene.ForEachSystemDescriptor
 			(
 				[&scene](SystemDescriptor &systemDescriptor, ExecutionPhase phase)

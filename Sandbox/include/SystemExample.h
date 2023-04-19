@@ -70,3 +70,17 @@ struct RotateHasAngularVelocitySystem final : public DYE::DYEditor::SystemBase
 	void Execute(DYE::DYEntity::World &world, DYE::DYEditor::ExecuteParameters params) final;
 };
 
+DYE_SYSTEM("Create Entities System", CreateEntitiesSystem)
+struct CreateEntitiesSystem final : public DYE::DYEditor::SystemBase
+{
+	inline DYE::DYEditor::ExecutionPhase GetPhase() const override { return DYE::DYEditor::ExecutionPhase::Initialize ; }
+	void Execute(DYE::DYEntity::World &world, DYE::DYEditor::ExecuteParameters params) final;
+};
+
+DYE_SYSTEM("Print Message On Teardown System", PrintMessageOnTeardownSystem)
+struct PrintMessageOnTeardownSystem final : public DYE::DYEditor::SystemBase
+{
+	inline DYE::DYEditor::ExecutionPhase GetPhase() const override { return DYE::DYEditor::ExecutionPhase::TearDown ; }
+	void Execute(DYE::DYEntity::World &world, DYE::DYEditor::ExecuteParameters params) final;
+};
+

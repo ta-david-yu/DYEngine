@@ -26,7 +26,7 @@ namespace DYE::DYEditor
 
 	enum class ExecutionPhase
 	{
-		/// Called at the start of the scene
+		/// Called at the start of the scene (after scene loaded)
 		Initialize = 0,
 		FixedUpdate,
 		Update,
@@ -56,7 +56,7 @@ namespace DYE::DYEditor
 	enum class InitializeLoadType
 	{
 		Manual,
-		AfterSceneLoad,
+		BeforeLoadScene,
 
 		// This will only happen in Editor.
 		BeforeEnterPlayMode,
@@ -66,7 +66,7 @@ namespace DYE::DYEditor
 
 	struct InitializeLoadParameters
 	{
-		InitializeLoadType LoadType = InitializeLoadType::AfterSceneLoad;
+		InitializeLoadType LoadType = InitializeLoadType::BeforeLoadScene;
 	};
 
 	struct SystemBase

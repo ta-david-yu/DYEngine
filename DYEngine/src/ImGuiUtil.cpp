@@ -320,6 +320,10 @@ namespace DYE::ImGuiUtil
 		// Drag Float
 		{
 			isValueChanged |= ImGui::DragFloat("##Float", &value, 0.1f, 0, 0, Settings::FloatFormat.c_str());
+			if (ImGui::IsItemDeactivatedAfterEdit())
+			{
+				printf("FloatControl '%s' Deactivated After Edit", label.c_str());
+			}
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
 		}

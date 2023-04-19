@@ -8,6 +8,11 @@ namespace DYE::DYEditor
 	{
 	}
 
+	void SceneRuntimeLayer::LoadSceneInstant()
+	{
+
+	}
+
 	void SceneRuntimeLayer::OnFixedUpdate()
 	{
 		if (!RuntimeState::IsPlaying())
@@ -104,6 +109,4 @@ namespace DYE::DYEditor
 			systemDescriptor.Instance->Execute(ActiveMainScene.World, params);
 		}
 	}
-
-
 }

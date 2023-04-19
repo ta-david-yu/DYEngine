@@ -12,6 +12,8 @@ namespace DYE::DYEditor
 		SceneRuntimeLayer();
 		~SceneRuntimeLayer() override = default;
 
+		void LoadSceneInstant();
+
 		void OnFixedUpdate() override;
 		void OnUpdate() override;
 		void OnRender() override;

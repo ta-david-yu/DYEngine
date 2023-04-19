@@ -125,6 +125,10 @@ namespace DYE::DYEditor
 
 		bool IsEmpty() const;
 
+		/// Execute initialize systems in the active scene.
+		void ExecuteInitializeSystems();
+		void ExecuteTeardownSystems();
+
 	public:
 		std::string Name;
 		// At runtime, we will use the names to reference the actual systems from TypeRegistry.
