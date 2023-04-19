@@ -64,7 +64,7 @@ namespace DYE
 		if (WindowManager::GetNumberOfWindows() == 0)
 		{
 			// If there is no window, we create one first as the main window!
-			mainWindowPtr = WindowManager::CreateWindow(WindowProperty(windowName));
+			mainWindowPtr = WindowManager::CreateWindow(WindowProperties(windowName));
 			auto context = ContextBase::Create(mainWindowPtr);
 			mainWindowPtr->SetContext(context);
 			mainWindowPtr->MakeCurrent();
@@ -143,11 +143,16 @@ namespace DYE
             {
                 layer->OnRender();
             }
-            onPostRenderLayers();
 			glEnable(GL_CULL_FACE);
 			glCullFace(GL_BACK);
 			// Execute draw-calls on GPU
 			RenderPipelineManager::RenderWithActivePipeline();
+
+			for (auto& layer : m_LayerStack)
+			{
+				layer->OnPostRender();
+			}
+
 
             // ImGui
             m_ImGuiLayer->BeginImGui();
@@ -160,7 +165,7 @@ namespace DYE
 			// Swap the buffer of the main application window
 			// We swap the main window here instead of in the render pipeline manager
 			// because some imgui viewports are rendered inside main window, and we want to do those first before the swap.
-			// TODO: right now we call swap buffer directly because EndImGui() call already set
+			// FIXME: right now we call swap buffer directly because EndImGui() call already set
 			//  the main window context as current. Otherwise we will have to call
 			// 	mainWindow->GetContext()->MakeCurrentForWindow(mainWindow) first.
 			//  At some point we want to fix this cuz it's kinda awkward and non-explicit enough
@@ -171,9 +176,13 @@ namespace DYE
 			// For now, it does nothing.
 			WindowManager::UpdateWindows();
 
+			// End of frame.
+			for (auto& layer : m_LayerStack)
+			{
+				layer->OnEndOfFrame();
+			}
+
 			// Execute delayed layer operations.
-			// We do this after tickUpdate because we don't want the time spent on layer operations to be
-			// taken into account for the delta time between this frame and the next frame.
 			for (auto& layerOperation : m_LayerOperations)
 			{
 				switch (layerOperation.Type)
@@ -303,7 +312,7 @@ namespace DYE
 
     void Application::handleOnWindowClose(const WindowCloseEvent &event)
     {
-		auto const mainWindowID = WindowManager::GetMainWindowID();
+		auto const mainWindowID = WindowManager::TryGetMainWindowID();
 		if (mainWindowID.has_value() && event.GetWindowID() == mainWindowID.value())
 		{
 			// If the close event comes from the main window, shutdown the application.

@@ -6,22 +6,22 @@
 
 namespace DYE
 {
-    SDLWindow::SDLWindow(const WindowProperty &windowProperty)
+    SDLWindow::SDLWindow(const WindowProperties &windowProperties)
     {
         auto windowFlags = static_cast<SDL_WindowFlags>(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 
         // create SDL window
         m_pNativeWindow = SDL_CreateWindow(
-                windowProperty.Title.c_str(),
-                SDL_WINDOWPOS_CENTERED,
-                SDL_WINDOWPOS_CENTERED,
-                windowProperty.Width,
-                windowProperty.Height,
-                windowFlags
+			windowProperties.Title.c_str(),
+			SDL_WINDOWPOS_CENTERED,
+			SDL_WINDOWPOS_CENTERED,
+			windowProperties.Width,
+			windowProperties.Height,
+			windowFlags
         );
 
 		std::uint32_t fullScreenFlag = 0;
-		switch (windowProperty.FullScreeMode)
+		switch (windowProperties.FullScreeMode)
 		{
 			case FullScreenMode::Window:
 				fullScreenFlag = 0;
@@ -35,7 +35,7 @@ namespace DYE
 		}
 
 		SDL_SetWindowFullscreen(m_pNativeWindow, fullScreenFlag);
-        SDL_SetWindowResizable(m_pNativeWindow, (windowProperty.IsUserResizable ? SDL_TRUE : SDL_FALSE));
+        SDL_SetWindowResizable(m_pNativeWindow, (windowProperties.IsUserResizable ? SDL_TRUE : SDL_FALSE));
     }
 
     SDLWindow::~SDLWindow()

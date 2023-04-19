@@ -159,8 +159,8 @@ namespace DYE
 			glCall(glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix)));
 
 			// Camera space to clip space
-			float const aspectRatio = camera.GetAspectRatio();
-			glm::mat4 projectionMatrix = camera.GetProjectionMatrix(aspectRatio);
+			float const aspectRatio = camera.Properties.GetAspectRatio();
+			glm::mat4 projectionMatrix = camera.Properties.GetProjectionMatrix(aspectRatio);
 			auto projectionMatrixLoc = glGetUniformLocation(shader.GetID(), DefaultUniformNames::ProjectionMatrix);
 			glCall(glUniformMatrix4fv(projectionMatrixLoc, 1, GL_FALSE, glm::value_ptr(projectionMatrix)));
 		}
@@ -175,5 +175,13 @@ namespace DYE
 		vertexArray.Bind();
 		std::uint32_t const indexCount = vertexArray.GetIndexBuffer()->GetCount();
 		glCall(glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr));
+	}
+
+	glm::vec<2, std::uint32_t> RenderCommand::GetMaxFramebufferSize() const
+	{
+		std::int32_t width, height;
+		glGetIntegerv(GL_MAX_FRAMEBUFFER_WIDTH, &width);
+		glGetIntegerv(GL_MAX_FRAMEBUFFER_HEIGHT, &height);
+		return { width, height };
 	}
 }

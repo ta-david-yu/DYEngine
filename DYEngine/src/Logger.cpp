@@ -26,7 +26,7 @@ namespace DYE
         char positionMsg[LOG_BUFFER_SIZE];
 
         int offset = std::vsprintf(formattedMsg, msg, args);
-        int length = std::snprintf(formattedMsg + offset, LOG_BUFFER_SIZE, "\n\tat %-30s (%3d)", file, line);
+        int length = std::snprintf(formattedMsg + offset, LOG_BUFFER_SIZE, "\n\tat %-30s:%d", file, line);
 
         // print
         switch (type)

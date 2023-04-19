@@ -28,7 +28,7 @@ set(SOURCE_FILES
         src/RenderCommand.cpp
         src/ImageRenderer.cpp
         src/Texture.cpp
-        src/CameraProperties.cpp
+        src/Camera.cpp
         src/ImGuiUtil.cpp
         src/ShaderProcessorBase.cpp
         src/Material.cpp
@@ -52,7 +52,9 @@ set(SOURCE_FILES
         src/GamepadEvent.cpp
         src/Gamepad.cpp
         src/FPSCounter.cpp
-        src/EasingFunctions.cpp)
+        src/EasingFunctions.cpp
+        src/Framebuffer.cpp
+        src/FileSystem.cpp)
 set(HEADER_FILES
         include/Core/Application.h
         include/Graphics/WindowBase.h
@@ -87,7 +89,7 @@ set(HEADER_FILES
         include/Graphics/Texture.h
         include/Event/MouseEvent.h
         include/Message/Messaging.h
-        include/Graphics/CameraProperties.h
+        include/Graphics/Camera.h
         include/ImGui/ImGuiUtil.h
         include/Graphics/ShaderProcessorBase.h
         include/Graphics/Material.h
@@ -113,7 +115,9 @@ set(HEADER_FILES
         include/Input/MouseButton.h
         include/Input/Gamepad.h
         include/Util/FPSCounter.h
-        include/Math/EasingFunctions.h)
+        include/Math/EasingFunctions.h
+        include/Graphics/Framebuffer.h
+        include/FileSystem/FileSystem.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")
@@ -123,20 +127,16 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Mo
 
 # External library
 # Define SDL2_PATH here that will be used by FindSDL2 module
+#TODO: Link to different binaries based on compiler, right now there is only mingw version.
+#TODO: for instance if (MINGW) set(SDL2_PATH "extern/SDL2/mingw")
 set(SDL2_PATH "extern/SDL2")
 find_package(SDL2 REQUIRED)
-
-# Define RTTR_DIR here that will be used in FindRTTR module
-#set(RTTR_DIR "extern/rttr/rttr")
-#find_package(RTTR CONFIG REQUIRED Core)
 
 # Build external static library
 add_subdirectory(extern/glad)
 add_subdirectory(extern/imgui)
 add_subdirectory(extern/glm)
 add_subdirectory(extern/stb)
-add_subdirectory(extern/yaml-cpp)
-#add_subdirectory(extern/rttr)
 
 # ===========================================================================================
 # Build library
@@ -152,25 +152,28 @@ target_include_directories(DYEngine PUBLIC include)
 target_include_directories(DYEngine PUBLIC ${SDL2_INCLUDE_DIR})
 target_include_directories(DYEngine PUBLIC extern/glad/include)
 target_include_directories(DYEngine PUBLIC extern/imgui/imgui)
+target_include_directories(DYEngine PUBLIC extern/imgui/imgui/misc/cpp)
 # imgui/backends is needed by ImGuiLayer implementation (ImGuiLayer.cpp)
 target_include_directories(DYEngine PRIVATE extern/imgui/imgui/backends)
 target_include_directories(DYEngine PUBLIC extern/glm)
 target_include_directories(DYEngine PUBLIC extern/stb/include)
 target_include_directories(DYEngine PUBLIC extern/yaml-cpp/include)
-#target_include_directories(DYEngine PUBLIC extern/rttr/rttr/src)
 
 # ===========================================================================================
 # Link external libraries
 
 # SDL2MAIN_LIBRARY is also specified within SDL2_LIBRARY by the FindSDL2 module. It's needed for Windows specific main function. If I don't use FindSDL2 module, I have to link it as well.
 #target_link_libraries(DYEngine ${SDL2MAIN_LIBRARY})
-target_link_libraries(DYEngine ${SDL2_LIBRARY})
-target_link_libraries(DYEngine glad)
-target_link_libraries(DYEngine imgui)
-target_link_libraries(DYEngine glm)
-target_link_libraries(DYEngine stb)
-target_link_libraries(DYEngine yaml-cpp)
-#target_link_libraries(DYEngine RTTR::Core_Lib)
+target_link_libraries(DYEngine PRIVATE ${SDL2_LIBRARY} -mconsole) # Add -mconsole so the console window is shown.
+target_link_libraries(DYEngine PRIVATE glad)
+target_link_libraries(DYEngine PRIVATE imgui)
+target_link_libraries(DYEngine PRIVATE glm)
+target_link_libraries(DYEngine PRIVATE stb)
+
+# Link winpthread because SDL2 needs it.
+# We need to specify -static because winpthread is included in the bundled MinGW distribution that comes with CLion.
+# We would have to modify this for other compilers at some point.
+target_link_libraries(DYEngine PRIVATE -static winpthread)
 
 # ===========================================================================================
 # Copy SDL2.dll to the output directory post-build
@@ -188,5 +191,5 @@ set(DEFAULT_ASSETS
         assets/default/SpriteDefault.shader
         assets/default/SpriteUnlit.shader)
 
-include(../cmake/Functions/CopyAssets.cmake)
+include(../cmake/Modules/CopyAssets.cmake)
 CopyTextAssets(${DEFAULT_ASSETS})

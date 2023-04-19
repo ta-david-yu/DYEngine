@@ -391,14 +391,14 @@ namespace DYE
 		return &m_GamepadStates[denseArrayIndex];
 	}
 
-	void InputManager::DrawInputManagerImGui() const
+	void InputManager::DrawInputManagerImGui(bool* pIsOpen) const
 	{
 		// Set a default size for the window in case it has never been opened before.
 		const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
 		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
 
-		if (!ImGui::Begin("Input Manager"))
+		if (!ImGui::Begin("Input Manager", pIsOpen))
 		{
 			ImGui::End();
 			return;
@@ -463,8 +463,8 @@ namespace DYE
 		{
 			auto& selectedDeviceDescriptor = devices[selectedDevicesIndex];
 
-			auto const originalControlLabelWidth = ImGuiUtil::Parameters::ControlLabelWidth;
-			ImGuiUtil::Parameters::ControlLabelWidth = 100;
+			auto const originalControlLabelWidth = ImGuiUtil::Settings::ControlLabelWidth;
+			ImGuiUtil::Settings::ControlLabelWidth = 100;
 
 			ImGui::BeginGroup();
 			ImGui::BeginChild("Selected Device Info", ImVec2(0, -ImGui::GetFrameHeightWithSpacing()), false, ImGuiWindowFlags_HorizontalScrollbar); // Leave room for 1 line below us
@@ -574,7 +574,7 @@ namespace DYE
 			ImGui::EndChild();
 			ImGui::EndGroup();
 
-			ImGuiUtil::Parameters::ControlLabelWidth = originalControlLabelWidth;
+			ImGuiUtil::Settings::ControlLabelWidth = originalControlLabelWidth;
 		}
 	}
 }

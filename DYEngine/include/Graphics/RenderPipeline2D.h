@@ -28,7 +28,7 @@ namespace DYE
 
 	protected:
 		void onPreRender() override;
-		void renderCamera(CameraProperties const& camera) override;
+		void renderCamera(const Camera &camera) override;
 		void onPostRender() override;
 
 	private:

@@ -128,7 +128,7 @@ namespace DYE
 		// Do nothing.
 	}
 
-	void RenderPipeline2D::renderCamera(CameraProperties const& camera)
+	void RenderPipeline2D::renderCamera(const Camera &camera)
 	{
 		// Sort the submission (render queue, sorting layer, camera distance etc).
 		// TODO: we want to use insertion sort instead cuz the vector will already be kinda sorted in every Submit call

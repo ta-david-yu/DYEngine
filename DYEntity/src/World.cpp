@@ -1,26 +1,34 @@
 #include "World.h"
 
 #include "Entity.h"
-#include "Components.h"
+#include "NameComponent.h"
 
 namespace DYE::DYEntity
 {
 	World::World()
 	{
-		// TEMP
-		auto entity = CreateEntity("Ha Ha");
 	}
 
 	Entity World::CreateEntity()
 	{
-		return Entity(*this);
+		return Entity(*this, m_Registry.create());
 	}
 
 	Entity World::CreateEntity(std::string const& name)
 	{
-		auto entity = Entity(*this);
+		auto entity = Entity(*this, m_Registry.create());
 		entity.AddComponent<NameComponent>(name);
 
 		return entity;
+	}
+
+	void World::DestroyEntity(Entity &entity)
+	{
+		m_Registry.destroy(entity.m_EntityHandle);
+	}
+
+	entt::registry& GetWorldUnderlyingRegistry(World &world)
+	{
+		return world.m_Registry;
 	}
 }

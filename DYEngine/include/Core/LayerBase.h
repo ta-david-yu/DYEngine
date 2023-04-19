@@ -33,7 +33,11 @@ namespace DYE
 
         virtual void OnRender() {}
 
+		virtual void OnPostRender() {}
+
         virtual void OnImGui() {}
+
+		virtual void OnEndOfFrame() {}
 
         virtual void OnEvent(Event& event) {}
 

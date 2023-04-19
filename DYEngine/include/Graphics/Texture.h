@@ -13,14 +13,14 @@ namespace DYE
 
 	enum class WrapMode
 	{
-		// TODO: to add more
+		// TODO: to add more texture wrap modes
 		Repeat,
 		Clamp
 	};
 
 	enum class FilterMode
 	{
-		// TODO: to add more
+		// TODO: to add more texture filter modes
 		Nearest,
 		Linear
 	};
@@ -64,6 +64,10 @@ namespace DYE
 
 		/// \return a 1x1 white Texture2D
 		static std::shared_ptr<Texture2D> GetWhiteTexture();
+
+		/// Any unassigned texture should be default pointing to this.
+		/// It's basically the same as Texture2D::GetWhiteTexture().
+		static std::shared_ptr<Texture2D> GetDefaultTexture();
 
         Texture2D() = delete;
 

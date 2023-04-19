@@ -24,9 +24,8 @@ namespace DYE
         ImGui::CreateContext();
 
         ImGuiIO& io = ImGui::GetIO(); (void)io;
-		// TODO: we want to move these somewhere the users can modify them.
-		io.ConfigWindowsMoveFromTitleBarOnly = true;
 
+		io.ConfigWindowsMoveFromTitleBarOnly = true;
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
@@ -48,16 +47,18 @@ namespace DYE
     }
 
     void ImGuiLayer::OnEvent(Event& event)
-    {
-        if (m_BlockEvents)
-        {
-            // Use up an event if ImGui wants it
-            auto& io = ImGui::GetIO();
-            event.IsUsed |= event.IsInCategory(EventCategory::Mouse) && io.WantCaptureMouse;
-            event.IsUsed |= event.IsInCategory(EventCategory::Keyboard) && io.WantCaptureKeyboard;
-            // TODO: use EventCategory::TextInput
-        }
-    }
+	{
+		if (!m_BlockEvents)
+		{
+			return;
+		}
+
+		// Use up an event if ImGui wants it
+		auto &io = ImGui::GetIO();
+		event.IsUsed |= event.IsInCategory(EventCategory::Mouse) && io.WantCaptureMouse;
+		event.IsUsed |= event.IsInCategory(EventCategory::Keyboard) && io.WantCaptureKeyboard;
+		// TODO: implement EventCategory::TextInput maybe
+	}
 
     void ImGuiLayer::BeginImGui()
     {

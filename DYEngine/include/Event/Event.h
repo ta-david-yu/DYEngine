@@ -7,8 +7,6 @@
 
 namespace DYE
 {
-    // TODO: Event are currently blocking, should be using EventQueue later
-
     /// EventType, described event types
     enum class EventType
     {
@@ -16,7 +14,7 @@ namespace DYE
         ApplicationQuit,
         WindowClose, WindowSizeChange, WindowManualResize, WindowMove,
         KeyDown, KeyUp,
-        MouseButtonDown, MouseButtonUp, MouseMove, MouseDrag,
+        MouseButtonDown, MouseButtonUp, MouseMove, MouseScroll,
 		GamepadConnect, GamepadDisconnect
     };
 

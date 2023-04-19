@@ -2,15 +2,15 @@
 #include "Graphics/SDLWindow.h"
 
 #include "Util/Logger.h"
+#include "Util/Macro.h"
 
 #include <SDL.h>
 
 namespace DYE
 {
-    std::unique_ptr<WindowBase> WindowBase::Create(const WindowProperty &windowProperty)
+    std::unique_ptr<WindowBase> WindowBase::Create(const WindowProperties &windowProperties)
     {
-        // TODO: add other window types. For instance, GLFWWindow
-        return std::make_unique<SDLWindow>(windowProperty);
+        return std::make_unique<SDLWindow>(windowProperties);
     }
 
 	WindowID WindowBase::GetMouseFocusedWindowID()
@@ -41,6 +41,7 @@ namespace DYE
 		{
 			DYE_LOG_ERROR("WindowBase::MakeCurrent: Make current failed because m_Context is null. "
 						  "You might have forget to call SetContext() for window %d.", GetWindowID());
+			DYE_ASSERT(false && "WindowBase::MakeCurrent: Make current failed because m_Context is null. See log for further details.")
 		}
 
 		m_Context->MakeCurrentForWindow(*this);

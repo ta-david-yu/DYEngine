@@ -37,7 +37,7 @@ namespace DYE
 
         /// Application Constructor
         /// \param windowName: The name shown at the top of the app window
-        explicit Application(const std::string &windowName = "DYE App", int fixedFramePerSecond = 60);
+        explicit Application(const std::string &windowName, int fixedFramePerSecond = 60);
 
         virtual ~Application();
 
@@ -50,6 +50,7 @@ namespace DYE
 		void PopLayer(std::shared_ptr<LayerBase> &layer);
 		void PushOverlay(std::shared_ptr<LayerBase> &overlay);
 		void PopOverlay(std::shared_ptr<LayerBase> &overlay);
+		ImGuiLayer& GetImGuiLayer() { return *m_ImGuiLayer; }
 
     protected:
         void pushLayerImmediate(const std::shared_ptr<LayerBase> &layer);
@@ -59,8 +60,6 @@ namespace DYE
 
         /// Called after ForEach.layer.OnUpdate(), before ForEach.layer.OnRender()
         virtual void onPreRenderLayers() { }
-        /// Called after ForEach.layer.OnRender(), before BeginImGui()
-        virtual void onPostRenderLayers() { }
 
     private:
 		void handleOnApplicationQuit(ApplicationQuitEvent const& event);

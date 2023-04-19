@@ -1,13 +1,35 @@
 project(Sandbox)
 
-add_executable(Sandbox SandboxApp.cpp SandboxLayer.cpp SandboxMessage.cpp StaticAABBColliderManager.cpp)
+set(SOURCE_FILES
+        src/SandboxApp.cpp
+        src/SandboxLayer.cpp
+        src/SandboxMessage.cpp
+        src/StaticAABBColliderManager.cpp src/SystemExample.cpp)
 
-target_include_directories(Sandbox PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+set(HEADER_FILES
+        include/SandboxLayer.h
+        include/SandboxMessage.h
+        include/StaticAABBColliderManager.h
+        include/TestComponents.h
+        include/AnotherTestComponents.h include/SystemExample.h)
 
-target_link_libraries(Sandbox DYEngine)
-target_link_libraries(Sandbox DYEntity)
+set(INCLUDE_DIRS
+        include
+        ${CMAKE_CURRENT_SOURCE_DIR})
 
-if(CMAKE_BUILD_TYPE MATCHES Release)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive")
-    target_link_libraries(Sandbox -static-libgcc)
-endif ()
+# Be sure to add "" around INCLUDE_DIRS, SOURCE_FILES and HEADER_FILES to make them arrays.
+include(../DYEditor/cmake/Modules/DYEditorProject.cmake)
+DYEditor_AddRuntimeExecutable(${PROJECT_NAME}_Runtime "${CMAKE_CURRENT_SOURCE_DIR}" "${INCLUDE_DIRS}" "${SOURCE_FILES}" "${HEADER_FILES}")
+#DYEditor_AddEditorExecutable(${PROJECT_NAME}_Editor "${CMAKE_CURRENT_SOURCE_DIR}" "${INCLUDE_DIRS}" "${SOURCE_FILES}" "${HEADER_FILES}")
+
+# Copy assets to the output directory
+set(TEXT_ASSETS
+        assets/Scenes/TestScene.tscene)
+
+set(BINARY_ASSETS
+        assets/Textures/DYE_logo_outlined.png
+        assets/Textures/Sprite_DYEIcon.png)
+
+include(../cmake/Modules/CopyAssets.cmake)
+CopyTextAssets(${TEXT_ASSETS})
+CopyBinaryAssets(${BINARY_ASSETS})

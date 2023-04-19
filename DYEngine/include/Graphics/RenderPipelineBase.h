@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Graphics/CameraProperties.h"
+#include "Graphics/Camera.h"
 
 #include <glm/glm.hpp>
 
@@ -25,7 +25,7 @@ namespace DYE
 
 	protected:
 		virtual void onPreRender() = 0;
-		virtual void renderCamera(CameraProperties const& camera) = 0;
+		virtual void renderCamera(const Camera &camera) = 0;
 		virtual void onPostRender() = 0;
 	};
 }

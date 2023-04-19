@@ -19,7 +19,7 @@ namespace DYE
 		, FullScreenWithDesktopResolution 	/// Fullscreen but doesn't force the resolution of the display to the application resolution
 	};
 
-    struct WindowProperty
+    struct WindowProperties
     {
         std::string Title;
         uint32_t Width {1600};
@@ -30,10 +30,10 @@ namespace DYE
         /// Whether or not the window can be resized by the user
         bool IsUserResizable {false};
 
-        explicit WindowProperty(std::string title,
-                                uint32_t width = 1600,
-                                uint32_t height = 900,
-                                bool isUserResizable = false)
+        explicit WindowProperties(std::string title,
+								  uint32_t width = 1600,
+								  uint32_t height = 900,
+								  bool isUserResizable = false)
                 : Title(std::move(title)),
                   Width(width),
                   Height(height),
@@ -45,9 +45,9 @@ namespace DYE
     public:
 		/// A factory function that creates a window based on the platform with the given property setup.
 		/// Normally you should avoid calling this directly, it's only for engine internal use. Call WindowManager::CreateWindow instead.
-		/// \param windowProperty the settings property for the created window (name, width, height)
+		/// \param windowProperties the settings property for the created window (name, width, height)
 		/// \return a unique pointer to the created window
-		static std::unique_ptr<WindowBase> Create(const WindowProperty &windowProperty);
+		static std::unique_ptr<WindowBase> Create(const WindowProperties &windowProperties);
 		static WindowID GetMouseFocusedWindowID();
 
         virtual ~WindowBase() = default;

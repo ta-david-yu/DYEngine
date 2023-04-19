@@ -10,9 +10,9 @@ namespace DYE
 	std::vector<std::pair<WindowID, std::unique_ptr<WindowBase>>> WindowManager::s_Windows = {};
 	std::optional<WindowID> WindowManager::s_MainWindowID = {};
 
-	WindowBase *WindowManager::CreateWindow(WindowProperty const& windowProperty)
+	WindowBase *WindowManager::CreateWindow(WindowProperties const& windowProperties)
 	{
-		auto window = WindowBase::Create(windowProperty);
+		auto window = WindowBase::Create(windowProperties);
 		auto cachePtr = window.get(); 						// We cache the raw pointer because unique_ptr would be moved into vector later.
 		WindowID const id = window->GetWindowID();
 		s_Windows.emplace_back(id, std::move(window));
@@ -42,7 +42,7 @@ namespace DYE
 		s_MainWindowID = id;
 	}
 
-	WindowBase *WindowManager::GetWindowFromID(WindowID id)
+	WindowBase *WindowManager::TryGetWindowFromID(WindowID id)
 	{
 		for (auto const &windowPair: s_Windows)
 		{
@@ -54,12 +54,35 @@ namespace DYE
 			return windowPair.second.get();
 		}
 
-		DYE_LOG_ERROR("GetWindowFromID: There is no window with the given id - %d.", id);
 		return nullptr;
 
 	}
 
-	std::optional<WindowID> WindowManager::GetMainWindowID()
+	WindowBase *WindowManager::TryGetWindowAt(std::uint32_t index)
+	{
+		if (index >= s_Windows.size())
+		{
+			// The index is out of bounds.
+			return nullptr;
+		}
+
+		return s_Windows[index].second.get();
+	}
+
+	std::optional<std::uint32_t> WindowManager::TryGetWindowIndexFromID(WindowID id)
+	{
+		for (std::uint32_t index = 0; index < s_Windows.size(); index++)
+		{
+			if (s_Windows[index].first == id)
+			{
+				return index;
+			}
+		}
+
+		return {};
+	}
+
+	std::optional<WindowID> WindowManager::TryGetMainWindowID()
 	{
 		return s_MainWindowID;
 	}
@@ -72,13 +95,13 @@ namespace DYE
 			return nullptr;
 		}
 
-		return GetWindowFromID(s_MainWindowID.value());
+		return s_Windows[MainWindowIndex].second.get();
 	}
 
-	WindowBase *WindowManager::GetMouseFocusedWindow()
+	WindowBase *WindowManager::TryGetMouseFocusedWindow()
 	{
 		WindowID const id = WindowBase::GetMouseFocusedWindowID();
-		return GetWindowFromID(id);
+		return TryGetWindowFromID(id);
 	}
 
 	bool WindowManager::HasWindowWithID(WindowID id)
@@ -104,14 +127,14 @@ namespace DYE
 		}
 	}
 
-	void WindowManager::DrawWindowManagerImGui()
+	void WindowManager::DrawWindowManagerImGui(bool *pIsOpen)
 	{
 		// Set a default size for the window in case it has never been opened before.
 		const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
 		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
 
-		if (!ImGui::Begin("Window Manager"))
+		if (!ImGui::Begin("Window Manager", pIsOpen))
 		{
 			ImGui::End();
 			return;
@@ -145,7 +168,7 @@ namespace DYE
 			for (int i = 0; i < s_Windows.size(); ++i)
 			{
 				auto& windowPair = s_Windows[i];
-				char label[128]; sprintf(label, "%03d: %s", windowPair.first, windowPair.second->GetTitle().c_str());
+				char label[128]; sprintf(label, "%03d: %s", i, windowPair.second->GetTitle().c_str());
 				label[127] = 0;	// Set the last character to 0 to avoid longer names overflowing the buffer.
 				if (ImGui::Selectable(label, selectedWindowIndex == i))
 				{
@@ -161,19 +184,19 @@ namespace DYE
 			auto& selectedWindowPair = s_Windows[selectedWindowIndex];
 			WindowBase* pWindow = selectedWindowPair.second.get();
 
-			auto const originalControlLabelWidth = ImGuiUtil::Parameters::ControlLabelWidth;
-			ImGuiUtil::Parameters::ControlLabelWidth = 100;
+			auto const originalControlLabelWidth = ImGuiUtil::Settings::ControlLabelWidth;
+			ImGuiUtil::Settings::ControlLabelWidth = 100;
 
 			ImGui::BeginGroup();
 			ImGui::BeginChild("Selected Window Info", ImVec2(0, -ImGui::GetFrameHeightWithSpacing()), false, ImGuiWindowFlags_HorizontalScrollbar); // Leave room for 1 line below us
 
 			if (IsMainWindow(*pWindow))
 			{
-				ImGui::Text("%03d: (Main Window) %s", selectedWindowPair.first, pWindow->GetTitle().c_str());
+				ImGui::Text("(Main Window) %s", pWindow->GetTitle().c_str());
 			}
 			else
 			{
-				ImGui::Text("%03d: %s", selectedWindowPair.first, pWindow->GetTitle().c_str());
+				ImGui::Text("%s", pWindow->GetTitle().c_str());
 			}
 
 			ImGui::Separator();
@@ -201,7 +224,7 @@ namespace DYE
 			ImGui::EndChild();
 			ImGui::EndGroup();
 
-			ImGuiUtil::Parameters::ControlLabelWidth = originalControlLabelWidth;
+			ImGuiUtil::Settings::ControlLabelWidth = originalControlLabelWidth;
 		}
 	}
 }

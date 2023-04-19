@@ -56,14 +56,14 @@ namespace DYE::ShaderProcessor
 			return BlendState { .IsEnabled = false };
 		}
 
-		auto srcFactor = stringToBlendFactor(srcFactorStr);
+		auto srcFactor = tryCastStringToBlendFactor(srcFactorStr);
 		if (!srcFactor.has_value())
 		{
 			DYE_LOG("Unrecognized BlendFunc Src Factor '%s'. BlendFunc is disabled.", srcFactorStr.c_str());
 			return BlendState { .IsEnabled = false };
 		}
 
-		auto dstFactor = stringToBlendFactor(dstFactorStr);
+		auto dstFactor = tryCastStringToBlendFactor(dstFactorStr);
 		if (!dstFactor.has_value())
 		{
 			DYE_LOG("Unrecognized BlendFunc Dst Factor '%s'. BlendFunc is disabled.", dstFactorStr.c_str());
@@ -79,7 +79,7 @@ namespace DYE::ShaderProcessor
 		// std::vector<std::string> const tokens = splitLineIntoTokensBySpace(line);
 	}
 
-	std::optional<BlendState::BlendFactor> BlendStateCommandProcessor::stringToBlendFactor(const std::string &input)
+	std::optional<BlendState::BlendFactor> BlendStateCommandProcessor::tryCastStringToBlendFactor(const std::string &input)
 	{
 		if (input == "Zero")
 		{

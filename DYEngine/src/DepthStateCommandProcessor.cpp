@@ -51,7 +51,7 @@ namespace DYE::ShaderProcessor
 			return CompareFunction::Always;
 		}
 
-		auto compareFunction = StringToCompareFunction(tokens[1]);
+		auto compareFunction = TryCastStringToCompareFunction(tokens[1]);
 		if (!compareFunction.has_value())
 		{
 			DYE_LOG("ZTest directive '%s' is presented but with invalid parameter '%s'. ZTest::Always is returned instead.", line.c_str(), tokens[1].c_str());

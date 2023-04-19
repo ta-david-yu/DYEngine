@@ -1,15 +1,15 @@
 [submodule "DYEngine/extern/glm"]
 	path = DYEngine/extern/glm
 	url = https://github.com/ta-david-yu/glm.git
-[submodule "DYEngine/extern/yaml-cpp"]
-	path = DYEngine/extern/yaml-cpp
-	url = https://github.com/ta-david-yu/yaml-cpp.git
 [submodule "DYEngine/extern/imgui/imgui"]
 	path = DYEngine/extern/imgui/imgui
 	url = git@github.com:ta-david-yu/imgui.git
-[submodule "DYEngine/extern/rttr/rttr"]
-	path = DYEngine/extern/rttr/rttr
-	url = git@github.com:ta-david-yu/rttr.git
 [submodule "DYEntity/extern/entt"]
 	path = DYEntity/extern/entt
 	url = git@github.com:ta-david-yu/entt.git
+[submodule "DYEditor/DYEditorCodeGenerator/extern/fmt"]
+	path = DYEditor/DYEditorCodeGenerator/extern/fmt
+	url = git@github.com:fmtlib/fmt.git
+[submodule "DYEditor/extern/tomlplusplus/tomlplusplus"]
+	path = DYEditor/extern/tomlplusplus/tomlplusplus
+	url = git@github.com:ta-david-yu/tomlplusplus.git

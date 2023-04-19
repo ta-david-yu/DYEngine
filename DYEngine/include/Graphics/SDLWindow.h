@@ -10,7 +10,7 @@ namespace DYE
     class SDLWindow final : public WindowBase
     {
     public:
-        explicit SDLWindow(const WindowProperty &windowProperty);
+        explicit SDLWindow(const WindowProperties &windowProperties);
 
         ~SDLWindow() override;
 

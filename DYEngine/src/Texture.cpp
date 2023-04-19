@@ -97,6 +97,11 @@ namespace DYE
 		return whiteTexture;
 	}
 
+	std::shared_ptr<Texture2D> Texture2D::GetDefaultTexture()
+	{
+		return GetWhiteTexture();
+	}
+
     Texture2D::Texture2D(std::uint32_t width, std::uint32_t height)
         : m_Width(width), m_Height(height)
     {

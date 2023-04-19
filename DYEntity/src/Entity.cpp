@@ -1,11 +1,11 @@
 #include "Entity.h"
 
+#include "NameComponent.h"
+
 namespace DYE::DYEntity
 {
-	Entity::Entity(World &world)
+	Entity::Entity(World &world, EntityHandle handle) : m_World(&world), m_EntityHandle(handle)
 	{
-		m_World = &world;
-		m_EntityHandle = world.m_Registry.create();
 	}
 
 	bool Entity::IsValid() const
@@ -15,6 +15,26 @@ namespace DYE::DYEntity
 			return false;
 		}
 
-		return m_EntityHandle != entt::null;;
+		bool const isNullEntity = m_EntityHandle == entt::null;
+		return !isNullEntity && m_World->m_Registry.valid(m_EntityHandle);
 	}
+
+	std::optional<std::string> Entity::TryGetName()
+	{
+		if (!this->HasComponent<NameComponent>())
+		{
+			return {};
+		}
+
+		return this->GetComponent<NameComponent>().Name;
+	}
+
+	void Entity::RemoveAllComponents()
+	{
+		for (auto [id, storage] : m_World->m_Registry.storage())
+		{
+			storage.remove(m_EntityHandle);
+		}
+	}
+
 }

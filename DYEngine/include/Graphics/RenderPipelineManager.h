@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Graphics/RenderPipelineBase.h"
-#include "Graphics/CameraProperties.h"
+#include "Graphics/Camera.h"
 #include "Util/TypeUtil.h"
 
 #include <utility>
@@ -16,7 +16,7 @@ namespace DYE
 	{
 	private:
 		static std::shared_ptr<RenderPipelineBase> s_ActiveRenderPipeline;
-		static std::vector<CameraProperties> s_CameraProperties;
+		static std::vector<Camera> s_Cameras;
 
 	public:
 		static void Initialize();
@@ -32,7 +32,7 @@ namespace DYE
 		static RenderPipelineBase& GetActiveRenderPipeline();
 		static void SetActiveRenderPipeline(std::shared_ptr<RenderPipelineBase> renderPipeline);
 
-		static void RegisterCameraForNextRender(CameraProperties cameraProperties);
+		static void RegisterCameraForNextRender(Camera camera);
 
 	public:
 		static bool EnableDebugDraw;
