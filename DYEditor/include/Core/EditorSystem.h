@@ -56,7 +56,7 @@ namespace DYE::DYEditor
 	enum class InitializeLoadType
 	{
 		Manual,
-		BeforeLoadScene,
+		AfterLoadScene,
 
 		// This will only happen in Editor.
 		BeforeEnterPlayMode,
@@ -66,7 +66,7 @@ namespace DYE::DYEditor
 
 	struct InitializeLoadParameters
 	{
-		InitializeLoadType LoadType = InitializeLoadType::BeforeLoadScene;
+		InitializeLoadType LoadType = InitializeLoadType::AfterLoadScene;
 	};
 
 	struct SystemBase

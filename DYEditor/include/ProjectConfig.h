@@ -11,6 +11,8 @@ namespace DYE::DYEditor
 	constexpr char const* DefaultEditorConfigFilePath = "settings//editor.ini";
 	constexpr char const* DefaultRuntimeConfigFilePath = "settings//runtime.ini";
 
+	constexpr char const* RuntimeConfigFirstSceneKey = "Project.FirstScene";
+
 	struct ProjectConfig
 	{
 		static std::optional<ProjectConfig> TryLoadFromOrCreateDefaultAt(const std::filesystem::path &path);

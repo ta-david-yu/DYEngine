@@ -3,9 +3,14 @@
 
 #include "SandboxLayer.h"
 
+#include "Type/BuiltInTypeRegister.h"
+#include "Type/UserTypeRegister.h"
+#include "Core/RuntimeSceneManagement.h"
 #include "SceneEditorLayer.h"
 #include "SceneRuntimeLayer.h"
+#include "ProjectConfig.h"
 
+#include <filesystem>
 
 namespace DYE::Sandbox
 {
@@ -18,9 +23,21 @@ namespace DYE::Sandbox
         explicit SandboxApp(const std::string &windowName, int fixedFramePerSecond = 60)
             : Application(windowName, fixedFramePerSecond)
         {
+
+			DYE::DYEditor::RegisterBuiltInTypes();
+			DYE::DYEditor::RegisterUserTypes();
+
 #ifdef DYE_RUNTIME
 			auto runtimeLayer = std::make_shared<DYEditor::SceneRuntimeLayer>();
 			pushLayerImmediate(runtimeLayer);
+
+			std::filesystem::path firstScenePath = (std::filesystem::path) DYE::DYEditor::GetRuntimeConfig().GetOrDefault<std::string>(DYE::DYEditor::RuntimeConfigFirstSceneKey, "");
+			if (firstScenePath.empty())
+			{
+				DYE_ASSERT_RELEASE(false && "The settings for the first scene is empty."
+											"Be sure to set Project.FirstScene in the runtime configuration file (i.e. runtime.ini).");
+			}
+			DYE::DYEditor::RuntimeSceneManagement::LoadScene(firstScenePath);
 #endif
 
 #ifdef DYE_EDITOR

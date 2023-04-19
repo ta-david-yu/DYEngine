@@ -50,10 +50,6 @@ namespace DYE::DYEditor
 
 	void SceneEditorLayer::OnAttach()
 	{
-		// FIXME: Should be moved to DYEditorApplication so that both EditorLayer & RuntimeLayer could use it
-		DYEditor::RegisterBuiltInTypes();
-		DYEditor::RegisterUserTypes();
-
 		// Register built-in editor windows.
 		EditorWindowManager::RegisterEditorWindow(
 			RegisterEditorWindowParameters
@@ -247,7 +243,7 @@ namespace DYE::DYEditor
 			// Save a copy of the active scene as a serialized scene.
 			m_SerializedSceneCacheWhenEnterPlayMode = SerializedObjectFactory::CreateSerializedScene(scene);
 
-			// Initialize systems.
+			// Initialize load systems.
 			scene.ForEachSystemDescriptor
 			(
 				[&scene](SystemDescriptor &systemDescriptor, ExecutionPhase phase)
@@ -269,7 +265,7 @@ namespace DYE::DYEditor
 			// Execute teardown systems.
 			scene.ExecuteTeardownSystems();
 
-			// Initialize systems.
+			// Initialize load systems.
 			scene.ForEachSystemDescriptor
 			(
 				[&scene](SystemDescriptor &systemDescriptor, ExecutionPhase phase)

@@ -234,10 +234,10 @@ namespace DYE::DYEditor
 			changed = true;
 		}
 
-		auto firstScenePath = (std::filesystem::path) config.GetOrDefault<std::string>("Project.FirstScene", "");
+		auto firstScenePath = (std::filesystem::path) config.GetOrDefault<std::string>(RuntimeConfigFirstSceneKey, "");
 		if (ImGuiUtil::DrawAssetPathStringControl("First Scene", firstScenePath, { ".tscene" }))
 		{
-			config.Set("Project.FirstScene", firstScenePath.string());
+			config.Set(RuntimeConfigFirstSceneKey, firstScenePath.string());
 			changed = true;
 		}
 
