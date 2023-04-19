@@ -2,7 +2,7 @@
 
 namespace DYE::DYEditor
 {
-	enum class PlayModeStateChange
+	enum class ModeStateChange
 	{
 		// RuntimeState::IsPlaying() will be false.
 		BeforeEnterPlayMode,
@@ -19,7 +19,7 @@ namespace DYE::DYEditor
 
 	struct RuntimeStateListenerBase
 	{
-		virtual void OnPlayModeStateChanged(PlayModeStateChange stateChange) = 0;
+		virtual void OnPlayModeStateChanged(ModeStateChange stateChange) = 0;
 	};
 
 	struct RuntimeState
@@ -29,16 +29,22 @@ namespace DYE::DYEditor
 
 	public:
 		static bool IsPlaying();
+		static bool WillChangeMode();
 		static bool IsEditor();
 		static bool IsRuntime();
 
-		/// This method will do nothing in runtime build because runtime build is always in play mode.
-		static void SetIsPlaying(bool value);
+		/// This method will do nothing in runtime build because runtime build is always in play mode.\n
+		/// The actual set result is delayed until the end of the frame by SceneRuntimeLayer.\n
+		/// This means IsPlaying() would not reflect the set value right after SetIsPlayingAtTheEndOfFrame(), but you could use WillChangeMode() to
+		/// check whether or not the editor is entering Play Mode soon.
+		static void SetIsPlayingAtTheEndOfFrame(bool value);
 
 		static void RegisterListener(RuntimeStateListenerBase *listener);
 		static void UnregisterListener(RuntimeStateListenerBase *listenerToRemove);
 
 	private:
-		static void broadcastPlayModeStateChangedEvent(PlayModeStateChange stateChange);
+		/// This method will do nothing in runtime build because runtime build is always in play mode, no way to change mode.\n
+		static void consumeWillChangeModeIfNeeded();
+		static void broadcastModeStateChangedEvent(ModeStateChange stateChange);
 	};
 }

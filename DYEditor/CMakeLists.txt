@@ -22,7 +22,7 @@ set(SOURCE_FILES
         src/RuntimeState.cpp
         src/Render2DSpriteSystem.cpp
         src/RegisterCameraSystem.cpp
-        src/EditorWindowManager.cpp)
+        src/EditorWindowManager.cpp src/RuntimeSceneManagement.cpp)
 set(HEADER_FILES
         include/SceneEditorLayer.h
         include/SceneRuntimeLayer.h
@@ -50,7 +50,7 @@ set(HEADER_FILES
         include/Components/CameraComponent.h
         include/Systems/RegisterCameraSystem.h
         include/ProjectConfig.h src/ProjectConfig.cpp
-        include/ImGui/EditorWindowManager.h)
+        include/ImGui/EditorWindowManager.h include/Core/RuntimeSceneManagement.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")

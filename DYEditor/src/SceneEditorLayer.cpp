@@ -3,6 +3,7 @@
 #include "SceneRuntimeLayer.h"
 #include "Core/Application.h"
 #include "Core/RuntimeState.h"
+#include "Core/RuntimeSceneManagement.h"
 #include "Core/EditorSystem.h"
 #include "Serialization/SerializedObjectFactory.h"
 #include "Type/BuiltInTypeRegister.h"
@@ -119,17 +120,17 @@ namespace DYE::DYEditor
 		std::optional<SerializedScene> serializedScene = SerializedObjectFactory::TryLoadSerializedSceneFromFile(defaultScenePath);
 		if (serializedScene.has_value())
 		{
-			SerializedObjectFactory::ApplySerializedSceneToEmptyScene(serializedScene.value(), m_RuntimeLayer->ActiveMainScene);
+			SerializedObjectFactory::ApplySerializedSceneToEmptyScene(serializedScene.value(), RuntimeSceneManagement::GetActiveMainScene());
 			m_CurrentSceneFilePath = defaultScenePath;
 		}
 		else
 		{
 			// Failed to load the default scene, therefore we create an untitled new scene.
 			// Add a camera entity & camera system by default if the active scene is untitled and empty.
-			auto cameraEntity = m_RuntimeLayer->ActiveMainScene.World.CreateEntity("Camera");
+			auto cameraEntity = RuntimeSceneManagement::GetActiveMainScene().World.CreateEntity("Camera");
 			cameraEntity.AddComponent<TransformComponent>().Position = {0, 0, 10};
 			cameraEntity.AddComponent<CameraComponent>();
-			m_RuntimeLayer->ActiveMainScene.TryAddSystemByName(RegisterCameraSystem::TypeName);
+			RuntimeSceneManagement::GetActiveMainScene().TryAddSystemByName(RegisterCameraSystem::TypeName);
 		}
 
 		// Register events.
@@ -238,10 +239,10 @@ namespace DYE::DYEditor
 		DYE::RenderPipelineManager::RegisterCameraForNextRender(m_SceneViewCamera);
 	}
 
-	void SceneEditorLayer::OnPlayModeStateChanged(DYE::DYEditor::PlayModeStateChange stateChange)
+	void SceneEditorLayer::OnPlayModeStateChanged(DYE::DYEditor::ModeStateChange stateChange)
 	{
-		auto &scene = m_RuntimeLayer->ActiveMainScene;
-		if (stateChange == PlayModeStateChange::BeforeEnterPlayMode)
+		auto &scene = RuntimeSceneManagement::GetActiveMainScene();
+		if (stateChange == ModeStateChange::BeforeEnterPlayMode)
 		{
 			// Save a copy of the active scene as a serialized scene.
 			m_SerializedSceneCacheWhenEnterPlayMode = SerializedObjectFactory::CreateSerializedScene(scene);
@@ -263,7 +264,7 @@ namespace DYE::DYEditor
 			// Execute initialize systems.
 			scene.ExecuteInitializeSystems();
 		}
-		else if (stateChange == PlayModeStateChange::BeforeEnterEditMode)
+		else if (stateChange == ModeStateChange::BeforeEnterEditMode)
 		{
 			// Execute teardown systems.
 			scene.ExecuteTeardownSystems();
@@ -293,7 +294,7 @@ namespace DYE::DYEditor
 	{
 		DYE_ASSERT_LOG_WARN(m_RuntimeLayer, "SceneRuntimeLayer is null. You might have forgot to call SetRuntimeLayer.");
 
-		Scene &activeScene = m_RuntimeLayer->ActiveMainScene;
+		Scene &activeScene = RuntimeSceneManagement::GetActiveMainScene();
 
 		// Create the main editor window that can be docked by other editor windows.
 		// By default, it also hosts all the major windows such as Scene Hierarchy Panel, Entity Inspector & Scene View etc.
@@ -465,7 +466,7 @@ namespace DYE::DYEditor
 			{
 				if (ImGui::MenuItem("Play", "Ctrl+P", RuntimeState::IsPlaying()))
 				{
-					RuntimeState::SetIsPlaying(!RuntimeState::IsPlaying());
+					RuntimeState::SetIsPlayingAtTheEndOfFrame(!RuntimeState::IsPlaying());
 				}
 
 				ImGui::EndMenu();

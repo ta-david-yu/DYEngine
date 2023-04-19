@@ -12,15 +12,12 @@ namespace DYE::DYEditor
 		SceneRuntimeLayer();
 		~SceneRuntimeLayer() override = default;
 
-		void LoadSceneInstant();
-
+		void OnPreApplicationRun() override;
 		void OnFixedUpdate() override;
 		void OnUpdate() override;
 		void OnRender() override;
 		void OnPostRender() override;
 		void OnImGui() override;
-
-	public:
-		DYEditor::Scene ActiveMainScene;
+		void OnEndOfFrame() override;
 	};
 }

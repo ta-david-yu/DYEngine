@@ -12,6 +12,8 @@ namespace DYE::DYEditor
 #else
 		static constexpr const bool IsPlaying = true;
 #endif
+		bool IsChangingMode = false;
+		bool NewIsPlaying = false;
 		std::vector<RuntimeStateListenerBase*> RuntimeStateListeners = {};
 	};
 
@@ -20,6 +22,11 @@ namespace DYE::DYEditor
 	bool RuntimeState::IsPlaying()
 	{
 		return s_Data.IsPlaying;
+	}
+
+	bool RuntimeState::WillChangeMode()
+	{
+		return s_Data.IsChangingMode;
 	}
 
 	bool RuntimeState::IsEditor()
@@ -42,25 +49,19 @@ namespace DYE::DYEditor
 #endif
 	}
 
-	void RuntimeState::SetIsPlaying(bool value)
+	void RuntimeState::SetIsPlayingAtTheEndOfFrame(bool value)
 	{
 #ifdef DYE_EDITOR
-		bool const prevIsPlaying = s_Data.IsPlaying;
-		bool const playModeChanged = value != prevIsPlaying;
-
-		if (playModeChanged)
+		if (s_Data.IsPlaying == value)
 		{
-			broadcastPlayModeStateChangedEvent(value ? PlayModeStateChange::BeforeEnterPlayMode : PlayModeStateChange::BeforeEnterEditMode);
+			// The new value is the same as before, skip it.
+			return;
 		}
 
-		// Change play mode.
-		s_Data.IsPlaying = value;
+		s_Data.IsChangingMode = true;
+		s_Data.NewIsPlaying = value;
 
-
-		if (playModeChanged)
-		{
-			broadcastPlayModeStateChangedEvent(value ? PlayModeStateChange::AfterEnterPlayMode : PlayModeStateChange::AfterEnterEditMode);
-		}
+		return;
 #endif
 	}
 
@@ -78,7 +79,38 @@ namespace DYE::DYEditor
 					   });
 	}
 
-	void RuntimeState::broadcastPlayModeStateChangedEvent(PlayModeStateChange stateChange)
+	void RuntimeState::consumeWillChangeModeIfNeeded()
+	{
+#ifdef DYE_EDITOR
+		if (!s_Data.IsChangingMode)
+		{
+			return;
+		}
+
+		s_Data.IsChangingMode = false;
+		bool value = s_Data.NewIsPlaying;
+
+		bool const prevIsPlaying = s_Data.IsPlaying;
+		bool const playModeChanged = value != prevIsPlaying;
+
+		if (playModeChanged)
+		{
+			broadcastModeStateChangedEvent(
+				value ? ModeStateChange::BeforeEnterPlayMode : ModeStateChange::BeforeEnterEditMode);
+		}
+
+		// Change play mode.
+		s_Data.IsPlaying = value;
+
+		if (playModeChanged)
+		{
+			broadcastModeStateChangedEvent(
+				value ? ModeStateChange::AfterEnterPlayMode : ModeStateChange::AfterEnterEditMode);
+		}
+#endif
+	}
+
+	void RuntimeState::broadcastModeStateChangedEvent(ModeStateChange stateChange)
 	{
 		for (auto listener : s_Data.RuntimeStateListeners)
 		{

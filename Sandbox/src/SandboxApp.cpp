@@ -18,27 +18,20 @@ namespace DYE::Sandbox
         explicit SandboxApp(const std::string &windowName, int fixedFramePerSecond = 60)
             : Application(windowName, fixedFramePerSecond)
         {
-			auto runtimeLayer = std::make_shared<DYEditor::SceneRuntimeLayer>();
 #ifdef DYE_RUNTIME
+			auto runtimeLayer = std::make_shared<DYEditor::SceneRuntimeLayer>();
+			pushLayerImmediate(runtimeLayer);
 #endif
 
 #ifdef DYE_EDITOR
+			auto runtimeLayer = std::make_shared<DYEditor::SceneRuntimeLayer>();
 			auto editorLayer = std::make_shared<DYEditor::SceneEditorLayer>();
 			editorLayer->SetApplication(this);
 			editorLayer->SetRuntimeLayer(runtimeLayer);
-#endif
-
-#ifdef DYE_EDITOR
-			printf("Editor Call!\n");
-#endif
-
-#ifdef DYE_RUNTIME
-			printf("Runtime Call!\n");
-#endif
 
 			pushLayerImmediate(runtimeLayer);
 			pushLayerImmediate(editorLayer);
-
+#endif
 			//pushLayerImmediate(std::make_shared<SandboxLayer>());
         }
 

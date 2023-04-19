@@ -176,9 +176,13 @@ namespace DYE
 			// For now, it does nothing.
 			WindowManager::UpdateWindows();
 
+			// End of frame.
+			for (auto& layer : m_LayerStack)
+			{
+				layer->OnEndOfFrame();
+			}
+
 			// Execute delayed layer operations.
-			// We do this after tickUpdate because we don't want the time spent on layer operations to be
-			// taken into account for the delta time between this frame and the next frame.
 			for (auto& layerOperation : m_LayerOperations)
 			{
 				switch (layerOperation.Type)

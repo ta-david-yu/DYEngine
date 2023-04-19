@@ -37,6 +37,8 @@ namespace DYE
 
         virtual void OnImGui() {}
 
+		virtual void OnEndOfFrame() {}
+
         virtual void OnEvent(Event& event) {}
 
         const std::string& GetName() const { return m_Name; }

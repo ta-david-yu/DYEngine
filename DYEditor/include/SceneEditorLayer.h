@@ -39,7 +39,7 @@ namespace DYE::DYEditor
 		void OnImGui() override;
 
 		// Inherit from RuntimeStateListenerBase
-		void OnPlayModeStateChanged(DYE::DYEditor::PlayModeStateChange stateChange) override;
+		void OnPlayModeStateChanged(DYE::DYEditor::ModeStateChange stateChange) override;
 
 		void SetApplication(Application* application) { m_pApplication = application; }
 		void SetRuntimeLayer(std::shared_ptr<SceneRuntimeLayer> runtimeLayer) { m_RuntimeLayer = std::move(runtimeLayer); }
