@@ -6,9 +6,7 @@ DYEngine is a WIP 2D game engine (with the possibility of 3D rendering).
 DYEngine is divided into several sub-projects:
 * **DYEngine**: The core of the game engine. It includes everything you need to make a code-only game.
 * **DYEntity** (WIP): The main object model of DYEngine is ECS-based and DYEntity provides that. For now it's essentially a wrapper around entt.
-* **DYEditor** (WIP): It provides an editor UI on top of DYEngine & DYEntity to edit your worlds & entities. It comes with a code generation tool for generating runtime type information of user-defined components & systems. 
-
-Both DYEntity & DYEditor are under implementation on branch: [feature/dyentity-dyeditor-implementation](https://github.com/ta-david-yu/DYEngine/tree/feature/dyentity-dyeditor-implementation)
+* **DYEditor** (WIP): It provides an editor UI on top of DYEngine & DYEntity to edit your worlds & entities. It comes with a code generation tool for generating type information of user-defined components & systems for editor type registry. 
 
 ## Environment Setup
 ### Most of the following tools come with CLion as bundles
