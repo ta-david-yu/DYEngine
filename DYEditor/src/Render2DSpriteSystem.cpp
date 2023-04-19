@@ -10,14 +10,26 @@
 
 namespace DYE::DYEditor
 {
+	using namespace DYE::DYEntity;
+
+	void Render2DSpriteSystem::InitializeLoad(DYEntity::World &world, DYE::DYEditor::InitializeLoadParameters)
+	{
+		auto& registry = DYEntity::GetWorldUnderlyingRegistry(world);
+
+		// Call this on initialize load to perform initialization step on the group.
+		auto group = registry.group<SpriteRendererComponent>(entt::get<TransformComponent>);
+	}
+
 	void Render2DSpriteSystem::Execute(DYE::DYEntity::World &world, DYE::DYEditor::ExecuteParameters params)
 	{
 		m_NumberOfRenderedEntitiesLastFrame = 0;
 		auto& registry = DYEntity::GetWorldUnderlyingRegistry(world);
-		auto view = registry.view<SpriteRendererComponent, DYEntity::TransformComponent>();
-		for (auto entity : view)
+
+		// We use group here because we know Render2DSpriteSystem is the main critical path for SpriteRendererComponent.
+		auto group = registry.group<SpriteRendererComponent>(entt::get<TransformComponent>);
+		for (auto entity : group)
 		{
-			auto [sprite, transform] = view.get<SpriteRendererComponent, DYEntity::TransformComponent>(entity);
+			auto [sprite, transform] = group.get<SpriteRendererComponent, TransformComponent>(entity);
 
 			if (!sprite.IsEnabled)
 			{

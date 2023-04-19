@@ -2,7 +2,7 @@
 
 #include "Graphics/Camera.h"
 
-namespace DYE::DYEditor
+namespace DYE::DYEntity
 {
 	struct CameraComponent
 	{
