@@ -44,7 +44,7 @@ Here is a short gameplay video of it - [DYE Tech Demo - Gameplay Youtube Video](
 
 Here are some other WIP screenshots/footage:
 
-https://user-images.githubusercontent.com/8101387/211428378-24c91485-b080-486f-b750-cb40b5b0c1dd.mp4
+https://user-images.githubusercontent.com/8101387/233497705-1d3de8c7-5dc6-4691-826f-029bf27ff352.mp4
 
 https://user-images.githubusercontent.com/8101387/211428433-88de9dfb-1df6-47c5-b2f2-73d366730937.mp4
 
