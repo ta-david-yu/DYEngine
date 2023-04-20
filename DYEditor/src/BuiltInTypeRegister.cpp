@@ -259,12 +259,13 @@ namespace DYE::DYEditor
 		TypeRegistry::RegisterComponentType<NameComponent>
 			(
 				NameComponentName,
-				ComponentTypeFunctionCollection
+				ComponentTypeDescriptor
 					{
 						.Add = BuiltInFunctions::NameComponent_Add,
 
 						.Serialize = BuiltInFunctions::NameComponent_Serialize,
 						.Deserialize = BuiltInFunctions::NameComponent_Deserialize,
+						.ShouldDrawInNormalInspector = false,
 						.DrawInspector = BuiltInFunctions::NameComponent_DrawInspector,
 					}
 			);
@@ -272,7 +273,7 @@ namespace DYE::DYEditor
 		TypeRegistry::RegisterComponentType<TransformComponent>
 			(
 				"Transform",
-				ComponentTypeFunctionCollection
+				ComponentTypeDescriptor
 					{
 						.Serialize = BuiltInFunctions::TransformComponent_Serialize,
 						.Deserialize = BuiltInFunctions::TransformComponent_Deserialize,
@@ -283,7 +284,7 @@ namespace DYE::DYEditor
 		TypeRegistry::RegisterComponentType<CameraComponent>
 		    (
 				"Camera",
-				ComponentTypeFunctionCollection
+				ComponentTypeDescriptor
 					{
 						.Add = BuiltInFunctions::CameraComponent_Add,
 
@@ -297,7 +298,7 @@ namespace DYE::DYEditor
 		TypeRegistry::RegisterComponentType<SpriteRendererComponent>
 		    (
 				"Sprite Renderer",
-				ComponentTypeFunctionCollection
+				ComponentTypeDescriptor
 					{
 						.Add = BuiltInFunctions::SpriteRendererComponent_Add,
 

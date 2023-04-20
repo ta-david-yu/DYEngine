@@ -104,7 +104,7 @@ namespace DYE::DYEditor
 			}
 
 			auto& typeName = getTypeNameResult.value();
-			auto getComponentTypeFunctionsResult = TypeRegistry::TryGetComponentTypeFunctions(typeName);
+			auto getComponentTypeFunctionsResult = TypeRegistry::TryGetComponentTypeDescriptor(typeName);
 			if (!getComponentTypeFunctionsResult.has_value())
 			{
 				// Cannot find the given component type and its related functions, add the component name
@@ -181,7 +181,7 @@ namespace DYE::DYEditor
 			{
 				SerializedEntity serializedEntity = serializedScene.CreateAndAddSerializedEntity();
 
-				auto componentNamesAndFunctions = TypeRegistry::GetComponentTypesNamesAndFunctionCollections();
+				auto componentNamesAndFunctions = TypeRegistry::GetComponentTypesNamesAndDescriptors();
 				for (auto& [name, functions] : componentNamesAndFunctions)
 				{
 					if (!functions.Has(entity))
@@ -208,7 +208,7 @@ namespace DYE::DYEditor
 	{
 		SerializedEntity serializedEntity;
 
-		auto componentNamesAndFunctions = TypeRegistry::GetComponentTypesNamesAndFunctionCollections();
+		auto componentNamesAndFunctions = TypeRegistry::GetComponentTypesNamesAndDescriptors();
 		for (auto& [name, functions] : componentNamesAndFunctions)
 		{
 			if (!functions.Has(entity))

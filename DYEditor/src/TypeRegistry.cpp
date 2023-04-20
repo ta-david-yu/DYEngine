@@ -6,7 +6,7 @@
 
 namespace DYE::DYEditor
 {
-	std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> TypeRegistry::s_ComponentNamesAndFunctionCollectionsCache = {};
+	std::vector<std::pair<std::string, ComponentTypeDescriptor>> TypeRegistry::s_ComponentNamesAndDescriptorsCache = {};
 	std::vector<std::pair<std::string, SystemBase*>> TypeRegistry::s_SystemNamesAndPointersCache = {};
 
 	void TypeRegistry::ClearRegisteredComponentTypes()
@@ -19,22 +19,22 @@ namespace DYE::DYEditor
 		s_SystemRegistry.clear();
 	}
 
-	std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> TypeRegistry::GetComponentTypesNamesAndFunctionCollections()
+	std::vector<std::pair<std::string, ComponentTypeDescriptor>> TypeRegistry::GetComponentTypesNamesAndDescriptors()
 	{
 		auto registrySize = s_ComponentTypeRegistry.size();
-		bool const cacheNeededRefresh = s_ComponentNamesAndFunctionCollectionsCache.size() != registrySize;
+		bool const cacheNeededRefresh = s_ComponentNamesAndDescriptorsCache.size() != registrySize;
 		if (!cacheNeededRefresh)
 		{
-			return s_ComponentNamesAndFunctionCollectionsCache;
+			return s_ComponentNamesAndDescriptorsCache;
 		}
 
-		s_ComponentNamesAndFunctionCollectionsCache.clear();
-		s_ComponentNamesAndFunctionCollectionsCache.reserve(registrySize);
+		s_ComponentNamesAndDescriptorsCache.clear();
+		s_ComponentNamesAndDescriptorsCache.reserve(registrySize);
 		for (auto const& pair : s_ComponentTypeRegistry)
 		{
-			s_ComponentNamesAndFunctionCollectionsCache.emplace_back(pair);
+			s_ComponentNamesAndDescriptorsCache.emplace_back(pair);
 		}
-		return s_ComponentNamesAndFunctionCollectionsCache;
+		return s_ComponentNamesAndDescriptorsCache;
 	}
 
 	void TypeRegistry::RegisterSystem(const std::string &systemName, SystemBase *systemInstance)
@@ -67,7 +67,7 @@ namespace DYE::DYEditor
 		return s_SystemNamesAndPointersCache;
 	}
 
-	std::optional<ComponentTypeFunctionCollection> TypeRegistry::TryGetComponentTypeFunctions(std::string const& componentTypeName)
+	std::optional<ComponentTypeDescriptor> TypeRegistry::TryGetComponentTypeDescriptor(std::string const& componentTypeName)
 	{
 		if (s_ComponentTypeRegistry.contains(componentTypeName))
 		{
@@ -87,9 +87,9 @@ namespace DYE::DYEditor
 		return nullptr;
 	}
 
-	void TypeRegistry::registerComponentType(std::string const &componentName, ComponentTypeFunctionCollection functions)
+	void TypeRegistry::registerComponentType(std::string const &componentName, ComponentTypeDescriptor componentDescriptor)
 	{
-		auto [iterator, insertionSuccess] = s_ComponentTypeRegistry.emplace(componentName, functions);
+		auto [iterator, insertionSuccess] = s_ComponentTypeRegistry.emplace(componentName, componentDescriptor);
 		if (!insertionSuccess)
 		{
 			DYE_LOG("A component type with the name of %s has already been registered. Skip the registration with the same name.", componentName.c_str());

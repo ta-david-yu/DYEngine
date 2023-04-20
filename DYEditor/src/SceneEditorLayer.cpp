@@ -362,7 +362,8 @@ namespace DYE::DYEditor
 		ImGui::SetNextWindowBgAlpha(0.35f);
 		if (ImGui::Begin(k_EntityInspectorWindowId))
 		{
-			drawEntityInspector(m_CurrentlySelectedEntityInHierarchyPanel, TypeRegistry::GetComponentTypesNamesAndFunctionCollections());
+			drawEntityInspector(m_CurrentlySelectedEntityInHierarchyPanel,
+								TypeRegistry::GetComponentTypesNamesAndDescriptors());
 		}
 		ImGui::End();
 
@@ -950,7 +951,7 @@ namespace DYE::DYEditor
 	}
 
 	bool SceneEditorLayer::drawEntityInspector(DYEditor::Entity &entity,
-											   std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> componentNamesAndFunctions)
+											   std::vector<std::pair<std::string, ComponentTypeDescriptor>> componentNamesAndDescriptors)
 	{
 		if (!entity.IsValid())
 		{
@@ -991,7 +992,7 @@ namespace DYE::DYEditor
 		{
 			if (ImGui::BeginListBox("##Add Component List Box"))
 			{
-				for (auto const& [name, functionCollections] : componentNamesAndFunctions)
+				for (auto const& [name, functionCollections] : componentNamesAndDescriptors)
 				{
 					if (functionCollections.Has(entity))
 					{
@@ -1013,24 +1014,20 @@ namespace DYE::DYEditor
 		}
 
 		// Draw all components that the entity has.
-		bool isNameComponentSkipped = false;
-		for (auto& [name, functions] : componentNamesAndFunctions)
+		for (auto& [name, typeDescriptor] : componentNamesAndDescriptors)
 		{
-			if (!isNameComponentSkipped && name == NameComponentName)
+			if (!typeDescriptor.ShouldDrawInNormalInspector)
 			{
-				// We don't want to draw name component as a normal component.
-				// We've already drawn it on the top of the entity inspector.
-				isNameComponentSkipped = true;
 				continue;
 			}
 
-			if (functions.Has == nullptr)
+			if (typeDescriptor.Has == nullptr)
 			{
 				ImGui::TextWrapped("Missing 'Has' function for component '%s'.", name.c_str());
 				continue;
 			}
 
-			if (!functions.Has(entity))
+			if (!typeDescriptor.Has(entity))
 			{
 				continue;
 			}
@@ -1039,7 +1036,7 @@ namespace DYE::DYEditor
 			bool showComponentInspector = true;
 
 			ImGui::PushID(name.c_str());
-			if (functions.DrawHeader == nullptr)
+			if (typeDescriptor.DrawHeader == nullptr)
 			{
 				ImGuiTreeNodeFlags const flags = ImGuiTreeNodeFlags_DefaultOpen;
 				showComponentInspector = ImGui::CollapsingHeader("##Header", &isHeaderVisible, flags);
@@ -1056,7 +1053,7 @@ namespace DYE::DYEditor
 			else
 			{
 				// Use custom header drawer if provided.
-				showComponentInspector = functions.DrawHeader(entity, isHeaderVisible, changed, name);
+				showComponentInspector = typeDescriptor.DrawHeader(entity, isHeaderVisible, changed, name);
 			}
 			ImGui::PopID();
 
@@ -1064,7 +1061,7 @@ namespace DYE::DYEditor
 			if (isRemoved)
 			{
 				// Remove the component
-				functions.Remove(entity);
+				typeDescriptor.Remove(entity);
 				changed = true;
 				continue;
 			}
@@ -1074,7 +1071,7 @@ namespace DYE::DYEditor
 				continue;
 			}
 
-			if (functions.DrawInspector == nullptr)
+			if (typeDescriptor.DrawInspector == nullptr)
 			{
 				ImGui::TextDisabled("(?)");
 				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
@@ -1090,7 +1087,7 @@ namespace DYE::DYEditor
 			else
 			{
 				ImGui::PushID(name.c_str());
-				changed |= functions.DrawInspector(entity);
+				changed |= typeDescriptor.DrawInspector(entity);
 				ImGui::PopID();
 			}
 
