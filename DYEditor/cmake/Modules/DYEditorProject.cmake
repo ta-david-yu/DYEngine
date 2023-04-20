@@ -44,7 +44,6 @@ function(DYEditor_AddExecutable NAME SOURCE_ROOT_DIR INCLUDE_DIRS SOURCE_FILES H
     add_executable(${DYE_PROJECT_NAME} WIN32 ${DYE_PROJECT_SOURCE_FILES} ${DYE_PROJECT_HEADER_FILES})
 
     target_link_libraries(${DYE_PROJECT_NAME} DYEngine)
-    target_link_libraries(${DYE_PROJECT_NAME} DYEntity)
     target_link_libraries(${DYE_PROJECT_NAME} DYEditor)
 
     target_include_directories(${DYE_PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})

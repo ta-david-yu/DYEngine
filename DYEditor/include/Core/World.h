@@ -4,7 +4,7 @@
 
 #include <entt/entt.hpp>
 
-namespace DYE::DYEntity
+namespace DYE::DYEditor
 {
 	class Entity;
 

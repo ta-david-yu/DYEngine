@@ -8,7 +8,7 @@
 #include <filesystem>
 #include <optional>
 
-namespace DYE::DYEntity
+namespace DYE::DYEditor
 {
 	class Entity;
 }
@@ -32,13 +32,13 @@ namespace DYE::DYEditor
 
 		/// SerializedEntity -> Entity. \n
 		/// This function assumes the given Entity is empty and doesn't do any clean-up on the Entity.
-		static void ApplySerializedEntityToEmptyEntity(SerializedEntity& serializedEntity, DYE::DYEntity::Entity& entity);
+		static void ApplySerializedEntityToEmptyEntity(SerializedEntity& serializedEntity, DYE::DYEditor::Entity& entity);
 
 		/// Scene -> SerializedScene
 		static SerializedScene CreateSerializedScene(Scene& scene);
 
 		/// Entity -> SerializedEntity
-		static SerializedEntity CreateSerializedEntity(DYE::DYEntity::Entity& entity);
+		static SerializedEntity CreateSerializedEntity(DYE::DYEditor::Entity& entity);
 
 		/// SerializedScene -> SceneFile
 		static void SaveSerializedSceneToFile(SerializedScene& serializedScene, std::filesystem::path const& path);

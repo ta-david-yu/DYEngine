@@ -4,7 +4,7 @@
 #include "Math/Color.h"
 #include "Graphics/Texture.h"
 
-namespace DYE::DYEntity
+namespace DYE::DYEditor
 {
 	struct SpriteRendererComponent
 	{

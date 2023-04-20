@@ -1,47 +1,47 @@
 #include "SystemExample.h"
 
-#include "World.h"
-#include "Entity.h"
+#include "Core/World.h"
+#include "Core/Entity.h"
 #include "ImGui/ImGuiUtil.h"
 #include "Util/Time.h"
 #include "Math/Math.h"
 
 #include "TestComponents.h"
-#include "Components.h"
-#include "NameComponent.h"
+#include "Core/Components.h"
+#include "Components/NameComponent.h"
 
 namespace SystemNamespace
 {
-	void InitializeSystemA::Execute(DYE::DYEntity::World &world, DYE::DYEditor::ExecuteParameters params)
+	void InitializeSystemA::Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params)
 	{
 
 	}
 }
 
-void UpdateSystemA::Execute(DYE::DYEntity::World &world, DYE::DYEditor::ExecuteParameters params)
+void UpdateSystemA::Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params)
 {
 	m_ExecutionCount++;
 }
 
-void UpdateSystemA::DrawInspector(DYE::DYEntity::World &world)
+void UpdateSystemA::DrawInspector(DYE::DYEditor::World &world)
 {
 	DYE::ImGuiUtil::DrawIntControl("Execution Count", m_ExecutionCount);
 }
 
-void UpdateSystemB::Execute(DYE::DYEntity::World &world, DYE::DYEditor::ExecuteParameters params)
+void UpdateSystemB::Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params)
 {
 	m_ExecutionCount++;
 }
 
-void UpdateSystemB::DrawInspector(DYE::DYEntity::World &world)
+void UpdateSystemB::DrawInspector(DYE::DYEditor::World &world)
 {
 	DYE::ImGuiUtil::DrawIntControl("Update B Exe Count", m_ExecutionCount);
 }
 
-void RotateHasAngularVelocitySystem::Execute(DYE::DYEntity::World &world, DYE::DYEditor::ExecuteParameters params)
+void RotateHasAngularVelocitySystem::Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params)
 {
-	auto& registry = DYE::DYEntity::GetWorldUnderlyingRegistry(world);
-	auto view = registry.view<HasAngularVelocity, DYE::DYEntity::TransformComponent>();
+	auto& registry = DYE::DYEditor::GetWorldUnderlyingRegistry(world);
+	auto view = registry.view<HasAngularVelocity, DYE::DYEditor::TransformComponent>();
 
 	for (auto&& [entity, hasAngularVelocity, transform] : view.each())
 	{
@@ -50,9 +50,9 @@ void RotateHasAngularVelocitySystem::Execute(DYE::DYEntity::World &world, DYE::D
 	}
 }
 
-void CreateEntitiesSystem::Execute(DYE::DYEntity::World &world, DYE::DYEditor::ExecuteParameters params)
+void CreateEntitiesSystem::Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params)
 {
-	auto& registry = DYE::DYEntity::GetWorldUnderlyingRegistry(world);
+	auto& registry = DYE::DYEditor::GetWorldUnderlyingRegistry(world);
 	auto view = registry.view<CreateEntity>();
 
 	for (auto entity : view)
@@ -75,10 +75,10 @@ void CreateEntitiesSystem::Execute(DYE::DYEntity::World &world, DYE::DYEditor::E
 	}
 }
 
-void PrintMessageOnTeardownSystem::Execute(DYE::DYEntity::World &world, DYE::DYEditor::ExecuteParameters params)
+void PrintMessageOnTeardownSystem::Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params)
 {
-	auto& registry = DYE::DYEntity::GetWorldUnderlyingRegistry(world);
-	auto view = registry.view<DYE::DYEntity::NameComponent, PrintMessageOnTeardown>();
+	auto& registry = DYE::DYEditor::GetWorldUnderlyingRegistry(world);
+	auto view = registry.view<DYE::DYEditor::NameComponent, PrintMessageOnTeardown>();
 
 	for (auto&& [entity, name, message] : view.each())
 	{

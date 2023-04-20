@@ -5,8 +5,8 @@ DYEngine is a WIP 2D game engine (with the possibility of 3D rendering).
 ## Modules
 DYEngine is divided into several sub-projects:
 * **DYEngine**: The core of the game engine. It includes everything you need to make a code-only game.
-* **DYEntity** (WIP): The main object model of DYEngine is ECS-based and DYEntity provides that. For now it's essentially a wrapper around entt.
-* **DYEditor** (WIP): It provides an editor UI on top of DYEngine & DYEntity to edit your worlds & entities. It comes with a code generation tool for generating type information of user-defined components & systems for editor type registry. 
+* **DYEditor** (WIP): The main object model of DYEngine is ECS-based and DYEditor provides that. For now it's essentially a wrapper around entt.
+* **DYEditor** (WIP): It provides an editor UI on top of DYEngine & DYEditor to edit your worlds & entities. It comes with a code generation tool for generating type information of user-defined components & systems for editor type registry. 
 
 ## Environment Setup
 ### Most of the following tools come with CLion as bundles
@@ -25,7 +25,7 @@ You can download **SDL2-devel-2.0.12-VC.zip** in the release page of [SDL2 repos
 - **glm**
 - **stb_image**
 - **Dear ImGui**
-### DYEntity
+### DYEditor
 - **entt**: use as the main object model in DYEngine. I might implement my own ECS framework if time allows it.
 ### DYEditor Code Generator
 - **fmt**: for easier and more efficient source code generation process. Will replace it with c++ std::format library once it's widely supported by different compilers. 

@@ -4,8 +4,8 @@
 [submodule "DYEngine/extern/imgui/imgui"]
 	path = DYEngine/extern/imgui/imgui
 	url = git@github.com:ta-david-yu/imgui.git
-[submodule "DYEntity/extern/entt"]
-	path = DYEntity/extern/entt
+[submodule "DYEditor/extern/entt"]
+	path = DYEditor/extern/entt
 	url = git@github.com:ta-david-yu/entt.git
 [submodule "DYEditor/DYEditorCodeGenerator/extern/fmt"]
 	path = DYEditor/DYEditorCodeGenerator/extern/fmt

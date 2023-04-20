@@ -19,8 +19,8 @@
 #include "ImGui/EditorImGuiUtil.h"
 #include "ImGui/ImGuiUtil.h"
 
-#include "NameComponent.h"
-#include "TransformComponent.h"
+#include "Components/NameComponent.h"
+#include "Components/TransformComponent.h"
 #include "Components/CameraComponent.h"
 #include "Systems/RegisterCameraSystem.h"
 
@@ -31,7 +31,7 @@
 #include <imgui.h>
 #include <imgui_stdlib.h>
 
-using namespace DYE::DYEntity;
+using namespace DYE::DYEditor;
 
 namespace DYE::DYEditor
 {
@@ -625,7 +625,7 @@ namespace DYE::DYEditor
 		// Draw all entities.
 		scene.World.ForEachEntity
 		(
-			[&scene, &pCurrentSelectedEntity](DYEntity::Entity& entity)
+			[&scene, &pCurrentSelectedEntity](DYEditor::Entity& entity)
 			{
 				auto tryGetNameResult = entity.TryGetName();
 				if (!tryGetNameResult.has_value())
@@ -949,7 +949,7 @@ namespace DYE::DYEditor
 		return changed;
 	}
 
-	bool SceneEditorLayer::drawEntityInspector(DYEntity::Entity &entity,
+	bool SceneEditorLayer::drawEntityInspector(DYEditor::Entity &entity,
 											   std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> componentNamesAndFunctions)
 	{
 		if (!entity.IsValid())

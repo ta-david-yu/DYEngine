@@ -1,7 +1,7 @@
 #include "Systems/RegisterCameraSystem.h"
 
 #include "Graphics/Camera.h"
-#include "TransformComponent.h"
+#include "Components/TransformComponent.h"
 #include "Components/CameraComponent.h"
 #include "Graphics/RenderPipelineManager.h"
 #include "ImGui/ImGuiUtil.h"
@@ -10,20 +10,20 @@
 
 namespace DYE::DYEditor
 {
-	using namespace DYE::DYEntity;
+	using namespace DYE::DYEditor;
 
-	void RegisterCameraSystem::InitializeLoad(DYEntity::World &world, DYE::DYEditor::InitializeLoadParameters)
+	void RegisterCameraSystem::InitializeLoad(DYEditor::World &world, DYE::DYEditor::InitializeLoadParameters)
 	{
-		auto& registry = DYEntity::GetWorldUnderlyingRegistry(world);
+		auto& registry = DYEditor::GetWorldUnderlyingRegistry(world);
 
 		// Call this on initialize load to perform initialization step on the group.
 		auto group = registry.group<CameraComponent>(entt::get<TransformComponent>);
 	}
 
-	void RegisterCameraSystem::Execute(DYEntity::World &world, DYE::DYEditor::ExecuteParameters params)
+	void RegisterCameraSystem::Execute(DYEditor::World &world, DYE::DYEditor::ExecuteParameters params)
 	{
 		m_NumberOfRegisteredCamerasLastFrame = 0;
-		auto& registry = DYEntity::GetWorldUnderlyingRegistry(world);
+		auto& registry = DYEditor::GetWorldUnderlyingRegistry(world);
 
 		// We use group here because we know RegisterCameraSystem is the main critical path for CameraComponent.
 		auto group = registry.group<CameraComponent>(entt::get<TransformComponent>);
@@ -47,7 +47,7 @@ namespace DYE::DYEditor
 		}
 	}
 
-	void RegisterCameraSystem::DrawInspector(DYEntity::World &world)
+	void RegisterCameraSystem::DrawInspector(DYEditor::World &world)
 	{
 		ImGuiUtil::DrawReadOnlyTextWithLabel("Number Of Rendered Cameras Last Frame", std::to_string(m_NumberOfRegisteredCamerasLastFrame));
 	}

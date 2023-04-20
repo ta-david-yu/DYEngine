@@ -1,7 +1,7 @@
 #include "Serialization/SerializedObjectFactory.h"
 
 #include "Type/TypeRegistry.h"
-#include "Entity.h"
+#include "Core/Entity.h"
 #include "Core/Scene.h"
 
 #include <fstream>
@@ -85,13 +85,13 @@ namespace DYE::DYEditor
 		for (int i = serializedEntityHandles.size() - 1; i >= 0; i--)
 		{
 			auto& serializedEntityHandle = serializedEntityHandles[i];
-			DYEntity::Entity entity = scene.World.CreateEntity();
+			DYEditor::Entity entity = scene.World.CreateEntity();
 			ApplySerializedEntityToEmptyEntity(serializedEntityHandle, entity);
 		}
 	}
 
 	void SerializedObjectFactory::ApplySerializedEntityToEmptyEntity(SerializedEntity &serializedEntity,
-																	 DYEntity::Entity &entity)
+																	 DYEditor::Entity &entity)
 	{
 		std::vector<SerializedComponentHandle> serializedComponentHandles = serializedEntity.GetSerializedComponentHandles();
 		for (auto& serializedComponentHandle : serializedComponentHandles)
@@ -204,7 +204,7 @@ namespace DYE::DYEditor
 		return serializedScene;
 	}
 
-	SerializedEntity SerializedObjectFactory::CreateSerializedEntity(DYE::DYEntity::Entity& entity)
+	SerializedEntity SerializedObjectFactory::CreateSerializedEntity(DYE::DYEditor::Entity& entity)
 	{
 		SerializedEntity serializedEntity;
 

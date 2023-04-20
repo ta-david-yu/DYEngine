@@ -19,8 +19,8 @@ set(INCLUDE_DIRS
 
 # Be sure to add "" around INCLUDE_DIRS, SOURCE_FILES and HEADER_FILES to make them arrays.
 include(../DYEditor/cmake/Modules/DYEditorProject.cmake)
-DYEditor_AddRuntimeExecutable(${PROJECT_NAME}_Runtime "${CMAKE_CURRENT_SOURCE_DIR}" "${INCLUDE_DIRS}" "${SOURCE_FILES}" "${HEADER_FILES}")
-#DYEditor_AddEditorExecutable(${PROJECT_NAME}_Editor "${CMAKE_CURRENT_SOURCE_DIR}" "${INCLUDE_DIRS}" "${SOURCE_FILES}" "${HEADER_FILES}")
+#DYEditor_AddRuntimeExecutable(${PROJECT_NAME}_Runtime "${CMAKE_CURRENT_SOURCE_DIR}" "${INCLUDE_DIRS}" "${SOURCE_FILES}" "${HEADER_FILES}")
+DYEditor_AddEditorExecutable(${PROJECT_NAME}_Editor "${CMAKE_CURRENT_SOURCE_DIR}" "${INCLUDE_DIRS}" "${SOURCE_FILES}" "${HEADER_FILES}")
 
 # Copy assets to the output directory
 set(TEXT_ASSETS

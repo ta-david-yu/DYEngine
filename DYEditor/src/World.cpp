@@ -1,9 +1,9 @@
-#include "World.h"
+#include "../include/Core/World.h"
 
-#include "Entity.h"
-#include "NameComponent.h"
+#include "../include/Core/Entity.h"
+#include "../include/Components/NameComponent.h"
 
-namespace DYE::DYEntity
+namespace DYE::DYEditor
 {
 	World::World()
 	{

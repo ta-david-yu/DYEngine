@@ -26,9 +26,6 @@ endif ()
 # DYEngine library
 add_subdirectory(DYEngine)
 
-# DYEntity library
-add_subdirectory(DYEntity)
-
 # DYEditor library
 add_subdirectory(DYEditor)
 

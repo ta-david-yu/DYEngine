@@ -143,7 +143,7 @@ namespace DYE::DYEditor
 		std::vector<SystemDescriptor> CleanupSystemDescriptors;
 		std::vector<SystemDescriptor> TearDownSystemDescriptors;
 		std::vector<SystemDescriptor> UnrecognizedSystems;
-		DYEntity::World World;
+		DYEditor::World World;
 
 		/// We use the index as GroupID.
 		std::vector<std::string> SystemGroupNames;
