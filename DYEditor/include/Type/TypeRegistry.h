@@ -38,7 +38,7 @@ namespace DYE::DYEditor
 	using DrawComponentHeaderFunction = bool (DYE::DYEditor::Entity& entity, bool &isHeaderVisible, bool &entityChanged, std::string const& headerLabel);
 
 	/// One should always provide 'Serialize', 'Deserialize' and 'DrawInspector' functions.
-	struct ComponentTypeFunctionCollection
+	struct ComponentTypeDescriptor
 	{
 		HasComponentFunction* Has = nullptr;
 		AddComponentFunction* Add = nullptr;
@@ -46,6 +46,8 @@ namespace DYE::DYEditor
 
 		SerializeComponentFunction* Serialize = nullptr;
 		DeserializeComponentFunction* Deserialize = nullptr;
+
+		bool ShouldDrawInNormalInspector = true;
 		DrawComponentInspectorFunction* DrawInspector = nullptr;
 		DrawComponentHeaderFunction* DrawHeader = nullptr;
 	};
@@ -56,28 +58,28 @@ namespace DYE::DYEditor
 	{
 	public:
 		/// Register a component type with its corresponding editor utility functions.
-		/// \param functions One could simply use the trivial function implementations by assigning null function pointer to the target function.
+		/// \param descriptor One could simply use the trivial function implementations by assigning null function pointer to the target function.
 		/// For now only 'Has', 'Add', 'Remove' have default implementations that make sense. For other functions, it's
 		/// necessary to assign user-defined functions.
 		template<typename T>
-		static void RegisterComponentType(std::string const &componentName, ComponentTypeFunctionCollection functions)
+		static void RegisterComponentType(std::string const &componentName, ComponentTypeDescriptor descriptor)
 		{
-			if (functions.Has == nullptr)
+			if (descriptor.Has == nullptr)
 			{
-				functions.Has = DefaultHasComponentOfType<T>;
+				descriptor.Has = DefaultHasComponentOfType<T>;
 			}
 
-			if (functions.Add == nullptr)
+			if (descriptor.Add == nullptr)
 			{
-				functions.Add = DefaultAddComponentOfType<T>;
+				descriptor.Add = DefaultAddComponentOfType<T>;
 			}
 
-			if (functions.Remove == nullptr)
+			if (descriptor.Remove == nullptr)
 			{
-				functions.Remove = DefaultRemoveComponentOfType<T>;
+				descriptor.Remove = DefaultRemoveComponentOfType<T>;
 			}
 
-			registerComponentType(componentName, functions);
+			registerComponentType(componentName, descriptor);
 		}
 
 		static void ClearRegisteredComponentTypes();
@@ -85,7 +87,7 @@ namespace DYE::DYEditor
 
 		/// Retrieves an array of pairs containing information about registered components.
 		/// The function is expensive, the user should cache the result instead of calling the function regularly.
-		static std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> GetComponentTypesNamesAndFunctionCollections();
+		static std::vector<std::pair<std::string, ComponentTypeDescriptor>> GetComponentTypesNamesAndDescriptors();
 
 		static void RegisterSystem(std::string const& systemName, SystemBase* systemInstance);
 
@@ -93,20 +95,20 @@ namespace DYE::DYEditor
 		/// The function is expensive, the user should cache the result instead of calling the function regularly.
 		static std::vector<std::pair<std::string, SystemBase*>> GetSystemNamesAndInstances();
 
-		static std::optional<ComponentTypeFunctionCollection> TryGetComponentTypeFunctions(std::string const& componentTypeName);
+		static std::optional<ComponentTypeDescriptor> TryGetComponentTypeDescriptor(std::string const& componentTypeName);
 
 		/// \return a pointer to the system instance, else nullptr.
 		static SystemBase* TryGetSystemInstance(std::string const& systemName);
 
 	private:
-		static void registerComponentType(std::string const &componentName, ComponentTypeFunctionCollection functions);
+		static void registerComponentType(std::string const &componentName, ComponentTypeDescriptor componentDescriptor);
 
 	private:
 		// TODO: maybe we could use array or vector instead?
-		inline static std::map<std::string, ComponentTypeFunctionCollection> s_ComponentTypeRegistry;
+		inline static std::map<std::string, ComponentTypeDescriptor> s_ComponentTypeRegistry;
 		inline static std::map<std::string, SystemBase*> s_SystemRegistry;
 
-		static std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> s_ComponentNamesAndFunctionCollectionsCache;
+		static std::vector<std::pair<std::string, ComponentTypeDescriptor>> s_ComponentNamesAndDescriptorsCache;
 		static std::vector<std::pair<std::string, SystemBase*>> s_SystemNamesAndPointersCache;
 	};
 }

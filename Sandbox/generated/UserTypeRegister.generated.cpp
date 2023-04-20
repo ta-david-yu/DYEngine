@@ -27,7 +27,7 @@ namespace DYE::DYEditor
 		TypeRegistry::RegisterComponentType<TestNamespace::TestComponentA>
 			(
 				"TestA",
-				ComponentTypeFunctionCollection
+				ComponentTypeDescriptor
 					{
 						.Serialize = [](Entity& entity, SerializedComponentHandle& serializedComponent)
 						{
@@ -62,7 +62,7 @@ namespace DYE::DYEditor
 		TypeRegistry::RegisterComponentType<TestNamespace::Subnamespace::SubtestComponentA>
 			(
 				"SubTestA",
-				ComponentTypeFunctionCollection
+				ComponentTypeDescriptor
 					{
 						.Serialize = [](Entity& entity, SerializedComponentHandle& serializedComponent)
 						{
@@ -91,7 +91,7 @@ namespace DYE::DYEditor
 		TypeRegistry::RegisterComponentType<TestComponentB>
 			(
 				"TestB",
-				ComponentTypeFunctionCollection
+				ComponentTypeDescriptor
 					{
 						.Serialize = [](Entity& entity, SerializedComponentHandle& serializedComponent)
 						{
@@ -134,7 +134,7 @@ namespace DYE::DYEditor
 		TypeRegistry::RegisterComponentType<ComponentWithAllPrimitiveProperties>
 			(
 				"ComponentWithAllPrimitiveProperties",
-				ComponentTypeFunctionCollection
+				ComponentTypeDescriptor
 					{
 						.Serialize = [](Entity& entity, SerializedComponentHandle& serializedComponent)
 						{
@@ -199,7 +199,7 @@ namespace DYE::DYEditor
 		TypeRegistry::RegisterComponentType<HasAngularVelocity>
 			(
 				"HasAngularVelocity",
-				ComponentTypeFunctionCollection
+				ComponentTypeDescriptor
 					{
 						.Serialize = [](Entity& entity, SerializedComponentHandle& serializedComponent)
 						{
@@ -228,7 +228,7 @@ namespace DYE::DYEditor
 		TypeRegistry::RegisterComponentType<CreateEntity>
 			(
 				"CreateEntity",
-				ComponentTypeFunctionCollection
+				ComponentTypeDescriptor
 					{
 						.Serialize = [](Entity& entity, SerializedComponentHandle& serializedComponent)
 						{
@@ -260,7 +260,7 @@ namespace DYE::DYEditor
 		TypeRegistry::RegisterComponentType<PrintMessageOnTeardown>
 			(
 				"PrintMessageOnTeardown",
-				ComponentTypeFunctionCollection
+				ComponentTypeDescriptor
 					{
 						.Serialize = [](Entity& entity, SerializedComponentHandle& serializedComponent)
 						{
@@ -289,7 +289,7 @@ namespace DYE::DYEditor
 		TypeRegistry::RegisterComponentType<TestComponentC>
 			(
 				"TestC",
-				ComponentTypeFunctionCollection
+				ComponentTypeDescriptor
 					{
 						.Serialize = [](Entity& entity, SerializedComponentHandle& serializedComponent)
 						{

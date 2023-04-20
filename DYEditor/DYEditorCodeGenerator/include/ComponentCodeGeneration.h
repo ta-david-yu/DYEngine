@@ -16,7 +16,7 @@ char const *ComponentTypeRegistrationCallSourceStart =
 	R"(		TypeRegistry::RegisterComponentType<${COMPONENT_FULL_TYPE}>
 			(
 				"${COMPONENT_NAME}",
-				ComponentTypeFunctionCollection
+				ComponentTypeDescriptor
 					{
 )";
 
