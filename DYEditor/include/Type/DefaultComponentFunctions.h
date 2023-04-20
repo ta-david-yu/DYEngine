@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Entity.h"
+#include "Core/Entity.h"
 #include "ImGui/ImGuiUtil.h"
 
 #include <concepts>
@@ -8,20 +8,20 @@
 namespace DYE::DYEditor
 {
 	template<typename T>
-	bool DefaultHasComponentOfType(DYE::DYEntity::Entity& entity)
+	bool DefaultHasComponentOfType(DYE::DYEditor::Entity& entity)
 	{
 		return entity.HasComponent<T>();
 	}
 
 	template<typename T>
-	void DefaultAddComponentOfType(DYE::DYEntity::Entity& entity)
+	void DefaultAddComponentOfType(DYE::DYEditor::Entity& entity)
 	{
 		// By default, add component to the entity using default constructor
 		entity.AddComponent<T>();
 	}
 
 	template<typename T>
-	void DefaultRemoveComponentOfType(DYE::DYEntity::Entity& entity)
+	void DefaultRemoveComponentOfType(DYE::DYEditor::Entity& entity)
 	{
 		entity.RemoveComponent<T>();
 	}
@@ -34,7 +34,7 @@ namespace DYE::DYEditor
 	};
 
 	template<typename T>
-	bool DefaultDrawComponentHeaderWithIsEnabled(DYE::DYEntity::Entity &entity, bool &isHeaderVisible, bool &entityChanged, std::string const &headerLabel)
+	bool DefaultDrawComponentHeaderWithIsEnabled(DYE::DYEditor::Entity &entity, bool &isHeaderVisible, bool &entityChanged, std::string const &headerLabel)
 	{
 		static_assert(HasIsEnabled<T>, "Type T does not have a public member variable named 'IsEnabled' of type bool.");
 

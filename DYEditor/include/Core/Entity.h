@@ -9,7 +9,7 @@
 #include <functional>
 #include <entt/entt.hpp>
 
-namespace DYE::DYEntity
+namespace DYE::DYEditor
 {
 	using EntityHandle = entt::entity;
 	using EntityID = std::uint32_t;

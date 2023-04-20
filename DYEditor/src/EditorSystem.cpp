@@ -1,7 +1,7 @@
 #include "Core/EditorSystem.h"
 
 #include "Util/Macro.h"
-#include "World.h"
+#include "Core/World.h"
 #include "ImGui/ImGuiUtil.h"
 
 namespace DYE::DYEditor
@@ -77,7 +77,7 @@ namespace DYE::DYEditor
 		return {};
 	}
 
-	void SystemBase::DrawInspector(DYE::DYEntity::World &world)
+	void SystemBase::DrawInspector(DYE::DYEditor::World &world)
 	{
 		ImGuiUtil::DrawHelpMarker("You could override SystemBase::DrawInspector in your system class to draw anything here!");
 	}

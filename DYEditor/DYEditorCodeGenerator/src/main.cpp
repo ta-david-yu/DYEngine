@@ -32,7 +32,6 @@ R"(//---------------------------------------------------------------------------
 
 char const* TypeRegisterBodyStart =
 R"(
-using namespace DYE::DYEntity;
 
 namespace DYE::DYEditor
 {

@@ -7,8 +7,8 @@
 #include "Core/EditorSystem.h"
 #include "Serialization/SerializedScene.h"
 #include "Type/TypeRegistry.h"
-#include "World.h"
-#include "Entity.h"
+#include "Core/World.h"
+#include "Core/Entity.h"
 #include "Graphics/Camera.h"
 
 #include <filesystem>
@@ -49,7 +49,7 @@ namespace DYE::DYEditor
 		std::shared_ptr<SceneRuntimeLayer> m_RuntimeLayer;
 		SerializedScene m_SerializedSceneCacheWhenEnterPlayMode;
 
-		DYEntity::Entity m_CurrentlySelectedEntityInHierarchyPanel;
+		DYEditor::Entity m_CurrentlySelectedEntityInHierarchyPanel;
 		std::filesystem::path m_CurrentSceneFilePath;
 
 		Camera m_SceneViewCamera;
@@ -64,10 +64,10 @@ namespace DYE::DYEditor
 		static void setEditorWindowDefaultLayout(ImGuiID dockSpaceId);
 		static void drawEditorWindowMenuBar(Scene &currentScene, std::filesystem::path &currentScenePathContext);
 		static void drawSceneView(Camera &sceneViewCamera);
-		static bool drawSceneEntityHierarchyPanel(Scene &scene, DYEntity::Entity *pCurrentSelectedEntity);
+		static bool drawSceneEntityHierarchyPanel(Scene &scene, DYEditor::Entity *pCurrentSelectedEntity);
 		static bool drawSceneSystemPanel(Scene& scene);
 		template<typename Func> requires std::predicate<Func, std::string const&, SystemBase const*>
 		static bool drawSceneSystemList(Scene &scene, std::vector<SystemDescriptor> &systemDescriptors, Func addSystemFilterPredicate);
-		static bool drawEntityInspector(DYEntity::Entity &entity, std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> componentNamesAndFunctions);
+		static bool drawEntityInspector(DYEditor::Entity &entity, std::vector<std::pair<std::string, ComponentTypeFunctionCollection>> componentNamesAndFunctions);
 	};
 }

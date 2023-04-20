@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace DYE::DYEntity
+namespace DYE::DYEditor
 {
 	struct NameComponent
 	{

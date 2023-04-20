@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Entity.h"
+#include "Core/Entity.h"
 #include "Type/DefaultComponentFunctions.h"
 
 #include <string>
@@ -25,17 +25,17 @@ namespace DYE::DYEditor
 		bool Success = true;
 	};
 
-	using HasComponentFunction = bool (DYE::DYEntity::Entity& entity);
-	using AddComponentFunction = void (DYE::DYEntity::Entity& entity);
-	using RemoveComponentFunction = void (DYE::DYEntity::Entity& entity);
+	using HasComponentFunction = bool (DYE::DYEditor::Entity& entity);
+	using AddComponentFunction = void (DYE::DYEditor::Entity& entity);
+	using RemoveComponentFunction = void (DYE::DYEditor::Entity& entity);
 	/// Serialize a component on an entity to a serialized entity.
-	using SerializeComponentFunction = SerializationResult (DYE::DYEntity::Entity& entity, SerializedComponentHandle& serializedComponent);
+	using SerializeComponentFunction = SerializationResult (DYE::DYEditor::Entity& entity, SerializedComponentHandle& serializedComponent);
 	/// Deserialize a serialized component (handle) and add it to an entity.
-	using DeserializeComponentFunction = DeserializationResult (SerializedComponentHandle& serializedComponent, DYE::DYEntity::Entity& entity);
+	using DeserializeComponentFunction = DeserializationResult (SerializedComponentHandle& serializedComponent, DYE::DYEditor::Entity& entity);
 	/// \return true if the content of the inspector is changed/dirty.
-	using DrawComponentInspectorFunction = bool (DYE::DYEntity::Entity& entity);
+	using DrawComponentInspectorFunction = bool (DYE::DYEditor::Entity& entity);
 	/// \return true if the content of the inspector is changed/dirty.
-	using DrawComponentHeaderFunction = bool (DYE::DYEntity::Entity& entity, bool &isHeaderVisible, bool &entityChanged, std::string const& headerLabel);
+	using DrawComponentHeaderFunction = bool (DYE::DYEditor::Entity& entity, bool &isHeaderVisible, bool &entityChanged, std::string const& headerLabel);
 
 	/// One should always provide 'Serialize', 'Deserialize' and 'DrawInspector' functions.
 	struct ComponentTypeFunctionCollection

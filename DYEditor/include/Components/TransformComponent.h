@@ -3,7 +3,7 @@
 #include "glm/glm.hpp"
 #include "glm/gtx/quaternion.hpp"
 
-namespace DYE::DYEntity
+namespace DYE::DYEditor
 {
 	struct TransformComponent
 	{

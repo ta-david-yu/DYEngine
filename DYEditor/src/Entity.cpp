@@ -1,8 +1,8 @@
-#include "Entity.h"
+#include "../include/Core/Entity.h"
 
-#include "NameComponent.h"
+#include "../include/Components/NameComponent.h"
 
-namespace DYE::DYEntity
+namespace DYE::DYEditor
 {
 	Entity::Entity(World &world, EntityHandle handle) : m_World(&world), m_EntityHandle(handle)
 	{
