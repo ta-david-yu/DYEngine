@@ -3,10 +3,9 @@
 DYEngine is a WIP 2D game engine (with the possibility of 3D rendering).
 
 ## Modules
-DYEngine is divided into several sub-projects:
+DYEngine is divided into 2 sub-project modules:
 * **DYEngine**: The core of the game engine. It includes everything you need to make a code-only game.
-* **DYEditor** (WIP): The main object model of DYEngine is ECS-based and DYEditor provides that. For now it's essentially a wrapper around entt.
-* **DYEditor** (WIP): It provides an editor UI on top of DYEngine & DYEditor to edit your worlds & entities. It comes with a code generation tool for generating type information of user-defined components & systems for editor type registry. 
+* **DYEditor**: It provides the ECS object model using entt & an editor on top of that for editting scenes & entities. It comes with a code generation tool for generating type information of user-defined components & systems for editor type registry. The module is still in an very early stage.
 
 ## Environment Setup
 ### Most of the following tools come with CLion as bundles
@@ -27,10 +26,10 @@ You can download **SDL2-devel-2.0.12-VC.zip** in the release page of [SDL2 repos
 - **Dear ImGui**
 ### DYEditor
 - **entt**: use as the main object model in DYEngine. I might implement my own ECS framework if time allows it.
+- **tomlplusplus**: most of the custom text-based files in DYEditor will be stored as toml (i.e. scene/level files, asset meta files).
 ### DYEditor Code Generator
 - **fmt**: for easier and more efficient source code generation process. Will replace it with c++ std::format library once it's widely supported by different compilers. 
 ### Pending (to include/included but not used)
-- **tomlplusplus**: most of the custom text-based files in DYEngine will be stored as toml (i.e. world/level files, asset meta files).
 - **OpenAL-Soft**: audio system
 
 
