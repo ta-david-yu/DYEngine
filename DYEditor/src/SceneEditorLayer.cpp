@@ -608,7 +608,8 @@ namespace DYE::DYEditor
 		{
 			if (ImGui::Selectable("Create Empty"))
 			{
-				scene.World.CreateEntity("Entity");
+				// Select the newly created entity.
+				*pCurrentSelectedEntity = scene.World.CreateEntity("Entity");
 			}
 			ImGui::EndPopup();
 		}
