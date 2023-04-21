@@ -865,7 +865,7 @@ namespace DYE::DYEditor
 			ImGui::AlignTextToFramePadding();
 
 			bool isHeaderVisible = true;
-			ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.000f, 0.215f, 0.470f, 0.310f));
+			ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.203f, 0.203f, 0.276f, 1.000f));
 			bool const isShown = ImGui::CollapsingHeader("", &isHeaderVisible, ImGuiTreeNodeFlags_AllowItemOverlap);
 			ImGui::PopStyleColor();
 			bool const isRemoved = !isHeaderVisible;
@@ -1022,12 +1022,7 @@ namespace DYE::DYEditor
 				continue;
 			}
 
-			if (typeDescriptor.Has == nullptr)
-			{
-				ImGui::TextWrapped("Missing 'Has' function for component '%s'.", name.c_str());
-				continue;
-			}
-
+			DYE_ASSERT_LOG_WARN(typeDescriptor.Has != nullptr, "Missing 'Has' function for component '%s'.", name.c_str());
 			if (!typeDescriptor.Has(entity))
 			{
 				continue;
