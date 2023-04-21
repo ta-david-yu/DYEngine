@@ -1,6 +1,7 @@
 #pragma once
 
 // Include all built-in components here...
+#include "Components/IDComponent.h"
 #include "Components/NameComponent.h"
 #include "Components/TransformComponent.h"
 #include "Components/CameraComponent.h"

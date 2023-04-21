@@ -12,7 +12,7 @@
 namespace DYE::DYEditor
 {
 	using EntityHandle = entt::entity;
-	using EntityID = std::uint32_t;
+	using EntityInstanceID = std::uint32_t;
 
 	/// We want to have a light-weight wrapper around the underlying implementation.
 	/// The wrapper Entity class should be trivially-copyable.
@@ -25,7 +25,7 @@ namespace DYE::DYEditor
 		Entity() = default;
 		Entity(Entity const& other) = default;
 
-		EntityID GetID() const { return static_cast<EntityID>(m_EntityHandle); }
+		EntityInstanceID GetInstanceID() const { return static_cast<EntityInstanceID>(m_EntityHandle); }
 		bool IsValid() const;
 
 		template<typename T, typename... Args>

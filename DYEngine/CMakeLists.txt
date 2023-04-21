@@ -54,7 +54,7 @@ set(SOURCE_FILES
         src/FPSCounter.cpp
         src/EasingFunctions.cpp
         src/Framebuffer.cpp
-        src/FileSystem.cpp)
+        src/FileSystem.cpp src/GUID.cpp)
 set(HEADER_FILES
         include/Core/Application.h
         include/Graphics/WindowBase.h
@@ -117,7 +117,8 @@ set(HEADER_FILES
         include/Util/FPSCounter.h
         include/Math/EasingFunctions.h
         include/Graphics/Framebuffer.h
-        include/FileSystem/FileSystem.h)
+        include/FileSystem/FileSystem.h
+        include/Core/GUID.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")

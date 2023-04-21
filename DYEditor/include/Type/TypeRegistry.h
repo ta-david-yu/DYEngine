@@ -40,6 +40,9 @@ namespace DYE::DYEditor
 	/// One should always provide 'Serialize', 'Deserialize' and 'DrawInspector' functions.
 	struct ComponentTypeDescriptor
 	{
+		bool ShouldBeIncludedInNormalAddComponentList = true;
+		bool ShouldDrawInNormalInspector = true;
+
 		HasComponentFunction* Has = nullptr;
 		AddComponentFunction* Add = nullptr;
 		RemoveComponentFunction* Remove = nullptr;
@@ -47,7 +50,6 @@ namespace DYE::DYEditor
 		SerializeComponentFunction* Serialize = nullptr;
 		DeserializeComponentFunction* Deserialize = nullptr;
 
-		bool ShouldDrawInNormalInspector = true;
 		DrawComponentInspectorFunction* DrawInspector = nullptr;
 		DrawComponentHeaderFunction* DrawHeader = nullptr;
 	};

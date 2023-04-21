@@ -15,14 +15,40 @@
 #include "Core/World.h"
 
 #include <filesystem>
+#include <cctype>
 #include <imgui.h>
-
-using namespace DYE::DYEditor;
 
 namespace DYE::DYEditor
 {
 	namespace BuiltInFunctions
 	{
+		SerializationResult
+		IDComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponentHandle &serializedComponent)
+		{
+			serializedComponent.SetPrimitiveTypePropertyValue("ID", entity.GetComponent<IDComponent>().ID);
+
+			return {};
+		}
+
+		DeserializationResult
+		IDComponent_Deserialize(SerializedComponentHandle &serializedComponent, DYE::DYEditor::Entity &entity)
+		{
+			auto &component = entity.AddOrGetComponent<IDComponent>();
+			component.ID = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::GUID>("ID");
+
+			return {};
+		}
+
+		bool IDComponent_DrawInspector(Entity &entity)
+		{
+			auto &component = entity.GetComponent<IDComponent>();
+
+			bool changed = false;
+			changed |= ImGuiUtil::DrawGUIDControl("ID", component.ID);
+
+			return changed;
+		}
+
 		void NameComponent_Add(Entity &entity)
 		{
 			entity.AddComponent<NameComponent>("New Entity");
@@ -256,58 +282,72 @@ namespace DYE::DYEditor
 	void RegisterBuiltInTypes()
 	{
 		DYE_LOG("<< Register Built-in Types to DYEditor::TypeRegistry >>");
-		TypeRegistry::RegisterComponentType<NameComponent>
-			(
-				NameComponentName,
-				ComponentTypeDescriptor
-					{
-						.Add = BuiltInFunctions::NameComponent_Add,
+		TypeRegistry::RegisterComponentType<IDComponent>
+		(
+			"ID",
+			ComponentTypeDescriptor
+			{
+				.ShouldBeIncludedInNormalAddComponentList = false,
+				.ShouldDrawInNormalInspector = false,
+				.Serialize = BuiltInFunctions::IDComponent_Serialize,
+				.Deserialize = BuiltInFunctions::IDComponent_Deserialize,
+				.DrawInspector = BuiltInFunctions::IDComponent_DrawInspector
+			}
+		);
 
-						.Serialize = BuiltInFunctions::NameComponent_Serialize,
-						.Deserialize = BuiltInFunctions::NameComponent_Deserialize,
-						.ShouldDrawInNormalInspector = false,
-						.DrawInspector = BuiltInFunctions::NameComponent_DrawInspector,
-					}
-			);
+		TypeRegistry::RegisterComponentType<NameComponent>
+		(
+			NameComponentName,
+			ComponentTypeDescriptor
+			{
+				.ShouldBeIncludedInNormalAddComponentList = false,
+				.ShouldDrawInNormalInspector = false,
+				.Add = BuiltInFunctions::NameComponent_Add,
+
+				.Serialize = BuiltInFunctions::NameComponent_Serialize,
+				.Deserialize = BuiltInFunctions::NameComponent_Deserialize,
+				.DrawInspector = BuiltInFunctions::NameComponent_DrawInspector,
+			}
+		);
 
 		TypeRegistry::RegisterComponentType<TransformComponent>
-			(
-				"Transform",
-				ComponentTypeDescriptor
-					{
-						.Serialize = BuiltInFunctions::TransformComponent_Serialize,
-						.Deserialize = BuiltInFunctions::TransformComponent_Deserialize,
-						.DrawInspector = BuiltInFunctions::TransformComponent_DrawInspector
-					}
-			);
+		(
+			"Transform",
+			ComponentTypeDescriptor
+			{
+				.Serialize = BuiltInFunctions::TransformComponent_Serialize,
+				.Deserialize = BuiltInFunctions::TransformComponent_Deserialize,
+				.DrawInspector = BuiltInFunctions::TransformComponent_DrawInspector
+			}
+		);
 
 		TypeRegistry::RegisterComponentType<CameraComponent>
-		    (
-				"Camera",
-				ComponentTypeDescriptor
-					{
-						.Add = BuiltInFunctions::CameraComponent_Add,
+		(
+			"Camera",
+			ComponentTypeDescriptor
+			{
+				.Add = BuiltInFunctions::CameraComponent_Add,
 
-						.Serialize = BuiltInFunctions::CameraComponent_Serialize,
-						.Deserialize = BuiltInFunctions::CameraComponent_Deserialize,
-						.DrawInspector = BuiltInFunctions::CameraComponent_DrawInspector,
-						.DrawHeader = DefaultDrawComponentHeaderWithIsEnabled<CameraComponent>
-					}
-			);
+				.Serialize = BuiltInFunctions::CameraComponent_Serialize,
+				.Deserialize = BuiltInFunctions::CameraComponent_Deserialize,
+				.DrawInspector = BuiltInFunctions::CameraComponent_DrawInspector,
+				.DrawHeader = DefaultDrawComponentHeaderWithIsEnabled<CameraComponent>
+			}
+		);
 
 		TypeRegistry::RegisterComponentType<SpriteRendererComponent>
-		    (
-				"Sprite Renderer",
-				ComponentTypeDescriptor
-					{
-						.Add = BuiltInFunctions::SpriteRendererComponent_Add,
+		(
+			"Sprite Renderer",
+			ComponentTypeDescriptor
+				{
+					.Add = BuiltInFunctions::SpriteRendererComponent_Add,
 
-						.Serialize = BuiltInFunctions::SpriteRendererComponent_Serialize,
-						.Deserialize = BuiltInFunctions::SpriteRendererComponent_Deserialize,
-						.DrawInspector = BuiltInFunctions::SpriteRendererComponent_DrawInspector,
-						.DrawHeader = DefaultDrawComponentHeaderWithIsEnabled<SpriteRendererComponent>
-					}
-			);
+					.Serialize = BuiltInFunctions::SpriteRendererComponent_Serialize,
+					.Deserialize = BuiltInFunctions::SpriteRendererComponent_Deserialize,
+					.DrawInspector = BuiltInFunctions::SpriteRendererComponent_DrawInspector,
+					.DrawHeader = DefaultDrawComponentHeaderWithIsEnabled<SpriteRendererComponent>
+				}
+		);
 
 		static Render2DSpriteSystem _Render2DSpriteSystem;
 		TypeRegistry::RegisterSystem(Render2DSpriteSystem::TypeName, &_Render2DSpriteSystem);

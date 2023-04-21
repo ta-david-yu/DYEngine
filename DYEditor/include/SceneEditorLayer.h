@@ -25,6 +25,12 @@ namespace DYE::DYEditor
 {
 	class SceneRuntimeLayer;
 
+	enum class InspectorMode
+	{
+		Normal,
+		Debug
+	};
+
 	class SceneEditorLayer : public LayerBase, public RuntimeStateListenerBase
 	{
 	public:
@@ -61,6 +67,8 @@ namespace DYE::DYEditor
 		bool m_IsSceneViewWindowFocused = false;
 		bool m_IsSceneViewWindowHovered = false;
 
+		InspectorMode m_InspectorMode = InspectorMode::Normal;
+
 		static void setEditorWindowDefaultLayout(ImGuiID dockSpaceId);
 		static void drawEditorWindowMenuBar(Scene &currentScene, std::filesystem::path &currentScenePathContext);
 		static void drawSceneView(Camera &sceneViewCamera);
@@ -68,6 +76,8 @@ namespace DYE::DYEditor
 		static bool drawSceneSystemPanel(Scene& scene);
 		template<typename Func> requires std::predicate<Func, std::string const&, SystemBase const*>
 		static bool drawSceneSystemList(Scene &scene, std::vector<SystemDescriptor> &systemDescriptors, Func addSystemFilterPredicate);
-		static bool drawEntityInspector(DYEditor::Entity &entity, std::vector<std::pair<std::string, ComponentTypeDescriptor>> componentNamesAndDescriptors);
+		static bool drawEntityInspector(DYEditor::Entity &entity,
+										std::vector<std::pair<std::string, ComponentTypeDescriptor>> componentNamesAndDescriptors,
+										InspectorMode mode);
 	};
 }

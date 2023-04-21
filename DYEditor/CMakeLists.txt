@@ -59,7 +59,7 @@ set(HEADER_FILES
         include/Systems/RegisterCameraSystem.h
         include/ProjectConfig.h src/ProjectConfig.cpp
         include/ImGui/EditorWindowManager.h
-        include/Core/RuntimeSceneManagement.h)
+        include/Core/RuntimeSceneManagement.h include/Components/IDComponent.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")

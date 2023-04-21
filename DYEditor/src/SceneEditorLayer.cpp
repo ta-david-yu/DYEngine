@@ -138,6 +138,9 @@ namespace DYE::DYEditor
 		m_SceneViewCamera.Properties.pTargetRenderTexture = m_SceneViewCameraTargetFramebuffer.get();
 		m_SceneViewCamera.Position = {0, 0, 10};
 
+		// Do some more editor setup based on EditorConfig settings.
+		m_InspectorMode = GetEditorConfig().GetOrDefault("Editor.DebugInspector", false)? InspectorMode::Debug : InspectorMode::Normal;
+
 		// FIXME: Window setup should be made according to runtime config file (i.e. GetRuntimeConfig().GetOrDefault("Window.NumberOfInitialWindows")...).
 		//		For now we create a secondary window manually.
 		auto windowPtr = WindowManager::CreateWindow(WindowProperties("Test Window", 640, 480));
@@ -362,8 +365,26 @@ namespace DYE::DYEditor
 		ImGui::SetNextWindowBgAlpha(0.35f);
 		if (ImGui::Begin(k_EntityInspectorWindowId))
 		{
+			// Draw inspector window context menu.
+			if (ImGui::BeginPopupContextWindow())
+			{
+				if (ImGui::MenuItem("Normal", nullptr, m_InspectorMode == InspectorMode::Normal))
+				{
+					m_InspectorMode = InspectorMode::Normal;
+					GetEditorConfig().SetAndSave("Editor.DebugInspector", false);
+				}
+
+				if (ImGui::MenuItem("Debug", nullptr, m_InspectorMode == InspectorMode::Debug))
+				{
+					m_InspectorMode = InspectorMode::Debug;
+					GetEditorConfig().SetAndSave("Editor.DebugInspector", true);
+				}
+
+				ImGui::EndPopup();
+			}
+
 			drawEntityInspector(m_CurrentlySelectedEntityInHierarchyPanel,
-								TypeRegistry::GetComponentTypesNamesAndDescriptors());
+								TypeRegistry::GetComponentTypesNamesAndDescriptors(), m_InspectorMode);
 		}
 		ImGui::End();
 
@@ -643,7 +664,7 @@ namespace DYE::DYEditor
 				ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
 				if (isSelected) flags |= ImGuiTreeNodeFlags_Selected;
 
-				bool const isNodeOpen = ImGui::TreeNodeEx((void*)(std::uint64_t) entity.GetID(), flags, name.c_str());
+				bool const isNodeOpen = ImGui::TreeNodeEx((void*)(std::uint64_t) entity.GetInstanceID(), flags, name.c_str());
 				if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
 				{
 					*pCurrentSelectedEntity = entity;
@@ -952,7 +973,8 @@ namespace DYE::DYEditor
 	}
 
 	bool SceneEditorLayer::drawEntityInspector(DYEditor::Entity &entity,
-											   std::vector<std::pair<std::string, ComponentTypeDescriptor>> componentNamesAndDescriptors)
+											   std::vector<std::pair<std::string, ComponentTypeDescriptor>> componentNamesAndDescriptors,
+											   InspectorMode mode)
 	{
 		if (!entity.IsValid())
 		{
@@ -993,9 +1015,14 @@ namespace DYE::DYEditor
 		{
 			if (ImGui::BeginListBox("##Add Component List Box"))
 			{
-				for (auto const& [name, functionCollections] : componentNamesAndDescriptors)
+				for (auto const& [name, typeDescriptor] : componentNamesAndDescriptors)
 				{
-					if (functionCollections.Has(entity))
+					if (mode == InspectorMode::Normal && !typeDescriptor.ShouldBeIncludedInNormalAddComponentList)
+					{
+						continue;
+					}
+
+					if (typeDescriptor.Has(entity))
 					{
 						// The entity already has this component, skip it.
 						continue;
@@ -1004,7 +1031,7 @@ namespace DYE::DYEditor
 					if (ImGui::Selectable(name.c_str()))
 					{
 						// Add the component
-						functionCollections.Add(entity);
+						typeDescriptor.Add(entity);
 						changed = true;
 						ImGui::CloseCurrentPopup();
 					}
@@ -1017,7 +1044,7 @@ namespace DYE::DYEditor
 		// Draw all components that the entity has.
 		for (auto& [name, typeDescriptor] : componentNamesAndDescriptors)
 		{
-			if (!typeDescriptor.ShouldDrawInNormalInspector)
+			if (mode == InspectorMode::Normal && !typeDescriptor.ShouldDrawInNormalInspector)
 			{
 				continue;
 			}

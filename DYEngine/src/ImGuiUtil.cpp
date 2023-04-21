@@ -6,6 +6,7 @@
 #include "Graphics/Texture.h"
 #include "Graphics/Shader.h"
 #include "Math/AABB.h"
+#include "Core/GUID.h"
 
 #include <set>
 #include <imgui.h>
@@ -663,6 +664,28 @@ namespace DYE::ImGuiUtil
 
 		changed |= isPathChanged;
 		ImGui::PopID();
+
+		return changed;
+	}
+
+	bool DrawGUIDControl(std::string const &label, DYE::GUID &guid)
+	{
+		bool changed = false;
+
+		auto guidString =  guid.ToString();
+		changed |= ImGuiUtil::DrawTextControl("ID", guidString);
+		if (changed)
+		{
+			try
+			{
+				guid = (GUID) std::stoull(guidString);
+			}
+			catch (std::exception const& e)
+			{
+				// If string failed to convert to guid, reset the changes.
+				changed = false;
+			}
+		}
 
 		return changed;
 	}

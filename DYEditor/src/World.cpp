@@ -1,7 +1,8 @@
-#include "../include/Core/World.h"
+#include "Core/World.h"
 
-#include "../include/Core/Entity.h"
-#include "../include/Components/NameComponent.h"
+#include "Core/Entity.h"
+#include "Components/IDComponent.h"
+#include "Components/NameComponent.h"
 
 namespace DYE::DYEditor
 {
@@ -16,7 +17,13 @@ namespace DYE::DYEditor
 
 	Entity World::CreateEntity(std::string const& name)
 	{
+		return CreateEntityWithGUID(name, m_EntityGUIDFactory.Generate());
+	}
+
+	Entity World::CreateEntityWithGUID(std::string const& name, GUID guid)
+	{
 		auto entity = Entity(*this, m_Registry.create());
+		entity.AddComponent<IDComponent>().ID = guid;
 		entity.AddComponent<NameComponent>(name);
 
 		return entity;

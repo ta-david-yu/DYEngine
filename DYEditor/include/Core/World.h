@@ -1,6 +1,7 @@
 #pragma once
 
 #include "WorldView.h"
+#include "Core/GUID.h"
 
 #include <entt/entt.hpp>
 
@@ -19,6 +20,7 @@ namespace DYE::DYEditor
 
 		Entity CreateEntity();
 		Entity CreateEntity(std::string const& name);
+		Entity CreateEntityWithGUID(std::string const& name, GUID guid);
 		void DestroyEntity(Entity& entity);
 
 		template<typename Func>
@@ -37,6 +39,7 @@ namespace DYE::DYEditor
 		void Clear() { m_Registry.clear<>(); }
 	private:
 		entt::registry m_Registry;
+		GUIDFactory m_EntityGUIDFactory;
 
 		// TODO: have a list of Entity (entity wrapper to keep track of UUID, entity metadata)
 

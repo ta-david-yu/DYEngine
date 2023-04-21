@@ -24,6 +24,24 @@ namespace DYE::DYEditor
 	}
 
 	template<>
+	std::optional<DYE::GUID> SerializedComponentHandle::TryGetPrimitiveTypePropertyValue(std::string_view const& propertyName) const
+	{
+		toml::node* pPropertyNode = m_pComponentTable->get(propertyName);
+		if (pPropertyNode == nullptr)
+		{
+			return {};
+		}
+
+		auto tryGetGUIDString = pPropertyNode->value<std::string>();
+		if (!tryGetGUIDString.has_value())
+		{
+			return {};
+		}
+
+		return (DYE::GUID) std::stoull(tryGetGUIDString.value());
+	}
+
+	template<>
 	std::optional<DYE::Vector2> SerializedComponentHandle::TryGetPrimitiveTypePropertyValue(std::string_view const& propertyName) const
 	{
 		toml::node* pPropertyNode = m_pComponentTable->get(propertyName);
@@ -119,6 +137,12 @@ namespace DYE::DYEditor
 		auto width = pPropertyTable->get("Width")->value_or<float>(0);
 		auto height = pPropertyTable->get("Height")->value_or<float>(0);
 		return Math::Rect(x, y, width, height);
+	}
+
+	template<>
+	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<DYE::GUID>(std::string const& propertyName, DYE::GUID const& value)
+	{
+		m_pComponentTable->insert_or_assign(propertyName, std::to_string((std::uint64_t) value));
 	}
 
 	template<>

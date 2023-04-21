@@ -142,36 +142,36 @@ namespace DYE::DYEditor
 
 		// Populate systems.
 		scene.ForEachSystemDescriptor
-			(
-				[&serializedScene, &scene](SystemDescriptor const &systemDescriptor, ExecutionPhase phase)
-				{
-					serializedScene.TryAddSystem
-						(
-							SerializedScene::AddSystemParameters
-								{
-									.SystemTypeName = systemDescriptor.Name,
-									.HasGroup = systemDescriptor.Group != NoSystemGroupID,
-									.SystemGroupName = (systemDescriptor.Group != NoSystemGroupID)
-													   ? scene.SystemGroupNames[systemDescriptor.Group] : "",
-									.IsEnabled = systemDescriptor.IsEnabled
-								}
-						);
-				}
-			);
+		(
+			[&serializedScene, &scene](SystemDescriptor const &systemDescriptor, ExecutionPhase phase)
+			{
+				serializedScene.TryAddSystem
+				(
+					SerializedScene::AddSystemParameters
+					{
+						.SystemTypeName = systemDescriptor.Name,
+						.HasGroup = systemDescriptor.Group != NoSystemGroupID,
+						.SystemGroupName = (systemDescriptor.Group != NoSystemGroupID)
+										   ? scene.SystemGroupNames[systemDescriptor.Group] : "",
+						.IsEnabled = systemDescriptor.IsEnabled
+					}
+				);
+			}
+		);
 
 		// Populate unrecognized/unknown systems.
 		for (auto unrecognizedSystemDescriptor : scene.UnrecognizedSystems)
 		{
 			serializedScene.TryAddSystem
-				(
-					SerializedScene::AddSystemParameters
-						{
-							.SystemTypeName = unrecognizedSystemDescriptor.Name,
-							.HasGroup = unrecognizedSystemDescriptor.Group != NoSystemGroupID,
-							.SystemGroupName = (unrecognizedSystemDescriptor.Group != NoSystemGroupID) ? scene.SystemGroupNames[unrecognizedSystemDescriptor.Group] : "",
-							.IsEnabled = unrecognizedSystemDescriptor.IsEnabled
-						}
-				);
+			(
+				SerializedScene::AddSystemParameters
+				{
+					.SystemTypeName = unrecognizedSystemDescriptor.Name,
+					.HasGroup = unrecognizedSystemDescriptor.Group != NoSystemGroupID,
+					.SystemGroupName = (unrecognizedSystemDescriptor.Group != NoSystemGroupID) ? scene.SystemGroupNames[unrecognizedSystemDescriptor.Group] : "",
+					.IsEnabled = unrecognizedSystemDescriptor.IsEnabled
+				}
+			);
 		}
 
 		// Populate entities and their components.
