@@ -39,7 +39,7 @@ namespace DYE::DYEditor
 	constexpr char const* k_DYEditorDockSpaceId = "DYEditor DockSpace";
 	constexpr char const* k_SceneHierarchyWindowId = "Scene Hierarchy";
 	constexpr char const* k_SceneSystemWindowId = "Scene System";
-	constexpr char const* k_EntityInspectorWindowId = "Entity Inspector";
+	constexpr char const* k_EntityInspectorWindowId = "###EntityInspector";
 	constexpr char const* k_SceneViewWindowId = "Scene View";
 
 	SceneEditorLayer::SceneEditorLayer() :
@@ -363,18 +363,23 @@ namespace DYE::DYEditor
 		ImGui::End();
 
 		ImGui::SetNextWindowBgAlpha(0.35f);
-		if (ImGui::Begin(k_EntityInspectorWindowId))
+
+		// We want to draw window with different titles in different mode (normal/debug).
+		char entityInspectorWindowName[128];
+		bool const debugMode = m_InspectorMode == InspectorMode::Debug;
+		sprintf(entityInspectorWindowName, "%s%s", debugMode ? "Entity Inspector (Debug)" : "Entity Inspector", k_EntityInspectorWindowId);
+		if (ImGui::Begin(entityInspectorWindowName))
 		{
 			// Draw inspector window context menu.
 			if (ImGui::BeginPopupContextWindow())
 			{
-				if (ImGui::MenuItem("Normal", nullptr, m_InspectorMode == InspectorMode::Normal))
+				if (ImGui::MenuItem("Normal", nullptr, !debugMode))
 				{
 					m_InspectorMode = InspectorMode::Normal;
 					GetEditorConfig().SetAndSave("Editor.DebugInspector", false);
 				}
 
-				if (ImGui::MenuItem("Debug", nullptr, m_InspectorMode == InspectorMode::Debug))
+				if (ImGui::MenuItem("Debug", nullptr, debugMode))
 				{
 					m_InspectorMode = InspectorMode::Debug;
 					GetEditorConfig().SetAndSave("Editor.DebugInspector", true);
