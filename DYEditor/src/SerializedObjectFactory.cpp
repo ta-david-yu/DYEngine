@@ -82,9 +82,8 @@ namespace DYE::DYEditor
 
 		// Populate entities.
 		scene.World.Reserve(serializedEntityHandles.size());
-		for (int i = serializedEntityHandles.size() - 1; i >= 0; i--)
+		for (auto& serializedEntityHandle : serializedEntityHandles)
 		{
-			auto& serializedEntityHandle = serializedEntityHandles[i];
 			DYEditor::Entity entity = scene.World.CreateEntity();
 			ApplySerializedEntityToEmptyEntity(serializedEntityHandle, entity);
 		}
