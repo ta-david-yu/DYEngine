@@ -37,6 +37,9 @@ namespace DYE::ImGuiUtil
 		void ResetParametersToDefaultValues();
 	}
 
+	/// Similar to ImGui::IsItemDeactivatedAfterEdit() but for ImGuiUtil Controls.
+	bool IsControlDeactivatedAfterEdit();
+
 	bool DrawVector2Control(const std::string& label, glm::vec2& value, float resetValue = 0.0f);
 	bool DrawVector3Control(const std::string& label, glm::vec3& value, float resetValue = 0.0f);
 	bool DrawVector4Control(const std::string& label, glm::vec4& value, float resetValue = 0.0f);
@@ -49,19 +52,17 @@ namespace DYE::ImGuiUtil
 	bool DrawCharControl(std::string const& label, char& character);
 	bool DrawAssetPathStringControl(std::string const &label, std::filesystem::path &path, std::vector<std::filesystem::path> const& extensions = {});
 	bool DrawGUIDControl(std::string const &label, DYE::GUID &guid);
-
-	void DrawReadOnlyTextWithLabel(std::string const& label, std::string const& text);
-	bool DrawToolbar(const std::string& label, int32_t& value, std::vector<std::string> const& texts);
-	//bool DrawDropdown(const std::string& label, int32_t& value, std::vector<char const*> const& texts);
-	bool DrawDropdown(const std::string& label, int32_t& value, std::vector<std::string> const& texts);
-	void DrawTexture2DPreviewWithLabel(std::string const& label, std::shared_ptr<Texture2D> const& texture);
-
-	void DrawHelpMarker(const char* description);
+	bool DrawToolbarControl(const std::string& label, int32_t& value, std::vector<std::string> const& texts);
+	bool DrawDropdownControl(const std::string& label, int32_t& value, std::vector<std::string> const& texts);
 
 	bool DrawRectControl(const std::string& label, Math::Rect& value, Math::Rect const& resetValue);
 	bool DrawAABBControl(const std::string& label, Math::AABB& aabb);
 	bool DrawCameraPropertiesControl(const std::string& label, CameraProperties& cameraProperties);
 	bool DrawMaterialControl(const std::string& label, Material& material);
+
+	void DrawReadOnlyTextWithLabel(std::string const& label, std::string const& text);
+	void DrawTexture2DPreviewWithLabel(std::string const& label, std::shared_ptr<Texture2D> const& texture);
+	void DrawHelpMarker(const char* description);
 
 	void OpenFilePathPopup(char const* popupId,
 						   std::filesystem::path const& rootDirectory,

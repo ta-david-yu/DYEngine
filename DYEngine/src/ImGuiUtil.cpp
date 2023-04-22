@@ -29,8 +29,22 @@ namespace DYE::ImGuiUtil
 		}
 	}
 
+	struct ControlContext
+	{
+		bool LastControlDeactivatedAfterEdit = false;
+	};
+
+	static ControlContext s_Context;
+
+	bool IsControlDeactivatedAfterEdit()
+	{
+		return s_Context.LastControlDeactivatedAfterEdit;
+	}
+
 	bool DrawVector2Control(const std::string &label, glm::vec2 &value, float resetValue)
 	{
+		s_Context.LastControlDeactivatedAfterEdit = false;
+
 		bool isValueChanged = false;
 
 		ImGuiIO &io = ImGui::GetIO();
@@ -58,12 +72,14 @@ namespace DYE::ImGuiUtil
 			{
 				value.x = resetValue;
 				isValueChanged |= true;
+				s_Context.LastControlDeactivatedAfterEdit = true;
 			}
 			ImGui::PopFont();
 			ImGui::PopStyleColor(3);
 
 			ImGui::SameLine();
 			isValueChanged |= ImGui::DragFloat("##X", &value.x, 0.1f, 0.0f, 0.0f, Settings::FloatFormat.c_str());
+			s_Context.LastControlDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
 			ImGui::PopItemWidth();
 		}
 
@@ -78,12 +94,14 @@ namespace DYE::ImGuiUtil
 			{
 				value.y = resetValue;
 				isValueChanged |= true;
+				s_Context.LastControlDeactivatedAfterEdit = true;
 			}
 			ImGui::PopFont();
 			ImGui::PopStyleColor(3);
 
 			ImGui::SameLine();
 			isValueChanged |= ImGui::DragFloat("##Y", &value.y, 0.1f, 0.0f, 0.0f, Settings::FloatFormat.c_str());
+			s_Context.LastControlDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
 			ImGui::PopItemWidth();
 		}
 
@@ -98,6 +116,8 @@ namespace DYE::ImGuiUtil
 
 	bool DrawVector3Control(const std::string &label, glm::vec3 &value, float resetValue)
 	{
+		s_Context.LastControlDeactivatedAfterEdit = false;
+
 		bool isValueChanged = false;
 
 		ImGuiIO &io = ImGui::GetIO();
@@ -124,12 +144,14 @@ namespace DYE::ImGuiUtil
 		{
 			value.x = resetValue;
 			isValueChanged |= true;
+			s_Context.LastControlDeactivatedAfterEdit = true;
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
 		isValueChanged |= ImGui::DragFloat("##X", &value.x, 0.1f, 0.0f, 0.0f, Settings::FloatFormat.c_str());
+		s_Context.LastControlDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -141,12 +163,14 @@ namespace DYE::ImGuiUtil
 		{
 			value.y = resetValue;
 			isValueChanged |= true;
+			s_Context.LastControlDeactivatedAfterEdit = true;
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
 		isValueChanged |= ImGui::DragFloat("##Y", &value.y, 0.1f, 0.0f, 0.0f, Settings::FloatFormat.c_str());
+		s_Context.LastControlDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -158,12 +182,14 @@ namespace DYE::ImGuiUtil
 		{
 			value.z = resetValue;
 			isValueChanged |= true;
+			s_Context.LastControlDeactivatedAfterEdit = true;
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
 		isValueChanged |= ImGui::DragFloat("##Z", &value.z, 0.1f, 0.0f, 0.0f, Settings::FloatFormat.c_str());
+		s_Context.LastControlDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
 		ImGui::PopItemWidth();
 
 		ImGui::PopStyleVar();
@@ -177,6 +203,8 @@ namespace DYE::ImGuiUtil
 
 	bool DrawVector4Control(const std::string &label, glm::vec4 &value, float resetValue)
 	{
+		s_Context.LastControlDeactivatedAfterEdit = false;
+
 		bool isValueChanged = false;
 
 		ImGuiIO &io = ImGui::GetIO();
@@ -203,12 +231,14 @@ namespace DYE::ImGuiUtil
 		{
 			value.x = resetValue;
 			isValueChanged |= true;
+			s_Context.LastControlDeactivatedAfterEdit = true;
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
 		isValueChanged |= ImGui::DragFloat("##X", &value.x, 0.1f, 0.0f, 0.0f, Settings::FloatFormat.c_str());
+		s_Context.LastControlDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -220,12 +250,14 @@ namespace DYE::ImGuiUtil
 		{
 			value.y = resetValue;
 			isValueChanged |= true;
+			s_Context.LastControlDeactivatedAfterEdit = true;
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
 		isValueChanged |= ImGui::DragFloat("##Y", &value.y, 0.1f, 0.0f, 0.0f, Settings::FloatFormat.c_str());
+		s_Context.LastControlDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -237,12 +269,14 @@ namespace DYE::ImGuiUtil
 		{
 			value.z = resetValue;
 			isValueChanged |= true;
+			s_Context.LastControlDeactivatedAfterEdit = true;
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
 		isValueChanged |= ImGui::DragFloat("##Z", &value.z, 0.1f, 0.0f, 0.0f, Settings::FloatFormat.c_str());
+		s_Context.LastControlDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
 		ImGui::PopItemWidth();;
 		ImGui::SameLine();
 
@@ -254,12 +288,14 @@ namespace DYE::ImGuiUtil
 		{
 			value.w = resetValue;
 			isValueChanged |= true;
+			s_Context.LastControlDeactivatedAfterEdit = true;
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
 		isValueChanged |= ImGui::DragFloat("##W", &value.w, 0.1f, 0.0f, 0.0f, Settings::FloatFormat.c_str());
+		s_Context.LastControlDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
 		ImGui::PopItemWidth();
 
 		ImGui::PopStyleVar();
@@ -273,6 +309,8 @@ namespace DYE::ImGuiUtil
 
 	bool DrawBoolControl(const std::string &label, bool &value)
 	{
+		s_Context.LastControlDeactivatedAfterEdit = false;
+
 		bool isValueChanged = false;
 
 		ImGuiIO &io = ImGui::GetIO();
@@ -289,6 +327,7 @@ namespace DYE::ImGuiUtil
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
 
 		isValueChanged |= ImGui::Checkbox("##Boolean", &value);
+		s_Context.LastControlDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
 
 		ImGui::PopItemWidth();
 
@@ -303,6 +342,8 @@ namespace DYE::ImGuiUtil
 
 	bool DrawFloatControl(const std::string &label, float &value, float resetValue)
 	{
+		s_Context.LastControlDeactivatedAfterEdit = false;
+
 		bool isValueChanged = false;
 
 		ImGuiIO &io = ImGui::GetIO();
@@ -321,10 +362,7 @@ namespace DYE::ImGuiUtil
 		// Drag Float
 		{
 			isValueChanged |= ImGui::DragFloat("##Float", &value, 0.1f, 0, 0, Settings::FloatFormat.c_str());
-			if (ImGui::IsItemDeactivatedAfterEdit())
-			{
-				printf("FloatControl '%s' Deactivated After Edit", label.c_str());
-			}
+			s_Context.LastControlDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
 		}
@@ -342,6 +380,7 @@ namespace DYE::ImGuiUtil
 			{
 				value = resetValue;
 				isValueChanged |= true;
+				s_Context.LastControlDeactivatedAfterEdit = true;
 			}
 			ImGui::PopFont();
 			///ImGui::PopStyleColor(3);
@@ -358,6 +397,8 @@ namespace DYE::ImGuiUtil
 
 	bool DrawIntControl(const std::string &label, int32_t &value, int32_t resetValue)
 	{
+		s_Context.LastControlDeactivatedAfterEdit = false;
+
 		bool isValueChanged = false;
 
 		ImGuiIO &io = ImGui::GetIO();
@@ -376,6 +417,7 @@ namespace DYE::ImGuiUtil
 		// Drag int
 		{
 			isValueChanged |= ImGui::DragInt("##SignedInt", &value, 1, 0, 0);
+			s_Context.LastControlDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
 		}
@@ -393,6 +435,7 @@ namespace DYE::ImGuiUtil
 			{
 				value = resetValue;
 				isValueChanged |= true;
+				s_Context.LastControlDeactivatedAfterEdit = true;
 			}
 			ImGui::PopFont();
 			///ImGui::PopStyleColor(3);
@@ -410,6 +453,8 @@ namespace DYE::ImGuiUtil
 
 	bool DrawIntSliderControl(const std::string& label, int32_t & value, int32_t minValue, int32_t maxValue)
 	{
+		s_Context.LastControlDeactivatedAfterEdit = false;
+
 		bool isValueChanged = false;
 
 		ImGuiIO &io = ImGui::GetIO();
@@ -428,7 +473,7 @@ namespace DYE::ImGuiUtil
 		// Drag int
 		{
 			isValueChanged |= ImGui::SliderInt("##IntSlider", &value, minValue, maxValue);
-			//isValueChanged |= ImGui::DragInt("##SignedInt", &value, 1, 0, 0);
+			s_Context.LastControlDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
 		}
@@ -444,6 +489,8 @@ namespace DYE::ImGuiUtil
 
 	bool DrawColor4Control(const std::string &label, glm::vec4 &value)
 	{
+		s_Context.LastControlDeactivatedAfterEdit = false;
+
 		bool isValueChanged = false;
 
 		ImGuiIO &io = ImGui::GetIO();
@@ -460,6 +507,7 @@ namespace DYE::ImGuiUtil
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
 
 		isValueChanged |= ImGui::ColorEdit4("##Color", glm::value_ptr(value));
+		s_Context.LastControlDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
 
 		ImGui::PopItemWidth();
 
@@ -474,6 +522,8 @@ namespace DYE::ImGuiUtil
 
 	bool DrawRectControl(const std::string &label, Math::Rect &value, Math::Rect const &resetValue)
 	{
+		s_Context.LastControlDeactivatedAfterEdit = false;
+
 		bool isValueChanged = false;
 
 		ImGuiIO &io = ImGui::GetIO();
@@ -500,12 +550,14 @@ namespace DYE::ImGuiUtil
 		{
 			value.X = resetValue.X;
 			isValueChanged |= true;
+			s_Context.LastControlDeactivatedAfterEdit = true;
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
 		isValueChanged |= ImGui::DragFloat("##X", &value.X, 0.1f, 0.0f, 0.0f, Settings::FloatFormat.c_str());
+		s_Context.LastControlDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
 		ImGui::PopItemWidth();
 
 		ImGui::SameLine();
@@ -517,12 +569,14 @@ namespace DYE::ImGuiUtil
 		{
 			value.Y = resetValue.Y;
 			isValueChanged |= true;
+			s_Context.LastControlDeactivatedAfterEdit = true;
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
 		isValueChanged |= ImGui::DragFloat("##Y", &value.Y, 0.1f, 0.0f, 0.0f, Settings::FloatFormat.c_str());
+		s_Context.LastControlDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
 		ImGui::PopItemWidth();
 
 		ImGui::SameLine();
@@ -534,12 +588,14 @@ namespace DYE::ImGuiUtil
 		{
 			value.Width = resetValue.Width;
 			isValueChanged |= true;
+			s_Context.LastControlDeactivatedAfterEdit = true;
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
 		isValueChanged |= ImGui::DragFloat("##W", &value.Width, 0.1f, 0.0f, 0.0f, Settings::FloatFormat.c_str());
+		s_Context.LastControlDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
 		ImGui::PopItemWidth();
 
 		ImGui::SameLine();
@@ -551,12 +607,14 @@ namespace DYE::ImGuiUtil
 		{
 			value.Height = resetValue.Height;
 			isValueChanged |= true;
+			s_Context.LastControlDeactivatedAfterEdit = true;
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
 		isValueChanged |= ImGui::DragFloat("##H", &value.Height, 0.1f, 0.0f, 0.0f, Settings::FloatFormat.c_str());
+		s_Context.LastControlDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
 		ImGui::PopItemWidth();
 
 		ImGui::PopStyleVar();
@@ -570,6 +628,8 @@ namespace DYE::ImGuiUtil
 
 	bool DrawTextControl(std::string const &label, std::string &text)
 	{
+		s_Context.LastControlDeactivatedAfterEdit = false;
+
 		bool isValueChanged = false;
 
 		ImGuiIO &io = ImGui::GetIO();
@@ -586,6 +646,7 @@ namespace DYE::ImGuiUtil
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
 		{
 			isValueChanged |= ImGui::InputText("##text", &text);
+			s_Context.LastControlDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
 			ImGui::PopItemWidth();
 		}
 		ImGui::PopStyleVar();
@@ -597,6 +658,8 @@ namespace DYE::ImGuiUtil
 
 	bool DrawCharControl(const std::string &label, char &character)
 	{
+		s_Context.LastControlDeactivatedAfterEdit = false;
+
 		bool isValueChanged = false;
 
 		ImGuiIO &io = ImGui::GetIO();
@@ -615,6 +678,7 @@ namespace DYE::ImGuiUtil
 			char buffer[2];
 			buffer[0] = character;
 			isValueChanged |= ImGui::InputText("##character", buffer, 2);
+			s_Context.LastControlDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
 			if (isValueChanged)
 			{
 				character = buffer[0];
@@ -630,12 +694,16 @@ namespace DYE::ImGuiUtil
 
 	bool DrawAssetPathStringControl(std::string const &label, std::filesystem::path &path, std::vector<std::filesystem::path> const& extensions)
 	{
+		s_Context.LastControlDeactivatedAfterEdit = false;
+
 		bool changed = false;
 
 		ImGui::PushID(label.c_str());
 
+		std::filesystem::path const previousPath = path;
 		auto pathAsString = path.string();
 		bool isPathChanged = ImGuiUtil::DrawTextControl(label, pathAsString);
+		s_Context.LastControlDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
 		if (isPathChanged)
 		{
 			path = pathAsString;
@@ -659,7 +727,11 @@ namespace DYE::ImGuiUtil
 		ImGuiUtil::FilePathPopupResult result = ImGuiUtil::DrawFilePathPopup(popupId, path);
 		if (result == ImGuiUtil::FilePathPopupResult::Confirm)
 		{
-			isPathChanged = true;
+			if (path != previousPath)
+			{
+				isPathChanged = true;
+				s_Context.LastControlDeactivatedAfterEdit = true;
+			}
 		}
 
 		changed |= isPathChanged;
@@ -670,10 +742,13 @@ namespace DYE::ImGuiUtil
 
 	bool DrawGUIDControl(std::string const &label, DYE::GUID &guid)
 	{
+		s_Context.LastControlDeactivatedAfterEdit = false;
+
 		bool changed = false;
 
 		auto guidString =  guid.ToString();
 		changed |= ImGuiUtil::DrawTextControl("ID", guidString);
+		s_Context.LastControlDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
 		if (changed)
 		{
 			try
@@ -690,31 +765,10 @@ namespace DYE::ImGuiUtil
 		return changed;
 	}
 
-	void DrawReadOnlyTextWithLabel(const std::string &label, const std::string &text)
+	bool DrawToolbarControl(const std::string &label, int32_t &value, std::vector<std::string> const &texts)
 	{
-		ImGuiIO &io = ImGui::GetIO();
-		auto boldFont = io.Fonts->Fonts[0];
+		s_Context.LastControlDeactivatedAfterEdit = false;
 
-		ImGui::PushID(label.c_str());
-
-		ImGui::Columns(2);
-		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
-		ImGui::Text(label.c_str());
-		ImGui::NextColumn();
-
-		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
-		{
-			ImGui::Text(text.c_str());
-			ImGui::PopItemWidth();
-		}
-		ImGui::PopStyleVar();
-		ImGui::Columns(1);
-		ImGui::PopID();
-	}
-
-	bool DrawToolbar(const std::string &label, int32_t &value, std::vector<std::string> const &texts)
-	{
 		bool isValueChanged = false;
 
 		ImGuiIO &io = ImGui::GetIO();
@@ -740,6 +794,7 @@ namespace DYE::ImGuiUtil
 					value = i;
 					isValueChanged = true;
 				}
+				s_Context.LastControlDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
 			}
 			ImGui::EndTable();
 		}
@@ -750,8 +805,10 @@ namespace DYE::ImGuiUtil
 		return isValueChanged;
 	}
 
-	bool DrawDropdown(const std::string &label, int32_t &value, std::vector<std::string> const &texts)
+	bool DrawDropdownControl(const std::string &label, int32_t &value, std::vector<std::string> const &texts)
 	{
+		s_Context.LastControlDeactivatedAfterEdit = false;
+
 		bool isValueChanged = false;
 
 		ImGuiIO &io = ImGui::GetIO();
@@ -774,8 +831,12 @@ namespace DYE::ImGuiUtil
 					bool const isSelected = value == i;
 					if (ImGui::Selectable(texts[i].c_str(), isSelected))
 					{
+						if (i != value)
+						{
+							isValueChanged |= true;
+							s_Context.LastControlDeactivatedAfterEdit = true;
+						}
 						value = i;
-						isValueChanged |= true;
 					}
 					if (isSelected)
 					{
@@ -791,6 +852,282 @@ namespace DYE::ImGuiUtil
 		ImGui::Columns(1);
 		ImGui::PopID();
 		return isValueChanged;
+	}
+	
+	bool DrawAABBControl(const std::string& label, Math::AABB& aabb)
+	{
+		s_Context.LastControlDeactivatedAfterEdit = false;
+
+		bool isValueChanged = false;
+
+		ImGuiIO& io = ImGui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+
+		ImGui::PushID(label.c_str());
+
+		ImGui::Columns(2);
+		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::Text(label.c_str());
+		ImGui::NextColumn();
+
+		{
+			ImGui::PushMultiItemsWidths(4, ImGui::CalcItemWidth());
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
+			{
+				ImGui::LabelText("", "Min");
+				ImGui::PopItemWidth();
+
+				ImGui::SameLine();
+				isValueChanged |= ImGui::DragFloat("##MinX", &aabb.Min.x, 0.1f, 0.0f, 0.0f, Settings::FloatFormat.c_str());
+				s_Context.LastControlDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
+				ImGui::PopItemWidth();
+
+				ImGui::SameLine();
+				isValueChanged |= ImGui::DragFloat("##MinY", &aabb.Min.y, 0.1f, 0.0f, 0.0f, Settings::FloatFormat.c_str());
+				s_Context.LastControlDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
+				ImGui::PopItemWidth();
+
+				ImGui::SameLine();
+				isValueChanged |= ImGui::DragFloat("##MinZ", &aabb.Min.z, 0.1f, 0.0f, 0.0f, Settings::FloatFormat.c_str());
+				s_Context.LastControlDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
+				ImGui::PopItemWidth();
+			}
+			ImGui::PopStyleVar();
+		}
+
+		{
+			ImGui::PushMultiItemsWidths(4, ImGui::CalcItemWidth());
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
+			{
+				ImGui::LabelText("", "Max");
+				ImGui::PopItemWidth();
+
+				ImGui::SameLine();
+				isValueChanged |= ImGui::DragFloat("##MaxX", &aabb.Max.x, 0.1f, 0.0f, 0.0f, Settings::FloatFormat.c_str());
+				s_Context.LastControlDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
+				ImGui::PopItemWidth();
+
+				ImGui::SameLine();
+				isValueChanged |= ImGui::DragFloat("##MaxY", &aabb.Max.y, 0.1f, 0.0f, 0.0f, Settings::FloatFormat.c_str());
+				s_Context.LastControlDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
+				ImGui::PopItemWidth();
+
+				ImGui::SameLine();
+				isValueChanged |= ImGui::DragFloat("##MaxZ", &aabb.Max.z, 0.1f, 0.0f, 0.0f, Settings::FloatFormat.c_str());
+				s_Context.LastControlDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
+				ImGui::PopItemWidth();
+			}
+			ImGui::PopStyleVar();
+		}
+
+		{
+			ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
+			{
+				auto const center = aabb.Center();
+				ImGui::LabelText("", "Center (%.2f, %.2f, %.2f)", center.x, center.y, center.z);
+				ImGui::PopItemWidth();
+			}
+			ImGui::PopStyleVar();
+		}
+
+		ImGui::Columns(1);
+
+		ImGui::PopID();
+
+		return isValueChanged;
+	}
+
+	const static std::vector<std::string> s_WindowIndexDropDownOptions =
+		{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15",
+		 "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"};
+
+	bool DrawCameraPropertiesControl(const std::string& label, CameraProperties& cameraProperties)
+	{
+		// We use a local variable to keep track of it because this Control is a compound control.
+		// We will set the value to s_Context.LastControlDeactivatedAfterEdit at the end.
+		bool lastControlDeactivatedAfterEdit = false;
+		s_Context.LastControlDeactivatedAfterEdit = false;
+
+		bool isValueChanged = false;
+
+		ImGui::PushID(label.c_str());
+
+		isValueChanged |= DrawColor4Control("Clear Color", cameraProperties.ClearColor);
+		lastControlDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+
+		isValueChanged |= DrawFloatControl("Depth ", cameraProperties.Depth);
+		lastControlDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+
+		ImGui::Separator();
+
+		isValueChanged |= DrawBoolControl("Is Orthographic", cameraProperties.IsOrthographic);
+		lastControlDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+
+		if (cameraProperties.IsOrthographic)
+		{
+			isValueChanged |= DrawFloatControl("Orthographic Size", cameraProperties.OrthographicSize, 1);
+			lastControlDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+		}
+		else
+		{
+			isValueChanged |= DrawFloatControl("Field Of View", cameraProperties.FieldOfView, 45);
+			lastControlDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+		}
+
+		isValueChanged |= DrawFloatControl("Clip Distance | Near", cameraProperties.NearClipDistance, 0.1f);
+		lastControlDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+		isValueChanged |= DrawFloatControl("Clip Distance | Far", cameraProperties.FarClipDistance, 100);
+		lastControlDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+
+		ImGui::Separator();
+
+		int index = cameraProperties.TargetWindowIndex;
+		bool const indexChanged = DrawDropdownControl("Target Window Index", index, s_WindowIndexDropDownOptions);
+		lastControlDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+		ImGui::SameLine();
+		ImGuiUtil::DrawHelpMarker("If there is no window with the given index, the camera will be skipped when rendering. "
+								  "You can check how many windows there are in");
+		if (indexChanged)
+		{
+			cameraProperties.TargetWindowIndex = index;
+		}
+		isValueChanged |= indexChanged;
+
+		isValueChanged |= DrawBoolControl("Use Manual Aspect Ratio", cameraProperties.UseManualAspectRatio);
+		lastControlDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+
+		if (cameraProperties.UseManualAspectRatio)
+		{
+			isValueChanged |= DrawFloatControl("Manual Aspect Ratio", cameraProperties.ManualAspectRatio, 16.0f / 9.0f);
+			lastControlDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+		}
+		else
+		{
+			auto dimension = cameraProperties.GetTargetDimension();
+			DrawReadOnlyTextWithLabel("Aspect Ratio", std::to_string(
+				cameraProperties.GetAutomaticAspectRatioOfDimension(dimension)));
+		}
+
+		int32_t viewportType = static_cast<int32_t>(cameraProperties.ViewportValueType);
+		bool viewportTypeChanged = DrawDropdownControl("Viewport Type", viewportType, {"Relative", "Absolute"});
+		lastControlDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+		if (viewportTypeChanged)
+		{
+			cameraProperties.ViewportValueType = static_cast<ViewportValueType>(viewportType);
+		}
+		isValueChanged |= viewportTypeChanged;
+
+		auto targetDimension = cameraProperties.GetTargetDimension();
+		Math::Rect resetRect = {0, 0, 1, 1};
+		if (cameraProperties.ViewportValueType == ViewportValueType::AbsoluteDimension)
+		{
+			resetRect = {0, 0, (float) targetDimension.x, (float) targetDimension.y};
+		}
+		isValueChanged |= DrawRectControl("Viewport", cameraProperties.Viewport, resetRect);
+		lastControlDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+
+		s_Context.LastControlDeactivatedAfterEdit = lastControlDeactivatedAfterEdit;
+
+		ImGui::PopID();
+
+		return false;
+	}
+
+	bool DrawMaterialControl(const std::string& label, Material& material)
+	{
+		// We use a local variable to keep track of it because this Control is a compound control.
+		// We will set the value to s_Context.LastControlDeactivatedAfterEdit at the end.
+		bool lastControlDeactivatedAfterEdit = false;
+		s_Context.LastControlDeactivatedAfterEdit = false;
+
+		bool isValueChanged = false;
+		auto uiId = "##" + material.GetName();
+		ImGui::Text(label.c_str());
+
+		ShaderProgram const& shader = material.GetShaderProgram();
+		auto const& allProperties = shader.GetAllPropertyInfo();
+
+		for (auto& propertyInfo : allProperties)
+		{
+			bool isPropertyValueChanged = false;
+			auto& propertyName = propertyInfo.UniformName;
+
+			// TODO: Material imgui interface, add more type UI support
+			float floatValue;
+			glm::vec4 float4Value;
+			switch (propertyInfo.Type)
+			{
+				case UniformType::Float:
+					floatValue = material.GetFloat(propertyName);
+					isPropertyValueChanged = DrawFloatControl(propertyInfo.DisplayName + uiId, floatValue, 0.0f);
+					lastControlDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+					if (isPropertyValueChanged)
+					{
+						material.SetFloat(propertyName, floatValue);
+					}
+					break;
+				case UniformType::Float2:
+					ImGui::Text(propertyInfo.DisplayName.c_str());
+					break;
+				case UniformType::Float3:
+					ImGui::Text(propertyInfo.DisplayName.c_str());
+					break;
+				case UniformType::Float4:
+					float4Value = material.GetFloat4(propertyName);
+					isPropertyValueChanged = DrawColor4Control(propertyInfo.DisplayName + uiId, float4Value);
+					lastControlDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+					if (isPropertyValueChanged)
+					{
+						material.SetFloat4(propertyName, float4Value);
+					}
+					break;
+				case UniformType::Mat3:
+					ImGui::Text(propertyInfo.DisplayName.c_str());
+					break;
+				case UniformType::Mat4:
+					ImGui::Text(propertyInfo.DisplayName.c_str());
+					break;
+				case UniformType::Int:
+					ImGui::Text(propertyInfo.DisplayName.c_str());
+					break;
+				case UniformType::Boolean:
+					ImGui::Text(propertyInfo.DisplayName.c_str());
+					break;
+				case UniformType::Texture2D:
+					ImGui::Text(propertyInfo.DisplayName.c_str());
+					break;
+				case UniformType::Invalid:
+					break;
+			}
+
+			isValueChanged |= isPropertyValueChanged;
+		}
+
+		return isValueChanged;
+	}
+
+	void DrawReadOnlyTextWithLabel(const std::string &label, const std::string &text)
+	{
+		ImGuiIO &io = ImGui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+
+		ImGui::PushID(label.c_str());
+
+		ImGui::Columns(2);
+		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::Text(label.c_str());
+		ImGui::NextColumn();
+
+		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
+		{
+			ImGui::Text(text.c_str());
+			ImGui::PopItemWidth();
+		}
+		ImGui::PopStyleVar();
+		ImGui::Columns(1);
+		ImGui::PopID();
 	}
 
 	void DrawTexture2DPreviewWithLabel(const std::string &label, const std::shared_ptr<Texture2D> &texture)
@@ -879,223 +1216,6 @@ namespace DYE::ImGuiUtil
 			ImGui::PopTextWrapPos();
 			ImGui::EndTooltip();
 		}
-	}
-	
-	bool DrawAABBControl(const std::string& label, Math::AABB& aabb)
-	{
-		bool isValueChanged = false;
-
-		ImGuiIO& io = ImGui::GetIO();
-		auto boldFont = io.Fonts->Fonts[0];
-
-		ImGui::PushID(label.c_str());
-
-		ImGui::Columns(2);
-		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
-		ImGui::Text(label.c_str());
-		ImGui::NextColumn();
-
-		{
-			ImGui::PushMultiItemsWidths(4, ImGui::CalcItemWidth());
-			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
-			{
-				ImGui::LabelText("", "Min");
-				ImGui::PopItemWidth();
-
-				ImGui::SameLine();
-				isValueChanged |= ImGui::DragFloat("##MinX", &aabb.Min.x, 0.1f, 0.0f, 0.0f, Settings::FloatFormat.c_str());
-				ImGui::PopItemWidth();
-
-				ImGui::SameLine();
-				isValueChanged |= ImGui::DragFloat("##MinY", &aabb.Min.y, 0.1f, 0.0f, 0.0f, Settings::FloatFormat.c_str());
-				ImGui::PopItemWidth();
-
-				ImGui::SameLine();
-				isValueChanged |= ImGui::DragFloat("##MinZ", &aabb.Min.z, 0.1f, 0.0f, 0.0f, Settings::FloatFormat.c_str());
-				ImGui::PopItemWidth();
-			}
-			ImGui::PopStyleVar();
-		}
-
-		{
-			ImGui::PushMultiItemsWidths(4, ImGui::CalcItemWidth());
-			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
-			{
-				ImGui::LabelText("", "Max");
-				ImGui::PopItemWidth();
-
-				ImGui::SameLine();
-				isValueChanged |= ImGui::DragFloat("##MaxX", &aabb.Max.x, 0.1f, 0.0f, 0.0f, Settings::FloatFormat.c_str());
-				ImGui::PopItemWidth();
-
-				ImGui::SameLine();
-				isValueChanged |= ImGui::DragFloat("##MaxY", &aabb.Max.y, 0.1f, 0.0f, 0.0f, Settings::FloatFormat.c_str());
-				ImGui::PopItemWidth();
-
-				ImGui::SameLine();
-				isValueChanged |= ImGui::DragFloat("##MaxZ", &aabb.Max.z, 0.1f, 0.0f, 0.0f, Settings::FloatFormat.c_str());
-				ImGui::PopItemWidth();
-			}
-			ImGui::PopStyleVar();
-		}
-
-		{
-			ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
-			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
-			{
-				auto const center = aabb.Center();
-				ImGui::LabelText("", "Center (%.2f, %.2f, %.2f)", center.x, center.y, center.z);
-				ImGui::PopItemWidth();
-			}
-			ImGui::PopStyleVar();
-		}
-
-		ImGui::Columns(1);
-
-		ImGui::PopID();
-
-		return isValueChanged;
-	}
-
-	const static std::vector<std::string> s_WindowIndexDropDownOptions =
-		{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15",
-		 "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"};
-
-	bool DrawCameraPropertiesControl(const std::string& label, CameraProperties& cameraProperties)
-	{
-		bool isValueChanged = false;
-
-		ImGui::PushID(label.c_str());
-
-		isValueChanged |= DrawColor4Control("Clear Color", cameraProperties.ClearColor);
-		isValueChanged |= DrawFloatControl("Depth ", cameraProperties.Depth);
-
-		ImGui::Separator();
-
-		isValueChanged |= DrawBoolControl("Is Orthographic", cameraProperties.IsOrthographic);
-
-		if (cameraProperties.IsOrthographic)
-		{
-			isValueChanged |= DrawFloatControl("Orthographic Size", cameraProperties.OrthographicSize, 1);
-		}
-		else
-		{
-			isValueChanged |= DrawFloatControl("Field Of View", cameraProperties.FieldOfView, 45);
-		}
-
-		isValueChanged |= DrawFloatControl("Clip Distance | Near", cameraProperties.NearClipDistance, 0.1f);
-		isValueChanged |= DrawFloatControl("Clip Distance | Far", cameraProperties.FarClipDistance, 100);
-
-		ImGui::Separator();
-
-		int index = cameraProperties.TargetWindowIndex;
-		bool const indexChanged = DrawDropdown("Target Window Index", index, s_WindowIndexDropDownOptions);
-		ImGui::SameLine();
-		ImGuiUtil::DrawHelpMarker("If there is no window with the given index, the camera will be skipped when rendering. "
-								  "You can check how many windows there are in");
-		if (indexChanged)
-		{
-			cameraProperties.TargetWindowIndex = index;
-		}
-		isValueChanged |= indexChanged;
-
-		isValueChanged |= DrawBoolControl("Use Manual Aspect Ratio", cameraProperties.UseManualAspectRatio);
-		if (cameraProperties.UseManualAspectRatio)
-		{
-			isValueChanged |= DrawFloatControl("Manual Aspect Ratio", cameraProperties.ManualAspectRatio, 16.0f / 9.0f);
-		}
-		else
-		{
-			auto dimension = cameraProperties.GetTargetDimension();
-			DrawReadOnlyTextWithLabel("Aspect Ratio", std::to_string(
-				cameraProperties.GetAutomaticAspectRatioOfDimension(dimension)));
-		}
-
-		int32_t viewportType = static_cast<int32_t>(cameraProperties.ViewportValueType);
-		bool viewportTypeChanged = DrawDropdown("Viewport Type", viewportType, { "Relative", "Absolute" });
-		if (viewportTypeChanged)
-		{
-			cameraProperties.ViewportValueType = static_cast<ViewportValueType>(viewportType);
-		}
-		isValueChanged |= viewportTypeChanged;
-
-		auto targetDimension = cameraProperties.GetTargetDimension();
-		Math::Rect resetRect = {0, 0, 1, 1};
-		if (cameraProperties.ViewportValueType == ViewportValueType::AbsoluteDimension)
-		{
-			resetRect = {0, 0, (float) targetDimension.x, (float) targetDimension.y};
-		}
-		isValueChanged |= DrawRectControl("Viewport", cameraProperties.Viewport, resetRect);
-
-		ImGui::PopID();
-
-		return false;
-	}
-
-	bool DrawMaterialControl(const std::string& label, Material& material)
-	{
-		bool isValueChanged = false;
-		auto uiId = "##" + material.GetName();
-		ImGui::Text(label.c_str());
-
-		ShaderProgram const& shader = material.GetShaderProgram();
-		auto const& allProperties = shader.GetAllPropertyInfo();
-
-		for (auto& propertyInfo : allProperties)
-		{
-			bool isPropertyValueChanged = false;
-			auto& propertyName = propertyInfo.UniformName;
-
-			// TODO: Material imgui interface, add more type UI support
-			float floatValue;
-			glm::vec4 float4Value;
-			switch (propertyInfo.Type)
-			{
-				case UniformType::Float:
-					floatValue = material.GetFloat(propertyName);
-					isPropertyValueChanged = DrawFloatControl(propertyInfo.DisplayName + uiId, floatValue, 0.0f);
-					if (isPropertyValueChanged)
-					{
-						material.SetFloat(propertyName, floatValue);
-					}
-					break;
-				case UniformType::Float2:
-					ImGui::Text(propertyInfo.DisplayName.c_str());
-					break;
-				case UniformType::Float3:
-					ImGui::Text(propertyInfo.DisplayName.c_str());
-					break;
-				case UniformType::Float4:
-					float4Value = material.GetFloat4(propertyName);
-					isPropertyValueChanged = DrawColor4Control(propertyInfo.DisplayName + uiId, float4Value);
-					if (isPropertyValueChanged)
-					{
-						material.SetFloat4(propertyName, float4Value);
-					}
-					break;
-				case UniformType::Mat3:
-					ImGui::Text(propertyInfo.DisplayName.c_str());
-					break;
-				case UniformType::Mat4:
-					ImGui::Text(propertyInfo.DisplayName.c_str());
-					break;
-				case UniformType::Int:
-					ImGui::Text(propertyInfo.DisplayName.c_str());
-					break;
-				case UniformType::Boolean:
-					ImGui::Text(propertyInfo.DisplayName.c_str());
-					break;
-				case UniformType::Texture2D:
-					ImGui::Text(propertyInfo.DisplayName.c_str());
-					break;
-				case UniformType::Invalid:
-					break;
-			}
-
-			isValueChanged |= isPropertyValueChanged;
-		}
-
-		return isValueChanged;
 	}
 
 	std::filesystem::path FilePathPopup_RootDirectory;
