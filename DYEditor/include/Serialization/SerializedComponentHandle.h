@@ -68,6 +68,9 @@ namespace DYE::DYEditor
 		toml::table* m_pComponentTable = nullptr;
 	};
 
+	/// We need a GUID specialization because it's stored as string in serialized component.
+	template<>
+	std::optional<DYE::GUID> SerializedComponentHandle::TryGetPrimitiveTypePropertyValue(std::string_view const& propertyName) const;
 	template<>
 	std::optional<DYE::Vector2> SerializedComponentHandle::TryGetPrimitiveTypePropertyValue(std::string_view const& propertyName) const;
 	template<>
@@ -81,6 +84,9 @@ namespace DYE::DYEditor
 	template<>
 	std::optional<Math::Rect> SerializedComponentHandle::TryGetPrimitiveTypePropertyValue(std::string_view const& propertyName) const;
 
+	/// We need a GUID specialization because it's stored as string in serialized component.
+	template<>
+	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<DYE::GUID>(std::string const& propertyName, DYE::GUID const& value);
 	template<>
 	void SerializedComponentHandle::SetPrimitiveTypePropertyValue<DYE::Vector2>(std::string const& propertyName, DYE::Vector2 const& value);
 	template<>

@@ -21,6 +21,7 @@ namespace DYE
 	class CameraProperties;
 	class Material;
 	class Texture2D;
+	struct GUID;
 }
 
 namespace DYE::ImGuiUtil
@@ -47,6 +48,7 @@ namespace DYE::ImGuiUtil
 	bool DrawTextControl(std::string const& label, std::string & text);
 	bool DrawCharControl(std::string const& label, char& character);
 	bool DrawAssetPathStringControl(std::string const &label, std::filesystem::path &path, std::vector<std::filesystem::path> const& extensions = {});
+	bool DrawGUIDControl(std::string const &label, DYE::GUID &guid);
 
 	void DrawReadOnlyTextWithLabel(std::string const& label, std::string const& text);
 	bool DrawToolbar(const std::string& label, int32_t& value, std::vector<std::string> const& texts);

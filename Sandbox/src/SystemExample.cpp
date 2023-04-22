@@ -71,7 +71,7 @@ void CreateEntitiesSystem::Execute(DYE::DYEditor::World &world, DYE::DYEditor::E
 			}
 			world.CreateEntity(name).AddOrGetComponent<PrintMessageOnTeardown>().Message = std::to_string(i);
 		}
-		registry.destroy(entity);
+		world.DestroyEntity(entity);
 	}
 }
 

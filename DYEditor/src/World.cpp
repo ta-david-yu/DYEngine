@@ -1,7 +1,8 @@
-#include "../include/Core/World.h"
+#include "Core/World.h"
 
-#include "../include/Core/Entity.h"
-#include "../include/Components/NameComponent.h"
+#include "Core/Entity.h"
+#include "Components/IDComponent.h"
+#include "Components/NameComponent.h"
 
 namespace DYE::DYEditor
 {
@@ -11,20 +12,67 @@ namespace DYE::DYEditor
 
 	Entity World::CreateEntity()
 	{
-		return Entity(*this, m_Registry.create());
+		auto entity = Entity(*this, m_Registry.create());
+
+		m_EntityHandles.push_back(EntityHandle { .Identifier = entity.m_EntityIdentifier });
+
+		return entity;
 	}
 
 	Entity World::CreateEntity(std::string const& name)
 	{
+		return CreateEntityWithGUID(name, m_EntityGUIDFactory.Generate());
+	}
+
+	Entity World::CreateEntityWithGUID(std::string const& name, GUID guid)
+	{
 		auto entity = Entity(*this, m_Registry.create());
+		entity.AddComponent<IDComponent>().ID = guid;
 		entity.AddComponent<NameComponent>(name);
+
+		m_EntityHandles.push_back(EntityHandle { .Identifier = entity.m_EntityIdentifier });
 
 		return entity;
 	}
 
 	void World::DestroyEntity(Entity &entity)
 	{
-		m_Registry.destroy(entity.m_EntityHandle);
+		EntityIdentifier identifier = entity.m_EntityIdentifier;
+		std::remove_if(m_EntityHandles.begin(), m_EntityHandles.end(),
+					   [identifier](EntityHandle &element)
+					   {
+						   return element.Identifier == identifier;
+					   });
+
+		m_Registry.destroy(entity.m_EntityIdentifier);
+	}
+
+	void World::DestroyEntity(EntityIdentifier identifier)
+	{
+		std::remove_if(m_EntityHandles.begin(), m_EntityHandles.end(),
+					   [identifier](EntityHandle &element)
+					   {
+						   return element.Identifier == identifier;
+					   });
+
+		m_Registry.destroy(identifier);
+	}
+
+	bool World::IsEmpty() const
+	{
+		return m_Registry.empty();
+	}
+
+	void World::Reserve(std::size_t size)
+	{
+		m_Registry.reserve(size);
+		m_EntityHandles.reserve(size);
+	}
+
+	void World::Clear()
+	{
+		m_Registry.clear<>();
+		m_EntityHandles.clear();
 	}
 
 	entt::registry& GetWorldUnderlyingRegistry(World &world)

@@ -1,10 +1,11 @@
-#include "../include/Core/Entity.h"
+#include "Core/Entity.h"
 
-#include "../include/Components/NameComponent.h"
+#include "Core/World.h"
+#include "Components/NameComponent.h"
 
 namespace DYE::DYEditor
 {
-	Entity::Entity(World &world, EntityHandle handle) : m_World(&world), m_EntityHandle(handle)
+	Entity::Entity(World &world, EntityIdentifier identifier) : m_World(&world), m_EntityIdentifier(identifier)
 	{
 	}
 
@@ -15,8 +16,8 @@ namespace DYE::DYEditor
 			return false;
 		}
 
-		bool const isNullEntity = m_EntityHandle == entt::null;
-		return !isNullEntity && m_World->m_Registry.valid(m_EntityHandle);
+		bool const isNullEntity = m_EntityIdentifier == entt::null;
+		return !isNullEntity && m_World->m_Registry.valid(m_EntityIdentifier);
 	}
 
 	std::optional<std::string> Entity::TryGetName()
@@ -33,7 +34,7 @@ namespace DYE::DYEditor
 	{
 		for (auto [id, storage] : m_World->m_Registry.storage())
 		{
-			storage.remove(m_EntityHandle);
+			storage.remove(m_EntityIdentifier);
 		}
 	}
 
