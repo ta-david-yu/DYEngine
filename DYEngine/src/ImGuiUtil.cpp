@@ -728,17 +728,22 @@ namespace DYE::ImGuiUtil
 
 		ImGui::PushMultiItemsWidths(texts.size(), ImGui::CalcItemWidth());
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
+		ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2 {0.5f, 0.5f});
+		if (ImGui::BeginTable("Toolbar", texts.size(), ImGuiTableFlags_BordersInnerV))
 		{
+			ImGui::TableNextRow();
 			for (int i = 0; i < texts.size(); ++i)
 			{
-				isValueChanged |= ImGui::RadioButton(texts[i].c_str(), &value, i);
-				if (i != texts.size() - 1)
+				ImGui::TableSetColumnIndex(i);
+				if (ImGui::Selectable(texts[i].c_str(), i == value, ImGuiSelectableFlags_DontClosePopups | ImGuiSelectableFlags_AllowItemOverlap))
 				{
-					ImGui::SameLine();
+					value = i;
+					isValueChanged = true;
 				}
 			}
+			ImGui::EndTable();
 		}
-		ImGui::PopStyleVar();
+		ImGui::PopStyleVar(2);
 		ImGui::Columns(1);
 		ImGui::PopID();
 

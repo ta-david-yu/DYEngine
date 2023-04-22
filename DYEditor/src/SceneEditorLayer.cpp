@@ -35,7 +35,7 @@ using namespace DYE::DYEditor;
 
 namespace DYE::DYEditor
 {
-	constexpr char const* k_DYEditorWindowId = "DYEditor";
+	constexpr char const* k_DYEditorWindowId = "###DYEditor";
 	constexpr char const* k_DYEditorDockSpaceId = "DYEditor DockSpace";
 	constexpr char const* k_SceneHierarchyWindowId = "Scene Hierarchy";
 	constexpr char const* k_SceneSystemWindowId = "Scene System";
@@ -309,7 +309,9 @@ namespace DYE::DYEditor
 		ImGui::SetNextWindowBgAlpha(0.35f);
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-		ImGui::Begin(k_DYEditorWindowId, nullptr, mainEditorWindowFlags);
+		char mainEditorName[32];
+		sprintf(mainEditorName, "%s%s", RuntimeState::IsPlaying()? "DYEditor (Play Mode)" : "DYEditor (Edit Mode)", k_DYEditorWindowId);
+		ImGui::Begin(mainEditorName, nullptr, mainEditorWindowFlags);
 		ImGui::PopStyleVar();
 
 		drawEditorWindowMenuBar(activeScene, m_CurrentSceneFilePath);
@@ -441,7 +443,7 @@ namespace DYE::DYEditor
 		{
 			if (ImGui::BeginMenu("File"))
 			{
-				if (ImGui::MenuItem("New Scene"))
+				if (ImGui::MenuItem("New Scene", nullptr, false, !RuntimeState::IsPlaying()))
 				{
 					currentScenePathContext.clear();
 					currentScene.Clear();
@@ -452,7 +454,7 @@ namespace DYE::DYEditor
 					currentScene.TryAddSystemByName(RegisterCameraSystem::TypeName);
 				}
 
-				if (ImGui::MenuItem("Open Scene"))
+				if (ImGui::MenuItem("Open Scene", nullptr, false, !RuntimeState::IsPlaying()))
 				{
 					// We store a flag here and delay opening the popup
 					// because MenuItem is Selectable and Selectable by default calls CloseCurrentPopup().
