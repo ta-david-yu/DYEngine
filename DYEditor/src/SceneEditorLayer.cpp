@@ -988,7 +988,7 @@ namespace DYE::DYEditor
 			return false;
 		}
 
-		bool changed = false;
+		bool isEntityInspectorDeactivatedAfterEdit = false;
 
 		ImVec2 const addComponentButtonSize = ImVec2 {120, 0};
 		float const scrollBarWidth = ImGui::GetCurrentWindow()->ScrollbarY? ImGui::GetWindowScrollbarRect(ImGui::GetCurrentWindow(), ImGuiAxis_Y).GetWidth() : 0;
@@ -996,7 +996,8 @@ namespace DYE::DYEditor
 		// Draw entity's NameComponent as a InputField on the top.
 		auto& nameComponent = entity.AddOrGetComponent<NameComponent>();
 		ImGui::PushItemWidth(ImGui::GetWindowWidth() - scrollBarWidth - addComponentButtonSize.x - ImGui::GetFontSize());
-		changed |= ImGui::InputText("##EntityNameComponent", &nameComponent.Name);
+		bool nameChanged = ImGui::InputText("##EntityNameComponent", &nameComponent.Name);
+		isEntityInspectorDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
 		ImGui::PopItemWidth();
 
 		// Draw a 'Add Component' button at the top of the inspector, and align it to the right side of the window.
@@ -1039,7 +1040,7 @@ namespace DYE::DYEditor
 					{
 						// Add the component
 						typeDescriptor.Add(entity);
-						changed = true;
+						isEntityInspectorDeactivatedAfterEdit = true;
 						ImGui::CloseCurrentPopup();
 					}
 				}
@@ -1083,7 +1084,7 @@ namespace DYE::DYEditor
 			else
 			{
 				// Use custom header drawer if provided.
-				showComponentInspector = typeDescriptor.DrawHeader(entity, isHeaderVisible, changed, name);
+				showComponentInspector = typeDescriptor.DrawHeader(entity, isHeaderVisible, isEntityInspectorDeactivatedAfterEdit, name);
 			}
 			ImGui::PopID();
 
@@ -1092,7 +1093,7 @@ namespace DYE::DYEditor
 			{
 				// Remove the component
 				typeDescriptor.Remove(entity);
-				changed = true;
+				isEntityInspectorDeactivatedAfterEdit = true;
 				continue;
 			}
 
@@ -1117,13 +1118,18 @@ namespace DYE::DYEditor
 			else
 			{
 				ImGui::PushID(name.c_str());
-				changed |= typeDescriptor.DrawInspector(entity);
+				isEntityInspectorDeactivatedAfterEdit |= typeDescriptor.DrawInspector(entity);
 				ImGui::PopID();
 			}
 
 			ImGui::Spacing();
 		}
 
-		return changed;
+		if (isEntityInspectorDeactivatedAfterEdit)
+		{
+			printf("Entity '%s' has been done editing and is now dirty.\n", nameComponent.Name.c_str());
+		}
+
+		return isEntityInspectorDeactivatedAfterEdit;
 	}
 }

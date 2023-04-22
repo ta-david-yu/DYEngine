@@ -43,10 +43,11 @@ namespace DYE::DYEditor
 		{
 			auto &component = entity.GetComponent<IDComponent>();
 
-			bool changed = false;
-			changed |= ImGuiUtil::DrawGUIDControl("ID", component.ID);
+			bool deactivatedAfterEdit = false;
+			ImGuiUtil::DrawGUIDControl("ID", component.ID);
+			deactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
 
-			return changed;
+			return deactivatedAfterEdit;
 		}
 
 		void NameComponent_Add(Entity &entity)
@@ -77,11 +78,11 @@ namespace DYE::DYEditor
 		{
 			auto &nameComponent = entity.GetComponent<NameComponent>();
 
-			bool changed = false;
+			bool deactivatedAfterEdit = false;
+			ImGuiUtil::DrawTextControl("Name", nameComponent.Name);
+			deactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
 
-			changed |= ImGuiUtil::DrawTextControl("Name", nameComponent.Name);
-
-			return changed;
+			return deactivatedAfterEdit;
 		}
 
 		SerializationResult
@@ -113,10 +114,13 @@ namespace DYE::DYEditor
 		{
 			auto &transformComponent = entity.GetComponent<TransformComponent>();
 
-			bool changed = false;
+			bool deactivatedAfterEdit = false;
 
-			changed |= ImGuiUtil::DrawVector3Control("Position", transformComponent.Position);
-			changed |= ImGuiUtil::DrawVector3Control("Scale", transformComponent.Scale, 1.0f);
+			ImGuiUtil::DrawVector3Control("Position", transformComponent.Position);
+			deactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+
+			ImGuiUtil::DrawVector3Control("Scale", transformComponent.Scale, 1.0f);
+			deactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
 
 			glm::vec3 rotationInEulerAnglesDegree = glm::eulerAngles(transformComponent.Rotation);
 			rotationInEulerAnglesDegree += glm::vec3(0.f);
@@ -125,11 +129,10 @@ namespace DYE::DYEditor
 			{
 				rotationInEulerAnglesDegree.y = glm::clamp(rotationInEulerAnglesDegree.y, -90.f, 90.f);
 				transformComponent.Rotation = glm::quat {glm::radians(rotationInEulerAnglesDegree)};
-
-				changed = true;
 			}
+			deactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
 
-			return changed;
+			return deactivatedAfterEdit;
 		}
 
 		void CameraComponent_Add(Entity& entity)
@@ -206,9 +209,11 @@ namespace DYE::DYEditor
 		{
 			auto &cameraComponent = entity.GetComponent<CameraComponent>();
 
-			bool changed = false;
-			changed |= ImGuiUtil::DrawCameraPropertiesControl("Camera Properties", cameraComponent.Properties);
-			return changed;
+			bool deactivatedAfterEdit = false;
+			ImGuiUtil::DrawCameraPropertiesControl("Camera Properties", cameraComponent.Properties);
+			deactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+
+			return deactivatedAfterEdit;
 		}
 
 		void SpriteRendererComponent_Add(DYEditor::Entity& entity)
@@ -253,9 +258,9 @@ namespace DYE::DYEditor
 		{
 			auto &component = entity.GetComponent<SpriteRendererComponent>();
 
-			bool changed = false;
-
-			changed |= ImGuiUtil::DrawColor4Control("Color", component.Color);
+			bool deactivatedAfterEdit = false;
+			ImGuiUtil::DrawColor4Control("Color", component.Color);
+			deactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
 
 			bool isPathChanged = ImGuiUtil::DrawAssetPathStringControl("Texture Asset Path", component.TextureAssetPath, {".jpg", ".jpeg", ".png", ".tga", ".bmp", ".psd"});
 			if (isPathChanged)
@@ -270,12 +275,10 @@ namespace DYE::DYEditor
 				}
 			}
 
-			changed |= isPathChanged;
-
 			// Draw a preview of the texture
 			ImGuiUtil::DrawTexture2DPreviewWithLabel("Texture Preview", component.Texture);
 
-			return changed;
+			return isPathChanged || deactivatedAfterEdit;
 		}
 	}
 
