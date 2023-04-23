@@ -38,13 +38,14 @@ namespace DYE::DYEditor
 	void World::DestroyEntity(Entity &entity)
 	{
 		EntityIdentifier identifier = entity.m_EntityIdentifier;
-		std::remove_if(m_EntityHandles.begin(), m_EntityHandles.end(),
+		auto newEnd = std::remove_if(m_EntityHandles.begin(), m_EntityHandles.end(),
 					   [identifier](EntityHandle &element)
 					   {
 						   return element.Identifier == identifier;
 					   });
+		m_EntityHandles.erase(newEnd, m_EntityHandles.end());
 
-		m_Registry.destroy(entity.m_EntityIdentifier);
+		m_Registry.destroy(identifier);
 	}
 
 	void World::DestroyEntity(EntityIdentifier identifier)
