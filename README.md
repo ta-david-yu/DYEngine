@@ -36,8 +36,6 @@ You can download **SDL2-devel-2.0.12-VC.zip** in the release page of [SDL2 repos
 
 ## Showcase
 The project is still in a very early stage, but I am constantly working on it. 
-Right now the game engine doesn't have advanced features that one would imagine to have in an engine such as object model, rendering optimization or robust editor.
-
 I've also made a small tech demo with DYEngine, which you could check it out here - [DYE-Tech-Demo](https://github.com/ta-david-yu/DYE-Tech-Demo).   
 Here is a short gameplay video of it - [DYE Tech Demo - Gameplay Youtube Video](https://youtu.be/0tD2ZouCuN4).  
 **Warning**: the code was made within 1 week (I was crunching on it for the goal of showcasing it at our end-of-semester showcase party), so it is very dirty/unorganized. 
