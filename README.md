@@ -44,8 +44,14 @@ Here is a short gameplay video of it - [DYE Tech Demo - Gameplay Youtube Video](
 
 Here are some other WIP screenshots/footage:
 
-https://user-images.githubusercontent.com/8101387/233497705-1d3de8c7-5dc6-4691-826f-029bf27ff352.mp4
+**DYEditor (WIP)**  
+
+https://user-images.githubusercontent.com/8101387/233865629-02971b03-32ef-4d06-b084-c146d34cc808.mp4
+
+**Multi-window System**  
 
 https://user-images.githubusercontent.com/8101387/211428433-88de9dfb-1df6-47c5-b2f2-73d366730937.mp4
+
+**Collision detection & Debug drawing**  
 
 https://user-images.githubusercontent.com/8101387/211428722-d59a1727-b169-4b57-84ad-aef03e2e87a4.mp4
