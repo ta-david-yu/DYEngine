@@ -271,4 +271,9 @@ namespace DYE::DYEditor
 	{
 		return {};
 	}
+
+	SerializedComponent SerializedObjectFactory::CreateEmptySerializedComponent()
+	{
+		return {};
+	}
 }

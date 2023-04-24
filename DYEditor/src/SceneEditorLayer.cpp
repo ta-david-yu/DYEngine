@@ -387,7 +387,7 @@ namespace DYE::DYEditor
 
 		// We want to draw window with different titles in different mode (normal/debug).
 		char entityInspectorWindowName[128];
-		bool const debugMode = m_InspectorMode == InspectorMode::Debug;
+		bool const debugMode = m_InspectorContext.Mode == InspectorMode::Debug;
 		sprintf(entityInspectorWindowName, "%s%s", debugMode ? "Entity Inspector (Debug)" : "Entity Inspector", k_EntityInspectorWindowId);
 		if (ImGui::Begin(entityInspectorWindowName))
 		{
@@ -396,21 +396,21 @@ namespace DYE::DYEditor
 			{
 				if (ImGui::MenuItem("Normal", nullptr, !debugMode))
 				{
-					m_InspectorMode = InspectorMode::Normal;
+					m_InspectorContext.Mode = InspectorMode::Normal;
 					GetEditorConfig().SetAndSave("Editor.DebugInspector", false);
 				}
 
 				if (ImGui::MenuItem("Debug", nullptr, debugMode))
 				{
-					m_InspectorMode = InspectorMode::Debug;
+					m_InspectorContext.Mode = InspectorMode::Debug;
 					GetEditorConfig().SetAndSave("Editor.DebugInspector", true);
 				}
 
 				ImGui::EndPopup();
 			}
 
-			drawEntityInspector(m_CurrentlySelectedEntityInHierarchyPanel,
-								TypeRegistry::GetComponentTypesNamesAndDescriptors(), m_InspectorMode);
+			m_InspectorContext.Entity = m_CurrentlySelectedEntityInHierarchyPanel;
+			drawEntityInspector(m_InspectorContext, TypeRegistry::GetComponentTypesNamesAndDescriptors());
 		}
 		ImGui::End();
 	}
@@ -1008,10 +1008,12 @@ namespace DYE::DYEditor
 		return changed;
 	}
 
-	bool SceneEditorLayer::drawEntityInspector(DYEditor::Entity &entity,
-											   std::vector<std::pair<std::string, ComponentTypeDescriptor>> componentNamesAndDescriptors,
-											   InspectorMode mode)
+	bool SceneEditorLayer::drawEntityInspector(EntityInspectorContext &context,
+											   std::vector<std::pair<std::string, ComponentTypeDescriptor>> componentNamesAndDescriptors)
 	{
+		Entity &entity = context.Entity;
+		InspectorMode &mode = context.Mode;
+
 		if (!entity.IsValid())
 		{
 			return false;
@@ -1093,14 +1095,14 @@ namespace DYE::DYEditor
 		}
 
 		// Draw all components that the entity has.
-		for (auto& [name, typeDescriptor] : componentNamesAndDescriptors)
+		for (auto& [typeName, typeDescriptor] : componentNamesAndDescriptors)
 		{
 			if (mode == InspectorMode::Normal && !typeDescriptor.ShouldDrawInNormalInspector)
 			{
 				continue;
 			}
 
-			DYE_ASSERT_LOG_WARN(typeDescriptor.Has != nullptr, "Missing 'Has' function for component '%s'.", name.c_str());
+			DYE_ASSERT_LOG_WARN(typeDescriptor.Has != nullptr, "Missing 'Has' function for component '%s'.", typeName.c_str());
 			if (!typeDescriptor.Has(entity))
 			{
 				continue;
@@ -1109,7 +1111,7 @@ namespace DYE::DYEditor
 			bool isHeaderVisible = true;
 			bool showComponentInspector = true;
 
-			ImGui::PushID(name.c_str());
+			ImGui::PushID(typeName.c_str());
 			if (typeDescriptor.DrawHeader == nullptr)
 			{
 				ImGuiTreeNodeFlags const flags = ImGuiTreeNodeFlags_DefaultOpen;
@@ -1121,13 +1123,13 @@ namespace DYE::DYEditor
 
 				// The name of the component.
 				ImGui::SameLine();
-				ImGui::TextUnformatted(name.c_str());
+				ImGui::TextUnformatted(typeName.c_str());
 
 			}
 			else
 			{
 				// Use custom header drawer if provided.
-				showComponentInspector = typeDescriptor.DrawHeader(entity, isHeaderVisible, isEntityInspectorDeactivatedAfterEdit, name);
+				showComponentInspector = typeDescriptor.DrawHeader(entity, isHeaderVisible, isEntityInspectorDeactivatedAfterEdit, typeName);
 			}
 			ImGui::PopID();
 
@@ -1153,29 +1155,36 @@ namespace DYE::DYEditor
 					ImGui::BeginTooltip();
 					ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
 					ImGui::TextWrapped("Missing 'DrawInspector' function for component '%s'. "
-									   "It's likely that the DrawInspectorFunction is not assigned when TypeRegistry::registerComponentType is called.", name.c_str());
+									   "It's likely that the DrawInspectorFunction is not assigned when TypeRegistry::registerComponentType is called.", typeName.c_str());
 					ImGui::PopTextWrapPos();
 					ImGui::EndTooltip();
 				}
 			}
 			else
 			{
-				ImGui::PushID(name.c_str());
-				DrawInspectorContext context;
-				isEntityInspectorDeactivatedAfterEdit |= typeDescriptor.DrawInspector(context, entity);
+				ImGui::PushID(typeName.c_str());
+				DrawComponentInspectorContext drawComponentInspectorContext;
+				isEntityInspectorDeactivatedAfterEdit |= typeDescriptor.DrawInspector(drawComponentInspectorContext, entity);
 
-				if (context.IsComponentInspectorActivated)
+				if (drawComponentInspectorContext.IsActivated)
 				{
+					context.IsModifyingEntityProperty = true;
+					context.SerializedComponentBeforeModification =
+						SerializedObjectFactory::CreateSerializedComponentOfType(entity, typeName, typeDescriptor);
 					printf("Entity '%s' has been activated.\n", nameComponent.Name.c_str());
 				}
 
-				if (context.IsComponentInspectorDeactivated)
+				if (drawComponentInspectorContext.IsDeactivated)
 				{
+					context.IsModifyingEntityProperty = false;
 					printf("Entity '%s' has been deactivated.\n", nameComponent.Name.c_str());
 				}
 
-				if (context.IsComponentInspectorDeactivatedAfterEdit)
+				if (drawComponentInspectorContext.IsDeactivatedAfterEdit)
 				{
+					context.IsModifyingEntityProperty = false;
+					auto serializedComponentAfterModification = SerializedObjectFactory::CreateSerializedComponentOfType(entity, typeName, typeDescriptor);
+					Undo::RegisterComponentModification(entity, context.SerializedComponentBeforeModification, serializedComponentAfterModification);
 					printf("Entity '%s' has been deactivated and is now dirty.\n", nameComponent.Name.c_str());
 				}
 

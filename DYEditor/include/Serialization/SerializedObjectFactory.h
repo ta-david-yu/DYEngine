@@ -51,5 +51,6 @@ namespace DYE::DYEditor
 
 		static SerializedScene CreateEmptySerializedScene();
 		static SerializedEntity CreateEmptySerializedEntity();
+		static SerializedComponent CreateEmptySerializedComponent();
 	};
 }

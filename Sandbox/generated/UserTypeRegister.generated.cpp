@@ -45,7 +45,7 @@ namespace DYE::DYEditor
 							// Property 'intCannotBeSerialized' will not be serialized because its type 'int' is not supported.
 							return DeserializationResult {};
 						},
-						.DrawInspector = [](DrawInspectorContext &drawInspectorContext, Entity &entity)
+						.DrawInspector = [](DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
 						{
 							bool changed = false;
 							auto& component = entity.GetComponent<TestNamespace::TestComponentA>();
@@ -76,7 +76,7 @@ namespace DYE::DYEditor
 							component.IntegerValue = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<Int32>("IntegerValue");
 							return DeserializationResult {};
 						},
-						.DrawInspector = [](DrawInspectorContext &drawInspectorContext, Entity &entity)
+						.DrawInspector = [](DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
 						{
 							bool changed = false;
 							auto& component = entity.GetComponent<TestNamespace::Subnamespace::SubtestComponentA>();
@@ -114,7 +114,7 @@ namespace DYE::DYEditor
 							component.vec4 = serializedComponent.GetPrimitiveTypePropertyValueOr<Vector4>("vec4", glm::vec4 {1, 2, 3, 4});
 							return DeserializationResult {};
 						},
-						.DrawInspector = [](DrawInspectorContext &drawInspectorContext, Entity &entity)
+						.DrawInspector = [](DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
 						{
 							bool changed = false;
 							auto& component = entity.GetComponent<TestComponentB>();
@@ -165,7 +165,7 @@ namespace DYE::DYEditor
 							component.QuaternionVar = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<Quaternion>("QuaternionVar");
 							return DeserializationResult {};
 						},
-						.DrawInspector = [](DrawInspectorContext &drawInspectorContext, Entity &entity)
+						.DrawInspector = [](DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
 						{
 							bool changed = false;
 							auto& component = entity.GetComponent<ComponentWithAllPrimitiveProperties>();
@@ -213,7 +213,7 @@ namespace DYE::DYEditor
 							component.AngleDegreePerSecond = serializedComponent.GetPrimitiveTypePropertyValueOr<Float>("AngleDegreePerSecond", 30.0f);
 							return DeserializationResult {};
 						},
-						.DrawInspector = [](DrawInspectorContext &drawInspectorContext, Entity &entity)
+						.DrawInspector = [](DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
 						{
 							bool changed = false;
 							auto& component = entity.GetComponent<HasAngularVelocity>();
@@ -244,7 +244,7 @@ namespace DYE::DYEditor
 							component.NumberOfEntitiesToCreate = serializedComponent.GetPrimitiveTypePropertyValueOr<Int32>("NumberOfEntitiesToCreate", 10);
 							return DeserializationResult {};
 						},
-						.DrawInspector = [](DrawInspectorContext &drawInspectorContext, Entity &entity)
+						.DrawInspector = [](DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
 						{
 							bool changed = false;
 							auto& component = entity.GetComponent<CreateEntity>();
@@ -274,7 +274,7 @@ namespace DYE::DYEditor
 							component.Message = serializedComponent.GetPrimitiveTypePropertyValueOr<String>("Message", "");
 							return DeserializationResult {};
 						},
-						.DrawInspector = [](DrawInspectorContext &drawInspectorContext, Entity &entity)
+						.DrawInspector = [](DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
 						{
 							bool changed = false;
 							auto& component = entity.GetComponent<PrintMessageOnTeardown>();
@@ -307,7 +307,7 @@ namespace DYE::DYEditor
 							component.TestChar = serializedComponent.GetPrimitiveTypePropertyValueOr<const char*>("TestChar", "X")[0];
 							return DeserializationResult {};
 						},
-						.DrawInspector = [](DrawInspectorContext &drawInspectorContext, Entity &entity)
+						.DrawInspector = [](DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
 						{
 							bool changed = false;
 							auto& component = entity.GetComponent<TestComponentC>();

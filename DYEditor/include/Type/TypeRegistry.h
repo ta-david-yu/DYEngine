@@ -15,11 +15,11 @@ namespace DYE::DYEditor
 	struct SerializedEntity;
 	struct SerializedComponent;
 
-	struct DrawInspectorContext
+	struct DrawComponentInspectorContext
 	{
-		bool IsComponentInspectorActivated = false;
-		bool IsComponentInspectorDeactivated = false;
-		bool IsComponentInspectorDeactivatedAfterEdit = false;
+		bool IsActivated = false;
+		bool IsDeactivated = false;
+		bool IsDeactivatedAfterEdit = false;
 	};
 
 	struct SerializationResult
@@ -40,7 +40,7 @@ namespace DYE::DYEditor
 	/// Deserialize a serialized component (handle) and add it to an entity.
 	using DeserializeComponentFunction = DeserializationResult (SerializedComponent& serializedComponent, DYE::DYEditor::Entity& entity);
 	/// \return true if the content of the inspector is changed/dirty.
-	using DrawComponentInspectorFunction = bool (DrawInspectorContext &drawInspectorContext, DYE::DYEditor::Entity& entity);
+	using DrawComponentInspectorFunction = bool (DrawComponentInspectorContext &drawInspectorContext, DYE::DYEditor::Entity& entity);
 	/// \return true if the content of the inspector is changed/dirty.
 	using DrawComponentHeaderFunction = bool (DYE::DYEditor::Entity& entity, bool &isHeaderVisible, bool &entityChanged, std::string const& headerLabel);
 

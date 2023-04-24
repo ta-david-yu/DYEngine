@@ -5,6 +5,7 @@
 #include "Core/RuntimeState.h"
 #include "Core/Scene.h"
 #include "Core/EditorSystem.h"
+#include "Serialization/SerializedObjectFactory.h"
 #include "Serialization/SerializedScene.h"
 #include "Type/TypeRegistry.h"
 #include "Core/World.h"
@@ -29,6 +30,14 @@ namespace DYE::DYEditor
 	{
 		Normal,
 		Debug
+	};
+
+	struct EntityInspectorContext
+	{
+		bool IsModifyingEntityProperty = false;
+		InspectorMode Mode = InspectorMode::Normal;
+		DYE::DYEditor::Entity Entity;
+		SerializedComponent SerializedComponentBeforeModification = SerializedObjectFactory::CreateEmptySerializedComponent();
 	};
 
 	class SceneEditorLayer : public LayerBase, public RuntimeStateListenerBase
@@ -68,6 +77,7 @@ namespace DYE::DYEditor
 		bool m_IsSceneViewWindowHovered = false;
 
 		InspectorMode m_InspectorMode = InspectorMode::Normal;
+		EntityInspectorContext m_InspectorContext;
 
 		static void setEditorWindowDefaultLayout(ImGuiID dockSpaceId);
 		static void drawEditorWindowMenuBar(Scene &currentScene, std::filesystem::path &currentScenePathContext);
@@ -76,8 +86,7 @@ namespace DYE::DYEditor
 		static bool drawSceneSystemPanel(Scene& scene);
 		template<typename Func> requires std::predicate<Func, std::string const&, SystemBase const*>
 		static bool drawSceneSystemList(Scene &scene, std::vector<SystemDescriptor> &systemDescriptors, Func addSystemFilterPredicate);
-		static bool drawEntityInspector(DYEditor::Entity &entity,
-										std::vector<std::pair<std::string, ComponentTypeDescriptor>> componentNamesAndDescriptors,
-										InspectorMode mode);
+		static bool drawEntityInspector(EntityInspectorContext &context,
+										std::vector<std::pair<std::string, ComponentTypeDescriptor>> componentNamesAndDescriptors);
 	};
 }
