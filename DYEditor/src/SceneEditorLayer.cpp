@@ -344,6 +344,9 @@ namespace DYE::DYEditor
 		ImGui::End();
 
 		// Draw generic editor windows.
+		// We call this before drawing major editor windows because Undo History could possibly delete entity with texture reference
+		// That is being drawn inside entity inspector.
+		// If we release a texture id that has already been submitted to the imgui drawlist, the program will be asserted.
 		EditorWindowManager::DrawEditorWindows(mainEditorWindowViewport);
 
 		// Draw all the major editor windows.
