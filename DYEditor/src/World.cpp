@@ -52,6 +52,18 @@ namespace DYE::DYEditor
 		m_Registry.destroy(identifier);
 	}
 
+	void World::DestroyEntityWithGUID(GUID entityGUID)
+	{
+		for (auto&& [entity, idComponent] : m_Registry.view<IDComponent>().each())
+		{
+			if (idComponent.ID == entityGUID)
+			{
+				DestroyEntity(entity);
+				break;
+			}
+		}
+	}
+
 	bool World::IsEmpty() const
 	{
 		return m_Registry.empty();
@@ -72,5 +84,15 @@ namespace DYE::DYEditor
 	entt::registry& GetWorldUnderlyingRegistry(World &world)
 	{
 		return world.m_Registry;
+	}
+
+	std::optional<Entity> World::TryGetEntityAt(int index)
+	{
+		if (index >= m_EntityHandles.size())
+		{
+			return {};
+		}
+
+		return Entity(*this, m_EntityHandles[index].Identifier);
 	}
 }

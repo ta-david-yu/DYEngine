@@ -18,6 +18,7 @@
 #include "ImGui/EditorWindowManager.h"
 #include "ImGui/EditorImGuiUtil.h"
 #include "ImGui/ImGuiUtil.h"
+#include "Undo/Undo.h"
 
 #include "Components/NameComponent.h"
 #include "Components/TransformComponent.h"
@@ -108,6 +109,18 @@ namespace DYE::DYEditor
 			[](char const *name, bool *pIsOpen, ImGuiViewport const *pMainViewportHint)
 			{
 				DrawRuntimeConfigurationWindow(pIsOpen);
+			}
+		);
+
+		EditorWindowManager::RegisterEditorWindow(
+			RegisterEditorWindowParameters
+				{
+					.Name = "Undo History",
+					.isConfigOpenByDefault = false
+				},
+			[](char const *name, bool *pIsOpen, ImGuiViewport const *pMainViewportHint)
+			{
+				Undo::DrawUndoHistoryWindow(pIsOpen);
 			}
 		);
 
@@ -489,6 +502,18 @@ namespace DYE::DYEditor
 
 			if (ImGui::BeginMenu("Edit"))
 			{
+				if (ImGui::MenuItem("Undo", "Ctrl+Z", false, Undo::HasOperationToUndo()))
+				{
+					Undo::PerformUndo();
+				}
+
+				if (ImGui::MenuItem("Redo", "Ctrl+Y", false, Undo::HasOperationToRedo()))
+				{
+					Undo::PerformRedo();
+				}
+
+				ImGui::Separator();
+
 				if (ImGui::MenuItem("Play", "Ctrl+P", RuntimeState::IsPlaying()))
 				{
 					RuntimeState::SetIsPlayingAtTheEndOfFrame(!RuntimeState::IsPlaying());
@@ -638,6 +663,7 @@ namespace DYE::DYEditor
 			{
 				// Select the newly created entity.
 				*pCurrentSelectedEntity = scene.World.CreateEntity("Entity");
+				Undo::RegisterEntityCreation(scene.World, *pCurrentSelectedEntity);
 			}
 			ImGui::EndPopup();
 		}
@@ -682,7 +708,7 @@ namespace DYE::DYEditor
 				{
 					if (ImGui::Selectable("Delete"))
 					{
-						scene.World.DestroyEntity(entity);
+						Undo::DeleteEntity(scene.World, entity);
 					}
 					ImGui::EndPopup();
 				}

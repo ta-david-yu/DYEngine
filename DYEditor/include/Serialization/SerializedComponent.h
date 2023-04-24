@@ -16,7 +16,6 @@ namespace DYE::DYEditor
 	struct SerializedComponent
 	{
 		friend class SerializedEntity;
-		SerializedComponent() = delete;
 
 		inline bool IsHandle() const { return m_IsHandle; }
 		std::optional<std::string> TryGetTypeName() const;
@@ -67,6 +66,7 @@ namespace DYE::DYEditor
 		}
 
 	private:
+		SerializedComponent() = default;
 		explicit SerializedComponent(toml::table* pComponentTableHandle);
 		explicit SerializedComponent(toml::table&& componentTable);
 

@@ -3,6 +3,7 @@
 #include "Core/WorldView.h"
 #include "Core/GUID.h"
 
+#include <optional>
 #include <vector>
 #include <entt/entt.hpp>
 
@@ -28,6 +29,10 @@ namespace DYE::DYEditor
 		void DestroyEntity(Entity& entity);
 		void DestroyEntity(EntityIdentifier identifier);
 
+		/// Destroy an entity with the given GUID.
+		/// The operation is very slow because we have to iterate through every entities' ID components.
+		void DestroyEntityWithGUID(GUID entityGUID);
+
 		template<typename Func>
 		void ForEachEntity(Func function)
 		{
@@ -41,6 +46,10 @@ namespace DYE::DYEditor
 		bool IsEmpty() const;
 		void Reserve(std::size_t size);
 		void Clear();
+
+		/// Retrieve Entity at the given index in the EntityHandles array.
+		/// This is useful for Undo system to reference Entity at a certain index even if the target Entity was deleted.
+		std::optional<Entity> TryGetEntityAt(int index);
 
 	private:
 		struct EntityHandle

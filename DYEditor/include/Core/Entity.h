@@ -22,6 +22,8 @@ namespace DYE::DYEditor
 		Entity() = default;
 		Entity(Entity const& other) = default;
 
+		World& GetWorld() { return *m_World; }
+		EntityIdentifier GetIdentifier() const { return m_EntityIdentifier; }
 		EntityInstanceID GetInstanceID() const { return static_cast<EntityInstanceID>(m_EntityIdentifier); }
 		bool IsValid() const;
 
