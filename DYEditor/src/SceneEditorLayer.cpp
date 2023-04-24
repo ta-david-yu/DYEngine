@@ -1019,7 +1019,7 @@ namespace DYE::DYEditor
 			return false;
 		}
 
-		bool isEntityInspectorDeactivatedAfterEdit = false;
+		bool isEntityChangedThisFrame = false;
 
 		ImVec2 const addComponentButtonSize = ImVec2 {120, 0};
 		float const scrollBarWidth = ImGui::GetCurrentWindow()->ScrollbarY? ImGui::GetWindowScrollbarRect(ImGui::GetCurrentWindow(), ImGuiAxis_Y).GetWidth() : 0;
@@ -1028,20 +1028,26 @@ namespace DYE::DYEditor
 		auto& nameComponent = entity.AddOrGetComponent<NameComponent>();
 		ImGui::PushItemWidth(ImGui::GetWindowWidth() - scrollBarWidth - addComponentButtonSize.x - ImGui::GetFontSize());
 		{
-			auto serializedNameComponentBeforeModification =
-				SerializedObjectFactory::CreateSerializedComponentOfType(entity, NameComponentName, TypeRegistry::GetComponentTypeDescriptor_NameComponent());
-
 			bool const changedThisFrame = ImGui::InputText("##EntityNameComponent", &nameComponent.Name);
-			bool const nameEndEdit = ImGui::IsItemDeactivatedAfterEdit();
-			if (changedThisFrame)
+			if (ImGui::IsItemActivated())
+			{
+				context.IsModifyingEntityProperty = true;
+				context.SerializedComponentBeforeModification =
+					SerializedObjectFactory::CreateSerializedComponentOfType(entity, NameComponentName, TypeRegistry::GetComponentTypeDescriptor_NameComponent());
+			}
+
+			if (ImGui::IsItemDeactivated())
+			{
+				context.IsModifyingEntityProperty = false;
+			}
+			if (ImGui::IsItemDeactivatedAfterEdit())
 			{
 				auto serializedNameComponentAfterModification =
 					SerializedObjectFactory::CreateSerializedComponentOfType(entity, NameComponentName, TypeRegistry::GetComponentTypeDescriptor_NameComponent());
-
-				Undo::RegisterComponentModification(entity, serializedNameComponentBeforeModification, serializedNameComponentAfterModification);
+				Undo::RegisterComponentModification(entity, context.SerializedComponentBeforeModification, serializedNameComponentAfterModification);
 			}
 
-			isEntityInspectorDeactivatedAfterEdit |= nameEndEdit;
+			isEntityChangedThisFrame |= changedThisFrame;
 		}
 		ImGui::PopItemWidth();
 
@@ -1085,7 +1091,7 @@ namespace DYE::DYEditor
 					{
 						// Add the component
 						typeDescriptor.Add(entity);
-						isEntityInspectorDeactivatedAfterEdit = true;
+						isEntityChangedThisFrame = true;
 						ImGui::CloseCurrentPopup();
 					}
 				}
@@ -1129,7 +1135,7 @@ namespace DYE::DYEditor
 			else
 			{
 				// Use custom header drawer if provided.
-				showComponentInspector = typeDescriptor.DrawHeader(entity, isHeaderVisible, isEntityInspectorDeactivatedAfterEdit, typeName);
+				showComponentInspector = typeDescriptor.DrawHeader(entity, isHeaderVisible, isEntityChangedThisFrame, typeName);
 			}
 			ImGui::PopID();
 
@@ -1138,7 +1144,7 @@ namespace DYE::DYEditor
 			{
 				// Remove the component
 				typeDescriptor.Remove(entity);
-				isEntityInspectorDeactivatedAfterEdit = true;
+				isEntityChangedThisFrame = true;
 				continue;
 			}
 
@@ -1164,7 +1170,7 @@ namespace DYE::DYEditor
 			{
 				ImGui::PushID(typeName.c_str());
 				DrawComponentInspectorContext drawComponentInspectorContext;
-				isEntityInspectorDeactivatedAfterEdit |= typeDescriptor.DrawInspector(drawComponentInspectorContext, entity);
+				isEntityChangedThisFrame |= typeDescriptor.DrawInspector(drawComponentInspectorContext, entity);
 
 				if (drawComponentInspectorContext.IsActivated)
 				{
@@ -1179,15 +1185,12 @@ namespace DYE::DYEditor
 					context.IsModifyingEntityProperty = false;
 					printf("Entity '%s' has been deactivated.\n", nameComponent.Name.c_str());
 				}
-
 				if (drawComponentInspectorContext.IsDeactivatedAfterEdit)
 				{
-					context.IsModifyingEntityProperty = false;
 					auto serializedComponentAfterModification = SerializedObjectFactory::CreateSerializedComponentOfType(entity, typeName, typeDescriptor);
 					Undo::RegisterComponentModification(entity, context.SerializedComponentBeforeModification, serializedComponentAfterModification);
-					printf("Entity '%s' has been deactivated and is now dirty.\n", nameComponent.Name.c_str());
+					printf("Entity '%s' has been deactivated & modified.\n", nameComponent.Name.c_str());
 				}
-
 
 				ImGui::PopID();
 			}
@@ -1195,11 +1198,6 @@ namespace DYE::DYEditor
 			ImGui::Spacing();
 		}
 
-		if (isEntityInspectorDeactivatedAfterEdit)
-		{
-			//printf("Entity '%s' has been done editing and is now dirty.\n", nameComponent.Name.c_str());
-		}
-
-		return isEntityInspectorDeactivatedAfterEdit;
+		return isEntityChangedThisFrame;
 	}
 }

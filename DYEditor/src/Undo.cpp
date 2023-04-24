@@ -148,6 +148,7 @@ namespace DYE::DYEditor
 				bool const isUndone = i > s_Data.LatestOperationIndex;
 				if (isUndone) ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
 
+				ImGui::PushID(i);
 				if (ImGui::Selectable(operation.GetDescription()) && !isLatestOperation)
 				{
 					// If operation selectable clicked && it's not the latest operation,
@@ -171,6 +172,7 @@ namespace DYE::DYEditor
 						s_Data.LatestOperationIndex = i;
 					}
 				}
+				ImGui::PopID();
 
 				if (isUndone) ImGui::PopStyleColor();
 			}
