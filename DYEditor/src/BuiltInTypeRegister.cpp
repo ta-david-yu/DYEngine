@@ -39,15 +39,16 @@ namespace DYE::DYEditor
 			return {};
 		}
 
-		bool IDComponent_DrawInspector(Entity &entity)
+		bool IDComponent_DrawInspector(DrawInspectorContext &drawInspectorContext, Entity &entity)
 		{
 			auto &component = entity.GetComponent<IDComponent>();
 
-			bool deactivatedAfterEdit = false;
-			ImGuiUtil::DrawGUIDControl("ID", component.ID);
-			deactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+			bool const changed = ImGuiUtil::DrawGUIDControl("ID", component.ID);
+			drawInspectorContext.IsComponentInspectorActivated |= ImGuiUtil::IsControlActivated();
+			drawInspectorContext.IsComponentInspectorDeactivated |= ImGuiUtil::IsControlDeactivated();
+			drawInspectorContext.IsComponentInspectorDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
 
-			return deactivatedAfterEdit;
+			return changed;
 		}
 
 		void NameComponent_Add(Entity &entity)
@@ -74,15 +75,16 @@ namespace DYE::DYEditor
 			return {};
 		}
 
-		bool NameComponent_DrawInspector(Entity &entity)
+		bool NameComponent_DrawInspector(DrawInspectorContext &drawInspectorContext, Entity &entity)
 		{
 			auto &nameComponent = entity.GetComponent<NameComponent>();
 
-			bool deactivatedAfterEdit = false;
-			ImGuiUtil::DrawTextControl("Name", nameComponent.Name);
-			deactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+			bool const changed = ImGuiUtil::DrawTextControl("Name", nameComponent.Name);
+			drawInspectorContext.IsComponentInspectorActivated |= ImGuiUtil::IsControlActivated();
+			drawInspectorContext.IsComponentInspectorDeactivated |= ImGuiUtil::IsControlDeactivated();
+			drawInspectorContext.IsComponentInspectorDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
 
-			return deactivatedAfterEdit;
+			return changed;
 		}
 
 		SerializationResult
@@ -110,17 +112,19 @@ namespace DYE::DYEditor
 			return {};
 		}
 
-		bool TransformComponent_DrawInspector(Entity &entity)
+		bool TransformComponent_DrawInspector(DrawInspectorContext &drawInspectorContext, Entity &entity)
 		{
 			auto &transformComponent = entity.GetComponent<TransformComponent>();
 
-			bool deactivatedAfterEdit = false;
+			bool changed = ImGuiUtil::DrawVector3Control("Position", transformComponent.Position);
+			drawInspectorContext.IsComponentInspectorActivated |= ImGuiUtil::IsControlActivated();
+			drawInspectorContext.IsComponentInspectorDeactivated |= ImGuiUtil::IsControlDeactivated();
+			drawInspectorContext.IsComponentInspectorDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
 
-			ImGuiUtil::DrawVector3Control("Position", transformComponent.Position);
-			deactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
-
-			ImGuiUtil::DrawVector3Control("Scale", transformComponent.Scale, 1.0f);
-			deactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+			changed |= ImGuiUtil::DrawVector3Control("Scale", transformComponent.Scale, 1.0f);
+			drawInspectorContext.IsComponentInspectorActivated |= ImGuiUtil::IsControlActivated();
+			drawInspectorContext.IsComponentInspectorDeactivated |= ImGuiUtil::IsControlDeactivated();
+			drawInspectorContext.IsComponentInspectorDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
 
 			glm::vec3 rotationInEulerAnglesDegree = glm::eulerAngles(transformComponent.Rotation);
 			rotationInEulerAnglesDegree += glm::vec3(0.f);
@@ -129,10 +133,13 @@ namespace DYE::DYEditor
 			{
 				rotationInEulerAnglesDegree.y = glm::clamp(rotationInEulerAnglesDegree.y, -90.f, 90.f);
 				transformComponent.Rotation = glm::quat {glm::radians(rotationInEulerAnglesDegree)};
+				changed = true;
 			}
-			deactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+			drawInspectorContext.IsComponentInspectorActivated |= ImGuiUtil::IsControlActivated();
+			drawInspectorContext.IsComponentInspectorDeactivated |= ImGuiUtil::IsControlDeactivated();
+			drawInspectorContext.IsComponentInspectorDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
 
-			return deactivatedAfterEdit;
+			return changed;
 		}
 
 		void CameraComponent_Add(Entity& entity)
@@ -205,15 +212,16 @@ namespace DYE::DYEditor
 			return {};
 		}
 
-		bool CameraComponent_DrawInspector(Entity &entity)
+		bool CameraComponent_DrawInspector(DrawInspectorContext &drawInspectorContext, Entity &entity)
 		{
 			auto &cameraComponent = entity.GetComponent<CameraComponent>();
 
-			bool deactivatedAfterEdit = false;
-			ImGuiUtil::DrawCameraPropertiesControl("Camera Properties", cameraComponent.Properties);
-			deactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+			bool const changed = ImGuiUtil::DrawCameraPropertiesControl("Camera Properties", cameraComponent.Properties);
+			drawInspectorContext.IsComponentInspectorActivated |= ImGuiUtil::IsControlActivated();
+			drawInspectorContext.IsComponentInspectorDeactivated |= ImGuiUtil::IsControlDeactivated();
+			drawInspectorContext.IsComponentInspectorDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
 
-			return deactivatedAfterEdit;
+			return changed;
 		}
 
 		void SpriteRendererComponent_Add(DYEditor::Entity& entity)
@@ -254,15 +262,20 @@ namespace DYE::DYEditor
 			return {};
 		}
 
-		bool SpriteRendererComponent_DrawInspector(Entity &entity)
+		bool SpriteRendererComponent_DrawInspector(DrawInspectorContext &drawInspectorContext, Entity &entity)
 		{
 			auto &component = entity.GetComponent<SpriteRendererComponent>();
 
-			bool deactivatedAfterEdit = false;
-			ImGuiUtil::DrawColor4Control("Color", component.Color);
-			deactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+			bool const changed = ImGuiUtil::DrawColor4Control("Color", component.Color);
+			drawInspectorContext.IsComponentInspectorActivated |= ImGuiUtil::IsControlActivated();
+			drawInspectorContext.IsComponentInspectorDeactivated |= ImGuiUtil::IsControlDeactivated();
+			drawInspectorContext.IsComponentInspectorDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
 
 			bool isPathChanged = ImGuiUtil::DrawAssetPathStringControl("Texture Asset Path", component.TextureAssetPath, {".jpg", ".jpeg", ".png", ".tga", ".bmp", ".psd"});
+			drawInspectorContext.IsComponentInspectorActivated |= ImGuiUtil::IsControlActivated();
+			drawInspectorContext.IsComponentInspectorDeactivated |= ImGuiUtil::IsControlDeactivated();
+			drawInspectorContext.IsComponentInspectorDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+
 			if (isPathChanged)
 			{
 				if (FileSystem::FileExists(component.TextureAssetPath))
@@ -278,7 +291,7 @@ namespace DYE::DYEditor
 			// Draw a preview of the texture
 			ImGuiUtil::DrawTexture2DPreviewWithLabel("Texture Preview", component.Texture);
 
-			return isPathChanged || deactivatedAfterEdit;
+			return isPathChanged || changed;
 		}
 	}
 

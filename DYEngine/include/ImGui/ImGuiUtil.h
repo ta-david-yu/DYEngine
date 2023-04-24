@@ -37,6 +37,10 @@ namespace DYE::ImGuiUtil
 		void ResetParametersToDefaultValues();
 	}
 
+	/// Similar to ImGui::IsItemActivated() but for ImGuiUtil Controls.
+	bool IsControlActivated();
+	/// Similar to ImGui::IsItemDeactivated() but for ImGuiUtil Controls.
+	bool IsControlDeactivated();
 	/// Similar to ImGui::IsItemDeactivatedAfterEdit() but for ImGuiUtil Controls.
 	bool IsControlDeactivatedAfterEdit();
 

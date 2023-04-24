@@ -1161,7 +1161,25 @@ namespace DYE::DYEditor
 			else
 			{
 				ImGui::PushID(name.c_str());
-				isEntityInspectorDeactivatedAfterEdit |= typeDescriptor.DrawInspector(entity);
+				DrawInspectorContext context;
+				isEntityInspectorDeactivatedAfterEdit |= typeDescriptor.DrawInspector(context, entity);
+
+				if (context.IsComponentInspectorActivated)
+				{
+					printf("Entity '%s' has been activated.\n", nameComponent.Name.c_str());
+				}
+
+				if (context.IsComponentInspectorDeactivated)
+				{
+					printf("Entity '%s' has been deactivated.\n", nameComponent.Name.c_str());
+				}
+
+				if (context.IsComponentInspectorDeactivatedAfterEdit)
+				{
+					printf("Entity '%s' has been deactivated and is now dirty.\n", nameComponent.Name.c_str());
+				}
+
+
 				ImGui::PopID();
 			}
 
@@ -1170,7 +1188,7 @@ namespace DYE::DYEditor
 
 		if (isEntityInspectorDeactivatedAfterEdit)
 		{
-			printf("Entity '%s' has been done editing and is now dirty.\n", nameComponent.Name.c_str());
+			//printf("Entity '%s' has been done editing and is now dirty.\n", nameComponent.Name.c_str());
 		}
 
 		return isEntityInspectorDeactivatedAfterEdit;

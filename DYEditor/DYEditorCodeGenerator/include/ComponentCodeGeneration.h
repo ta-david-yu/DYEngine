@@ -43,7 +43,7 @@ char const* DeserializeLambdaSourceEnd =
 )";
 
 char const* DrawInspectorLambdaSourceStart =
-	R"(						.DrawInspector = [](Entity &entity)
+	R"(						.DrawInspector = [](DrawInspectorContext &drawInspectorContext, Entity &entity)
 						{
 							bool changed = false;
 							auto& component = entity.GetComponent<${COMPONENT_FULL_TYPE}>();
