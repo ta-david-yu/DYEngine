@@ -13,7 +13,7 @@ namespace DYE::DYEditor
 	class SystemBase;
 
 	struct SerializedEntity;
-	struct SerializedComponentHandle;
+	struct SerializedComponent;
 
 	struct SerializationResult
 	{
@@ -29,9 +29,9 @@ namespace DYE::DYEditor
 	using AddComponentFunction = void (DYE::DYEditor::Entity& entity);
 	using RemoveComponentFunction = void (DYE::DYEditor::Entity& entity);
 	/// Serialize a component on an entity to a serialized entity.
-	using SerializeComponentFunction = SerializationResult (DYE::DYEditor::Entity& entity, SerializedComponentHandle& serializedComponent);
+	using SerializeComponentFunction = SerializationResult (DYE::DYEditor::Entity& entity, SerializedComponent& serializedComponent);
 	/// Deserialize a serialized component (handle) and add it to an entity.
-	using DeserializeComponentFunction = DeserializationResult (SerializedComponentHandle& serializedComponent, DYE::DYEditor::Entity& entity);
+	using DeserializeComponentFunction = DeserializationResult (SerializedComponent& serializedComponent, DYE::DYEditor::Entity& entity);
 	/// \return true if the content of the inspector is changed/dirty.
 	using DrawComponentInspectorFunction = bool (DYE::DYEditor::Entity& entity);
 	/// \return true if the content of the inspector is changed/dirty.

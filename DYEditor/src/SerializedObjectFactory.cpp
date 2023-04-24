@@ -92,7 +92,7 @@ namespace DYE::DYEditor
 	void SerializedObjectFactory::ApplySerializedEntityToEmptyEntity(SerializedEntity &serializedEntity,
 																	 DYEditor::Entity &entity)
 	{
-		std::vector<SerializedComponentHandle> serializedComponentHandles = serializedEntity.GetSerializedComponentHandles();
+		std::vector<SerializedComponent> serializedComponentHandles = serializedEntity.GetSerializedComponentHandles();
 		for (auto& serializedComponentHandle : serializedComponentHandles)
 		{
 			auto getTypeNameResult = serializedComponentHandle.TryGetTypeName();
@@ -188,7 +188,7 @@ namespace DYE::DYEditor
 						continue;
 					}
 
-					SerializedComponentHandle serializedComponent = serializedEntity.TryAddComponentOfType(name);
+					SerializedComponent serializedComponent = serializedEntity.TryAddComponentOfType(name);
 					if (functions.Serialize == nullptr)
 					{
 						// A 'Serialize' function is not provided for the given component type. Skip the process.
@@ -215,7 +215,7 @@ namespace DYE::DYEditor
 				continue;
 			}
 
-			SerializedComponentHandle serializedComponent = serializedEntity.TryAddComponentOfType(name);
+			SerializedComponent serializedComponent = serializedEntity.TryAddComponentOfType(name);
 			if (functions.Serialize == nullptr)
 			{
 				// A 'Serialize' function is not provided for the given component type. Skip the process.

@@ -21,7 +21,7 @@ char const *ComponentTypeRegistrationCallSourceStart =
 )";
 
 char const* SerializeLambdaSourceStart =
-	R"(						.Serialize = [](Entity& entity, SerializedComponentHandle& serializedComponent)
+	R"(						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
 						{
 							auto const& component = entity.GetComponent<${COMPONENT_FULL_TYPE}>();
 )";
@@ -32,7 +32,7 @@ char const* SerializeLambdaSourceEnd =
 )";
 
 char const* DeserializeLambdaSourceStart =
-	R"(						.Deserialize = [](SerializedComponentHandle& serializedComponent, DYE::DYEditor::Entity& entity)
+	R"(						.Deserialize = [](SerializedComponent& serializedComponent, DYE::DYEditor::Entity& entity)
 						{
 							auto& component = entity.AddOrGetComponent<${COMPONENT_FULL_TYPE}>();
 )";

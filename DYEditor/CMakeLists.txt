@@ -13,7 +13,7 @@ set(SOURCE_FILES
         src/EditorSystem.cpp
         src/EditorImGuiUtil.cpp
         src/SerializedObjectFactory.cpp
-        src/SerializedComponentHandle.cpp
+        src/SerializedComponent.cpp
         src/SerializedEntity.cpp
         src/SerializedScene.cpp
         src/SerializedSystemHandle.cpp
@@ -41,7 +41,7 @@ set(HEADER_FILES
         include/ImGui/EditorImGuiUtil.h
         include/Serialization/SerializedObjectFactory.h
         include/Serialization/SerializedEntity.h
-        include/Serialization/SerializedComponentHandle.h
+        include/Serialization/SerializedComponent.h
         include/Serialization/SerializedScene.h
         include/Serialization/SerializedSystemHandle.h
         include/DYEditorApplication.h

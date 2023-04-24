@@ -23,7 +23,7 @@ namespace DYE::DYEditor
 	namespace BuiltInFunctions
 	{
 		SerializationResult
-		IDComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponentHandle &serializedComponent)
+		IDComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
 		{
 			serializedComponent.SetPrimitiveTypePropertyValue("ID", entity.GetComponent<IDComponent>().ID);
 
@@ -31,7 +31,7 @@ namespace DYE::DYEditor
 		}
 
 		DeserializationResult
-		IDComponent_Deserialize(SerializedComponentHandle &serializedComponent, DYE::DYEditor::Entity &entity)
+		IDComponent_Deserialize(SerializedComponent &serializedComponent, DYE::DYEditor::Entity &entity)
 		{
 			auto &component = entity.AddOrGetComponent<IDComponent>();
 			component.ID = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::GUID>("ID");
@@ -56,7 +56,7 @@ namespace DYE::DYEditor
 		}
 
 		SerializationResult
-		NameComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponentHandle &serializedComponent)
+		NameComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
 		{
 			// We don't do any error handling here (i.e. check if entity has NameComponent) because
 			// the function will only be called when the entity has NameComponent for sure.
@@ -66,7 +66,7 @@ namespace DYE::DYEditor
 		}
 
 		DeserializationResult
-		NameComponent_Deserialize(SerializedComponentHandle &serializedComponent, DYE::DYEditor::Entity &entity)
+		NameComponent_Deserialize(SerializedComponent &serializedComponent, DYE::DYEditor::Entity &entity)
 		{
 			auto &nameComponent = entity.AddOrGetComponent<NameComponent>();
 			nameComponent.Name = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::String>("Name");
@@ -86,7 +86,7 @@ namespace DYE::DYEditor
 		}
 
 		SerializationResult
-		TransformComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponentHandle &serializedComponent)
+		TransformComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
 		{
 			auto const &transformComponent = entity.GetComponent<TransformComponent>();
 			serializedComponent.SetPrimitiveTypePropertyValue("Position", transformComponent.Position);
@@ -97,7 +97,7 @@ namespace DYE::DYEditor
 		}
 
 		DeserializationResult
-		TransformComponent_Deserialize(SerializedComponentHandle &serializedComponent, DYE::DYEditor::Entity &entity)
+		TransformComponent_Deserialize(SerializedComponent &serializedComponent, DYE::DYEditor::Entity &entity)
 		{
 			auto &transformComponent = entity.AddOrGetComponent<TransformComponent>();
 			transformComponent.Position = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Vector3>(
@@ -144,7 +144,7 @@ namespace DYE::DYEditor
 		}
 
 		SerializationResult
-		CameraComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponentHandle &serializedComponent)
+		CameraComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
 		{
 			auto const &cameraComponent = entity.GetComponent<CameraComponent>();
 			auto const &cameraProperties = cameraComponent.Properties;
@@ -172,7 +172,7 @@ namespace DYE::DYEditor
 		}
 
 		DeserializationResult
-		CameraComponent_Deserialize(SerializedComponentHandle &serializedComponent, DYE::DYEditor::Entity &entity)
+		CameraComponent_Deserialize(SerializedComponent &serializedComponent, DYE::DYEditor::Entity &entity)
 		{
 			auto &cameraComponent = entity.AddOrGetComponent<CameraComponent>();
 			auto &cameraProperties = cameraComponent.Properties;
@@ -225,7 +225,7 @@ namespace DYE::DYEditor
 		}
 
 		SerializationResult
-		SpriteRendererComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponentHandle &serializedComponent)
+		SpriteRendererComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
 		{
 			auto const &component = entity.GetComponent<SpriteRendererComponent>();
 			serializedComponent.SetPrimitiveTypePropertyValue("Color", component.Color);
@@ -234,7 +234,7 @@ namespace DYE::DYEditor
 			return {};
 		}
 
-		DeserializationResult SpriteRendererComponent_Deserialize(SerializedComponentHandle &serializedComponent,
+		DeserializationResult SpriteRendererComponent_Deserialize(SerializedComponent &serializedComponent,
 																  DYE::DYEditor::Entity &entity)
 		{
 			auto &component = entity.AddOrGetComponent<SpriteRendererComponent>();

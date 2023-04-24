@@ -29,7 +29,7 @@ namespace DYE::DYEditor
 				"TestA",
 				ComponentTypeDescriptor
 					{
-						.Serialize = [](Entity& entity, SerializedComponentHandle& serializedComponent)
+						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
 						{
 							auto const& component = entity.GetComponent<TestNamespace::TestComponentA>();
 							serializedComponent.SetPrimitiveTypePropertyValue("FloatValue", component.FloatValue);
@@ -37,7 +37,7 @@ namespace DYE::DYEditor
 							// Property 'intCannotBeSerialized' will not be serialized because its type 'int' is not supported.
 							return SerializationResult {};
 						},
-						.Deserialize = [](SerializedComponentHandle& serializedComponent, DYE::DYEditor::Entity& entity)
+						.Deserialize = [](SerializedComponent& serializedComponent, DYE::DYEditor::Entity& entity)
 						{
 							auto& component = entity.AddOrGetComponent<TestNamespace::TestComponentA>();
 							component.FloatValue = serializedComponent.GetPrimitiveTypePropertyValueOr<Float>("FloatValue", 1.0f);
@@ -64,13 +64,13 @@ namespace DYE::DYEditor
 				"SubTestA",
 				ComponentTypeDescriptor
 					{
-						.Serialize = [](Entity& entity, SerializedComponentHandle& serializedComponent)
+						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
 						{
 							auto const& component = entity.GetComponent<TestNamespace::Subnamespace::SubtestComponentA>();
 							serializedComponent.SetPrimitiveTypePropertyValue("IntegerValue", component.IntegerValue);
 							return SerializationResult {};
 						},
-						.Deserialize = [](SerializedComponentHandle& serializedComponent, DYE::DYEditor::Entity& entity)
+						.Deserialize = [](SerializedComponent& serializedComponent, DYE::DYEditor::Entity& entity)
 						{
 							auto& component = entity.AddOrGetComponent<TestNamespace::Subnamespace::SubtestComponentA>();
 							component.IntegerValue = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<Int32>("IntegerValue");
@@ -93,7 +93,7 @@ namespace DYE::DYEditor
 				"TestB",
 				ComponentTypeDescriptor
 					{
-						.Serialize = [](Entity& entity, SerializedComponentHandle& serializedComponent)
+						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
 						{
 							auto const& component = entity.GetComponent<TestComponentB>();
 							serializedComponent.SetPrimitiveTypePropertyValue("BooleanValue", component.BooleanValue);
@@ -103,7 +103,7 @@ namespace DYE::DYEditor
 							serializedComponent.SetPrimitiveTypePropertyValue("vec4", component.vec4);
 							return SerializationResult {};
 						},
-						.Deserialize = [](SerializedComponentHandle& serializedComponent, DYE::DYEditor::Entity& entity)
+						.Deserialize = [](SerializedComponent& serializedComponent, DYE::DYEditor::Entity& entity)
 						{
 							auto& component = entity.AddOrGetComponent<TestComponentB>();
 							component.BooleanValue = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<Bool>("BooleanValue");
@@ -136,7 +136,7 @@ namespace DYE::DYEditor
 				"ComponentWithAllPrimitiveProperties",
 				ComponentTypeDescriptor
 					{
-						.Serialize = [](Entity& entity, SerializedComponentHandle& serializedComponent)
+						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
 						{
 							auto const& component = entity.GetComponent<ComponentWithAllPrimitiveProperties>();
 							std::string CharVar(" "); CharVar[0] = component.CharVar; serializedComponent.SetPrimitiveTypePropertyValue("CharVar", CharVar);							serializedComponent.SetPrimitiveTypePropertyValue("BoolVar", component.BoolVar);
@@ -150,7 +150,7 @@ namespace DYE::DYEditor
 							serializedComponent.SetPrimitiveTypePropertyValue("QuaternionVar", component.QuaternionVar);
 							return SerializationResult {};
 						},
-						.Deserialize = [](SerializedComponentHandle& serializedComponent, DYE::DYEditor::Entity& entity)
+						.Deserialize = [](SerializedComponent& serializedComponent, DYE::DYEditor::Entity& entity)
 						{
 							auto& component = entity.AddOrGetComponent<ComponentWithAllPrimitiveProperties>();
 							component.CharVar = serializedComponent.GetPrimitiveTypePropertyValueOr<const char*>("CharVar", "a")[0];
@@ -201,13 +201,13 @@ namespace DYE::DYEditor
 				"HasAngularVelocity",
 				ComponentTypeDescriptor
 					{
-						.Serialize = [](Entity& entity, SerializedComponentHandle& serializedComponent)
+						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
 						{
 							auto const& component = entity.GetComponent<HasAngularVelocity>();
 							serializedComponent.SetPrimitiveTypePropertyValue("AngleDegreePerSecond", component.AngleDegreePerSecond);
 							return SerializationResult {};
 						},
-						.Deserialize = [](SerializedComponentHandle& serializedComponent, DYE::DYEditor::Entity& entity)
+						.Deserialize = [](SerializedComponent& serializedComponent, DYE::DYEditor::Entity& entity)
 						{
 							auto& component = entity.AddOrGetComponent<HasAngularVelocity>();
 							component.AngleDegreePerSecond = serializedComponent.GetPrimitiveTypePropertyValueOr<Float>("AngleDegreePerSecond", 30.0f);
@@ -230,14 +230,14 @@ namespace DYE::DYEditor
 				"CreateEntity",
 				ComponentTypeDescriptor
 					{
-						.Serialize = [](Entity& entity, SerializedComponentHandle& serializedComponent)
+						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
 						{
 							auto const& component = entity.GetComponent<CreateEntity>();
 							serializedComponent.SetPrimitiveTypePropertyValue("EntityNamePrefix", component.EntityNamePrefix);
 							serializedComponent.SetPrimitiveTypePropertyValue("NumberOfEntitiesToCreate", component.NumberOfEntitiesToCreate);
 							return SerializationResult {};
 						},
-						.Deserialize = [](SerializedComponentHandle& serializedComponent, DYE::DYEditor::Entity& entity)
+						.Deserialize = [](SerializedComponent& serializedComponent, DYE::DYEditor::Entity& entity)
 						{
 							auto& component = entity.AddOrGetComponent<CreateEntity>();
 							component.EntityNamePrefix = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<String>("EntityNamePrefix");
@@ -262,13 +262,13 @@ namespace DYE::DYEditor
 				"PrintMessageOnTeardown",
 				ComponentTypeDescriptor
 					{
-						.Serialize = [](Entity& entity, SerializedComponentHandle& serializedComponent)
+						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
 						{
 							auto const& component = entity.GetComponent<PrintMessageOnTeardown>();
 							serializedComponent.SetPrimitiveTypePropertyValue("Message", component.Message);
 							return SerializationResult {};
 						},
-						.Deserialize = [](SerializedComponentHandle& serializedComponent, DYE::DYEditor::Entity& entity)
+						.Deserialize = [](SerializedComponent& serializedComponent, DYE::DYEditor::Entity& entity)
 						{
 							auto& component = entity.AddOrGetComponent<PrintMessageOnTeardown>();
 							component.Message = serializedComponent.GetPrimitiveTypePropertyValueOr<String>("Message", "");
@@ -291,14 +291,14 @@ namespace DYE::DYEditor
 				"TestC",
 				ComponentTypeDescriptor
 					{
-						.Serialize = [](Entity& entity, SerializedComponentHandle& serializedComponent)
+						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
 						{
 							auto const& component = entity.GetComponent<TestComponentC>();
 							serializedComponent.SetPrimitiveTypePropertyValue("ColorValue", component.ColorValue);
 							std::string TestChar2(" "); TestChar2[0] = component.TestChar2; serializedComponent.SetPrimitiveTypePropertyValue("TestChar2", TestChar2);							serializedComponent.SetPrimitiveTypePropertyValue("TestName", component.TestName);
 							std::string TestChar(" "); TestChar[0] = component.TestChar; serializedComponent.SetPrimitiveTypePropertyValue("TestChar", TestChar);							return SerializationResult {};
 						},
-						.Deserialize = [](SerializedComponentHandle& serializedComponent, DYE::DYEditor::Entity& entity)
+						.Deserialize = [](SerializedComponent& serializedComponent, DYE::DYEditor::Entity& entity)
 						{
 							auto& component = entity.AddOrGetComponent<TestComponentC>();
 							component.ColorValue = serializedComponent.GetPrimitiveTypePropertyValueOr<Color4>("ColorValue", DYE::Color::Yellow);
