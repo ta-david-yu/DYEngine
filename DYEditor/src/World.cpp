@@ -10,6 +10,15 @@ namespace DYE::DYEditor
 	{
 	}
 
+	Entity World::CreateEntityAtIndex(int index)
+	{
+		auto entity = Entity(*this, m_Registry.create());
+
+		m_EntityHandles.insert(m_EntityHandles.begin() + index, EntityHandle { .Identifier = entity.m_EntityIdentifier });
+
+		return entity;
+	}
+
 	Entity World::CreateEntity()
 	{
 		auto entity = Entity(*this, m_Registry.create());
@@ -64,6 +73,26 @@ namespace DYE::DYEditor
 		}
 	}
 
+	std::optional<std::size_t> World::TryGetEntityIndex(Entity &entity)
+	{
+		if (entity.m_World != this)
+		{
+			return {};
+		}
+
+		for (int i = 0; i < m_EntityHandles.size(); ++i)
+		{
+			auto& entityHandle = m_EntityHandles[i];
+
+			if (entityHandle.Identifier == entity.GetIdentifier())
+			{
+				return i;
+			}
+		}
+
+		return {};
+	}
+
 	bool World::IsEmpty() const
 	{
 		return m_Registry.empty();
@@ -84,15 +113,5 @@ namespace DYE::DYEditor
 	entt::registry& GetWorldUnderlyingRegistry(World &world)
 	{
 		return world.m_Registry;
-	}
-
-	std::optional<Entity> World::TryGetEntityAt(int index)
-	{
-		if (index >= m_EntityHandles.size())
-		{
-			return {};
-		}
-
-		return Entity(*this, m_EntityHandles[index].Identifier);
 	}
 }

@@ -27,9 +27,13 @@ namespace DYE::DYEditor
 
 		// Call this after creating a new entity.
 		static void RegisterEntityCreation(World& world, Entity& entity);
+		// Call this after creating a new entity.
+		static void RegisterEntityCreation(World& world, Entity& entity, std::size_t indexInWorldHandleArray);
 
 		// Destroy an entity that can be restored with undo.
 		static void DeleteEntity(World& world, Entity& entity);
+		// Destroy an entity that can be restored with undo.
+		static void DeleteEntity(World& world, Entity& entity, std::size_t indexInWorldHandleArray);
 
 		static void DrawUndoHistoryWindow(bool *pIsOpen);
 	};

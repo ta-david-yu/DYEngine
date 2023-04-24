@@ -68,19 +68,37 @@ namespace DYE::DYEditor
 
 	void Undo::RegisterEntityCreation(World &world, Entity &entity)
 	{
+		auto tryGetIndexResult = world.TryGetEntityIndex(entity);
+		RegisterEntityCreation(world, entity, tryGetIndexResult.has_value()? tryGetIndexResult.value() : 0);
+	}
+
+	void Undo::RegisterEntityCreation(World &world, Entity &entity, std::size_t indexInWorldHandleArray)
+	{
 		// Discard everything behind the current head.
 		s_Data.Operations.erase(s_Data.Operations.begin() + s_Data.LatestOperationIndex + 1, s_Data.Operations.end());
 
-		s_Data.Operations.emplace_back(std::make_unique<EntityCreationOperation>(world, entity));
+		auto operation = std::make_unique<EntityCreationOperation>(world, entity);
+		operation->m_IndexInWorldEntityArray = indexInWorldHandleArray;
+
+		s_Data.Operations.emplace_back(std::move(operation));
 		s_Data.LatestOperationIndex = s_Data.Operations.size() - 1;
 	}
 
 	void Undo::DeleteEntity(World &world, Entity &entity)
 	{
+		auto tryGetIndexResult = world.TryGetEntityIndex(entity);
+		DeleteEntity(world, entity, tryGetIndexResult.has_value()? tryGetIndexResult.value() : 0);
+	}
+
+	void Undo::DeleteEntity(World &world, Entity &entity, std::size_t indexInWorldHandleArray)
+	{
 		// Discard everything behind the current head.
 		s_Data.Operations.erase(s_Data.Operations.begin() + s_Data.LatestOperationIndex + 1, s_Data.Operations.end());
 
-		s_Data.Operations.emplace_back(std::make_unique<EntityDeletionOperation>(world, entity));
+		auto operation = std::make_unique<EntityDeletionOperation>(world, entity);
+		operation->m_IndexInWorldEntityArray = indexInWorldHandleArray;
+
+		s_Data.Operations.emplace_back(std::move(operation));
 		s_Data.LatestOperationIndex = s_Data.Operations.size() - 1;
 	}
 

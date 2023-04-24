@@ -19,7 +19,7 @@ namespace DYE::DYEditor
 
 	void EntityCreationOperation::Redo()
 	{
-		Entity entity = m_pWorld->CreateEntity();
+		Entity entity = m_pWorld->CreateEntityAtIndex(m_IndexInWorldEntityArray);
 		SerializedObjectFactory::ApplySerializedEntityToEmptyEntity(m_SerializedEntity, entity);
 	}
 
@@ -41,7 +41,7 @@ namespace DYE::DYEditor
 
 	void EntityDeletionOperation::Undo()
 	{
-		Entity entity = m_pWorld->CreateEntity();
+		Entity entity = m_pWorld->CreateEntityAtIndex(m_IndexInWorldEntityArray);
 		SerializedObjectFactory::ApplySerializedEntityToEmptyEntity(m_SerializedEntity, entity);
 	}
 

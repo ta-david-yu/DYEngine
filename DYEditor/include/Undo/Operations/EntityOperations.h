@@ -13,6 +13,8 @@ namespace DYE::DYEditor
 {
 	class EntityCreationOperation final : public UndoOperationBase
 	{
+		friend class Undo;
+
 	public:
 		EntityCreationOperation(World& world, Entity& entity);
 
@@ -30,10 +32,12 @@ namespace DYE::DYEditor
 		World *m_pWorld;
 		GUID m_EntityGUID;
 		SerializedEntity m_SerializedEntity;
+		int m_IndexInWorldEntityArray = 0;
 	};
 
 	class EntityDeletionOperation final : public UndoOperationBase
 	{
+		friend class Undo;
 	public:
 		EntityDeletionOperation(World& world, Entity& entityToDestroy);
 
@@ -51,5 +55,6 @@ namespace DYE::DYEditor
 		World *m_pWorld;
 		GUID m_EntityGUID;
 		SerializedEntity m_SerializedEntity;
+		std::size_t m_IndexInWorldEntityArray = 0;
 	};
 }

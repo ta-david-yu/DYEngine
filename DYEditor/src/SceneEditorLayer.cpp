@@ -663,7 +663,7 @@ namespace DYE::DYEditor
 			{
 				// Select the newly created entity.
 				*pCurrentSelectedEntity = scene.World.CreateEntity("Entity");
-				Undo::RegisterEntityCreation(scene.World, *pCurrentSelectedEntity);
+				Undo::RegisterEntityCreation(scene.World, *pCurrentSelectedEntity, scene.World.GetNumberOfEntities() - 1);
 			}
 			ImGui::EndPopup();
 		}
@@ -679,15 +679,15 @@ namespace DYE::DYEditor
 		}
 
 		// Draw all entities.
-		scene.World.ForEachEntity
+		scene.World.ForEachEntityWithIndex
 		(
-			[&scene, &pCurrentSelectedEntity](DYEditor::Entity& entity)
+			[&scene, &pCurrentSelectedEntity](DYEditor::Entity& entity, std::size_t indexInWorld)
 			{
 				auto tryGetNameResult = entity.TryGetName();
 				if (!tryGetNameResult.has_value())
 				{
 					// No name, skip it
-					return ;
+					return;
 				}
 
 				auto& name = tryGetNameResult.value();
@@ -708,7 +708,7 @@ namespace DYE::DYEditor
 				{
 					if (ImGui::Selectable("Delete"))
 					{
-						Undo::DeleteEntity(scene.World, entity);
+						Undo::DeleteEntity(scene.World, entity, indexInWorld);
 					}
 					ImGui::EndPopup();
 				}
