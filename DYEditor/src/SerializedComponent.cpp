@@ -5,7 +5,8 @@ namespace DYE::DYEditor
 {
 	std::optional<std::string> SerializedComponent::TryGetTypeName() const
 	{
-		auto pTypeNode = m_pComponentTableHandle->get(ComponentTypeNameKey);
+		toml::table const* pComponentTable = IsHandle() ? m_pComponentTableHandle : &m_ComponentTable;
+		auto pTypeNode = pComponentTable->get(ComponentTypeNameKey);
 		if (pTypeNode == nullptr)
 		{
 			return {};
@@ -16,7 +17,8 @@ namespace DYE::DYEditor
 
 	void SerializedComponent::SetTypeName(std::string const& typeName)
 	{
-		m_pComponentTableHandle->insert_or_assign(ComponentTypeNameKey, typeName);
+		toml::table* pComponentTable = IsHandle() ? m_pComponentTableHandle : &m_ComponentTable;
+		pComponentTable->insert_or_assign(ComponentTypeNameKey, typeName);
 	}
 
 	SerializedComponent::SerializedComponent(toml::table *pComponentTableHandle) : m_pComponentTableHandle(pComponentTableHandle), m_IsHandle(true)

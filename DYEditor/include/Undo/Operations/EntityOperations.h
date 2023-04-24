@@ -2,6 +2,7 @@
 
 #include "Undo/UndoOperationBase.h"
 
+#include "Type/TypeRegistry.h"
 #include "Serialization/SerializedEntity.h"
 #include "Core/Entity.h"
 #include "Core/World.h"
@@ -56,5 +57,28 @@ namespace DYE::DYEditor
 		GUID m_EntityGUID;
 		SerializedEntity m_SerializedEntity;
 		std::size_t m_IndexInWorldEntityArray = 0;
+	};
+
+	class ComponentModificationOperation final : public UndoOperationBase
+	{
+	public:
+		ComponentModificationOperation(Entity &entity,
+									   SerializedComponent componentBeforeModification,
+									   SerializedComponent componentAfterModification);
+
+		void Undo() override;
+		void Redo() override;
+
+		const char *GetDescription() override;
+
+	private:
+		char m_Description[128]{};
+
+		World *m_pWorld;
+		GUID m_EntityGUID;
+		SerializedComponent m_SerializedComponentBeforeModification;
+		SerializedComponent m_SerializedComponentAfterModification;
+
+		ComponentTypeDescriptor m_ComponentTypeDescriptor;
 	};
 }

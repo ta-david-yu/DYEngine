@@ -343,6 +343,9 @@ namespace DYE::DYEditor
 		ImGuiViewport const *mainEditorWindowViewport = ImGui::GetWindowViewport();
 		ImGui::End();
 
+		// Draw generic editor windows.
+		EditorWindowManager::DrawEditorWindows(mainEditorWindowViewport);
+
 		// Draw all the major editor windows.
 		// TODO: right now we make all the major windows transparent (alpha = 0.35f)
 		//		We might want to make it configurable for the users & having two values for Edit Mode and Play Mode
@@ -407,9 +410,6 @@ namespace DYE::DYEditor
 								TypeRegistry::GetComponentTypesNamesAndDescriptors(), m_InspectorMode);
 		}
 		ImGui::End();
-
-		// Draw other generic editor windows.
-		EditorWindowManager::DrawEditorWindows(mainEditorWindowViewport);
 	}
 
 	void SceneEditorLayer::setEditorWindowDefaultLayout(ImGuiID dockSpaceId)
@@ -1022,8 +1022,22 @@ namespace DYE::DYEditor
 		// Draw entity's NameComponent as a InputField on the top.
 		auto& nameComponent = entity.AddOrGetComponent<NameComponent>();
 		ImGui::PushItemWidth(ImGui::GetWindowWidth() - scrollBarWidth - addComponentButtonSize.x - ImGui::GetFontSize());
-		bool nameChanged = ImGui::InputText("##EntityNameComponent", &nameComponent.Name);
-		isEntityInspectorDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
+		{
+			auto serializedNameComponentBeforeModification =
+				SerializedObjectFactory::CreateSerializedComponentOfType(entity, NameComponentName, TypeRegistry::GetComponentTypeDescriptor_NameComponent());
+
+			bool const changedThisFrame = ImGui::InputText("##EntityNameComponent", &nameComponent.Name);
+			bool const nameEndEdit = ImGui::IsItemDeactivatedAfterEdit();
+			if (changedThisFrame)
+			{
+				auto serializedNameComponentAfterModification =
+					SerializedObjectFactory::CreateSerializedComponentOfType(entity, NameComponentName, TypeRegistry::GetComponentTypeDescriptor_NameComponent());
+
+				Undo::RegisterComponentModification(entity, serializedNameComponentBeforeModification, serializedNameComponentAfterModification);
+			}
+
+			isEntityInspectorDeactivatedAfterEdit |= nameEndEdit;
+		}
 		ImGui::PopItemWidth();
 
 		// Draw a 'Add Component' button at the top of the inspector, and align it to the right side of the window.

@@ -8,14 +8,12 @@
 #include <filesystem>
 #include <optional>
 
-namespace DYE::DYEditor
-{
-	class Entity;
-}
 
 namespace DYE::DYEditor
 {
+	class Entity;
 	class Scene;
+	struct ComponentTypeDescriptor;
 
 	class SerializedObjectFactory
 	{
@@ -45,6 +43,11 @@ namespace DYE::DYEditor
 
 		/// SerializedEntity -> EntityFile
 		static void SaveSerializedEntityToFile(SerializedEntity& serializedEntity, std::filesystem::path const& path);
+
+		/// Entity.Component -> SerializedComponent
+		static SerializedComponent CreateSerializedComponentOfType(DYE::DYEditor::Entity &entity,
+																   std::string const &componentTypeName,
+																   ComponentTypeDescriptor componentTypeDescriptor);
 
 		static SerializedScene CreateEmptySerializedScene();
 		static SerializedEntity CreateEmptySerializedEntity();

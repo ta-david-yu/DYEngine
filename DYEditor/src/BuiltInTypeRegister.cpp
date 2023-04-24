@@ -282,6 +282,8 @@ namespace DYE::DYEditor
 		}
 	}
 
+	static ComponentTypeDescriptor s_NameComponentTypeDescriptor;
+
 	void RegisterBuiltInTypes()
 	{
 		DYE_LOG("<< Register Built-in Types to DYEditor::TypeRegistry >>");
@@ -298,10 +300,7 @@ namespace DYE::DYEditor
 			}
 		);
 
-		TypeRegistry::RegisterComponentType<NameComponent>
-		(
-			NameComponentName,
-			ComponentTypeDescriptor
+		s_NameComponentTypeDescriptor = ComponentTypeDescriptor
 			{
 				.ShouldBeIncludedInNormalAddComponentList = false,
 				.ShouldDrawInNormalInspector = false,
@@ -310,7 +309,11 @@ namespace DYE::DYEditor
 				.Serialize = BuiltInFunctions::NameComponent_Serialize,
 				.Deserialize = BuiltInFunctions::NameComponent_Deserialize,
 				.DrawInspector = BuiltInFunctions::NameComponent_DrawInspector,
-			}
+			};
+		TypeRegistry::RegisterComponentType<NameComponent>
+		(
+			NameComponentName,
+			s_NameComponentTypeDescriptor
 		);
 
 		TypeRegistry::RegisterComponentType<TransformComponent>
@@ -357,5 +360,10 @@ namespace DYE::DYEditor
 
 		static RegisterCameraSystem _RegisterCameraSystem;
 		TypeRegistry::RegisterSystem(RegisterCameraSystem::TypeName, &_RegisterCameraSystem);
+	}
+
+	ComponentTypeDescriptor TypeRegistry::GetComponentTypeDescriptor_NameComponent()
+	{
+		return s_NameComponentTypeDescriptor;
 	}
 }

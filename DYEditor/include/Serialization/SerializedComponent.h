@@ -15,6 +15,7 @@ namespace DYE::DYEditor
 
 	struct SerializedComponent
 	{
+		friend class SerializedObjectFactory;
 		friend class SerializedEntity;
 
 		inline bool IsHandle() const { return m_IsHandle; }

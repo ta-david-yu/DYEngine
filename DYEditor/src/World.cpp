@@ -10,7 +10,7 @@ namespace DYE::DYEditor
 	{
 	}
 
-	Entity World::CreateEntityAtIndex(int index)
+	Entity World::CreateEntityAtIndex(std::size_t index)
 	{
 		auto entity = Entity(*this, m_Registry.create());
 
@@ -71,6 +71,19 @@ namespace DYE::DYEditor
 				break;
 			}
 		}
+	}
+
+	std::optional<Entity> World::TryGetEntityWithGUID(GUID entityGUID)
+	{
+		for (auto&& [entity, idComponent] : m_Registry.view<IDComponent>().each())
+		{
+			if (idComponent.ID == entityGUID)
+			{
+				return Entity(*this, entity);
+			}
+		}
+
+		return {};
 	}
 
 	std::optional<std::size_t> World::TryGetEntityIndex(Entity &entity)

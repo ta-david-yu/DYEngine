@@ -59,13 +59,6 @@ namespace DYE::DYEditor
 		s_Data.Operations[s_Data.LatestOperationIndex]->Redo();
 	}
 
-	void
-	Undo::RegisterComponentModification(World &world, Entity &entity, SerializedComponent componentBeforeModification,
-										SerializedComponent componentAfterModification)
-	{
-		// TODO:
-	}
-
 	void Undo::RegisterEntityCreation(World &world, Entity &entity)
 	{
 		auto tryGetIndexResult = world.TryGetEntityIndex(entity);
@@ -74,14 +67,10 @@ namespace DYE::DYEditor
 
 	void Undo::RegisterEntityCreation(World &world, Entity &entity, std::size_t indexInWorldHandleArray)
 	{
-		// Discard everything behind the current head.
-		s_Data.Operations.erase(s_Data.Operations.begin() + s_Data.LatestOperationIndex + 1, s_Data.Operations.end());
-
 		auto operation = std::make_unique<EntityCreationOperation>(world, entity);
 		operation->m_IndexInWorldEntityArray = indexInWorldHandleArray;
 
-		s_Data.Operations.emplace_back(std::move(operation));
-		s_Data.LatestOperationIndex = s_Data.Operations.size() - 1;
+		pushNewOperation(std::move(operation));
 	}
 
 	void Undo::DeleteEntity(World &world, Entity &entity)
@@ -92,11 +81,25 @@ namespace DYE::DYEditor
 
 	void Undo::DeleteEntity(World &world, Entity &entity, std::size_t indexInWorldHandleArray)
 	{
-		// Discard everything behind the current head.
-		s_Data.Operations.erase(s_Data.Operations.begin() + s_Data.LatestOperationIndex + 1, s_Data.Operations.end());
-
 		auto operation = std::make_unique<EntityDeletionOperation>(world, entity);
 		operation->m_IndexInWorldEntityArray = indexInWorldHandleArray;
+
+		pushNewOperation(std::move(operation));
+	}
+
+	void Undo::RegisterComponentModification(Entity &entity,
+											SerializedComponent componentBeforeModification,
+											SerializedComponent componentAfterModification)
+	{
+		auto operation = std::make_unique<ComponentModificationOperation>(entity, std::move(componentBeforeModification), std::move(componentAfterModification));
+
+		pushNewOperation(std::move(operation));
+	}
+
+	void Undo::pushNewOperation(std::unique_ptr<UndoOperationBase> operation)
+	{
+		// Discard everything behind the current head.
+		s_Data.Operations.erase(s_Data.Operations.begin() + s_Data.LatestOperationIndex + 1, s_Data.Operations.end());
 
 		s_Data.Operations.emplace_back(std::move(operation));
 		s_Data.LatestOperationIndex = s_Data.Operations.size() - 1;

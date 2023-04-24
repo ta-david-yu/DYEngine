@@ -250,6 +250,18 @@ namespace DYE::DYEditor
 		fileStream << serializedScene.m_SceneTable;
 	}
 
+	SerializedComponent SerializedObjectFactory::CreateSerializedComponentOfType(Entity &entity,
+																				 std::string const &componentTypeName,
+																				 ComponentTypeDescriptor componentTypeDescriptor)
+	{
+		// Default serialized component ctor creates an empty non-handle serialized component.
+		SerializedComponent serializedComponent;
+
+		serializedComponent.SetTypeName(componentTypeName);
+		componentTypeDescriptor.Serialize(entity, serializedComponent);
+		return serializedComponent;
+	}
+
 	SerializedEntity SerializedObjectFactory::CreateEmptySerializedEntity()
 	{
 		return {};
