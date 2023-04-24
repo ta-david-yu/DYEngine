@@ -30,7 +30,7 @@ namespace DYE
 		style.PopupRounding = 4.0f;
 		style.PopupBorderSize = 1.0f;
 		style.FramePadding = ImVec2(4.0f, 3.0f);
-		style.FrameRounding = 2.5f;
+		style.FrameRounding = 1.5f;
 		style.FrameBorderSize = 0.0f;
 		style.ItemSpacing = ImVec2(8.0f, 4.0f);
 		style.ItemInnerSpacing = ImVec2(4.0f, 4.0f);
