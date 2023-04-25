@@ -18,7 +18,7 @@ namespace DYE::DYEditor
 
 		virtual ~UndoOperationBase() = default;
 
-		char Description[128]{};
+		char Description[128] = "Unnamed Operation";
 	};
 
 	class GroupUndoOperation final : public UndoOperationBase

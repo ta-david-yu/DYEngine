@@ -34,16 +34,16 @@ namespace DYE::DYEditor
 		int OrderInSystemList = 0;
 	};
 
-	class ToggleSystemOperation final : public UndoOperationBase
+	class SetSystemIsEnabledOperation final : public UndoOperationBase
 	{
 	public:
 		void Undo() override;
 		void Redo() override;
 
-		std::string SystemTypeName;
 		Scene* pScene = nullptr;
 		ExecutionPhase ExecutionPhase;
-		bool IsEnabled = true;
+		int OrderInList = 0;
+		bool IsEnabledValue = true;
 	};
 
 	class SystemReorderOperation final : public UndoOperationBase

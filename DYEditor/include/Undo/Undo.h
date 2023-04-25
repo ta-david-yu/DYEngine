@@ -50,6 +50,9 @@ namespace DYE::DYEditor
 		// Perform system removal from a scene that can be restored with undo.
 		static void RemoveSystem(Scene &scene, SystemDescriptor systemDescriptor, int orderInList);
 
+		// Toggle System.IsEnabled, can be restored with undo.
+		static void SetSystemIsEnabled(Scene &scene, SystemDescriptor &systemDescriptor, int orderInList, bool value);
+
 		// Reorder a system to a new location, the reorder can be restored with undo.
 		static void ReorderSystem(Scene &scene, SystemDescriptor systemDescriptor, int oldOrderInList, int newOrderInList);
 

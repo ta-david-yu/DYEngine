@@ -937,7 +937,12 @@ namespace DYE::DYEditor
 
 			// Draw enabled toggle.
 			ImGui::SameLine();
-			ImGui::Checkbox("##IsEnabled", &systemDescriptor.IsEnabled);
+			bool isSystemEnabled = systemDescriptor.IsEnabled;
+			ImGui::Checkbox("##IsEnabled", &isSystemEnabled);
+			if (isSystemEnabled != systemDescriptor.IsEnabled)
+			{
+				Undo::SetSystemIsEnabled(scene, systemDescriptor, i, isSystemEnabled);
+			}
 
 			// Draw header text (system name most likely).
 			ImGui::SameLine();
@@ -957,9 +962,6 @@ namespace DYE::DYEditor
 					// Swap with the previous system and return right away.
 					int const otherSystemIndex = i - 1;
 					Undo::ReorderSystem(scene, systemDescriptor, i, otherSystemIndex);
-//					auto const otherSystemDescriptor = systemDescriptors[otherSystemIndex];
-//					systemDescriptors[otherSystemIndex] = systemDescriptor;
-//					systemDescriptors[i] = otherSystemDescriptor;
 					ImGui::PopID();
 					return true;
 				}
@@ -973,9 +975,6 @@ namespace DYE::DYEditor
 					// Swap with the next system and return right away.
 					int const otherSystemIndex = i + 1;
 					Undo::ReorderSystem(scene, systemDescriptor, i, otherSystemIndex);
-//					auto const otherSystemDescriptor = systemDescriptors[otherSystemIndex];
-//					systemDescriptors[otherSystemIndex] = systemDescriptor;
-//					systemDescriptors[i] = otherSystemDescriptor;
 					ImGui::PopID();
 					return true;
 				}

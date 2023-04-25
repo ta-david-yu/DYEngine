@@ -42,16 +42,18 @@ namespace DYE::DYEditor
 		systemDescriptors.erase(systemDescriptors.begin() + OrderInSystemList);
 	}
 
-	// ToggleSystemOperation
+	// SetSystemIsEnabledOperation
 
-	void ToggleSystemOperation::Undo()
+	void SetSystemIsEnabledOperation::Undo()
 	{
-
+		auto &systemList = pScene->GetSystemDescriptorsOfPhase(ExecutionPhase);
+		systemList[OrderInList].IsEnabled = !IsEnabledValue;
 	}
 
-	void ToggleSystemOperation::Redo()
+	void SetSystemIsEnabledOperation::Redo()
 	{
-
+		auto &systemList = pScene->GetSystemDescriptorsOfPhase(ExecutionPhase);
+		systemList[OrderInList].IsEnabled = IsEnabledValue;
 	}
 
 	// SystemReorderOperation

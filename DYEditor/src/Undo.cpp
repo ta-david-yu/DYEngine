@@ -158,6 +158,21 @@ namespace DYE::DYEditor
 		pushNewOperation(std::move(operation));
 	}
 
+	void Undo::SetSystemIsEnabled(Scene &scene, SystemDescriptor &systemDescriptor, int orderInList, bool value)
+	{
+		auto operation = std::make_unique<SetSystemIsEnabledOperation>();
+		operation->pScene = &scene;
+		operation->ExecutionPhase = systemDescriptor.Instance->GetPhase();
+		operation->OrderInList = orderInList;
+		operation->IsEnabledValue = value;
+
+		systemDescriptor.IsEnabled = value;
+
+		sprintf(operation->Description, "%s System '%s'", value? "Enable" : "Disable", systemDescriptor.Name.c_str());
+
+		pushNewOperation(std::move(operation));
+	}
+
 	void Undo::ReorderSystem(Scene &scene, SystemDescriptor systemDescriptor, int oldOrderInList, int newOrderInList)
 	{
 		auto operation = std::make_unique<SystemReorderOperation>();
