@@ -54,7 +54,11 @@ namespace DYE
 
     std::shared_ptr<Texture2D> Texture2D::Create(std::uint32_t width, std::uint32_t height)
     {
-        return std::make_shared<Texture2D>(width, height);
+		auto texture = std::make_shared<Texture2D>(width, height);
+		char label[128];
+		sprintf(label, "Texture2D (%d x %d)", width, height);
+		texture->SetDebugLabel(label);
+		return std::move(texture);
     }
 
     std::shared_ptr<Texture2D> Texture2D::Create(glm::vec4 color)
