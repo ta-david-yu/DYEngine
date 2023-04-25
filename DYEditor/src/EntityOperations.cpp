@@ -50,19 +50,6 @@ namespace DYE::DYEditor
 
 	// ComponentAdditionOperation
 
-	ComponentAdditionOperation::ComponentAdditionOperation(Entity &entity, std::string const &componentTypeName, ComponentTypeDescriptor typeDescriptor) :
-		pWorld(&entity.GetWorld()),
-		EntityGUID(entity.GetComponent<IDComponent>().ID),
-		TypeDescriptor(typeDescriptor)
-	{
-		sprintf(&Description[0], "Add %s to Entity '%s' (GUID: %s)",
-				componentTypeName.c_str(),
-				entity.TryGetName().value().c_str(),
-				EntityGUID.ToString().c_str());
-
-		TypeDescriptor.Add(entity);
-	}
-
 	void ComponentAdditionOperation::Undo()
 	{
 		auto tryGetEntity = pWorld->TryGetEntityWithGUID(EntityGUID);
@@ -80,20 +67,6 @@ namespace DYE::DYEditor
 	}
 
 	// ComponentRemovalOperation
-
-	ComponentRemovalOperation::ComponentRemovalOperation(Entity &entity, std::string const &typeName, ComponentTypeDescriptor typeDescriptor) :
-		pWorld(&entity.GetWorld()),
-		EntityGUID(entity.GetComponent<IDComponent>().ID),
-		TypeDescriptor(typeDescriptor),
-		SerializedComponentBeforeRemoval(SerializedObjectFactory::CreateSerializedComponentOfType(entity, typeName, typeDescriptor))
-	{
-		sprintf(&Description[0], "Remove %s from Entity '%s' (GUID: %s)",
-				typeName.c_str(),
-				entity.TryGetName().value().c_str(),
-				EntityGUID.ToString().c_str());
-
-		TypeDescriptor.Remove(entity);
-	}
 
 	void ComponentRemovalOperation::Undo()
 	{

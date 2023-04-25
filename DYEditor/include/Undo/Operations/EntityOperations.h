@@ -59,8 +59,6 @@ namespace DYE::DYEditor
 	class ComponentAdditionOperation final : public UndoOperationBase
 	{
 	public:
-		ComponentAdditionOperation(Entity &entity, std::string const &componentTypeName, ComponentTypeDescriptor typeDescriptor);
-
 		void Undo() override;
 		void Redo() override;
 
@@ -72,8 +70,6 @@ namespace DYE::DYEditor
 	class ComponentRemovalOperation final : public UndoOperationBase
 	{
 	public:
-		ComponentRemovalOperation(Entity &entity,std::string const &typeName, ComponentTypeDescriptor typeDescriptor);
-
 		void Undo() override;
 		void Redo() override;
 
