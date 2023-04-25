@@ -893,14 +893,14 @@ namespace DYE::DYEditor
 					if (ImGui::Selectable(systemName.c_str()))
 					{
 						// Add the system.
-						Undo::AddSystem(scene,
-							SystemDescriptor
-								{
-									.Name = systemName,
-									.Group = NoSystemGroupID,
-									.IsEnabled = true,
-									.Instance = pSystemInstance
-								});
+						SystemDescriptor descriptor =
+						{
+							.Name = systemName,
+							.Group = NoSystemGroupID,
+							.IsEnabled = true,
+							.Instance = pSystemInstance
+						};
+						Undo::AddSystem(scene, descriptor, systemDescriptors.size());
 						changed = true;
 						ImGui::CloseCurrentPopup();
 					}

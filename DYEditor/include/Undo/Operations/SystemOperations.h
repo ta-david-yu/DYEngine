@@ -26,6 +26,7 @@ namespace DYE::DYEditor
 		SystemDescriptor Descriptor;
 		Scene* pScene = nullptr;
 		ExecutionPhase ExecutionPhase = ExecutionPhase::Initialize;
+		int OrderInSystemList = 0;
 	};
 
 	class SystemRemovalOperation final : public UndoOperationBase

@@ -106,23 +106,25 @@ namespace DYE::DYEditor
 		pushNewOperation(std::move(operation));
 	}
 
-	void Undo::AddSystem(Scene &scene, SystemDescriptor systemDescriptor)
+	void Undo::AddSystem(Scene &scene, SystemDescriptor const& systemDescriptor, int orderInList)
 	{
 		auto operation = std::make_unique<SystemAdditionOperation>();
 		operation->Descriptor = systemDescriptor;
 		operation->pScene = &scene;
+		operation->OrderInSystemList = orderInList;
 
 		if (systemDescriptor.Instance == nullptr)
 		{
 			// The added system is an unrecognized system.
-			scene.UnrecognizedSystems.emplace_back(systemDescriptor);
+			scene.UnrecognizedSystems.insert(scene.UnrecognizedSystems.begin() + orderInList, systemDescriptor);
 
 			sprintf(operation->Description, "Add Unrecognized System '%s'", systemDescriptor.Name.c_str());
 		}
 		else
 		{
 			operation->ExecutionPhase = systemDescriptor.Instance->GetPhase();
-			scene.GetSystemDescriptorsOfPhase(operation->ExecutionPhase).push_back(systemDescriptor);
+			auto &systemDescriptors = scene.GetSystemDescriptorsOfPhase(operation->ExecutionPhase);
+			systemDescriptors.insert(systemDescriptors.begin() + orderInList, systemDescriptor);
 
 			sprintf(operation->Description, "Add System '%s'", systemDescriptor.Name.c_str());
 		}
@@ -130,7 +132,7 @@ namespace DYE::DYEditor
 		pushNewOperation(std::move(operation));
 	}
 
-	void Undo::RemoveSystem(Scene &scene, SystemDescriptor systemDescriptor)
+	void Undo::RemoveSystem(Scene &scene, SystemDescriptor systemDescriptor, int orderInList)
 	{
 
 	}

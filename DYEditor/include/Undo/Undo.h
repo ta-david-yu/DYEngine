@@ -45,10 +45,10 @@ namespace DYE::DYEditor
 		static void RemoveComponent(Entity &entity, std::string const &componentTypeName, ComponentTypeDescriptor typeDescriptor);
 
 		// Perform system addition to a scene that can be restored with undo.
-		static void AddSystem(Scene &scene, SystemDescriptor systemDescriptor);
+		static void AddSystem(Scene &scene, SystemDescriptor const& systemDescriptor, int orderInList);
 
 		// Perform system removal from a scene that can be restored with undo.
-		static void RemoveSystem(Scene &scene, SystemDescriptor systemDescriptor);
+		static void RemoveSystem(Scene &scene, SystemDescriptor systemDescriptor, int orderInList);
 
 		static void DrawUndoHistoryWindow(bool *pIsOpen);
 
