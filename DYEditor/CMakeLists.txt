@@ -25,7 +25,7 @@ set(SOURCE_FILES
         src/Render2DSpriteSystem.cpp
         src/RegisterCameraSystem.cpp
         src/EditorWindowManager.cpp
-        src/RuntimeSceneManagement.cpp src/Undo.cpp src/EntityOperations.cpp)
+        src/RuntimeSceneManagement.cpp src/Undo.cpp src/EntityOperations.cpp src/SystemOperations.cpp src/UndoOperationBase.cpp)
 set(HEADER_FILES
         include/SceneEditorLayer.h
         include/SceneRuntimeLayer.h
@@ -59,7 +59,7 @@ set(HEADER_FILES
         include/Systems/RegisterCameraSystem.h
         include/ProjectConfig.h src/ProjectConfig.cpp
         include/ImGui/EditorWindowManager.h
-        include/Core/RuntimeSceneManagement.h include/Components/IDComponent.h include/Undo/Undo.h include/Undo/UndoOperationBase.h include/Undo/Operations/EntityOperations.h include/Type/DrawComponentHeaderContext.h)
+        include/Core/RuntimeSceneManagement.h include/Components/IDComponent.h include/Undo/Undo.h include/Undo/UndoOperationBase.h include/Undo/Operations/EntityOperations.h include/Type/DrawComponentHeaderContext.h include/Undo/Operations/SystemOperations.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")

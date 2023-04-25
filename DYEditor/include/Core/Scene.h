@@ -117,7 +117,7 @@ namespace DYE::DYEditor
 
 		GroupID AddOrGetGroupID(std::string_view const& groupName);
 
-		/// If a system with the given name cannot be found in the TypeRegistry, returned systemDescriptor.Instance will be nullptr.
+		/// \return If a system with the given name cannot be found in the TypeRegistry, returned systemDescriptor.Instance will be nullptr.
 		SystemDescriptor TryAddSystemByName(std::string const &systemName);
 
 		/// Remove all entities and systems. Basically make the scene empty.

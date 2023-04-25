@@ -3,6 +3,7 @@
 #include "Serialization/SerializedComponent.h"
 #include "Core/GUID.h"
 #include "Type/TypeRegistry.h"
+#include "Core/Scene.h"
 
 namespace DYE::DYEditor
 {
@@ -42,6 +43,12 @@ namespace DYE::DYEditor
 
 		// Perform component removal that can be restored with undo.
 		static void RemoveComponent(Entity &entity, std::string const &componentTypeName, ComponentTypeDescriptor typeDescriptor);
+
+		// Perform system addition to a scene that can be restored with undo.
+		static void AddSystem(Scene &scene, SystemDescriptor systemDescriptor);
+
+		// Perform system removal from a scene that can be restored with undo.
+		static void RemoveSystem(Scene &scene, SystemDescriptor systemDescriptor);
 
 		static void DrawUndoHistoryWindow(bool *pIsOpen);
 

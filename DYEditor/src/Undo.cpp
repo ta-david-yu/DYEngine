@@ -2,6 +2,7 @@
 
 #include "Undo/UndoOperationBase.h"
 #include "Undo/Operations/EntityOperations.h"
+#include "Undo/Operations/SystemOperations.h"
 
 #include "ImGui/ImGuiUtil.h"
 
@@ -103,6 +104,35 @@ namespace DYE::DYEditor
 	{
 		auto operation = std::make_unique<ComponentRemovalOperation>(entity, componentTypeName, typeDescriptor);
 		pushNewOperation(std::move(operation));
+	}
+
+	void Undo::AddSystem(Scene &scene, SystemDescriptor systemDescriptor)
+	{
+		auto operation = std::make_unique<SystemAdditionOperation>();
+		operation->Descriptor = systemDescriptor;
+		operation->pScene = &scene;
+
+		if (systemDescriptor.Instance == nullptr)
+		{
+			// The added system is an unrecognized system.
+			scene.UnrecognizedSystems.emplace_back(systemDescriptor);
+
+			sprintf(operation->Description, "Add Unrecognized System '%s'", systemDescriptor.Name.c_str());
+		}
+		else
+		{
+			operation->ExecutionPhase = systemDescriptor.Instance->GetPhase();
+			scene.GetSystemDescriptorsOfPhase(operation->ExecutionPhase).push_back(systemDescriptor);
+
+			sprintf(operation->Description, "Add System '%s'", systemDescriptor.Name.c_str());
+		}
+
+		pushNewOperation(std::move(operation));
+	}
+
+	void Undo::RemoveSystem(Scene &scene, SystemDescriptor systemDescriptor)
+	{
+
 	}
 
 	void Undo::pushNewOperation(std::unique_ptr<UndoOperationBase> operation)

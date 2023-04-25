@@ -4,8 +4,8 @@
 
 #include "Type/TypeRegistry.h"
 #include "Serialization/SerializedEntity.h"
-#include "Core/Entity.h"
 #include "Core/World.h"
+#include "Core/Entity.h"
 #include "Components/IDComponent.h"
 
 #include <string>

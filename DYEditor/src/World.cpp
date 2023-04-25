@@ -4,6 +4,8 @@
 #include "Components/IDComponent.h"
 #include "Components/NameComponent.h"
 
+#include <algorithm>
+
 namespace DYE::DYEditor
 {
 	World::World()

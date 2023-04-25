@@ -893,16 +893,14 @@ namespace DYE::DYEditor
 					if (ImGui::Selectable(systemName.c_str()))
 					{
 						// Add the system.
-						systemDescriptors.push_back
-						(
+						Undo::AddSystem(scene,
 							SystemDescriptor
 								{
 									.Name = systemName,
 									.Group = NoSystemGroupID,
 									.IsEnabled = true,
 									.Instance = pSystemInstance
-								}
-						);
+								});
 						changed = true;
 						ImGui::CloseCurrentPopup();
 					}
@@ -918,7 +916,7 @@ namespace DYE::DYEditor
 			auto& systemDescriptor = systemDescriptors[i];
 
 			ImGui::PushID(systemDescriptor.Name.c_str());
-			SystemBase* pSystemInstance = TypeRegistry::TryGetSystemInstance(systemDescriptor.Name);
+			SystemBase* pSystemInstance = systemDescriptor.Instance;
 			bool const isRecognizedSystem = pSystemInstance != nullptr;
 			char const* headerText = isRecognizedSystem ? systemDescriptor.Name.c_str() : "(Unrecognized System)";
 

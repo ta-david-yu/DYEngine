@@ -1,5 +1,6 @@
 #include "Core/RuntimeState.h"
 
+#include <algorithm>
 #include <vector>
 
 namespace DYE::DYEditor
