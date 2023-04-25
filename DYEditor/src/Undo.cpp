@@ -4,6 +4,7 @@
 #include "Undo/Operations/EntityOperations.h"
 #include "Undo/Operations/SystemOperations.h"
 
+#include "Serialization/SerializedObjectFactory.h"
 #include "ImGui/ImGuiUtil.h"
 
 #include <memory>
@@ -68,8 +69,14 @@ namespace DYE::DYEditor
 
 	void Undo::RegisterEntityCreation(World &world, Entity &entity, std::size_t indexInWorldHandleArray)
 	{
-		auto operation = std::make_unique<EntityCreationOperation>(world, entity);
+		auto operation = std::make_unique<EntityCreationOperation>();
+		operation->pWorld = &world;
+		operation->EntityGUID = entity.GetComponent<IDComponent>().ID;
+		operation->CreatedSerializedEntity = SerializedObjectFactory::CreateSerializedEntity(entity);
 		operation->IndexInWorldEntityArray = indexInWorldHandleArray;
+
+		sprintf(operation->Description, "Create New Entity (GUID: %s)", operation->EntityGUID.ToString().c_str());
+
 		pushNewOperation(std::move(operation));
 	}
 
@@ -81,8 +88,16 @@ namespace DYE::DYEditor
 
 	void Undo::DeleteEntity(World &world, Entity &entity, std::size_t indexInWorldHandleArray)
 	{
-		auto operation = std::make_unique<EntityDeletionOperation>(world, entity);
+		auto operation = std::make_unique<EntityDeletionOperation>();
+		operation->pWorld = &world;
+		operation->EntityGUID = entity.GetComponent<IDComponent>().ID;
+		operation->DeletedSerializedEntity = SerializedObjectFactory::CreateSerializedEntity(entity);
 		operation->IndexInWorldEntityArray = indexInWorldHandleArray;
+
+		sprintf(operation->Description, "Delete Entity '%s' (GUID: %s)", entity.TryGetName().value().c_str(), operation->EntityGUID.ToString().c_str());
+
+		operation->pWorld->DestroyEntityWithGUID(operation->EntityGUID);
+
 		pushNewOperation(std::move(operation));
 	}
 

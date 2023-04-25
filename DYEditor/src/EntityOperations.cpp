@@ -6,14 +6,6 @@ namespace DYE::DYEditor
 {
 	// EntityCreationOperation
 
-	EntityCreationOperation::EntityCreationOperation(World &world, Entity &entity) :
-		pWorld(&world),
-		EntityGUID(entity.GetComponent<IDComponent>().ID),
-		CreatedSerializedEntity(SerializedObjectFactory::CreateSerializedEntity(entity))
-	{
-		sprintf(&Description[0], "Create New Entity (GUID: %s)", EntityGUID.ToString().c_str());
-	}
-
 	void EntityCreationOperation::Undo()
 	{
 		pWorld->DestroyEntityWithGUID(EntityGUID);
@@ -26,17 +18,6 @@ namespace DYE::DYEditor
 	}
 
 	// EntityDeletionOperation
-
-	EntityDeletionOperation::EntityDeletionOperation(World& world, Entity& entityToDestroy) :
-		pWorld(&world),
-		EntityGUID(entityToDestroy.GetComponent<IDComponent>().ID),
-		DeletedSerializedEntity(SerializedObjectFactory::CreateSerializedEntity(entityToDestroy))
-	{
-		sprintf(&Description[0], "Delete Entity '%s' (GUID: %s)",
-				entityToDestroy.TryGetName().value().c_str(),
-				EntityGUID.ToString().c_str());
-		pWorld->DestroyEntityWithGUID(EntityGUID);
-	}
 
 	void EntityDeletionOperation::Undo()
 	{

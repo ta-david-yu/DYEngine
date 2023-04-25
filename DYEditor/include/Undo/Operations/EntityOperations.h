@@ -14,11 +14,7 @@ namespace DYE::DYEditor
 {
 	class EntityCreationOperation final : public UndoOperationBase
 	{
-		friend class Undo;
-
 	public:
-		EntityCreationOperation(World& world, Entity& entity);
-
 		/// Destroy the newly created entity with the identifier.
 		void Undo() override;
 
@@ -33,10 +29,7 @@ namespace DYE::DYEditor
 
 	class EntityDeletionOperation final : public UndoOperationBase
 	{
-		friend class Undo;
 	public:
-		EntityDeletionOperation(World& world, Entity& entityToDestroy);
-
 		/// Recover the destroyed entity with the recorded GUID.
 		void Undo() override;
 
