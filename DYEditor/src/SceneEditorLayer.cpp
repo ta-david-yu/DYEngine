@@ -1172,7 +1172,7 @@ namespace DYE::DYEditor
 				DrawComponentInspectorContext drawComponentInspectorContext;
 				isEntityChangedThisFrame |= typeDescriptor.DrawInspector(drawComponentInspectorContext, entity);
 
-				if (drawComponentInspectorContext.IsActivated)
+				if (drawComponentInspectorContext.IsModificationActivated)
 				{
 					context.IsModifyingEntityProperty = true;
 					context.SerializedComponentBeforeModification =
@@ -1180,12 +1180,12 @@ namespace DYE::DYEditor
 					printf("Entity '%s' has been activated.\n", nameComponent.Name.c_str());
 				}
 
-				if (drawComponentInspectorContext.IsDeactivated)
+				if (drawComponentInspectorContext.IsModificationDeactivated)
 				{
 					context.IsModifyingEntityProperty = false;
 					printf("Entity '%s' has been deactivated.\n", nameComponent.Name.c_str());
 				}
-				if (drawComponentInspectorContext.IsDeactivatedAfterEdit)
+				if (drawComponentInspectorContext.IsModificationDeactivatedAfterEdit)
 				{
 					auto serializedComponentAfterModification = SerializedObjectFactory::CreateSerializedComponentOfType(entity, typeName, typeDescriptor);
 					Undo::RegisterComponentModification(entity, context.SerializedComponentBeforeModification, serializedComponentAfterModification);

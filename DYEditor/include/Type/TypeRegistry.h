@@ -17,9 +17,9 @@ namespace DYE::DYEditor
 
 	struct DrawComponentInspectorContext
 	{
-		bool IsActivated = false;
-		bool IsDeactivated = false;
-		bool IsDeactivatedAfterEdit = false;
+		bool IsModificationActivated = false;
+		bool IsModificationDeactivated = false;
+		bool IsModificationDeactivatedAfterEdit = false;
 	};
 
 	struct SerializationResult
