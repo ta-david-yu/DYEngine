@@ -53,4 +53,16 @@ namespace DYE::DYEditor
 	{
 
 	}
+
+	// SystemReorderOperation
+
+	void SystemReorderOperation::Undo()
+	{
+
+	}
+
+	void SystemReorderOperation::Redo()
+	{
+
+	}
 }

@@ -16,13 +16,6 @@ namespace DYE::DYEditor
 		void Undo() override;
 		void Redo() override;
 
-		const char *GetDescription() override
-		{
-			return Description;
-		}
-
-	public:
-		char Description[128]{};
 		SystemDescriptor Descriptor;
 		Scene* pScene = nullptr;
 		ExecutionPhase ExecutionPhase = ExecutionPhase::Initialize;
@@ -35,13 +28,6 @@ namespace DYE::DYEditor
 		void Undo() override;
 		void Redo() override;
 
-		const char *GetDescription() override
-		{
-			return Description;
-		}
-
-	public:
-		char Description[128]{};
 		SystemDescriptor Descriptor;
 		Scene* pScene = nullptr;
 		ExecutionPhase ExecutionPhase = ExecutionPhase::Initialize;
@@ -54,16 +40,22 @@ namespace DYE::DYEditor
 		void Undo() override;
 		void Redo() override;
 
-		const char *GetDescription() override
-		{
-			return Description;
-		}
-
-	public:
-		char Description[128]{};
 		std::string SystemTypeName;
 		Scene* pScene = nullptr;
-		ExecutionPhase SystemExecutionPhase;
+		ExecutionPhase ExecutionPhase;
 		bool IsEnabled = true;
+	};
+
+	class SystemReorderOperation final : public UndoOperationBase
+	{
+	public:
+		void Undo() override;
+
+		void Redo() override;
+
+		Scene* pScene = nullptr;
+		ExecutionPhase ExecutionPhase;
+		int OrderBeforeModification = 0;
+		int OrderAfterModification = 0;
 	};
 }

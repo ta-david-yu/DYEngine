@@ -25,18 +25,10 @@ namespace DYE::DYEditor
 		/// Recreate an entity with the recorded GUID.
 		void Redo() override;
 
-		const char * GetDescription() override
-		{
-			return &m_Description[0];
-		}
-
-	private:
-		char m_Description[128]{};
-
-		World *m_pWorld;
-		GUID m_EntityGUID;
-		SerializedEntity m_SerializedEntity;
-		int m_IndexInWorldEntityArray = 0;
+		World *pWorld;
+		GUID EntityGUID;
+		SerializedEntity CreatedSerializedEntity;
+		int IndexInWorldEntityArray = 0;
 	};
 
 	class EntityDeletionOperation final : public UndoOperationBase
@@ -51,18 +43,10 @@ namespace DYE::DYEditor
 		/// Destroy the entity with the
 		void Redo() override;
 
-		const char * GetDescription() override
-		{
-			return &m_Description[0];
-		}
-
-	private:
-		char m_Description[128]{};
-
-		World *m_pWorld;
-		GUID m_EntityGUID;
-		SerializedEntity m_SerializedEntity;
-		std::size_t m_IndexInWorldEntityArray = 0;
+		World *pWorld;
+		GUID EntityGUID;
+		SerializedEntity DeletedSerializedEntity;
+		std::size_t IndexInWorldEntityArray = 0;
 	};
 
 	class ComponentModificationOperation final : public UndoOperationBase
@@ -75,20 +59,12 @@ namespace DYE::DYEditor
 		void Undo() override;
 		void Redo() override;
 
-		const char *GetDescription() override
-		{
-			return &m_Description[0];
-		}
+		World *pWorld;
+		GUID EntityGUID;
+		SerializedComponent SerializedComponentBeforeModification;
+		SerializedComponent SerializedComponentAfterModification;
 
-	private:
-		char m_Description[128]{};
-
-		World *m_pWorld;
-		GUID m_EntityGUID;
-		SerializedComponent m_SerializedComponentBeforeModification;
-		SerializedComponent m_SerializedComponentAfterModification;
-
-		ComponentTypeDescriptor m_ComponentTypeDescriptor;
+		ComponentTypeDescriptor TypeDescriptor;
 	};
 
 	class ComponentAdditionOperation final : public UndoOperationBase
@@ -99,17 +75,9 @@ namespace DYE::DYEditor
 		void Undo() override;
 		void Redo() override;
 
-		const char *GetDescription() override
-		{
-			return &m_Description[0];
-		}
-
-	private:
-		char m_Description[128]{};
-
-		World *m_pWorld;
-		GUID m_EntityGUID;
-		ComponentTypeDescriptor m_ComponentTypeDescriptor;
+		World *pWorld;
+		GUID EntityGUID;
+		ComponentTypeDescriptor TypeDescriptor;
 	};
 
 	class ComponentRemovalOperation final : public UndoOperationBase
@@ -120,17 +88,9 @@ namespace DYE::DYEditor
 		void Undo() override;
 		void Redo() override;
 
-		const char *GetDescription() override
-		{
-			return &m_Description[0];
-		}
-
-	private:
-		char m_Description[128]{};
-
-		World *m_pWorld;
-		GUID m_EntityGUID;
-		ComponentTypeDescriptor m_ComponentTypeDescriptor;
-		SerializedComponent m_SerializedComponentBeforeRemoval;
+		World *pWorld;
+		GUID EntityGUID;
+		ComponentTypeDescriptor TypeDescriptor;
+		SerializedComponent SerializedComponentBeforeRemoval;
 	};
 }

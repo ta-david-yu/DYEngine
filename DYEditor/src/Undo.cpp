@@ -69,7 +69,7 @@ namespace DYE::DYEditor
 	void Undo::RegisterEntityCreation(World &world, Entity &entity, std::size_t indexInWorldHandleArray)
 	{
 		auto operation = std::make_unique<EntityCreationOperation>(world, entity);
-		operation->m_IndexInWorldEntityArray = indexInWorldHandleArray;
+		operation->IndexInWorldEntityArray = indexInWorldHandleArray;
 		pushNewOperation(std::move(operation));
 	}
 
@@ -82,7 +82,7 @@ namespace DYE::DYEditor
 	void Undo::DeleteEntity(World &world, Entity &entity, std::size_t indexInWorldHandleArray)
 	{
 		auto operation = std::make_unique<EntityDeletionOperation>(world, entity);
-		operation->m_IndexInWorldEntityArray = indexInWorldHandleArray;
+		operation->IndexInWorldEntityArray = indexInWorldHandleArray;
 		pushNewOperation(std::move(operation));
 	}
 
@@ -141,18 +141,18 @@ namespace DYE::DYEditor
 
 		if (systemDescriptor.Instance == nullptr)
 		{
+			sprintf(operation->Description, "Remove Unrecognized System '%s'", systemDescriptor.Name.c_str());
+
 			// The removed system is an unrecognized system.
 			scene.UnrecognizedSystems.erase(scene.UnrecognizedSystems.begin() + orderInList);
-
-			sprintf(operation->Description, "Remove Unrecognized System '%s'", systemDescriptor.Name.c_str());
 		}
 		else
 		{
+			sprintf(operation->Description, "Remove System '%s'", systemDescriptor.Name.c_str());
+			
 			operation->ExecutionPhase = systemDescriptor.Instance->GetPhase();
 			auto &systemDescriptors = scene.GetSystemDescriptorsOfPhase(operation->ExecutionPhase);
 			systemDescriptors.erase(systemDescriptors.begin() + orderInList);
-
-			sprintf(operation->Description, "Remove System '%s'", systemDescriptor.Name.c_str());
 		}
 
 		pushNewOperation(std::move(operation));

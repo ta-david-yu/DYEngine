@@ -11,9 +11,14 @@ namespace DYE::DYEditor
 	public:
 		virtual void Undo() = 0;
 		virtual void Redo() = 0;
-		virtual const char * GetDescription() = 0;
+		const char *GetDescription()
+		{
+			return Description;
+		}
 
 		virtual ~UndoOperationBase() = default;
+
+		char Description[128]{};
 	};
 
 	class GroupUndoOperation final : public UndoOperationBase
@@ -22,13 +27,6 @@ namespace DYE::DYEditor
 		void Undo() override;
 		void Redo() override;
 
-		const char *GetDescription() override
-		{
-			return &Description[0];
-		}
-
-	public:
-		char Description[128]{};
 		std::vector<std::unique_ptr<UndoOperationBase>> OperationCollection;
 	};
 }
