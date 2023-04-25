@@ -58,11 +58,17 @@ namespace DYE::DYEditor
 
 	void SystemReorderOperation::Undo()
 	{
-
+		auto &systemDescriptors = pScene->GetSystemDescriptorsOfPhase(pSystemBase->GetPhase());
+		auto const otherDescriptor = systemDescriptors[OrderBeforeModification];
+		systemDescriptors[OrderBeforeModification] = systemDescriptors[OrderAfterModification];
+		systemDescriptors[OrderAfterModification] = otherDescriptor;
 	}
 
 	void SystemReorderOperation::Redo()
 	{
-
+		auto &systemDescriptors = pScene->GetSystemDescriptorsOfPhase(pSystemBase->GetPhase());
+		auto const otherDescriptor = systemDescriptors[OrderAfterModification];
+		systemDescriptors[OrderAfterModification] = systemDescriptors[OrderBeforeModification];
+		systemDescriptors[OrderBeforeModification] = otherDescriptor;
 	}
 }

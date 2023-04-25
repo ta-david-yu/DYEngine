@@ -956,9 +956,10 @@ namespace DYE::DYEditor
 				{
 					// Swap with the previous system and return right away.
 					int const otherSystemIndex = i - 1;
-					auto const otherSystemDescriptor = systemDescriptors[otherSystemIndex];
-					systemDescriptors[otherSystemIndex] = systemDescriptor;
-					systemDescriptors[i] = otherSystemDescriptor;
+					Undo::ReorderSystem(scene, systemDescriptor, i, otherSystemIndex);
+//					auto const otherSystemDescriptor = systemDescriptors[otherSystemIndex];
+//					systemDescriptors[otherSystemIndex] = systemDescriptor;
+//					systemDescriptors[i] = otherSystemDescriptor;
 					ImGui::PopID();
 					return true;
 				}
@@ -971,9 +972,10 @@ namespace DYE::DYEditor
 				{
 					// Swap with the next system and return right away.
 					int const otherSystemIndex = i + 1;
-					auto const otherSystemDescriptor = systemDescriptors[otherSystemIndex];
-					systemDescriptors[otherSystemIndex] = systemDescriptor;
-					systemDescriptors[i] = otherSystemDescriptor;
+					Undo::ReorderSystem(scene, systemDescriptor, i, otherSystemIndex);
+//					auto const otherSystemDescriptor = systemDescriptors[otherSystemIndex];
+//					systemDescriptors[otherSystemIndex] = systemDescriptor;
+//					systemDescriptors[i] = otherSystemDescriptor;
 					ImGui::PopID();
 					return true;
 				}

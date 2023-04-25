@@ -50,11 +50,10 @@ namespace DYE::DYEditor
 	{
 	public:
 		void Undo() override;
-
 		void Redo() override;
 
 		Scene* pScene = nullptr;
-		ExecutionPhase ExecutionPhase;
+		SystemBase* pSystemBase = nullptr;
 		int OrderBeforeModification = 0;
 		int OrderAfterModification = 0;
 	};

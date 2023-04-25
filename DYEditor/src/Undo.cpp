@@ -106,7 +106,7 @@ namespace DYE::DYEditor
 		pushNewOperation(std::move(operation));
 	}
 
-	void Undo::AddSystem(Scene &scene, SystemDescriptor const& systemDescriptor, int orderInList)
+	void Undo::AddSystem(Scene &scene, SystemDescriptor systemDescriptor, int orderInList)
 	{
 		auto operation = std::make_unique<SystemAdditionOperation>();
 		operation->Descriptor = systemDescriptor;
@@ -132,7 +132,7 @@ namespace DYE::DYEditor
 		pushNewOperation(std::move(operation));
 	}
 
-	void Undo::RemoveSystem(Scene &scene, SystemDescriptor const& systemDescriptor, int orderInList)
+	void Undo::RemoveSystem(Scene &scene, SystemDescriptor systemDescriptor, int orderInList)
 	{
 		auto operation = std::make_unique<SystemRemovalOperation>();
 		operation->Descriptor = systemDescriptor;
@@ -149,11 +149,33 @@ namespace DYE::DYEditor
 		else
 		{
 			sprintf(operation->Description, "Remove System '%s'", systemDescriptor.Name.c_str());
-			
+
 			operation->ExecutionPhase = systemDescriptor.Instance->GetPhase();
 			auto &systemDescriptors = scene.GetSystemDescriptorsOfPhase(operation->ExecutionPhase);
 			systemDescriptors.erase(systemDescriptors.begin() + orderInList);
 		}
+
+		pushNewOperation(std::move(operation));
+	}
+
+	void Undo::ReorderSystem(Scene &scene, SystemDescriptor systemDescriptor, int oldOrderInList, int newOrderInList)
+	{
+		auto operation = std::make_unique<SystemReorderOperation>();
+		operation->pScene = &scene;
+		operation->pSystemBase = systemDescriptor.Instance;
+		operation->OrderBeforeModification = oldOrderInList;
+		operation->OrderAfterModification = newOrderInList;
+
+		auto &systemList = scene.GetSystemDescriptorsOfPhase(operation->pSystemBase->GetPhase());
+		auto const otherDescriptor = systemList[newOrderInList];
+		systemList[newOrderInList] = systemList[oldOrderInList];
+		systemList[oldOrderInList] = otherDescriptor;
+
+		sprintf(operation->Description, "Reorder System '%s' from %d to %d (Originally occupied by '%s')",
+				systemDescriptor.Name.c_str(),
+				oldOrderInList,
+				newOrderInList,
+				otherDescriptor.Name.c_str());
 
 		pushNewOperation(std::move(operation));
 	}
