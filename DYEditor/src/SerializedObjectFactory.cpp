@@ -85,13 +85,15 @@ namespace DYE::DYEditor
 		for (auto& serializedEntityHandle : serializedEntityHandles)
 		{
 			DYEditor::Entity entity = scene.World.CreateEntity();
-			ApplySerializedEntityToEmptyEntity(serializedEntityHandle, entity);
+			auto result = ApplySerializedEntityToEmptyEntity(serializedEntityHandle, entity);
 		}
 	}
 
-	void SerializedObjectFactory::ApplySerializedEntityToEmptyEntity(SerializedEntity &serializedEntity,
+	ApplySerializedEntityResult SerializedObjectFactory::ApplySerializedEntityToEmptyEntity(SerializedEntity &serializedEntity,
 																	 DYEditor::Entity &entity)
 	{
+		std::vector<std::string> unrecognizedComponentNames;
+
 		std::vector<SerializedComponent> serializedComponentHandles = serializedEntity.GetSerializedComponentHandles();
 		for (auto& serializedComponentHandle : serializedComponentHandles)
 		{
@@ -110,6 +112,7 @@ namespace DYE::DYEditor
 				// to the unrecognized component list OR component.
 				// TODO: Keep track of unrecognized component so we could show it in the entity inspector.
 				DYE_LOG("Entity has an unrecognized component of type '%s'.", typeName.c_str());
+				unrecognizedComponentNames.push_back(typeName);
 				continue;
 			}
 
@@ -132,6 +135,8 @@ namespace DYE::DYEditor
 				DYE_ASSERT(false);
 			}
 		}
+
+		return { .UnrecognizedComponentTypeNames = std::move(unrecognizedComponentNames) };
 	}
 
 	SerializedScene SerializedObjectFactory::CreateSerializedScene(Scene &scene)
