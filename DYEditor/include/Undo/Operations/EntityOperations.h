@@ -25,7 +25,10 @@ namespace DYE::DYEditor
 		/// Recreate an entity with the recorded GUID.
 		void Redo() override;
 
-		const char * GetDescription() override;
+		const char * GetDescription() override
+		{
+			return &m_Description[0];
+		}
 
 	private:
 		char m_Description[128]{};
@@ -48,7 +51,10 @@ namespace DYE::DYEditor
 		/// Destroy the entity with the
 		void Redo() override;
 
-		const char * GetDescription() override;
+		const char * GetDescription() override
+		{
+			return &m_Description[0];
+		}
 
 	private:
 		char m_Description[128]{};
@@ -69,7 +75,10 @@ namespace DYE::DYEditor
 		void Undo() override;
 		void Redo() override;
 
-		const char *GetDescription() override;
+		const char *GetDescription() override
+		{
+			return &m_Description[0];
+		}
 
 	private:
 		char m_Description[128]{};
@@ -80,5 +89,41 @@ namespace DYE::DYEditor
 		SerializedComponent m_SerializedComponentAfterModification;
 
 		ComponentTypeDescriptor m_ComponentTypeDescriptor;
+	};
+
+	class ComponentAdditionOperation final : public UndoOperationBase
+	{
+	public:
+		ComponentAdditionOperation(Entity &entity, std::string const &componentTypeName, ComponentTypeDescriptor typeDescriptor);
+
+		void Undo() override;
+		void Redo() override;
+
+		const char *GetDescription() override
+		{
+			return &m_Description[0];
+		}
+
+	private:
+		char m_Description[128]{};
+
+		World *m_pWorld;
+		GUID m_EntityGUID;
+		ComponentTypeDescriptor m_ComponentTypeDescriptor;
+	};
+
+	class ComponentRemovalOperation final : public UndoOperationBase
+	{
+	public:
+		void Undo() override;
+		void Redo() override;
+
+		const char *GetDescription() override
+		{
+			return &m_Description[0];
+		}
+
+	private:
+		char m_Description[128]{};
 	};
 }

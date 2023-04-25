@@ -25,11 +25,6 @@ namespace DYE::DYEditor
 		SerializedObjectFactory::ApplySerializedEntityToEmptyEntity(m_SerializedEntity, entity);
 	}
 
-	const char * EntityCreationOperation::GetDescription()
-	{
-		return &m_Description[0];
-	}
-
 	// EntityDeletionOperation
 
 	EntityDeletionOperation::EntityDeletionOperation(World& world, Entity& entityToDestroy) :
@@ -54,11 +49,6 @@ namespace DYE::DYEditor
 		m_pWorld->DestroyEntityWithGUID(m_EntityGUID);
 	}
 
-	const char * EntityDeletionOperation::GetDescription()
-	{
-		return &m_Description[0];
-	}
-
 	// ComponentModificationOperation
 
 	ComponentModificationOperation::ComponentModificationOperation(Entity &entity,
@@ -71,7 +61,7 @@ namespace DYE::DYEditor
 	{
 		auto componentTypeName = componentBeforeModification.TryGetTypeName().value();
 
-		sprintf(&m_Description[0], "Modify Component '%s' in '%s' (GUID: %s)",
+		sprintf(&m_Description[0], "Modify %s of Entity '%s' (GUID: %s)",
 				componentTypeName.c_str(),
 				entity.TryGetName().value().c_str(),
 				m_EntityGUID.ToString().c_str());
@@ -99,8 +89,46 @@ namespace DYE::DYEditor
 		m_ComponentTypeDescriptor.Deserialize(m_SerializedComponentAfterModification, tryGetEntity.value());
 	}
 
-	const char *ComponentModificationOperation::GetDescription()
+	// ComponentAdditionOperation
+
+	ComponentAdditionOperation::ComponentAdditionOperation(Entity &entity, std::string const &componentTypeName, ComponentTypeDescriptor typeDescriptor) :
+		m_pWorld(&entity.GetWorld()),
+		m_EntityGUID(entity.GetComponent<IDComponent>().ID),
+		m_ComponentTypeDescriptor(typeDescriptor)
 	{
-		return &m_Description[0];
+		sprintf(&m_Description[0], "Add %s to Entity '%s' (GUID: %s)",
+				componentTypeName.c_str(),
+				entity.TryGetName().value().c_str(),
+				m_EntityGUID.ToString().c_str());
+
+		m_ComponentTypeDescriptor.Add(entity);
+	}
+
+	void ComponentAdditionOperation::Undo()
+	{
+		auto tryGetEntity = m_pWorld->TryGetEntityWithGUID(m_EntityGUID);
+		DYE_ASSERT_LOG_WARN(tryGetEntity.has_value(), "Try to undo a component addition operation but couldn't find the entity (GUID: %s).", m_EntityGUID.ToString().c_str());
+
+		m_ComponentTypeDescriptor.Remove(tryGetEntity.value());
+	}
+
+	void ComponentAdditionOperation::Redo()
+	{
+		auto tryGetEntity = m_pWorld->TryGetEntityWithGUID(m_EntityGUID);
+		DYE_ASSERT_LOG_WARN(tryGetEntity.has_value(), "Try to redo a component addition operation but couldn't find the entity (GUID: %s).", m_EntityGUID.ToString().c_str());
+
+		m_ComponentTypeDescriptor.Add(tryGetEntity.value());
+	}
+
+	// ComponentRemovalOperation
+
+	void ComponentRemovalOperation::Undo()
+	{
+
+	}
+
+	void ComponentRemovalOperation::Redo()
+	{
+
 	}
 }

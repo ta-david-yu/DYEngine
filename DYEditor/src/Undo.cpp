@@ -69,7 +69,6 @@ namespace DYE::DYEditor
 	{
 		auto operation = std::make_unique<EntityCreationOperation>(world, entity);
 		operation->m_IndexInWorldEntityArray = indexInWorldHandleArray;
-
 		pushNewOperation(std::move(operation));
 	}
 
@@ -83,7 +82,6 @@ namespace DYE::DYEditor
 	{
 		auto operation = std::make_unique<EntityDeletionOperation>(world, entity);
 		operation->m_IndexInWorldEntityArray = indexInWorldHandleArray;
-
 		pushNewOperation(std::move(operation));
 	}
 
@@ -92,7 +90,12 @@ namespace DYE::DYEditor
 											SerializedComponent componentAfterModification)
 	{
 		auto operation = std::make_unique<ComponentModificationOperation>(entity, std::move(componentBeforeModification), std::move(componentAfterModification));
+		pushNewOperation(std::move(operation));
+	}
 
+	void Undo::AddComponent(Entity &entity, std::string const &componentTypeName, ComponentTypeDescriptor typeDescriptor)
+	{
+		auto operation = std::make_unique<ComponentAdditionOperation>(entity, componentTypeName, typeDescriptor);
 		pushNewOperation(std::move(operation));
 	}
 
@@ -113,12 +116,16 @@ namespace DYE::DYEditor
 								ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
 
-		if (!ImGui::Begin("Undo History", pIsOpen, ImGuiWindowFlags_MenuBar))
+		if (!ImGui::Begin("Undo History", pIsOpen))
 		{
 			ImGui::End();
 			return;
 		}
 
+		ImGui::Text("%d operations recorded.", s_Data.Operations.size());
+
+		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 1.0f);
+		ImGui::BeginChild("Undo Operations Child Window", ImVec2(0, 0), true, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar);
 		if (ImGui::BeginMenuBar())
 		{
 			if (ImGui::MenuItem("Undo"))
@@ -131,14 +138,15 @@ namespace DYE::DYEditor
 			}
 			ImGui::EndMenuBar();
 		}
-
 		if (ImGui::BeginTable("Undo Operations Table", 1, ImGuiTableFlags_RowBg))
 		{
 			for (int i = s_Data.Operations.size() - 1; i >= 0; i--)
 			{
-				ImGui::TableNextRow();
-				ImGui::TableNextColumn();
 				UndoOperationBase &operation = *s_Data.Operations[i];
+
+				float const minRowHeight = 20;
+				ImGui::TableNextRow(ImGuiTableRowFlags_None, minRowHeight);
+				ImGui::TableNextColumn();
 				bool const isLatestOperation = i == s_Data.LatestOperationIndex;
 				if (isLatestOperation)
 				{
@@ -149,7 +157,9 @@ namespace DYE::DYEditor
 				if (isUndone) ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
 
 				ImGui::PushID(i);
-				if (ImGui::Selectable(operation.GetDescription()) && !isLatestOperation)
+				ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0, 0.5f));
+				ImGuiSelectableFlags const flags = ImGuiSelectableFlags_SpanAllColumns;
+				if (ImGui::Selectable(operation.GetDescription(), false, flags, ImVec2(0, minRowHeight)) && !isLatestOperation)
 				{
 					// If operation selectable clicked && it's not the latest operation,
 					// We want to do a sequence of redo or undo.
@@ -172,6 +182,7 @@ namespace DYE::DYEditor
 						s_Data.LatestOperationIndex = i;
 					}
 				}
+				ImGui::PopStyleVar();
 				ImGui::PopID();
 
 				if (isUndone) ImGui::PopStyleColor();
@@ -183,6 +194,8 @@ namespace DYE::DYEditor
 				ImGui::Separator();
 			}
 		}
+		ImGui::EndChild();
+		ImGui::PopStyleVar();
 
 		ImGui::End();
 	}

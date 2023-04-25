@@ -1074,7 +1074,7 @@ namespace DYE::DYEditor
 		{
 			if (ImGui::BeginListBox("##Add Component List Box"))
 			{
-				for (auto const& [name, typeDescriptor] : componentNamesAndDescriptors)
+				for (auto const& [typeName, typeDescriptor] : componentNamesAndDescriptors)
 				{
 					if (mode == InspectorMode::Normal && !typeDescriptor.ShouldBeIncludedInNormalAddComponentList)
 					{
@@ -1087,10 +1087,10 @@ namespace DYE::DYEditor
 						continue;
 					}
 
-					if (ImGui::Selectable(name.c_str()))
+					if (ImGui::Selectable(typeName.c_str()))
 					{
-						// Add the component
-						typeDescriptor.Add(entity);
+						// Add the component.
+						Undo::AddComponent(entity, typeName, typeDescriptor);
 						isEntityChangedThisFrame = true;
 						ImGui::CloseCurrentPopup();
 					}

@@ -147,6 +147,8 @@ namespace DYE::DYEditor
 			entity.AddComponent<CameraComponent>();
 
 			// The component only makes sense with a transform component.
+			// TODO: Move this somewhere else (maybe a list of required components in TypeDescriptor?)
+			//		Right now these additional entities aren't tracked by undo/redo system.
 			entity.AddOrGetComponent<TransformComponent>();
 		}
 
@@ -229,6 +231,8 @@ namespace DYE::DYEditor
 			entity.AddComponent<SpriteRendererComponent>();
 
 			// The component only makes sense with a transform component.
+			// TODO: Move this somewhere else (maybe a list of required components in TypeDescriptor?)
+			//		Right now these additional entities aren't tracked by undo/redo system.
 			entity.AddOrGetComponent<TransformComponent>();
 		}
 

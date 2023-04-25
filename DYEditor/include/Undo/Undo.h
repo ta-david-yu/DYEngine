@@ -2,6 +2,7 @@
 
 #include "Serialization/SerializedComponent.h"
 #include "Core/GUID.h"
+#include "Type/TypeRegistry.h"
 
 namespace DYE::DYEditor
 {
@@ -26,15 +27,18 @@ namespace DYE::DYEditor
 		// Call this after creating a new entity.
 		static void RegisterEntityCreation(World& world, Entity& entity, std::size_t indexInWorldHandleArray);
 
-		// Destroy an entity that can be restored with undo.
+		// Perform entity destruction that can be restored with undo.
 		static void DeleteEntity(World& world, Entity& entity);
-		// Destroy an entity that can be restored with undo.
+		// Perform entity destruction that can be restored with undo.
 		static void DeleteEntity(World& world, Entity& entity, std::size_t indexInWorldHandleArray);
 
 		// Call this after component modification.
 		static void RegisterComponentModification(Entity& entity,
 												  SerializedComponent componentBeforeModification,
 												  SerializedComponent componentAfterModification);
+
+		// Perform component addition that can be restored with undo.
+		static void AddComponent(Entity &entity, std::string const &componentTypeName, ComponentTypeDescriptor typeDescriptor);
 
 		static void DrawUndoHistoryWindow(bool *pIsOpen);
 
