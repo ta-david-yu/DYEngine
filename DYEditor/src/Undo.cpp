@@ -134,13 +134,17 @@ namespace DYE::DYEditor
 		ImGui::BeginChild("Undo Operations Child Window", ImVec2(0, 0), true, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar);
 		if (ImGui::BeginMenuBar())
 		{
-			if (ImGui::MenuItem("Undo"))
+			if (ImGui::MenuItem("Undo", nullptr, false, HasOperationToUndo()))
 			{
 				PerformUndo();
 			}
-			if (ImGui::MenuItem("Redo"))
+			if (ImGui::MenuItem("Redo", nullptr, false, HasOperationToRedo()))
 			{
 				PerformRedo();
+			}
+			if (ImGui::MenuItem("Clear"))
+			{
+				ClearAll();
 			}
 			ImGui::EndMenuBar();
 		}

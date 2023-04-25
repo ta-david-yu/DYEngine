@@ -240,6 +240,7 @@ namespace DYE::DYEditor
 		SpriteRendererComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
 		{
 			auto const &component = entity.GetComponent<SpriteRendererComponent>();
+			serializedComponent.SetPrimitiveTypePropertyValue("IsEnabled", component.IsEnabled);
 			serializedComponent.SetPrimitiveTypePropertyValue("Color", component.Color);
 			serializedComponent.SetPrimitiveTypePropertyValue("TextureAssetPath", component.TextureAssetPath);
 
@@ -250,6 +251,7 @@ namespace DYE::DYEditor
 																  DYE::DYEditor::Entity &entity)
 		{
 			auto &component = entity.AddOrGetComponent<SpriteRendererComponent>();
+			component.IsEnabled = serializedComponent.GetPrimitiveTypePropertyValueOr<DYE::Bool>("IsEnabled", true);
 			component.Color = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Color4>("Color");
 			component.TextureAssetPath = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::AssetPath>(
 				"TextureAssetPath");

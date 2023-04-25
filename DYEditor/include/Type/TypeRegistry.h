@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/Entity.h"
+#include "Type/DrawComponentHeaderContext.h"
 #include "Type/DefaultComponentFunctions.h"
 
 #include <string>
@@ -41,8 +42,8 @@ namespace DYE::DYEditor
 	using DeserializeComponentFunction = DeserializationResult (SerializedComponent& serializedComponent, DYE::DYEditor::Entity& entity);
 	/// \return true if the content of the inspector is changed/dirty.
 	using DrawComponentInspectorFunction = bool (DrawComponentInspectorContext &drawInspectorContext, DYE::DYEditor::Entity& entity);
-	/// \return true if the content of the inspector is changed/dirty.
-	using DrawComponentHeaderFunction = bool (DYE::DYEditor::Entity& entity, bool &isHeaderVisible, bool &entityChanged, std::string const& headerLabel);
+	/// \return true if the content of the header is not-collapsed.
+	using DrawComponentHeaderFunction = bool (DrawComponentHeaderContext &drawHeaderContext, DYE::DYEditor::Entity& entity, bool &isHeaderVisible, std::string const& headerLabel);
 
 	/// One should always provide 'Serialize', 'Deserialize' and 'DrawInspector' functions.
 	struct ComponentTypeDescriptor

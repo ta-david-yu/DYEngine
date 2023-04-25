@@ -468,6 +468,8 @@ namespace DYE::DYEditor
 					cameraEntity.AddComponent<TransformComponent>().Position = {0, 0, 10};
 					cameraEntity.AddComponent<CameraComponent>();
 					currentScene.TryAddSystemByName(RegisterCameraSystem::TypeName);
+
+					Undo::ClearAll();
 				}
 
 				if (ImGui::MenuItem("Open Scene", nullptr, false, !RuntimeState::IsPlaying()))
@@ -594,6 +596,7 @@ namespace DYE::DYEditor
 				SerializedObjectFactory::ApplySerializedSceneToEmptyScene(serializedScene.value(), currentScene);
 				currentScenePathContext = sceneFilePath;
 			}
+			Undo::ClearAll();
 		}
 
 		// Draw save scene file path popup.
@@ -1135,7 +1138,26 @@ namespace DYE::DYEditor
 			else
 			{
 				// Use custom header drawer if provided.
-				showComponentInspector = typeDescriptor.DrawHeader(entity, isHeaderVisible, isEntityChangedThisFrame, typeName);
+				DrawComponentHeaderContext drawHeaderContext;
+				showComponentInspector = typeDescriptor.DrawHeader(drawHeaderContext, entity, isHeaderVisible, typeName);
+				if (drawHeaderContext.IsModificationActivated)
+				{
+					context.IsModifyingEntityProperty = true;
+					context.SerializedComponentBeforeModification =
+						SerializedObjectFactory::CreateSerializedComponentOfType(entity, typeName, typeDescriptor);
+				}
+
+				if (drawHeaderContext.IsModificationDeactivated)
+				{
+					context.IsModifyingEntityProperty = false;
+				}
+				if (drawHeaderContext.IsModificationDeactivatedAfterEdit)
+				{
+					auto serializedComponentAfterModification = SerializedObjectFactory::CreateSerializedComponentOfType(entity, typeName, typeDescriptor);
+					Undo::RegisterComponentModification(entity, context.SerializedComponentBeforeModification, serializedComponentAfterModification);
+				}
+
+				isEntityChangedThisFrame |= drawHeaderContext.ComponentChanged;
 			}
 			ImGui::PopID();
 
@@ -1177,19 +1199,16 @@ namespace DYE::DYEditor
 					context.IsModifyingEntityProperty = true;
 					context.SerializedComponentBeforeModification =
 						SerializedObjectFactory::CreateSerializedComponentOfType(entity, typeName, typeDescriptor);
-					printf("Entity '%s' has been activated.\n", nameComponent.Name.c_str());
 				}
 
 				if (drawComponentInspectorContext.IsModificationDeactivated)
 				{
 					context.IsModifyingEntityProperty = false;
-					printf("Entity '%s' has been deactivated.\n", nameComponent.Name.c_str());
 				}
 				if (drawComponentInspectorContext.IsModificationDeactivatedAfterEdit)
 				{
 					auto serializedComponentAfterModification = SerializedObjectFactory::CreateSerializedComponentOfType(entity, typeName, typeDescriptor);
 					Undo::RegisterComponentModification(entity, context.SerializedComponentBeforeModification, serializedComponentAfterModification);
-					printf("Entity '%s' has been deactivated & modified.\n", nameComponent.Name.c_str());
 				}
 
 				ImGui::PopID();
