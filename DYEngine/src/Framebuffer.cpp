@@ -62,8 +62,8 @@ namespace DYE
 		// 		a texture 2d.
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_ColorAttachmentID);
 		glTextureStorage2D(m_ColorAttachmentID, 1, GL_RGBA8, m_Properties.Width, m_Properties.Height);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTextureParameteri(m_ColorAttachmentID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTextureParameteri(m_ColorAttachmentID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 		glNamedFramebufferTexture(m_ID, GL_COLOR_ATTACHMENT0, m_ColorAttachmentID, 0);
 

@@ -158,19 +158,28 @@ namespace DYE
 		}
 
         glCreateTextures(GL_TEXTURE_2D, 1, &m_ID);
-        glTextureStorage2D(m_ID, 1, m_InternalFormat, m_Width, m_Height);
 
         glTextureParameteri(m_ID, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTextureParameteri(m_ID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTextureParameteri(m_ID, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTextureParameteri(m_ID, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
+		glTextureStorage2D(m_ID, 1, m_InternalFormat, m_Width, m_Height);
         glTextureSubImage2D(m_ID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, (void*)data);
 
-        DYE_LOG("Create texture (%d) from \"%s\"\n\tComponents - %d\n\tDimension - %d x %d", m_ID, m_Path.string().c_str(),
+		// Check if the filters are set correctly
+		int minFilter, magFilter;
+		glGetTextureParameteriv(m_ID, GL_TEXTURE_MIN_FILTER, &minFilter);
+		glGetTextureParameteriv(m_ID, GL_TEXTURE_MAG_FILTER, &magFilter);
+
+        DYE_LOG("Create texture (%d) from \"%s\"\n\tComponents - %d\n\tDimension - %d x %d\n\tMin Filter - %#08x\n\tMag Filter - %#08x",
+				m_ID,
+				m_Path.string().c_str(),
                 channels,
                 m_Width,
-                m_Height);
+                m_Height,
+				minFilter,
+				magFilter);
 
 #ifdef DYE_DEBUG
         // apply the name, -1 means NULL terminated

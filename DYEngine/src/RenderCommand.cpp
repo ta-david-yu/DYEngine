@@ -36,7 +36,9 @@ namespace DYE
 				DYE_LOG_ERROR("[OpenGL Debug HIGH] %s", message);
 				DYE_ASSERT(false);
 			case GL_DEBUG_SEVERITY_MEDIUM:
-				DYE_LOG_WARN("[OpenGL Debug HIGH] %s", message);
+				DYE_LOG_WARN("[OpenGL Debug MED] %s", message);
+			case GL_DEBUG_SEVERITY_LOW:
+				DYE_LOG_INFO("[OpenGL Debug LOW] %s", message);
 		}
     }
 #endif
