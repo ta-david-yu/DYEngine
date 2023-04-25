@@ -1143,7 +1143,7 @@ namespace DYE::DYEditor
 			if (isRemoved)
 			{
 				// Remove the component
-				typeDescriptor.Remove(entity);
+				Undo::RemoveComponent(entity, typeName, typeDescriptor);
 				isEntityChangedThisFrame = true;
 				continue;
 			}

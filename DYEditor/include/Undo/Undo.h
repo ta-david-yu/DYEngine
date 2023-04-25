@@ -40,6 +40,9 @@ namespace DYE::DYEditor
 		// Perform component addition that can be restored with undo.
 		static void AddComponent(Entity &entity, std::string const &componentTypeName, ComponentTypeDescriptor typeDescriptor);
 
+		// Perform component removal that can be restored with undo.
+		static void RemoveComponent(Entity &entity, std::string const &componentTypeName, ComponentTypeDescriptor typeDescriptor);
+
 		static void DrawUndoHistoryWindow(bool *pIsOpen);
 
 	private:

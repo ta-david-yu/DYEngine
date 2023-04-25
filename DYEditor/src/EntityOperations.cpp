@@ -59,7 +59,7 @@ namespace DYE::DYEditor
 																   m_SerializedComponentBeforeModification(componentBeforeModification),
 																   m_SerializedComponentAfterModification(componentAfterModification)
 	{
-		auto componentTypeName = componentBeforeModification.TryGetTypeName().value();
+		auto componentTypeName = m_SerializedComponentBeforeModification.TryGetTypeName().value();
 
 		sprintf(&m_Description[0], "Modify %s of Entity '%s' (GUID: %s)",
 				componentTypeName.c_str(),
@@ -92,9 +92,9 @@ namespace DYE::DYEditor
 	// ComponentAdditionOperation
 
 	ComponentAdditionOperation::ComponentAdditionOperation(Entity &entity, std::string const &componentTypeName, ComponentTypeDescriptor typeDescriptor) :
-		m_pWorld(&entity.GetWorld()),
-		m_EntityGUID(entity.GetComponent<IDComponent>().ID),
-		m_ComponentTypeDescriptor(typeDescriptor)
+															m_pWorld(&entity.GetWorld()),
+															m_EntityGUID(entity.GetComponent<IDComponent>().ID),
+															m_ComponentTypeDescriptor(typeDescriptor)
 	{
 		sprintf(&m_Description[0], "Add %s to Entity '%s' (GUID: %s)",
 				componentTypeName.c_str(),
@@ -122,13 +122,33 @@ namespace DYE::DYEditor
 
 	// ComponentRemovalOperation
 
+	ComponentRemovalOperation::ComponentRemovalOperation(Entity &entity, std::string const &typeName, ComponentTypeDescriptor typeDescriptor) :
+														 m_pWorld(&entity.GetWorld()),
+														 m_EntityGUID(entity.GetComponent<IDComponent>().ID),
+														 m_ComponentTypeDescriptor(typeDescriptor),
+														 m_SerializedComponentBeforeRemoval(SerializedObjectFactory::CreateSerializedComponentOfType(entity, typeName, typeDescriptor))
+	{
+		sprintf(&m_Description[0], "Remove %s from Entity '%s' (GUID: %s)",
+				typeName.c_str(),
+				entity.TryGetName().value().c_str(),
+				m_EntityGUID.ToString().c_str());
+
+		m_ComponentTypeDescriptor.Remove(entity);
+	}
+
 	void ComponentRemovalOperation::Undo()
 	{
+		auto tryGetEntity = m_pWorld->TryGetEntityWithGUID(m_EntityGUID);
+		DYE_ASSERT_LOG_WARN(tryGetEntity.has_value(), "Try to undo a component removal operation but couldn't find the entity (GUID: %s).", m_EntityGUID.ToString().c_str());
 
+		m_ComponentTypeDescriptor.Deserialize(m_SerializedComponentBeforeRemoval, tryGetEntity.value());
 	}
 
 	void ComponentRemovalOperation::Redo()
 	{
+		auto tryGetEntity = m_pWorld->TryGetEntityWithGUID(m_EntityGUID);
+		DYE_ASSERT_LOG_WARN(tryGetEntity.has_value(), "Try to redo a component removal operation but couldn't find the entity (GUID: %s).", m_EntityGUID.ToString().c_str());
 
+		m_ComponentTypeDescriptor.Remove(tryGetEntity.value());
 	}
 }

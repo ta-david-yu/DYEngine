@@ -115,6 +115,8 @@ namespace DYE::DYEditor
 	class ComponentRemovalOperation final : public UndoOperationBase
 	{
 	public:
+		ComponentRemovalOperation(Entity &entity,std::string const &typeName, ComponentTypeDescriptor typeDescriptor);
+
 		void Undo() override;
 		void Redo() override;
 
@@ -125,5 +127,10 @@ namespace DYE::DYEditor
 
 	private:
 		char m_Description[128]{};
+
+		World *m_pWorld;
+		GUID m_EntityGUID;
+		ComponentTypeDescriptor m_ComponentTypeDescriptor;
+		SerializedComponent m_SerializedComponentBeforeRemoval;
 	};
 }

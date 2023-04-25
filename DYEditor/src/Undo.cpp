@@ -99,6 +99,12 @@ namespace DYE::DYEditor
 		pushNewOperation(std::move(operation));
 	}
 
+	void Undo::RemoveComponent(Entity &entity, const std::string &componentTypeName, ComponentTypeDescriptor typeDescriptor)
+	{
+		auto operation = std::make_unique<ComponentRemovalOperation>(entity, componentTypeName, typeDescriptor);
+		pushNewOperation(std::move(operation));
+	}
+
 	void Undo::pushNewOperation(std::unique_ptr<UndoOperationBase> operation)
 	{
 		// Discard everything behind the current head.
