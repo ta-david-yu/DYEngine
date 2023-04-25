@@ -28,12 +28,18 @@ namespace DYE::DYEditor
 
 	void SystemRemovalOperation::Undo()
 	{
+		std::vector<SystemDescriptor> &systemDescriptors =
+			Descriptor.Instance == nullptr ? pScene->UnrecognizedSystems : pScene->GetSystemDescriptorsOfPhase(ExecutionPhase);
 
+		systemDescriptors.insert(systemDescriptors.begin() + OrderInSystemList, Descriptor);
 	}
 
 	void SystemRemovalOperation::Redo()
 	{
+		std::vector<SystemDescriptor> &systemDescriptors =
+			Descriptor.Instance == nullptr ? pScene->UnrecognizedSystems : pScene->GetSystemDescriptorsOfPhase(ExecutionPhase);
 
+		systemDescriptors.erase(systemDescriptors.begin() + OrderInSystemList);
 	}
 
 	// ToggleSystemOperation

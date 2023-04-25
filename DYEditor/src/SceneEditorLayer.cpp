@@ -1003,7 +1003,7 @@ namespace DYE::DYEditor
 		// Remove systems.
 		if (indexToRemove != -1)
 		{
-			systemDescriptors.erase(systemDescriptors.begin() + indexToRemove);
+			Undo::RemoveSystem(scene, systemDescriptors[indexToRemove], indexToRemove);
 		}
 
 		return changed;

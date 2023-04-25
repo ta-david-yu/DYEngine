@@ -48,7 +48,7 @@ namespace DYE::DYEditor
 		static void AddSystem(Scene &scene, SystemDescriptor const& systemDescriptor, int orderInList);
 
 		// Perform system removal from a scene that can be restored with undo.
-		static void RemoveSystem(Scene &scene, SystemDescriptor systemDescriptor, int orderInList);
+		static void RemoveSystem(Scene &scene, SystemDescriptor const& systemDescriptor, int orderInList);
 
 		static void DrawUndoHistoryWindow(bool *pIsOpen);
 

@@ -132,9 +132,30 @@ namespace DYE::DYEditor
 		pushNewOperation(std::move(operation));
 	}
 
-	void Undo::RemoveSystem(Scene &scene, SystemDescriptor systemDescriptor, int orderInList)
+	void Undo::RemoveSystem(Scene &scene, SystemDescriptor const& systemDescriptor, int orderInList)
 	{
+		auto operation = std::make_unique<SystemRemovalOperation>();
+		operation->Descriptor = systemDescriptor;
+		operation->pScene = &scene;
+		operation->OrderInSystemList = orderInList;
 
+		if (systemDescriptor.Instance == nullptr)
+		{
+			// The removed system is an unrecognized system.
+			scene.UnrecognizedSystems.erase(scene.UnrecognizedSystems.begin() + orderInList);
+
+			sprintf(operation->Description, "Remove Unrecognized System '%s'", systemDescriptor.Name.c_str());
+		}
+		else
+		{
+			operation->ExecutionPhase = systemDescriptor.Instance->GetPhase();
+			auto &systemDescriptors = scene.GetSystemDescriptorsOfPhase(operation->ExecutionPhase);
+			systemDescriptors.erase(systemDescriptors.begin() + orderInList);
+
+			sprintf(operation->Description, "Remove System '%s'", systemDescriptor.Name.c_str());
+		}
+
+		pushNewOperation(std::move(operation));
 	}
 
 	void Undo::pushNewOperation(std::unique_ptr<UndoOperationBase> operation)

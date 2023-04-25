@@ -42,9 +42,10 @@ namespace DYE::DYEditor
 
 	public:
 		char Description[128]{};
-		std::string SystemTypeName;
+		SystemDescriptor Descriptor;
 		Scene* pScene = nullptr;
-		ExecutionPhase SystemExecutionPhase;
+		ExecutionPhase ExecutionPhase = ExecutionPhase::Initialize;
+		int OrderInSystemList = 0;
 	};
 
 	class ToggleSystemOperation final : public UndoOperationBase
