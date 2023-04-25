@@ -18,6 +18,8 @@ namespace DYE::DYEditor
 		friend class SerializedObjectFactory;
 		friend class SerializedEntity;
 
+		SerializedComponent() = default;
+		
 		inline bool IsHandle() const { return m_IsHandle; }
 		std::optional<std::string> TryGetTypeName() const;
 		void SetTypeName(std::string const& typeName);
@@ -67,7 +69,6 @@ namespace DYE::DYEditor
 		}
 
 	private:
-		SerializedComponent() = default;
 		explicit SerializedComponent(toml::table* pComponentTableHandle);
 		explicit SerializedComponent(toml::table&& componentTable);
 

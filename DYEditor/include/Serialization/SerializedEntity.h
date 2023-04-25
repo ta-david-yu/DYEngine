@@ -11,6 +11,8 @@ namespace DYE::DYEditor
 		friend class SerializedObjectFactory;
 		friend class SerializedScene;
 
+		SerializedEntity() = default;
+
 		inline bool IsHandle() const { return m_IsHandle; }
 		std::vector<SerializedComponent> GetSerializedComponentHandles();
 		/// \return true if a component of the given type is removed.
@@ -19,7 +21,6 @@ namespace DYE::DYEditor
 		SerializedComponent TryAddComponentOfType(std::string const& typeName);
 
 	private:
-		SerializedEntity() = default;
 		explicit SerializedEntity(toml::table* pEntityTableHandle);
 		explicit SerializedEntity(toml::table&& entityTable);
 
