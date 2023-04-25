@@ -313,6 +313,11 @@ namespace DYE::DYEditor
 		ImGuiWindowFlags mainEditorWindowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 		ImGuiDockNodeFlags mainEditorWindowDockSpaceFlags = ImGuiDockNodeFlags_None | ImGuiDockNodeFlags_PassthruCentralNode;
 
+		if (m_IsActiveSceneDirty)
+		{
+			mainEditorWindowFlags |= ImGuiWindowFlags_UnsavedDocument;
+		}
+
 		const ImGuiViewport* viewport = ImGui::GetMainViewport();
 		float const editorLayerWindowPadding = 10;
 		ImVec2 const editorLayerWindowPos = { viewport->WorkPos.x + editorLayerWindowPadding, viewport->WorkPos.y };
@@ -327,7 +332,7 @@ namespace DYE::DYEditor
 		ImGui::Begin(mainEditorName, nullptr, mainEditorWindowFlags);
 		ImGui::PopStyleVar();
 
-		drawEditorWindowMenuBar(activeScene, m_CurrentSceneFilePath);
+		drawEditorWindowMenuBar(activeScene, m_CurrentSceneFilePath, &m_IsActiveSceneDirty);
 
 		ImGuiIO& io = ImGui::GetIO();
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
@@ -372,14 +377,17 @@ namespace DYE::DYEditor
 		ImGui::SetNextWindowBgAlpha(0.35f);
 		if (ImGui::Begin(k_SceneSystemWindowId))
 		{
-			drawSceneSystemPanel(activeScene);
+			bool const isSystemListModified = drawSceneSystemPanel(activeScene);
+			m_IsActiveSceneDirty |= isSystemListModified;
 		}
 		ImGui::End();
 
 		ImGui::SetNextWindowBgAlpha(0.35f);
-		if (ImGui::Begin(k_SceneHierarchyWindowId))
+		ImGuiWindowFlags const hierarchyWindowFlags = m_IsActiveSceneDirty? ImGuiWindowFlags_UnsavedDocument : ImGuiWindowFlags_None;
+		if (ImGui::Begin(k_SceneHierarchyWindowId, nullptr, hierarchyWindowFlags))
 		{
-			drawSceneEntityHierarchyPanel(activeScene, &m_CurrentlySelectedEntityInHierarchyPanel);
+			bool const isHierarchyChanged = drawSceneEntityHierarchyPanel(activeScene, &m_CurrentlySelectedEntityInHierarchyPanel);
+			m_IsActiveSceneDirty |= isHierarchyChanged;
 		}
 		ImGui::End();
 
@@ -410,7 +418,8 @@ namespace DYE::DYEditor
 			}
 
 			m_InspectorContext.Entity = m_CurrentlySelectedEntityInHierarchyPanel;
-			drawEntityInspector(m_InspectorContext, TypeRegistry::GetComponentTypesNamesAndDescriptors());
+			bool const isEntityChanged = drawEntityInspector(m_InspectorContext, TypeRegistry::GetComponentTypesNamesAndDescriptors());
+			m_IsActiveSceneDirty |= isEntityChanged;
 		}
 		ImGui::End();
 	}
@@ -447,7 +456,8 @@ namespace DYE::DYEditor
 		ImGui::DockBuilderFinish(dockSpaceId);
 	}
 
-	void SceneEditorLayer::drawEditorWindowMenuBar(Scene &currentScene, std::filesystem::path &currentScenePathContext)
+	void SceneEditorLayer::drawEditorWindowMenuBar(Scene &currentScene, std::filesystem::path &currentScenePathContext,
+												   bool *pIsSceneDirty)
 	{
 		bool openLoadSceneFilePathPopup = false;
 		bool openSaveSceneFilePathPopup = false;
@@ -470,6 +480,7 @@ namespace DYE::DYEditor
 					currentScene.TryAddSystemByName(RegisterCameraSystem::TypeName);
 
 					Undo::ClearAll();
+					*pIsSceneDirty = false;
 				}
 
 				if (ImGui::MenuItem("Open Scene", nullptr, false, !RuntimeState::IsPlaying()))
@@ -492,6 +503,7 @@ namespace DYE::DYEditor
 					{
 						auto serializedScene = SerializedObjectFactory::CreateSerializedScene(currentScene);
 						SerializedObjectFactory::SaveSerializedSceneToFile(serializedScene, currentScenePathContext);
+						*pIsSceneDirty = false;
 					}
 				}
 
@@ -597,6 +609,7 @@ namespace DYE::DYEditor
 				currentScenePathContext = sceneFilePath;
 			}
 			Undo::ClearAll();
+			*pIsSceneDirty = false;
 		}
 
 		// Draw save scene file path popup.
@@ -617,6 +630,7 @@ namespace DYE::DYEditor
 			auto serializedScene = SerializedObjectFactory::CreateSerializedScene(currentScene);
 			SerializedObjectFactory::SaveSerializedSceneToFile(serializedScene, sceneFilePath);
 			currentScenePathContext = sceneFilePath;
+			*pIsSceneDirty = false;
 		}
 	}
 
@@ -662,6 +676,8 @@ namespace DYE::DYEditor
 
 	bool SceneEditorLayer::drawSceneEntityHierarchyPanel(Scene &scene, Entity *pCurrentSelectedEntity)
 	{
+		bool changed = false;
+
 		// Draw scene hierarchy context menu.
 		if (ImGui::BeginPopupContextWindow())
 		{
@@ -670,6 +686,7 @@ namespace DYE::DYEditor
 				// Select the newly created entity.
 				*pCurrentSelectedEntity = scene.World.CreateEntity("Entity");
 				Undo::RegisterEntityCreation(scene.World, *pCurrentSelectedEntity, scene.World.GetNumberOfEntities() - 1);
+				changed = true;
 			}
 			ImGui::EndPopup();
 		}
@@ -687,7 +704,7 @@ namespace DYE::DYEditor
 		// Draw all entities.
 		scene.World.ForEachEntityWithIndex
 		(
-			[&scene, &pCurrentSelectedEntity](DYEditor::Entity& entity, std::size_t indexInWorld)
+			[&changed, &scene, &pCurrentSelectedEntity](DYEditor::Entity& entity, std::size_t indexInWorld)
 			{
 				auto tryGetNameResult = entity.TryGetName();
 				if (!tryGetNameResult.has_value())
@@ -715,6 +732,7 @@ namespace DYE::DYEditor
 					if (ImGui::Selectable("Delete"))
 					{
 						Undo::DeleteEntity(scene.World, entity, indexInWorld);
+						changed = true;
 					}
 					ImGui::EndPopup();
 				}
@@ -727,7 +745,7 @@ namespace DYE::DYEditor
 			}
 		);
 
-		return false;
+		return changed;
 	}
 
 	bool SceneEditorLayer::drawSceneSystemPanel(Scene& scene)
@@ -962,6 +980,7 @@ namespace DYE::DYEditor
 					// Swap with the previous system and return right away.
 					int const otherSystemIndex = i - 1;
 					Undo::ReorderSystem(scene, systemDescriptor, i, otherSystemIndex);
+					changed = true;
 					ImGui::PopID();
 					return true;
 				}
@@ -975,6 +994,7 @@ namespace DYE::DYEditor
 					// Swap with the next system and return right away.
 					int const otherSystemIndex = i + 1;
 					Undo::ReorderSystem(scene, systemDescriptor, i, otherSystemIndex);
+					changed = true;
 					ImGui::PopID();
 					return true;
 				}

@@ -63,6 +63,7 @@ namespace DYE::DYEditor
 		Application* m_pApplication = nullptr;
 		std::shared_ptr<SceneRuntimeLayer> m_RuntimeLayer;
 		SerializedScene m_SerializedSceneCacheWhenEnterPlayMode;
+		bool m_IsActiveSceneDirty = false;
 
 		DYEditor::Entity m_CurrentlySelectedEntityInHierarchyPanel;
 		std::filesystem::path m_CurrentSceneFilePath;
@@ -80,7 +81,8 @@ namespace DYE::DYEditor
 		EntityInspectorContext m_InspectorContext;
 
 		static void setEditorWindowDefaultLayout(ImGuiID dockSpaceId);
-		static void drawEditorWindowMenuBar(Scene &currentScene, std::filesystem::path &currentScenePathContext);
+		static void drawEditorWindowMenuBar(Scene &currentScene, std::filesystem::path &currentScenePathContext,
+											bool *pIsSceneDirty);
 		static void drawSceneView(Camera &sceneViewCamera);
 		static bool drawSceneEntityHierarchyPanel(Scene &scene, DYEditor::Entity *pCurrentSelectedEntity);
 		static bool drawSceneSystemPanel(Scene& scene);
