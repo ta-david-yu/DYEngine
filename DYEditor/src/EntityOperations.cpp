@@ -32,28 +32,6 @@ namespace DYE::DYEditor
 
 	// ComponentModificationOperation
 
-	ComponentModificationOperation::ComponentModificationOperation(Entity &entity,
-																   SerializedComponent componentBeforeModification,
-																   SerializedComponent componentAfterModification) :
-		pWorld(&entity.GetWorld()),
-		EntityGUID(entity.GetComponent<IDComponent>().ID),
-		SerializedComponentBeforeModification(componentBeforeModification),
-		SerializedComponentAfterModification(componentAfterModification)
-	{
-		auto componentTypeName = SerializedComponentBeforeModification.TryGetTypeName().value();
-
-		sprintf(&Description[0], "Modify %s of Entity '%s' (GUID: %s)",
-				componentTypeName.c_str(),
-				entity.TryGetName().value().c_str(),
-				EntityGUID.ToString().c_str());
-
-		auto tryGetComponentTypeDescriptor = TypeRegistry::TryGetComponentTypeDescriptor(componentTypeName);
-		DYE_ASSERT_LOG_WARN(tryGetComponentTypeDescriptor.has_value(),
-							"Try to create a component modification operation but doesn't recognize the component type '%s'.", componentTypeName.c_str());
-
-		TypeDescriptor = tryGetComponentTypeDescriptor.value();
-	}
-
 	void ComponentModificationOperation::Undo()
 	{
 		auto tryGetEntity = pWorld->TryGetEntityWithGUID(EntityGUID);

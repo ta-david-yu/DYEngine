@@ -105,7 +105,25 @@ namespace DYE::DYEditor
 											SerializedComponent componentBeforeModification,
 											SerializedComponent componentAfterModification)
 	{
-		auto operation = std::make_unique<ComponentModificationOperation>(entity, std::move(componentBeforeModification), std::move(componentAfterModification));
+		auto operation = std::make_unique<ComponentModificationOperation>();
+		operation->pWorld = &entity.GetWorld();
+		operation->EntityGUID = entity.GetComponent<IDComponent>().ID;
+		operation->SerializedComponentBeforeModification = componentBeforeModification;
+		operation->SerializedComponentAfterModification = componentAfterModification;
+
+		auto componentTypeName = operation->SerializedComponentBeforeModification.TryGetTypeName().value();
+
+		sprintf(&operation->Description[0], "Modify %s of Entity '%s' (GUID: %s)",
+				componentTypeName.c_str(),
+				entity.TryGetName().value().c_str(),
+				operation->EntityGUID.ToString().c_str());
+
+		auto tryGetComponentTypeDescriptor = TypeRegistry::TryGetComponentTypeDescriptor(componentTypeName);
+		DYE_ASSERT_LOG_WARN(tryGetComponentTypeDescriptor.has_value(),
+							"Try to create a component modification operation but doesn't recognize the component type '%s'.", componentTypeName.c_str());
+
+		operation->TypeDescriptor = tryGetComponentTypeDescriptor.value();
+
 		pushNewOperation(std::move(operation));
 	}
 

@@ -45,10 +45,6 @@ namespace DYE::DYEditor
 	class ComponentModificationOperation final : public UndoOperationBase
 	{
 	public:
-		ComponentModificationOperation(Entity &entity,
-									   SerializedComponent componentBeforeModification,
-									   SerializedComponent componentAfterModification);
-
 		void Undo() override;
 		void Redo() override;
 
