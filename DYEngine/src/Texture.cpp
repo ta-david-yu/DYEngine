@@ -70,6 +70,7 @@ namespace DYE
 
         auto texture = std::make_shared<Texture2D>(1, 1);
         texture->SetData((void*) data, 1);
+		texture->PixelsPerUnit = 1;
 
 		texture->SetDebugLabel("Color Texture2D (1 x 1)");
 
