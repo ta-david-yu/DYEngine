@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/Entity.h"
+#include "Type/DrawComponentHeaderContext.h"
 #include "Type/DefaultComponentFunctions.h"
 
 #include <string>
@@ -13,7 +14,14 @@ namespace DYE::DYEditor
 	class SystemBase;
 
 	struct SerializedEntity;
-	struct SerializedComponentHandle;
+	struct SerializedComponent;
+
+	struct DrawComponentInspectorContext
+	{
+		bool IsModificationActivated = false;
+		bool IsModificationDeactivated = false;
+		bool IsModificationDeactivatedAfterEdit = false;
+	};
 
 	struct SerializationResult
 	{
@@ -29,13 +37,13 @@ namespace DYE::DYEditor
 	using AddComponentFunction = void (DYE::DYEditor::Entity& entity);
 	using RemoveComponentFunction = void (DYE::DYEditor::Entity& entity);
 	/// Serialize a component on an entity to a serialized entity.
-	using SerializeComponentFunction = SerializationResult (DYE::DYEditor::Entity& entity, SerializedComponentHandle& serializedComponent);
+	using SerializeComponentFunction = SerializationResult (DYE::DYEditor::Entity& entity, SerializedComponent& serializedComponent);
 	/// Deserialize a serialized component (handle) and add it to an entity.
-	using DeserializeComponentFunction = DeserializationResult (SerializedComponentHandle& serializedComponent, DYE::DYEditor::Entity& entity);
+	using DeserializeComponentFunction = DeserializationResult (SerializedComponent& serializedComponent, DYE::DYEditor::Entity& entity);
 	/// \return true if the content of the inspector is changed/dirty.
-	using DrawComponentInspectorFunction = bool (DYE::DYEditor::Entity& entity);
-	/// \return true if the content of the inspector is changed/dirty.
-	using DrawComponentHeaderFunction = bool (DYE::DYEditor::Entity& entity, bool &isHeaderVisible, bool &entityChanged, std::string const& headerLabel);
+	using DrawComponentInspectorFunction = bool (DrawComponentInspectorContext &drawInspectorContext, DYE::DYEditor::Entity& entity);
+	/// \return true if the content of the header is not-collapsed.
+	using DrawComponentHeaderFunction = bool (DrawComponentHeaderContext &drawHeaderContext, DYE::DYEditor::Entity& entity, bool &isHeaderVisible, std::string const& headerLabel);
 
 	/// One should always provide 'Serialize', 'Deserialize' and 'DrawInspector' functions.
 	struct ComponentTypeDescriptor
@@ -98,6 +106,9 @@ namespace DYE::DYEditor
 		static std::vector<std::pair<std::string, SystemBase*>> GetSystemNamesAndInstances();
 
 		static std::optional<ComponentTypeDescriptor> TryGetComponentTypeDescriptor(std::string const& componentTypeName);
+
+		/// A specialized function to get NameComponent's Type Descriptor. Implemented inside BuiltInTypeRegister.cpp.
+		static ComponentTypeDescriptor GetComponentTypeDescriptor_NameComponent();
 
 		/// \return a pointer to the system instance, else nullptr.
 		static SystemBase* TryGetSystemInstance(std::string const& systemName);

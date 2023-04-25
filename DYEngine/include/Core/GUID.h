@@ -14,6 +14,17 @@ namespace DYE
 		bool IsValid() const { return m_GUID != 0; }
 
 		explicit operator std::uint64_t() const { return m_GUID; }
+
+		constexpr bool operator==(GUID const& other)
+		{
+			return m_GUID == other.m_GUID;
+		}
+
+		constexpr bool operator!=(GUID const& other)
+		{
+			return m_GUID != other.m_GUID;
+		}
+
 		std::string ToString() const { return std::to_string(m_GUID); }
 	private:
 		std::uint64_t m_GUID = 0;

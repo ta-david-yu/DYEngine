@@ -4,10 +4,21 @@
 #include "Components/IDComponent.h"
 #include "Components/NameComponent.h"
 
+#include <algorithm>
+
 namespace DYE::DYEditor
 {
 	World::World()
 	{
+	}
+
+	Entity World::CreateEntityAtIndex(std::size_t index)
+	{
+		auto entity = Entity(*this, m_Registry.create());
+
+		m_EntityHandles.insert(m_EntityHandles.begin() + index, EntityHandle { .Identifier = entity.m_EntityIdentifier });
+
+		return entity;
 	}
 
 	Entity World::CreateEntity()
@@ -50,6 +61,51 @@ namespace DYE::DYEditor
 		m_EntityHandles.erase(newEnd, m_EntityHandles.end());
 
 		m_Registry.destroy(identifier);
+	}
+
+	void World::DestroyEntityWithGUID(GUID entityGUID)
+	{
+		for (auto&& [entity, idComponent] : m_Registry.view<IDComponent>().each())
+		{
+			if (idComponent.ID == entityGUID)
+			{
+				DestroyEntity(entity);
+				break;
+			}
+		}
+	}
+
+	std::optional<Entity> World::TryGetEntityWithGUID(GUID entityGUID)
+	{
+		for (auto&& [entity, idComponent] : m_Registry.view<IDComponent>().each())
+		{
+			if (idComponent.ID == entityGUID)
+			{
+				return Entity(*this, entity);
+			}
+		}
+
+		return {};
+	}
+
+	std::optional<std::size_t> World::TryGetEntityIndex(Entity &entity)
+	{
+		if (entity.m_World != this)
+		{
+			return {};
+		}
+
+		for (int i = 0; i < m_EntityHandles.size(); ++i)
+		{
+			auto& entityHandle = m_EntityHandles[i];
+
+			if (entityHandle.Identifier == entity.GetIdentifier())
+			{
+				return i;
+			}
+		}
+
+		return {};
 	}
 
 	bool World::IsEmpty() const

@@ -4,7 +4,7 @@ namespace DYE::DYEditor
 {
 	constexpr const char* ArrayOfComponentTablesKey = "Components";
 
-	std::vector<SerializedComponentHandle> SerializedEntity::GetSerializedComponentHandles()
+	std::vector<SerializedComponent> SerializedEntity::GetSerializedComponentHandles()
 	{
 		toml::table* pEntityTable = IsHandle()? m_pEntityTableHandle : &m_EntityTable;
 		toml::node* pArrayOfComponentTables = pEntityTable->get(ArrayOfComponentTablesKey);
@@ -17,14 +17,14 @@ namespace DYE::DYEditor
 
 		toml::array& arrayOfComponentTables = *pArrayOfComponentTables->as_array();
 
-		std::vector<SerializedComponentHandle> handles;
+		std::vector<SerializedComponent> handles;
 		auto const numberOfComponents = arrayOfComponentTables.size();
 		handles.reserve(numberOfComponents);
 
 		for (int componentIndex = 0; componentIndex < numberOfComponents; componentIndex++)
 		{
 			toml::table* pComponentTable = arrayOfComponentTables[componentIndex].as_table();
-			handles.push_back(SerializedComponentHandle(pComponentTable));
+			handles.push_back(SerializedComponent(pComponentTable));
 		}
 
 		return handles;
@@ -61,7 +61,7 @@ namespace DYE::DYEditor
 		return true;
 	}
 
-	SerializedComponentHandle SerializedEntity::TryAddComponentOfType(const std::string &typeName)
+	SerializedComponent SerializedEntity::TryAddComponentOfType(const std::string &typeName)
 	{
 		toml::table* pEntityTable = IsHandle()? m_pEntityTableHandle : &m_EntityTable;
 		toml::array* pArrayOfComponentTables = pEntityTable->get_as<toml::array>(ArrayOfComponentTablesKey);
@@ -104,7 +104,7 @@ namespace DYE::DYEditor
 			pComponentTable = &pArrayOfComponentTables->emplace_back(toml::table {{ComponentTypeNameKey, typeName}});
 		}
 
-		return SerializedComponentHandle(pComponentTable);
+		return SerializedComponent(pComponentTable);
 	}
 
 	SerializedEntity::SerializedEntity(toml::table *pEntityTableHandle) : m_pEntityTableHandle(pEntityTableHandle), m_IsHandle(true)

@@ -38,6 +38,17 @@ void UpdateSystemB::DrawInspector(DYE::DYEditor::World &world)
 	DYE::ImGuiUtil::DrawIntControl("Update B Exe Count", m_ExecutionCount);
 }
 
+void ImGuiSystem1::Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params)
+{
+	ImGui::SetNextWindowSize({200, 100}, ImGuiCond_FirstUseEver);
+	if (ImGui::Begin("ImGui System 1 Window"))
+	{
+		ImGui::Text("HEHEHE TEST");
+	}
+
+	ImGui::End();
+}
+
 void RotateHasAngularVelocitySystem::Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params)
 {
 	auto& registry = DYE::DYEditor::GetWorldUnderlyingRegistry(world);

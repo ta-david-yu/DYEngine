@@ -23,7 +23,7 @@ namespace DYE::DYEditor
 	namespace BuiltInFunctions
 	{
 		SerializationResult
-		IDComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponentHandle &serializedComponent)
+		IDComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
 		{
 			serializedComponent.SetPrimitiveTypePropertyValue("ID", entity.GetComponent<IDComponent>().ID);
 
@@ -31,7 +31,7 @@ namespace DYE::DYEditor
 		}
 
 		DeserializationResult
-		IDComponent_Deserialize(SerializedComponentHandle &serializedComponent, DYE::DYEditor::Entity &entity)
+		IDComponent_Deserialize(SerializedComponent &serializedComponent, DYE::DYEditor::Entity &entity)
 		{
 			auto &component = entity.AddOrGetComponent<IDComponent>();
 			component.ID = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::GUID>("ID");
@@ -39,12 +39,14 @@ namespace DYE::DYEditor
 			return {};
 		}
 
-		bool IDComponent_DrawInspector(Entity &entity)
+		bool IDComponent_DrawInspector(DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
 		{
 			auto &component = entity.GetComponent<IDComponent>();
 
-			bool changed = false;
-			changed |= ImGuiUtil::DrawGUIDControl("ID", component.ID);
+			bool const changed = ImGuiUtil::DrawGUIDControl("ID", component.ID);
+			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
+			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
+			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
 
 			return changed;
 		}
@@ -55,7 +57,7 @@ namespace DYE::DYEditor
 		}
 
 		SerializationResult
-		NameComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponentHandle &serializedComponent)
+		NameComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
 		{
 			// We don't do any error handling here (i.e. check if entity has NameComponent) because
 			// the function will only be called when the entity has NameComponent for sure.
@@ -65,7 +67,7 @@ namespace DYE::DYEditor
 		}
 
 		DeserializationResult
-		NameComponent_Deserialize(SerializedComponentHandle &serializedComponent, DYE::DYEditor::Entity &entity)
+		NameComponent_Deserialize(SerializedComponent &serializedComponent, DYE::DYEditor::Entity &entity)
 		{
 			auto &nameComponent = entity.AddOrGetComponent<NameComponent>();
 			nameComponent.Name = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::String>("Name");
@@ -73,19 +75,20 @@ namespace DYE::DYEditor
 			return {};
 		}
 
-		bool NameComponent_DrawInspector(Entity &entity)
+		bool NameComponent_DrawInspector(DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
 		{
 			auto &nameComponent = entity.GetComponent<NameComponent>();
 
-			bool changed = false;
-
-			changed |= ImGuiUtil::DrawTextControl("Name", nameComponent.Name);
+			bool const changed = ImGuiUtil::DrawTextControl("Name", nameComponent.Name);
+			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
+			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
+			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
 
 			return changed;
 		}
 
 		SerializationResult
-		TransformComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponentHandle &serializedComponent)
+		TransformComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
 		{
 			auto const &transformComponent = entity.GetComponent<TransformComponent>();
 			serializedComponent.SetPrimitiveTypePropertyValue("Position", transformComponent.Position);
@@ -96,7 +99,7 @@ namespace DYE::DYEditor
 		}
 
 		DeserializationResult
-		TransformComponent_Deserialize(SerializedComponentHandle &serializedComponent, DYE::DYEditor::Entity &entity)
+		TransformComponent_Deserialize(SerializedComponent &serializedComponent, DYE::DYEditor::Entity &entity)
 		{
 			auto &transformComponent = entity.AddOrGetComponent<TransformComponent>();
 			transformComponent.Position = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Vector3>(
@@ -109,14 +112,19 @@ namespace DYE::DYEditor
 			return {};
 		}
 
-		bool TransformComponent_DrawInspector(Entity &entity)
+		bool TransformComponent_DrawInspector(DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
 		{
 			auto &transformComponent = entity.GetComponent<TransformComponent>();
 
-			bool changed = false;
+			bool changed = ImGuiUtil::DrawVector3Control("Position", transformComponent.Position);
+			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
+			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
+			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
 
-			changed |= ImGuiUtil::DrawVector3Control("Position", transformComponent.Position);
 			changed |= ImGuiUtil::DrawVector3Control("Scale", transformComponent.Scale, 1.0f);
+			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
+			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
+			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
 
 			glm::vec3 rotationInEulerAnglesDegree = glm::eulerAngles(transformComponent.Rotation);
 			rotationInEulerAnglesDegree += glm::vec3(0.f);
@@ -125,9 +133,11 @@ namespace DYE::DYEditor
 			{
 				rotationInEulerAnglesDegree.y = glm::clamp(rotationInEulerAnglesDegree.y, -90.f, 90.f);
 				transformComponent.Rotation = glm::quat {glm::radians(rotationInEulerAnglesDegree)};
-
 				changed = true;
 			}
+			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
+			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
+			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
 
 			return changed;
 		}
@@ -137,11 +147,13 @@ namespace DYE::DYEditor
 			entity.AddComponent<CameraComponent>();
 
 			// The component only makes sense with a transform component.
+			// TODO: Move this somewhere else (maybe a list of required components in TypeDescriptor?)
+			//		Right now these additional entities aren't tracked by undo/redo system.
 			entity.AddOrGetComponent<TransformComponent>();
 		}
 
 		SerializationResult
-		CameraComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponentHandle &serializedComponent)
+		CameraComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
 		{
 			auto const &cameraComponent = entity.GetComponent<CameraComponent>();
 			auto const &cameraProperties = cameraComponent.Properties;
@@ -169,7 +181,7 @@ namespace DYE::DYEditor
 		}
 
 		DeserializationResult
-		CameraComponent_Deserialize(SerializedComponentHandle &serializedComponent, DYE::DYEditor::Entity &entity)
+		CameraComponent_Deserialize(SerializedComponent &serializedComponent, DYE::DYEditor::Entity &entity)
 		{
 			auto &cameraComponent = entity.AddOrGetComponent<CameraComponent>();
 			auto &cameraProperties = cameraComponent.Properties;
@@ -202,12 +214,15 @@ namespace DYE::DYEditor
 			return {};
 		}
 
-		bool CameraComponent_DrawInspector(Entity &entity)
+		bool CameraComponent_DrawInspector(DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
 		{
 			auto &cameraComponent = entity.GetComponent<CameraComponent>();
 
-			bool changed = false;
-			changed |= ImGuiUtil::DrawCameraPropertiesControl("Camera Properties", cameraComponent.Properties);
+			bool const changed = ImGuiUtil::DrawCameraPropertiesControl("Camera Properties", cameraComponent.Properties);
+			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
+			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
+			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+
 			return changed;
 		}
 
@@ -216,23 +231,27 @@ namespace DYE::DYEditor
 			entity.AddComponent<SpriteRendererComponent>();
 
 			// The component only makes sense with a transform component.
+			// TODO: Move this somewhere else (maybe a list of required components in TypeDescriptor?)
+			//		Right now these additional entities aren't tracked by undo/redo system.
 			entity.AddOrGetComponent<TransformComponent>();
 		}
 
 		SerializationResult
-		SpriteRendererComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponentHandle &serializedComponent)
+		SpriteRendererComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
 		{
 			auto const &component = entity.GetComponent<SpriteRendererComponent>();
+			serializedComponent.SetPrimitiveTypePropertyValue("IsEnabled", component.IsEnabled);
 			serializedComponent.SetPrimitiveTypePropertyValue("Color", component.Color);
 			serializedComponent.SetPrimitiveTypePropertyValue("TextureAssetPath", component.TextureAssetPath);
 
 			return {};
 		}
 
-		DeserializationResult SpriteRendererComponent_Deserialize(SerializedComponentHandle &serializedComponent,
+		DeserializationResult SpriteRendererComponent_Deserialize(SerializedComponent &serializedComponent,
 																  DYE::DYEditor::Entity &entity)
 		{
 			auto &component = entity.AddOrGetComponent<SpriteRendererComponent>();
+			component.IsEnabled = serializedComponent.GetPrimitiveTypePropertyValueOr<DYE::Bool>("IsEnabled", true);
 			component.Color = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Color4>("Color");
 			component.TextureAssetPath = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::AssetPath>(
 				"TextureAssetPath");
@@ -249,15 +268,20 @@ namespace DYE::DYEditor
 			return {};
 		}
 
-		bool SpriteRendererComponent_DrawInspector(Entity &entity)
+		bool SpriteRendererComponent_DrawInspector(DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
 		{
 			auto &component = entity.GetComponent<SpriteRendererComponent>();
 
-			bool changed = false;
-
-			changed |= ImGuiUtil::DrawColor4Control("Color", component.Color);
+			bool const changed = ImGuiUtil::DrawColor4Control("Color", component.Color);
+			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
+			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
+			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
 
 			bool isPathChanged = ImGuiUtil::DrawAssetPathStringControl("Texture Asset Path", component.TextureAssetPath, {".jpg", ".jpeg", ".png", ".tga", ".bmp", ".psd"});
+			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
+			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
+			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+
 			if (isPathChanged)
 			{
 				if (FileSystem::FileExists(component.TextureAssetPath))
@@ -270,14 +294,14 @@ namespace DYE::DYEditor
 				}
 			}
 
-			changed |= isPathChanged;
-
 			// Draw a preview of the texture
 			ImGuiUtil::DrawTexture2DPreviewWithLabel("Texture Preview", component.Texture);
 
-			return changed;
+			return isPathChanged || changed;
 		}
 	}
+
+	static ComponentTypeDescriptor s_NameComponentTypeDescriptor;
 
 	void RegisterBuiltInTypes()
 	{
@@ -295,10 +319,7 @@ namespace DYE::DYEditor
 			}
 		);
 
-		TypeRegistry::RegisterComponentType<NameComponent>
-		(
-			NameComponentName,
-			ComponentTypeDescriptor
+		s_NameComponentTypeDescriptor = ComponentTypeDescriptor
 			{
 				.ShouldBeIncludedInNormalAddComponentList = false,
 				.ShouldDrawInNormalInspector = false,
@@ -307,7 +328,11 @@ namespace DYE::DYEditor
 				.Serialize = BuiltInFunctions::NameComponent_Serialize,
 				.Deserialize = BuiltInFunctions::NameComponent_Deserialize,
 				.DrawInspector = BuiltInFunctions::NameComponent_DrawInspector,
-			}
+			};
+		TypeRegistry::RegisterComponentType<NameComponent>
+		(
+			NameComponentName,
+			s_NameComponentTypeDescriptor
 		);
 
 		TypeRegistry::RegisterComponentType<TransformComponent>
@@ -354,5 +379,10 @@ namespace DYE::DYEditor
 
 		static RegisterCameraSystem _RegisterCameraSystem;
 		TypeRegistry::RegisterSystem(RegisterCameraSystem::TypeName, &_RegisterCameraSystem);
+	}
+
+	ComponentTypeDescriptor TypeRegistry::GetComponentTypeDescriptor_NameComponent()
+	{
+		return s_NameComponentTypeDescriptor;
 	}
 }

@@ -212,40 +212,40 @@ std::string PropertyDescriptorToImGuiUtilControlCallSource(std::string_view cons
 	{
 		case PropertyType::Float:
 		case PropertyType::Double:
-			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawFloatControl(\"{}\", component.{});\n",
+			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawFloatControl(\"{}\", component.{}); updateContextAfterDrawControlCall(drawInspectorContext);\n",
 							   propertyDescriptor.VariableName, propertyDescriptor.VariableName);
 		case PropertyType::Bool:
-			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawBoolControl(\"{}\", component.{});\n",
+			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawBoolControl(\"{}\", component.{}); updateContextAfterDrawControlCall(drawInspectorContext);\n",
 							   propertyDescriptor.VariableName, propertyDescriptor.VariableName);
 		case PropertyType::String:
-			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawTextControl(\"{}\", component.{});\n",
+			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawTextControl(\"{}\", component.{}); updateContextAfterDrawControlCall(drawInspectorContext);\n",
 							   propertyDescriptor.VariableName, propertyDescriptor.VariableName);
 		case PropertyType::Vector2:
-			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawVector2Control(\"{}\", component.{});\n",
+			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawVector2Control(\"{}\", component.{}); updateContextAfterDrawControlCall(drawInspectorContext);\n",
 							   propertyDescriptor.VariableName, propertyDescriptor.VariableName);
 		case PropertyType::Vector3:
-			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawVector3Control(\"{}\", component.{});\n",
+			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawVector3Control(\"{}\", component.{}); updateContextAfterDrawControlCall(drawInspectorContext);\n",
 							   propertyDescriptor.VariableName, propertyDescriptor.VariableName);
 		case PropertyType::Color4:
-			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawColor4Control(\"{}\", component.{});\n",
+			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawColor4Control(\"{}\", component.{}); updateContextAfterDrawControlCall(drawInspectorContext);\n",
 							   propertyDescriptor.VariableName, propertyDescriptor.VariableName);
 		case PropertyType::Int32:
 		case PropertyType::Int64:
 		case PropertyType::Int16:
 		case PropertyType::Int8:
-			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawIntControl(\"{}\", component.{});\n",
+			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawIntControl(\"{}\", component.{}); updateContextAfterDrawControlCall(drawInspectorContext);\n",
 							   propertyDescriptor.VariableName, propertyDescriptor.VariableName);
 		case PropertyType::Uint32:
 		case PropertyType::Uint64:
 		case PropertyType::Uint16:
 		case PropertyType::Uint8:
-			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawIntControl(\"{}\", component.{});\n",
+			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawIntControl(\"{}\", component.{}); updateContextAfterDrawControlCall(drawInspectorContext);\n",
 							   propertyDescriptor.VariableName, propertyDescriptor.VariableName);
 		case PropertyType::Char:
-			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawCharControl(\"{}\", component.{});\n",
+			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawCharControl(\"{}\", component.{}); updateContextAfterDrawControlCall(drawInspectorContext);\n",
 							   propertyDescriptor.VariableName, propertyDescriptor.VariableName);
 		case PropertyType::Vector4:
-			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawVector4Control(\"{}\", component.{});\n",
+			return fmt::format("\t\t\t\t\t\t\tchanged |= ImGuiUtil::DrawVector4Control(\"{}\", component.{}); updateContextAfterDrawControlCall(drawInspectorContext);\n",
 							   propertyDescriptor.VariableName, propertyDescriptor.VariableName);
 		case PropertyType::Quaternion:
 			return fmt::format("\t\t\t\t\t\t\t// '{}' : Quaternion \n"
@@ -258,6 +258,7 @@ std::string PropertyDescriptorToImGuiUtilControlCallSource(std::string_view cons
 							   "\t\t\t\t\t\t\t\t	component.{} = glm::quat (glm::radians(eulerDegree));\n"
 							   "\t\t\t\t\t\t\t\t	changed = true;\n"
 							   "\t\t\t\t\t\t\t\t{}\n"
+							   "\t\t\t\t\t\t\t\tupdateContextAfterDrawControlCall(drawInspectorContext);\n"
 							   "\t\t\t\t\t\t\t{}\n", 	// THIS is causing the error!! Have to use the hack.
 							   propertyDescriptor.VariableName, "{", propertyDescriptor.VariableName, propertyDescriptor.VariableName, "{", propertyDescriptor.VariableName, "}", "}");
 		case PropertyType::Unsupported:

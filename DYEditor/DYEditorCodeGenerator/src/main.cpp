@@ -35,6 +35,15 @@ R"(
 
 namespace DYE::DYEditor
 {
+	/// A helper function that helps updating context data after a DrawControl call.
+	/// Used by DrawInspector functions mostly.
+	inline void updateContextAfterDrawControlCall(DrawComponentInspectorContext &context)
+	{
+		context.IsModificationActivated |= ImGuiUtil::IsControlActivated();
+		context.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
+		context.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+	}
+
 	void userRegisterTypeFunction()
 	{
 		// Insert user type registration here...

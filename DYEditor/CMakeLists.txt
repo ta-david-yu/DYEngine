@@ -13,7 +13,7 @@ set(SOURCE_FILES
         src/EditorSystem.cpp
         src/EditorImGuiUtil.cpp
         src/SerializedObjectFactory.cpp
-        src/SerializedComponentHandle.cpp
+        src/SerializedComponent.cpp
         src/SerializedEntity.cpp
         src/SerializedScene.cpp
         src/SerializedSystemHandle.cpp
@@ -25,7 +25,7 @@ set(SOURCE_FILES
         src/Render2DSpriteSystem.cpp
         src/RegisterCameraSystem.cpp
         src/EditorWindowManager.cpp
-        src/RuntimeSceneManagement.cpp)
+        src/RuntimeSceneManagement.cpp src/Undo.cpp src/EntityOperations.cpp src/SystemOperations.cpp src/UndoOperationBase.cpp)
 set(HEADER_FILES
         include/SceneEditorLayer.h
         include/SceneRuntimeLayer.h
@@ -41,7 +41,7 @@ set(HEADER_FILES
         include/ImGui/EditorImGuiUtil.h
         include/Serialization/SerializedObjectFactory.h
         include/Serialization/SerializedEntity.h
-        include/Serialization/SerializedComponentHandle.h
+        include/Serialization/SerializedComponent.h
         include/Serialization/SerializedScene.h
         include/Serialization/SerializedSystemHandle.h
         include/DYEditorApplication.h
@@ -59,7 +59,7 @@ set(HEADER_FILES
         include/Systems/RegisterCameraSystem.h
         include/ProjectConfig.h src/ProjectConfig.cpp
         include/ImGui/EditorWindowManager.h
-        include/Core/RuntimeSceneManagement.h include/Components/IDComponent.h)
+        include/Core/RuntimeSceneManagement.h include/Components/IDComponent.h include/Undo/Undo.h include/Undo/UndoOperationBase.h include/Undo/Operations/EntityOperations.h include/Type/DrawComponentHeaderContext.h include/Undo/Operations/SystemOperations.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")

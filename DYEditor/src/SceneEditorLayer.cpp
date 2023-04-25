@@ -18,6 +18,7 @@
 #include "ImGui/EditorWindowManager.h"
 #include "ImGui/EditorImGuiUtil.h"
 #include "ImGui/ImGuiUtil.h"
+#include "Undo/Undo.h"
 
 #include "Components/NameComponent.h"
 #include "Components/TransformComponent.h"
@@ -35,7 +36,7 @@ using namespace DYE::DYEditor;
 
 namespace DYE::DYEditor
 {
-	constexpr char const* k_DYEditorWindowId = "DYEditor";
+	constexpr char const* k_DYEditorWindowId = "###DYEditor";
 	constexpr char const* k_DYEditorDockSpaceId = "DYEditor DockSpace";
 	constexpr char const* k_SceneHierarchyWindowId = "Scene Hierarchy";
 	constexpr char const* k_SceneSystemWindowId = "Scene System";
@@ -108,6 +109,18 @@ namespace DYE::DYEditor
 			[](char const *name, bool *pIsOpen, ImGuiViewport const *pMainViewportHint)
 			{
 				DrawRuntimeConfigurationWindow(pIsOpen);
+			}
+		);
+
+		EditorWindowManager::RegisterEditorWindow(
+			RegisterEditorWindowParameters
+				{
+					.Name = "Undo History",
+					.isConfigOpenByDefault = false
+				},
+			[](char const *name, bool *pIsOpen, ImGuiViewport const *pMainViewportHint)
+			{
+				Undo::DrawUndoHistoryWindow(pIsOpen);
 			}
 		);
 
@@ -300,6 +313,11 @@ namespace DYE::DYEditor
 		ImGuiWindowFlags mainEditorWindowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 		ImGuiDockNodeFlags mainEditorWindowDockSpaceFlags = ImGuiDockNodeFlags_None | ImGuiDockNodeFlags_PassthruCentralNode;
 
+		if (m_IsActiveSceneDirty)
+		{
+			mainEditorWindowFlags |= ImGuiWindowFlags_UnsavedDocument;
+		}
+
 		const ImGuiViewport* viewport = ImGui::GetMainViewport();
 		float const editorLayerWindowPadding = 10;
 		ImVec2 const editorLayerWindowPos = { viewport->WorkPos.x + editorLayerWindowPadding, viewport->WorkPos.y };
@@ -309,10 +327,12 @@ namespace DYE::DYEditor
 		ImGui::SetNextWindowBgAlpha(0.35f);
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-		ImGui::Begin(k_DYEditorWindowId, nullptr, mainEditorWindowFlags);
+		char mainEditorName[32];
+		sprintf(mainEditorName, "%s%s", RuntimeState::IsPlaying()? "DYEditor (Play Mode)" : "DYEditor (Edit Mode)", k_DYEditorWindowId);
+		ImGui::Begin(mainEditorName, nullptr, mainEditorWindowFlags);
 		ImGui::PopStyleVar();
 
-		drawEditorWindowMenuBar(activeScene, m_CurrentSceneFilePath);
+		drawEditorWindowMenuBar(activeScene, m_CurrentSceneFilePath, &m_IsActiveSceneDirty);
 
 		ImGuiIO& io = ImGui::GetIO();
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
@@ -327,6 +347,12 @@ namespace DYE::DYEditor
 
 		ImGuiViewport const *mainEditorWindowViewport = ImGui::GetWindowViewport();
 		ImGui::End();
+
+		// Draw generic editor windows.
+		// We call this before drawing major editor windows because Undo History could possibly delete entity with texture reference
+		// That is being drawn inside entity inspector.
+		// If we release a texture id that has already been submitted to the imgui drawlist, the program will be asserted.
+		EditorWindowManager::DrawEditorWindows(mainEditorWindowViewport);
 
 		// Draw all the major editor windows.
 		// TODO: right now we make all the major windows transparent (alpha = 0.35f)
@@ -351,14 +377,17 @@ namespace DYE::DYEditor
 		ImGui::SetNextWindowBgAlpha(0.35f);
 		if (ImGui::Begin(k_SceneSystemWindowId))
 		{
-			drawSceneSystemPanel(activeScene);
+			bool const isSystemListModified = drawSceneSystemPanel(activeScene);
+			m_IsActiveSceneDirty |= isSystemListModified;
 		}
 		ImGui::End();
 
 		ImGui::SetNextWindowBgAlpha(0.35f);
-		if (ImGui::Begin(k_SceneHierarchyWindowId))
+		ImGuiWindowFlags const hierarchyWindowFlags = m_IsActiveSceneDirty? ImGuiWindowFlags_UnsavedDocument : ImGuiWindowFlags_None;
+		if (ImGui::Begin(k_SceneHierarchyWindowId, nullptr, hierarchyWindowFlags))
 		{
-			drawSceneEntityHierarchyPanel(activeScene, &m_CurrentlySelectedEntityInHierarchyPanel);
+			bool const isHierarchyChanged = drawSceneEntityHierarchyPanel(activeScene, &m_CurrentlySelectedEntityInHierarchyPanel);
+			m_IsActiveSceneDirty |= isHierarchyChanged;
 		}
 		ImGui::End();
 
@@ -366,7 +395,7 @@ namespace DYE::DYEditor
 
 		// We want to draw window with different titles in different mode (normal/debug).
 		char entityInspectorWindowName[128];
-		bool const debugMode = m_InspectorMode == InspectorMode::Debug;
+		bool const debugMode = m_InspectorContext.Mode == InspectorMode::Debug;
 		sprintf(entityInspectorWindowName, "%s%s", debugMode ? "Entity Inspector (Debug)" : "Entity Inspector", k_EntityInspectorWindowId);
 		if (ImGui::Begin(entityInspectorWindowName))
 		{
@@ -375,26 +404,24 @@ namespace DYE::DYEditor
 			{
 				if (ImGui::MenuItem("Normal", nullptr, !debugMode))
 				{
-					m_InspectorMode = InspectorMode::Normal;
+					m_InspectorContext.Mode = InspectorMode::Normal;
 					GetEditorConfig().SetAndSave("Editor.DebugInspector", false);
 				}
 
 				if (ImGui::MenuItem("Debug", nullptr, debugMode))
 				{
-					m_InspectorMode = InspectorMode::Debug;
+					m_InspectorContext.Mode = InspectorMode::Debug;
 					GetEditorConfig().SetAndSave("Editor.DebugInspector", true);
 				}
 
 				ImGui::EndPopup();
 			}
 
-			drawEntityInspector(m_CurrentlySelectedEntityInHierarchyPanel,
-								TypeRegistry::GetComponentTypesNamesAndDescriptors(), m_InspectorMode);
+			m_InspectorContext.Entity = m_CurrentlySelectedEntityInHierarchyPanel;
+			bool const isEntityChanged = drawEntityInspector(m_InspectorContext, TypeRegistry::GetComponentTypesNamesAndDescriptors());
+			m_IsActiveSceneDirty |= isEntityChanged;
 		}
 		ImGui::End();
-
-		// Draw other generic editor windows.
-		EditorWindowManager::DrawEditorWindows(mainEditorWindowViewport);
 	}
 
 	void SceneEditorLayer::setEditorWindowDefaultLayout(ImGuiID dockSpaceId)
@@ -429,7 +456,8 @@ namespace DYE::DYEditor
 		ImGui::DockBuilderFinish(dockSpaceId);
 	}
 
-	void SceneEditorLayer::drawEditorWindowMenuBar(Scene &currentScene, std::filesystem::path &currentScenePathContext)
+	void SceneEditorLayer::drawEditorWindowMenuBar(Scene &currentScene, std::filesystem::path &currentScenePathContext,
+												   bool *pIsSceneDirty)
 	{
 		bool openLoadSceneFilePathPopup = false;
 		bool openSaveSceneFilePathPopup = false;
@@ -441,7 +469,7 @@ namespace DYE::DYEditor
 		{
 			if (ImGui::BeginMenu("File"))
 			{
-				if (ImGui::MenuItem("New Scene"))
+				if (ImGui::MenuItem("New Scene", nullptr, false, !RuntimeState::IsPlaying()))
 				{
 					currentScenePathContext.clear();
 					currentScene.Clear();
@@ -450,9 +478,12 @@ namespace DYE::DYEditor
 					cameraEntity.AddComponent<TransformComponent>().Position = {0, 0, 10};
 					cameraEntity.AddComponent<CameraComponent>();
 					currentScene.TryAddSystemByName(RegisterCameraSystem::TypeName);
+
+					Undo::ClearAll();
+					*pIsSceneDirty = false;
 				}
 
-				if (ImGui::MenuItem("Open Scene"))
+				if (ImGui::MenuItem("Open Scene", nullptr, false, !RuntimeState::IsPlaying()))
 				{
 					// We store a flag here and delay opening the popup
 					// because MenuItem is Selectable and Selectable by default calls CloseCurrentPopup().
@@ -472,6 +503,7 @@ namespace DYE::DYEditor
 					{
 						auto serializedScene = SerializedObjectFactory::CreateSerializedScene(currentScene);
 						SerializedObjectFactory::SaveSerializedSceneToFile(serializedScene, currentScenePathContext);
+						*pIsSceneDirty = false;
 					}
 				}
 
@@ -487,6 +519,18 @@ namespace DYE::DYEditor
 
 			if (ImGui::BeginMenu("Edit"))
 			{
+				if (ImGui::MenuItem("Undo", "Ctrl+Z", false, Undo::HasOperationToUndo()))
+				{
+					Undo::PerformUndo();
+				}
+
+				if (ImGui::MenuItem("Redo", "Ctrl+Y", false, Undo::HasOperationToRedo()))
+				{
+					Undo::PerformRedo();
+				}
+
+				ImGui::Separator();
+
 				if (ImGui::MenuItem("Play", "Ctrl+P", RuntimeState::IsPlaying()))
 				{
 					RuntimeState::SetIsPlayingAtTheEndOfFrame(!RuntimeState::IsPlaying());
@@ -564,6 +608,8 @@ namespace DYE::DYEditor
 				SerializedObjectFactory::ApplySerializedSceneToEmptyScene(serializedScene.value(), currentScene);
 				currentScenePathContext = sceneFilePath;
 			}
+			Undo::ClearAll();
+			*pIsSceneDirty = false;
 		}
 
 		// Draw save scene file path popup.
@@ -584,6 +630,7 @@ namespace DYE::DYEditor
 			auto serializedScene = SerializedObjectFactory::CreateSerializedScene(currentScene);
 			SerializedObjectFactory::SaveSerializedSceneToFile(serializedScene, sceneFilePath);
 			currentScenePathContext = sceneFilePath;
+			*pIsSceneDirty = false;
 		}
 	}
 
@@ -629,6 +676,8 @@ namespace DYE::DYEditor
 
 	bool SceneEditorLayer::drawSceneEntityHierarchyPanel(Scene &scene, Entity *pCurrentSelectedEntity)
 	{
+		bool changed = false;
+
 		// Draw scene hierarchy context menu.
 		if (ImGui::BeginPopupContextWindow())
 		{
@@ -636,6 +685,8 @@ namespace DYE::DYEditor
 			{
 				// Select the newly created entity.
 				*pCurrentSelectedEntity = scene.World.CreateEntity("Entity");
+				Undo::RegisterEntityCreation(scene.World, *pCurrentSelectedEntity, scene.World.GetNumberOfEntities() - 1);
+				changed = true;
 			}
 			ImGui::EndPopup();
 		}
@@ -651,15 +702,15 @@ namespace DYE::DYEditor
 		}
 
 		// Draw all entities.
-		scene.World.ForEachEntity
+		scene.World.ForEachEntityWithIndex
 		(
-			[&scene, &pCurrentSelectedEntity](DYEditor::Entity& entity)
+			[&changed, &scene, &pCurrentSelectedEntity](DYEditor::Entity& entity, std::size_t indexInWorld)
 			{
 				auto tryGetNameResult = entity.TryGetName();
 				if (!tryGetNameResult.has_value())
 				{
 					// No name, skip it
-					return ;
+					return;
 				}
 
 				auto& name = tryGetNameResult.value();
@@ -680,7 +731,8 @@ namespace DYE::DYEditor
 				{
 					if (ImGui::Selectable("Delete"))
 					{
-						scene.World.DestroyEntity(entity);
+						Undo::DeleteEntity(scene.World, entity, indexInWorld);
+						changed = true;
 					}
 					ImGui::EndPopup();
 				}
@@ -693,7 +745,7 @@ namespace DYE::DYEditor
 			}
 		);
 
-		return false;
+		return changed;
 	}
 
 	bool SceneEditorLayer::drawSceneSystemPanel(Scene& scene)
@@ -859,16 +911,14 @@ namespace DYE::DYEditor
 					if (ImGui::Selectable(systemName.c_str()))
 					{
 						// Add the system.
-						systemDescriptors.push_back
-						(
-							SystemDescriptor
-								{
-									.Name = systemName,
-									.Group = NoSystemGroupID,
-									.IsEnabled = true,
-									.Instance = pSystemInstance
-								}
-						);
+						SystemDescriptor descriptor =
+						{
+							.Name = systemName,
+							.Group = NoSystemGroupID,
+							.IsEnabled = true,
+							.Instance = pSystemInstance
+						};
+						Undo::AddSystem(scene, descriptor, systemDescriptors.size());
 						changed = true;
 						ImGui::CloseCurrentPopup();
 					}
@@ -884,7 +934,7 @@ namespace DYE::DYEditor
 			auto& systemDescriptor = systemDescriptors[i];
 
 			ImGui::PushID(systemDescriptor.Name.c_str());
-			SystemBase* pSystemInstance = TypeRegistry::TryGetSystemInstance(systemDescriptor.Name);
+			SystemBase* pSystemInstance = systemDescriptor.Instance;
 			bool const isRecognizedSystem = pSystemInstance != nullptr;
 			char const* headerText = isRecognizedSystem ? systemDescriptor.Name.c_str() : "(Unrecognized System)";
 
@@ -905,7 +955,12 @@ namespace DYE::DYEditor
 
 			// Draw enabled toggle.
 			ImGui::SameLine();
-			ImGui::Checkbox("##IsEnabled", &systemDescriptor.IsEnabled);
+			bool isSystemEnabled = systemDescriptor.IsEnabled;
+			ImGui::Checkbox("##IsEnabled", &isSystemEnabled);
+			if (isSystemEnabled != systemDescriptor.IsEnabled)
+			{
+				Undo::SetSystemIsEnabled(scene, systemDescriptor, i, isSystemEnabled);
+			}
 
 			// Draw header text (system name most likely).
 			ImGui::SameLine();
@@ -924,9 +979,8 @@ namespace DYE::DYEditor
 				{
 					// Swap with the previous system and return right away.
 					int const otherSystemIndex = i - 1;
-					auto const otherSystemDescriptor = systemDescriptors[otherSystemIndex];
-					systemDescriptors[otherSystemIndex] = systemDescriptor;
-					systemDescriptors[i] = otherSystemDescriptor;
+					Undo::ReorderSystem(scene, systemDescriptor, i, otherSystemIndex);
+					changed = true;
 					ImGui::PopID();
 					return true;
 				}
@@ -939,9 +993,8 @@ namespace DYE::DYEditor
 				{
 					// Swap with the next system and return right away.
 					int const otherSystemIndex = i + 1;
-					auto const otherSystemDescriptor = systemDescriptors[otherSystemIndex];
-					systemDescriptors[otherSystemIndex] = systemDescriptor;
-					systemDescriptors[i] = otherSystemDescriptor;
+					Undo::ReorderSystem(scene, systemDescriptor, i, otherSystemIndex);
+					changed = true;
 					ImGui::PopID();
 					return true;
 				}
@@ -971,22 +1024,24 @@ namespace DYE::DYEditor
 		// Remove systems.
 		if (indexToRemove != -1)
 		{
-			systemDescriptors.erase(systemDescriptors.begin() + indexToRemove);
+			Undo::RemoveSystem(scene, systemDescriptors[indexToRemove], indexToRemove);
 		}
 
 		return changed;
 	}
 
-	bool SceneEditorLayer::drawEntityInspector(DYEditor::Entity &entity,
-											   std::vector<std::pair<std::string, ComponentTypeDescriptor>> componentNamesAndDescriptors,
-											   InspectorMode mode)
+	bool SceneEditorLayer::drawEntityInspector(EntityInspectorContext &context,
+											   std::vector<std::pair<std::string, ComponentTypeDescriptor>> componentNamesAndDescriptors)
 	{
+		Entity &entity = context.Entity;
+		InspectorMode &mode = context.Mode;
+
 		if (!entity.IsValid())
 		{
 			return false;
 		}
 
-		bool changed = false;
+		bool isEntityChangedThisFrame = false;
 
 		ImVec2 const addComponentButtonSize = ImVec2 {120, 0};
 		float const scrollBarWidth = ImGui::GetCurrentWindow()->ScrollbarY? ImGui::GetWindowScrollbarRect(ImGui::GetCurrentWindow(), ImGuiAxis_Y).GetWidth() : 0;
@@ -994,7 +1049,28 @@ namespace DYE::DYEditor
 		// Draw entity's NameComponent as a InputField on the top.
 		auto& nameComponent = entity.AddOrGetComponent<NameComponent>();
 		ImGui::PushItemWidth(ImGui::GetWindowWidth() - scrollBarWidth - addComponentButtonSize.x - ImGui::GetFontSize());
-		changed |= ImGui::InputText("##EntityNameComponent", &nameComponent.Name);
+		{
+			bool const changedThisFrame = ImGui::InputText("##EntityNameComponent", &nameComponent.Name);
+			if (ImGui::IsItemActivated())
+			{
+				context.IsModifyingEntityProperty = true;
+				context.SerializedComponentBeforeModification =
+					SerializedObjectFactory::CreateSerializedComponentOfType(entity, NameComponentName, TypeRegistry::GetComponentTypeDescriptor_NameComponent());
+			}
+
+			if (ImGui::IsItemDeactivated())
+			{
+				context.IsModifyingEntityProperty = false;
+			}
+			if (ImGui::IsItemDeactivatedAfterEdit())
+			{
+				auto serializedNameComponentAfterModification =
+					SerializedObjectFactory::CreateSerializedComponentOfType(entity, NameComponentName, TypeRegistry::GetComponentTypeDescriptor_NameComponent());
+				Undo::RegisterComponentModification(entity, context.SerializedComponentBeforeModification, serializedNameComponentAfterModification);
+			}
+
+			isEntityChangedThisFrame |= changedThisFrame;
+		}
 		ImGui::PopItemWidth();
 
 		// Draw a 'Add Component' button at the top of the inspector, and align it to the right side of the window.
@@ -1020,7 +1096,7 @@ namespace DYE::DYEditor
 		{
 			if (ImGui::BeginListBox("##Add Component List Box"))
 			{
-				for (auto const& [name, typeDescriptor] : componentNamesAndDescriptors)
+				for (auto const& [typeName, typeDescriptor] : componentNamesAndDescriptors)
 				{
 					if (mode == InspectorMode::Normal && !typeDescriptor.ShouldBeIncludedInNormalAddComponentList)
 					{
@@ -1033,11 +1109,11 @@ namespace DYE::DYEditor
 						continue;
 					}
 
-					if (ImGui::Selectable(name.c_str()))
+					if (ImGui::Selectable(typeName.c_str()))
 					{
-						// Add the component
-						typeDescriptor.Add(entity);
-						changed = true;
+						// Add the component.
+						Undo::AddComponent(entity, typeName, typeDescriptor);
+						isEntityChangedThisFrame = true;
 						ImGui::CloseCurrentPopup();
 					}
 				}
@@ -1047,14 +1123,14 @@ namespace DYE::DYEditor
 		}
 
 		// Draw all components that the entity has.
-		for (auto& [name, typeDescriptor] : componentNamesAndDescriptors)
+		for (auto& [typeName, typeDescriptor] : componentNamesAndDescriptors)
 		{
 			if (mode == InspectorMode::Normal && !typeDescriptor.ShouldDrawInNormalInspector)
 			{
 				continue;
 			}
 
-			DYE_ASSERT_LOG_WARN(typeDescriptor.Has != nullptr, "Missing 'Has' function for component '%s'.", name.c_str());
+			DYE_ASSERT_LOG_WARN(typeDescriptor.Has != nullptr, "Missing 'Has' function for component '%s'.", typeName.c_str());
 			if (!typeDescriptor.Has(entity))
 			{
 				continue;
@@ -1063,7 +1139,7 @@ namespace DYE::DYEditor
 			bool isHeaderVisible = true;
 			bool showComponentInspector = true;
 
-			ImGui::PushID(name.c_str());
+			ImGui::PushID(typeName.c_str());
 			if (typeDescriptor.DrawHeader == nullptr)
 			{
 				ImGuiTreeNodeFlags const flags = ImGuiTreeNodeFlags_DefaultOpen;
@@ -1075,13 +1151,32 @@ namespace DYE::DYEditor
 
 				// The name of the component.
 				ImGui::SameLine();
-				ImGui::TextUnformatted(name.c_str());
+				ImGui::TextUnformatted(typeName.c_str());
 
 			}
 			else
 			{
 				// Use custom header drawer if provided.
-				showComponentInspector = typeDescriptor.DrawHeader(entity, isHeaderVisible, changed, name);
+				DrawComponentHeaderContext drawHeaderContext;
+				showComponentInspector = typeDescriptor.DrawHeader(drawHeaderContext, entity, isHeaderVisible, typeName);
+				if (drawHeaderContext.IsModificationActivated)
+				{
+					context.IsModifyingEntityProperty = true;
+					context.SerializedComponentBeforeModification =
+						SerializedObjectFactory::CreateSerializedComponentOfType(entity, typeName, typeDescriptor);
+				}
+
+				if (drawHeaderContext.IsModificationDeactivated)
+				{
+					context.IsModifyingEntityProperty = false;
+				}
+				if (drawHeaderContext.IsModificationDeactivatedAfterEdit)
+				{
+					auto serializedComponentAfterModification = SerializedObjectFactory::CreateSerializedComponentOfType(entity, typeName, typeDescriptor);
+					Undo::RegisterComponentModification(entity, context.SerializedComponentBeforeModification, serializedComponentAfterModification);
+				}
+
+				isEntityChangedThisFrame |= drawHeaderContext.ComponentChanged;
 			}
 			ImGui::PopID();
 
@@ -1089,8 +1184,8 @@ namespace DYE::DYEditor
 			if (isRemoved)
 			{
 				// Remove the component
-				typeDescriptor.Remove(entity);
-				changed = true;
+				Undo::RemoveComponent(entity, typeName, typeDescriptor);
+				isEntityChangedThisFrame = true;
 				continue;
 			}
 
@@ -1107,21 +1202,40 @@ namespace DYE::DYEditor
 					ImGui::BeginTooltip();
 					ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
 					ImGui::TextWrapped("Missing 'DrawInspector' function for component '%s'. "
-									   "It's likely that the DrawInspectorFunction is not assigned when TypeRegistry::registerComponentType is called.", name.c_str());
+									   "It's likely that the DrawInspectorFunction is not assigned when TypeRegistry::registerComponentType is called.", typeName.c_str());
 					ImGui::PopTextWrapPos();
 					ImGui::EndTooltip();
 				}
 			}
 			else
 			{
-				ImGui::PushID(name.c_str());
-				changed |= typeDescriptor.DrawInspector(entity);
+				ImGui::PushID(typeName.c_str());
+				DrawComponentInspectorContext drawComponentInspectorContext;
+				isEntityChangedThisFrame |= typeDescriptor.DrawInspector(drawComponentInspectorContext, entity);
+
+				if (drawComponentInspectorContext.IsModificationActivated)
+				{
+					context.IsModifyingEntityProperty = true;
+					context.SerializedComponentBeforeModification =
+						SerializedObjectFactory::CreateSerializedComponentOfType(entity, typeName, typeDescriptor);
+				}
+
+				if (drawComponentInspectorContext.IsModificationDeactivated)
+				{
+					context.IsModifyingEntityProperty = false;
+				}
+				if (drawComponentInspectorContext.IsModificationDeactivatedAfterEdit)
+				{
+					auto serializedComponentAfterModification = SerializedObjectFactory::CreateSerializedComponentOfType(entity, typeName, typeDescriptor);
+					Undo::RegisterComponentModification(entity, context.SerializedComponentBeforeModification, serializedComponentAfterModification);
+				}
+
 				ImGui::PopID();
 			}
 
 			ImGui::Spacing();
 		}
 
-		return changed;
+		return isEntityChangedThisFrame;
 	}
 }

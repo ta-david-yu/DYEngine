@@ -2,6 +2,7 @@
 
 #include "Core/Entity.h"
 #include "ImGui/ImGuiUtil.h"
+#include "Type/DrawComponentHeaderContext.h"
 
 #include <concepts>
 
@@ -34,7 +35,7 @@ namespace DYE::DYEditor
 	};
 
 	template<typename T>
-	bool DefaultDrawComponentHeaderWithIsEnabled(DYE::DYEditor::Entity &entity, bool &isHeaderVisible, bool &entityChanged, std::string const &headerLabel)
+	bool DefaultDrawComponentHeaderWithIsEnabled(DrawComponentHeaderContext &drawHeaderContext, DYE::DYEditor::Entity &entity, bool &isHeaderVisible, std::string const &headerLabel)
 	{
 		static_assert(HasIsEnabled<T>, "Type T does not have a public member variable named 'IsEnabled' of type bool.");
 
@@ -42,7 +43,10 @@ namespace DYE::DYEditor
 		bool const showInspector = ImGui::CollapsingHeader("##Header", &isHeaderVisible, flags);
 
 		ImGui::SameLine();
-		entityChanged |= ImGui::Checkbox("##IsEnabledCheckbox", &entity.GetComponent<T>().IsEnabled);
+		drawHeaderContext.ComponentChanged |= ImGui::Checkbox("##IsEnabledCheckbox", &entity.GetComponent<T>().IsEnabled);
+		drawHeaderContext.IsModificationActivated |= ImGui::IsItemActivated();
+		drawHeaderContext.IsModificationDeactivated |= ImGui::IsItemDeactivated();
+		drawHeaderContext.IsModificationDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
 
 		ImGui::SameLine();
 		ImGui::TextUnformatted(headerLabel.c_str());

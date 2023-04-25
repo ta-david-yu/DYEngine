@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SerializedComponentHandle.h"
+#include "SerializedComponent.h"
 
 #include <toml++/toml.h>
 
@@ -11,15 +11,16 @@ namespace DYE::DYEditor
 		friend class SerializedObjectFactory;
 		friend class SerializedScene;
 
+		SerializedEntity() = default;
+
 		inline bool IsHandle() const { return m_IsHandle; }
-		std::vector<SerializedComponentHandle> GetSerializedComponentHandles();
+		std::vector<SerializedComponent> GetSerializedComponentHandles();
 		/// \return true if a component of the given type is removed.
 		bool TryRemoveComponentOfType(std::string const& typeName);
 		/// \return a SerializedComponentHandle of the newly added component OR the existing component of the given type.
-		SerializedComponentHandle TryAddComponentOfType(std::string const& typeName);
+		SerializedComponent TryAddComponentOfType(std::string const& typeName);
 
 	private:
-		SerializedEntity() = default;
 		explicit SerializedEntity(toml::table* pEntityTableHandle);
 		explicit SerializedEntity(toml::table&& entityTable);
 

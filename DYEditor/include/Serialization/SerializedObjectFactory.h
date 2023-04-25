@@ -8,14 +8,17 @@
 #include <filesystem>
 #include <optional>
 
-namespace DYE::DYEditor
-{
-	class Entity;
-}
 
 namespace DYE::DYEditor
 {
+	class Entity;
 	class Scene;
+	struct ComponentTypeDescriptor;
+
+	struct ApplySerializedEntityResult
+	{
+		std::vector<std::string> UnrecognizedComponentTypeNames;
+	};
 
 	class SerializedObjectFactory
 	{
@@ -32,7 +35,7 @@ namespace DYE::DYEditor
 
 		/// SerializedEntity -> Entity. \n
 		/// This function assumes the given Entity is empty and doesn't do any clean-up on the Entity.
-		static void ApplySerializedEntityToEmptyEntity(SerializedEntity& serializedEntity, DYE::DYEditor::Entity& entity);
+		static ApplySerializedEntityResult ApplySerializedEntityToEmptyEntity(SerializedEntity& serializedEntity, DYE::DYEditor::Entity& entity);
 
 		/// Scene -> SerializedScene
 		static SerializedScene CreateSerializedScene(Scene& scene);
@@ -46,7 +49,13 @@ namespace DYE::DYEditor
 		/// SerializedEntity -> EntityFile
 		static void SaveSerializedEntityToFile(SerializedEntity& serializedEntity, std::filesystem::path const& path);
 
+		/// Entity.Component -> SerializedComponent
+		static SerializedComponent CreateSerializedComponentOfType(DYE::DYEditor::Entity &entity,
+																   std::string const &componentTypeName,
+																   ComponentTypeDescriptor componentTypeDescriptor);
+
 		static SerializedScene CreateEmptySerializedScene();
 		static SerializedEntity CreateEmptySerializedEntity();
+		static SerializedComponent CreateEmptySerializedComponent();
 	};
 }

@@ -53,6 +53,13 @@ struct FixedUpdateSystem3 final : public DYE::DYEditor::SystemBase
 	void Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params) final { }
 };
 
+DYE_SYSTEM("ImGui System 1", ImGuiSystem1)
+struct ImGuiSystem1 final : public DYE::DYEditor::SystemBase
+{
+	inline DYE::DYEditor::ExecutionPhase GetPhase() const override { return DYE::DYEditor::ExecutionPhase::ImGui; }
+	void Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params) final;
+};
+
 namespace SystemNamespace
 {
 	DYE_SYSTEM("Initialize System A", SystemNamespace::InitializeSystemA)
