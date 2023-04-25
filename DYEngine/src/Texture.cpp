@@ -45,6 +45,13 @@ namespace DYE
 		}
 	}
 
+	void Texture::SetDebugLabel(const std::string &name)
+	{
+#ifdef DYE_DEBUG
+		glObjectLabel(GL_TEXTURE, GetID(), -1, name.c_str());
+#endif
+	}
+
     std::shared_ptr<Texture2D> Texture2D::Create(std::uint32_t width, std::uint32_t height)
     {
         return std::make_shared<Texture2D>(width, height);
@@ -59,6 +66,9 @@ namespace DYE
 
         auto texture = std::make_shared<Texture2D>(1, 1);
         texture->SetData((void*) data, 1);
+
+		texture->SetDebugLabel("Color Texture2D (1 x 1)");
+
         return std::move(texture);
     }
 
@@ -83,12 +93,18 @@ namespace DYE
   		auto texture = std::make_shared<Texture2D>(width, height);
 		texture->SetData(data.data(), numberOfPixels);
 
+		char label[128];
+		sprintf(label, "Color Texture2D (%d x %d)", width, height);
+		texture->SetDebugLabel(label);
+
 		return std::move(texture);
 	}
 
     std::shared_ptr<Texture2D> Texture2D::Create(const std::filesystem::path& path)
     {
-        return std::make_shared<Texture2D>(path);
+        auto texture = std::make_shared<Texture2D>(path);
+		texture->SetDebugLabel(path.string());
+		return std::move(texture);
     }
 
 	std::shared_ptr<Texture2D> Texture2D::GetWhiteTexture()
@@ -116,11 +132,6 @@ namespace DYE
         glTextureParameteri(m_ID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTextureParameteri(m_ID, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTextureParameteri(m_ID, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-#ifdef DYE_DEBUG
-        // apply the name, -1 means NULL terminated
-        glObjectLabel(GL_TEXTURE, m_ID, -1, "WxH");
-#endif
     }
 
     Texture2D::Texture2D(const std::filesystem::path& path) : m_Path(path)
@@ -180,11 +191,6 @@ namespace DYE
                 m_Height,
 				minFilter,
 				magFilter);
-
-#ifdef DYE_DEBUG
-        // apply the name, -1 means NULL terminated
-        glObjectLabel(GL_TEXTURE, m_ID, -1, m_Path.string().c_str());
-#endif
 
         stbi_image_free(data);
     }

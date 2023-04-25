@@ -76,5 +76,19 @@ namespace DYE
 		auto status = glCheckNamedFramebufferStatus(m_ID, GL_FRAMEBUFFER);
 		DYE_ASSERT(status == GL_FRAMEBUFFER_COMPLETE && "Framebuffer is incomplete.");
 
+#ifdef DYE_DEBUG
+		if (!m_DebugName.empty())
+		{
+			glObjectLabel(GL_FRAMEBUFFER, m_ID, -1, m_DebugName.c_str());
+		}
+#endif
+	}
+
+	void Framebuffer::SetDebugLabel(std::string const &name)
+	{
+#ifdef DYE_DEBUG
+		m_DebugName = name;
+		glObjectLabel(GL_FRAMEBUFFER, m_ID, -1, name.c_str());
+#endif
 	}
 }

@@ -147,6 +147,7 @@ namespace DYE::DYEditor
 
 		// Initialize SceneView framebuffer.
 		m_SceneViewCameraTargetFramebuffer = Framebuffer::Create(FramebufferProperties {.Width = 1600, .Height = 900});
+		m_SceneViewCameraTargetFramebuffer->SetDebugLabel("Scene View Framebuffer");
 		m_SceneViewCamera.Properties.TargetType = RenderTargetType::RenderTexture;
 		m_SceneViewCamera.Properties.pTargetRenderTexture = m_SceneViewCameraTargetFramebuffer.get();
 		m_SceneViewCamera.Position = {0, 0, 10};

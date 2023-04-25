@@ -40,11 +40,14 @@ namespace DYE
 		TextureID GetColorAttachmentID() const { return m_ColorAttachmentID; }
 		FramebufferProperties const& GetProperties() const { return m_Properties; }
 
+		void SetDebugLabel(std::string const &name);
+
 	private:
 		FramebufferID m_ID {0};
 		TextureID m_ColorAttachmentID;
 		TextureID m_DepthStencilAttachmentID;
 
 		FramebufferProperties m_Properties;
+		std::string m_DebugName;
 	};
 }

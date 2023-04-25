@@ -118,6 +118,11 @@ namespace DYE
 		}
 
 		DYE_LOG("- Successfully create shader (%d) \"%s\" from \"%s\" >>", program->m_ID, name.c_str(), filepath.string().c_str());
+
+#ifdef DYE_DEBUG
+		glObjectLabel(GL_PROGRAM, program->m_ID, -1, name.c_str());
+#endif
+
 		return program;
 	}
 

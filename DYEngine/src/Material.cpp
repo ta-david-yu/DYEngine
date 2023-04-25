@@ -51,7 +51,7 @@ namespace DYE
 					material->m_BoolProperties.emplace_back(uniformInfo.value(), 0);
 					break;
 				case UniformType::Texture2D:
-					material->m_TextureProperties.emplace_back(uniformInfo.value(), Texture2D::GetWhiteTexture());
+					material->m_TextureProperties.emplace_back(uniformInfo.value(), Texture2D::GetDefaultTexture());
 					break;
 				case UniformType::Invalid:
 					break;

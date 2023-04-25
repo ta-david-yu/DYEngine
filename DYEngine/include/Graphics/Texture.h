@@ -40,6 +40,8 @@ namespace DYE
 
 		void SetWrapMode(WrapMode wrapMode);
 		void SetFilterMode(FilterMode filterMode);
+
+		void SetDebugLabel(std::string const &name);
     };
 
     class Texture2D : public Texture
