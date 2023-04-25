@@ -19,6 +19,15 @@
 
 namespace DYE::DYEditor
 {
+	/// A helper function that helps updating context data after a DrawControl call.
+	/// Used by DrawInspector functions mostly.
+	inline void updateContextAfterDrawControlCall(DrawComponentInspectorContext &context)
+	{
+		context.IsModificationActivated |= ImGuiUtil::IsControlActivated();
+		context.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
+		context.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+	}
+
 	void userRegisterTypeFunction()
 	{
 		// Insert user type registration here...
@@ -50,8 +59,8 @@ namespace DYE::DYEditor
 							bool changed = false;
 							auto& component = entity.GetComponent<TestNamespace::TestComponentA>();
 							ImGui::TextWrapped("TestNamespace::TestComponentA");
-							changed |= ImGuiUtil::DrawFloatControl("FloatValue", component.FloatValue);
-							changed |= ImGuiUtil::DrawIntControl("IntegerValue", component.IntegerValue);
+							changed |= ImGuiUtil::DrawFloatControl("FloatValue", component.FloatValue); updateContextAfterDrawControlCall(drawInspectorContext);
+							changed |= ImGuiUtil::DrawIntControl("IntegerValue", component.IntegerValue); updateContextAfterDrawControlCall(drawInspectorContext);
 							ImGui::BeginDisabled(true); ImGuiUtil::DrawReadOnlyTextWithLabel("intCannotBeSerialized", "Variable of unsupported type 'int'"); ImGui::EndDisabled();
 							return changed;
 						}
@@ -81,7 +90,7 @@ namespace DYE::DYEditor
 							bool changed = false;
 							auto& component = entity.GetComponent<TestNamespace::Subnamespace::SubtestComponentA>();
 							ImGui::TextWrapped("TestNamespace::Subnamespace::SubtestComponentA");
-							changed |= ImGuiUtil::DrawIntControl("IntegerValue", component.IntegerValue);
+							changed |= ImGuiUtil::DrawIntControl("IntegerValue", component.IntegerValue); updateContextAfterDrawControlCall(drawInspectorContext);
 							return changed;
 						}
 					}
@@ -119,12 +128,12 @@ namespace DYE::DYEditor
 							bool changed = false;
 							auto& component = entity.GetComponent<TestComponentB>();
 							ImGui::TextWrapped("TestComponentB");
-							changed |= ImGuiUtil::DrawBoolControl("BooleanValue", component.BooleanValue);
-							changed |= ImGuiUtil::DrawCharControl("OneCharacter", component.OneCharacter);
+							changed |= ImGuiUtil::DrawBoolControl("BooleanValue", component.BooleanValue); updateContextAfterDrawControlCall(drawInspectorContext);
+							changed |= ImGuiUtil::DrawCharControl("OneCharacter", component.OneCharacter); updateContextAfterDrawControlCall(drawInspectorContext);
 							ImGui::BeginDisabled(true); ImGuiUtil::DrawReadOnlyTextWithLabel("ConstantFloat", "Constant variable of type 'Float'"); ImGui::EndDisabled();
 							ImGui::BeginDisabled(true); ImGuiUtil::DrawReadOnlyTextWithLabel("ConstantVector3", "Constant variable of type 'Vector3'"); ImGui::EndDisabled();
-							changed |= ImGuiUtil::DrawVector3Control("Position", component.Position);
-							changed |= ImGuiUtil::DrawVector4Control("vec4", component.vec4);
+							changed |= ImGuiUtil::DrawVector3Control("Position", component.Position); updateContextAfterDrawControlCall(drawInspectorContext);
+							changed |= ImGuiUtil::DrawVector4Control("vec4", component.vec4); updateContextAfterDrawControlCall(drawInspectorContext);
 							return changed;
 						}
 					}
@@ -170,15 +179,15 @@ namespace DYE::DYEditor
 							bool changed = false;
 							auto& component = entity.GetComponent<ComponentWithAllPrimitiveProperties>();
 							ImGui::TextWrapped("ComponentWithAllPrimitiveProperties");
-							changed |= ImGuiUtil::DrawCharControl("CharVar", component.CharVar);
-							changed |= ImGuiUtil::DrawBoolControl("BoolVar", component.BoolVar);
-							changed |= ImGuiUtil::DrawIntControl("Int32Var", component.Int32Var);
-							changed |= ImGuiUtil::DrawFloatControl("FloatVar", component.FloatVar);
-							changed |= ImGuiUtil::DrawVector2Control("Vector2Var", component.Vector2Var);
-							changed |= ImGuiUtil::DrawVector3Control("Vector3Var", component.Vector3Var);
-							changed |= ImGuiUtil::DrawVector4Control("Vector4Var", component.Vector4Var);
-							changed |= ImGuiUtil::DrawColor4Control("Color4Var", component.Color4Var);
-							changed |= ImGuiUtil::DrawTextControl("StringVar", component.StringVar);
+							changed |= ImGuiUtil::DrawCharControl("CharVar", component.CharVar); updateContextAfterDrawControlCall(drawInspectorContext);
+							changed |= ImGuiUtil::DrawBoolControl("BoolVar", component.BoolVar); updateContextAfterDrawControlCall(drawInspectorContext);
+							changed |= ImGuiUtil::DrawIntControl("Int32Var", component.Int32Var); updateContextAfterDrawControlCall(drawInspectorContext);
+							changed |= ImGuiUtil::DrawFloatControl("FloatVar", component.FloatVar); updateContextAfterDrawControlCall(drawInspectorContext);
+							changed |= ImGuiUtil::DrawVector2Control("Vector2Var", component.Vector2Var); updateContextAfterDrawControlCall(drawInspectorContext);
+							changed |= ImGuiUtil::DrawVector3Control("Vector3Var", component.Vector3Var); updateContextAfterDrawControlCall(drawInspectorContext);
+							changed |= ImGuiUtil::DrawVector4Control("Vector4Var", component.Vector4Var); updateContextAfterDrawControlCall(drawInspectorContext);
+							changed |= ImGuiUtil::DrawColor4Control("Color4Var", component.Color4Var); updateContextAfterDrawControlCall(drawInspectorContext);
+							changed |= ImGuiUtil::DrawTextControl("StringVar", component.StringVar); updateContextAfterDrawControlCall(drawInspectorContext);
 							// 'QuaternionVar' : Quaternion 
 							{
 								glm::vec3 eulerDegree = glm::eulerAngles(component.QuaternionVar);
@@ -189,6 +198,7 @@ namespace DYE::DYEditor
 									component.QuaternionVar = glm::quat (glm::radians(eulerDegree));
 									changed = true;
 								}
+								updateContextAfterDrawControlCall(drawInspectorContext);
 							}
 							return changed;
 						}
@@ -218,7 +228,7 @@ namespace DYE::DYEditor
 							bool changed = false;
 							auto& component = entity.GetComponent<HasAngularVelocity>();
 							ImGui::TextWrapped("HasAngularVelocity");
-							changed |= ImGuiUtil::DrawFloatControl("AngleDegreePerSecond", component.AngleDegreePerSecond);
+							changed |= ImGuiUtil::DrawFloatControl("AngleDegreePerSecond", component.AngleDegreePerSecond); updateContextAfterDrawControlCall(drawInspectorContext);
 							return changed;
 						}
 					}
@@ -249,8 +259,8 @@ namespace DYE::DYEditor
 							bool changed = false;
 							auto& component = entity.GetComponent<CreateEntity>();
 							ImGui::TextWrapped("CreateEntity");
-							changed |= ImGuiUtil::DrawTextControl("EntityNamePrefix", component.EntityNamePrefix);
-							changed |= ImGuiUtil::DrawIntControl("NumberOfEntitiesToCreate", component.NumberOfEntitiesToCreate);
+							changed |= ImGuiUtil::DrawTextControl("EntityNamePrefix", component.EntityNamePrefix); updateContextAfterDrawControlCall(drawInspectorContext);
+							changed |= ImGuiUtil::DrawIntControl("NumberOfEntitiesToCreate", component.NumberOfEntitiesToCreate); updateContextAfterDrawControlCall(drawInspectorContext);
 							return changed;
 						}
 					}
@@ -279,7 +289,7 @@ namespace DYE::DYEditor
 							bool changed = false;
 							auto& component = entity.GetComponent<PrintMessageOnTeardown>();
 							ImGui::TextWrapped("PrintMessageOnTeardown");
-							changed |= ImGuiUtil::DrawTextControl("Message", component.Message);
+							changed |= ImGuiUtil::DrawTextControl("Message", component.Message); updateContextAfterDrawControlCall(drawInspectorContext);
 							return changed;
 						}
 					}
@@ -312,10 +322,10 @@ namespace DYE::DYEditor
 							bool changed = false;
 							auto& component = entity.GetComponent<TestComponentC>();
 							ImGui::TextWrapped("TestComponentC");
-							changed |= ImGuiUtil::DrawColor4Control("ColorValue", component.ColorValue);
-							changed |= ImGuiUtil::DrawCharControl("TestChar2", component.TestChar2);
-							changed |= ImGuiUtil::DrawTextControl("TestName", component.TestName);
-							changed |= ImGuiUtil::DrawCharControl("TestChar", component.TestChar);
+							changed |= ImGuiUtil::DrawColor4Control("ColorValue", component.ColorValue); updateContextAfterDrawControlCall(drawInspectorContext);
+							changed |= ImGuiUtil::DrawCharControl("TestChar2", component.TestChar2); updateContextAfterDrawControlCall(drawInspectorContext);
+							changed |= ImGuiUtil::DrawTextControl("TestName", component.TestName); updateContextAfterDrawControlCall(drawInspectorContext);
+							changed |= ImGuiUtil::DrawCharControl("TestChar", component.TestChar); updateContextAfterDrawControlCall(drawInspectorContext);
 							return changed;
 						}
 					}
