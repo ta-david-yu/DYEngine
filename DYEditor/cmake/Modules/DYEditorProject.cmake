@@ -35,8 +35,13 @@ endfunction()
 function(DYEditor_AddExecutable NAME SOURCE_ROOT_DIR INCLUDE_DIRS SOURCE_FILES HEADER_FILES)
 
     set(DYE_PROJECT_NAME ${NAME})
-    set(DYE_PROJECT_SOURCE_FILES ${SOURCE_FILES} generated/UserTypeRegister.generated.cpp) # Include generated code in the source as well
+    set(DYE_PROJECT_SOURCE_FILES ${SOURCE_FILES}) # Include generated code in the source as well
     set(DYE_PROJECT_HEADER_FILES ${HEADER_FILES})
+
+    if (DYE_PROJECT_HEADER_FILES)
+        # Include generated file if header files list is not empty.
+        list(APPEND DYE_PROJECT_SOURCE_FILES generated/UserTypeRegister.generated.cpp)
+    endif ()
 
     message(STATUS "[${DYE_PROJECT_NAME}] Source Files: ${DYE_PROJECT_SOURCE_FILES}")
     message(STATUS "[${DYE_PROJECT_NAME}] Header Files: ${DYE_PROJECT_HEADER_FILES}")
@@ -48,11 +53,14 @@ function(DYEditor_AddExecutable NAME SOURCE_ROOT_DIR INCLUDE_DIRS SOURCE_FILES H
 
     target_include_directories(${DYE_PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
 
-    option(DYE_FORCE_GENERATE_CODE "If enabled, always re-generate code for DYEditor::TypeRegistry even if the code is unchanged." OFF)
-    if (DYE_FORCE_GENERATE_CODE)
-        ForceGenerateDYEditorTypeRegistryCode(${SOURCE_ROOT_DIR} ${DYE_PROJECT_HEADER_FILES})
-    else ()
-        GenerateDYEditorTypeRegistryCode(${SOURCE_ROOT_DIR} ${DYE_PROJECT_HEADER_FILES})
+    if (DYE_PROJECT_HEADER_FILES)
+        # Generate code if header files list is not empty.
+        option(DYE_FORCE_GENERATE_CODE "If enabled, always re-generate code for DYEditor::TypeRegistry even if the code is unchanged." OFF)
+        if (DYE_FORCE_GENERATE_CODE)
+            ForceGenerateDYEditorTypeRegistryCode(${SOURCE_ROOT_DIR} ${DYE_PROJECT_HEADER_FILES})
+        else ()
+            GenerateDYEditorTypeRegistryCode(${SOURCE_ROOT_DIR} ${DYE_PROJECT_HEADER_FILES})
+        endif ()
     endif ()
 
 endfunction()
