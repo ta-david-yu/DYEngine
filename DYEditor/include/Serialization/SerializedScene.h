@@ -18,7 +18,8 @@ namespace DYE::DYEditor
 		std::vector<SerializedSystemHandle> GetSerializedSystemHandles();
 		std::vector<SerializedEntity> GetSerializedEntityHandles();
 
-		SerializedEntity CreateAndAddSerializedEntity();
+		/// \return a SerializedEntity of the newly created entity.
+		SerializedEntity CreateAndAddEntityHandle();
 
 		struct AddSystemParameters
 		{
@@ -28,7 +29,7 @@ namespace DYE::DYEditor
 			bool IsEnabled = true;
 		};
 		/// \return a SerializedSystemHandle of the newly added system OR the existing system of the given type.
-		SerializedSystemHandle TryAddSystem(AddSystemParameters addSystemParams);
+		SerializedSystemHandle TryAddSystemHandle(AddSystemParameters addSystemParams);
 
 	private:
 		SerializedScene() = default;

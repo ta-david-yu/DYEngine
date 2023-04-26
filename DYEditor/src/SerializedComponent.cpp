@@ -21,6 +21,13 @@ namespace DYE::DYEditor
 		pComponentTable->insert_or_assign(ComponentTypeNameKey, typeName);
 	}
 
+	SerializedComponent SerializedComponent::CloneAsNonHandle() const
+	{
+		toml::table const* pComponentTable = IsHandle() ? m_pComponentTableHandle : &m_ComponentTable;
+		toml::table componentTableCopy = *pComponentTable;
+		return SerializedComponent(std::move(componentTableCopy));
+	}
+
 	SerializedComponent::SerializedComponent(toml::table *pComponentTableHandle) : m_pComponentTableHandle(pComponentTableHandle), m_IsHandle(true)
 	{
 	}

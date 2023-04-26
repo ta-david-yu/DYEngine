@@ -120,7 +120,7 @@ namespace DYE::DYEditor
 				DYE_LOG("Entity has an unrecognized component of type '%s'.", typeName.c_str());
 				result.Success = false;
 				result.UnrecognizedComponentTypeNames.push_back(typeName);
-				result.UnrecognizedSerializedComponentHandles.push_back(serializedComponentHandle);
+				result.UnrecognizedSerializedComponents.push_back(serializedComponentHandle.CloneAsNonHandle());
 				continue;
 			}
 
@@ -157,33 +157,34 @@ namespace DYE::DYEditor
 		(
 			[&serializedScene, &scene](SystemDescriptor const &systemDescriptor, ExecutionPhase phase)
 			{
-				serializedScene.TryAddSystem
-				(
-					SerializedScene::AddSystemParameters
-					{
-						.SystemTypeName = systemDescriptor.Name,
-						.HasGroup = systemDescriptor.Group != NoSystemGroupID,
-						.SystemGroupName = (systemDescriptor.Group != NoSystemGroupID)
-										   ? scene.SystemGroupNames[systemDescriptor.Group] : "",
-						.IsEnabled = systemDescriptor.IsEnabled
-					}
-				);
+				serializedScene.TryAddSystemHandle
+					(
+						SerializedScene::AddSystemParameters
+							{
+								.SystemTypeName = systemDescriptor.Name,
+								.HasGroup = systemDescriptor.Group != NoSystemGroupID,
+								.SystemGroupName = (systemDescriptor.Group != NoSystemGroupID)
+												   ? scene.SystemGroupNames[systemDescriptor.Group] : "",
+								.IsEnabled = systemDescriptor.IsEnabled
+							}
+					);
 			}
 		);
 
 		// Populate unrecognized/unknown systems.
 		for (auto unrecognizedSystemDescriptor : scene.UnrecognizedSystems)
 		{
-			serializedScene.TryAddSystem
-			(
-				SerializedScene::AddSystemParameters
-				{
-					.SystemTypeName = unrecognizedSystemDescriptor.Name,
-					.HasGroup = unrecognizedSystemDescriptor.Group != NoSystemGroupID,
-					.SystemGroupName = (unrecognizedSystemDescriptor.Group != NoSystemGroupID) ? scene.SystemGroupNames[unrecognizedSystemDescriptor.Group] : "",
-					.IsEnabled = unrecognizedSystemDescriptor.IsEnabled
-				}
-			);
+			serializedScene.TryAddSystemHandle
+				(
+					SerializedScene::AddSystemParameters
+						{
+							.SystemTypeName = unrecognizedSystemDescriptor.Name,
+							.HasGroup = unrecognizedSystemDescriptor.Group != NoSystemGroupID,
+							.SystemGroupName = (unrecognizedSystemDescriptor.Group != NoSystemGroupID)
+											   ? scene.SystemGroupNames[unrecognizedSystemDescriptor.Group] : "",
+							.IsEnabled = unrecognizedSystemDescriptor.IsEnabled
+						}
+				);
 		}
 
 		// Populate entities and their components.
@@ -191,7 +192,7 @@ namespace DYE::DYEditor
 		(
 			[&serializedScene](auto& entity)
 			{
-				SerializedEntity serializedEntity = serializedScene.CreateAndAddSerializedEntity();
+				SerializedEntity serializedEntity = serializedScene.CreateAndAddEntityHandle();
 
 				auto componentNamesAndFunctions = TypeRegistry::GetComponentTypesNamesAndDescriptors();
 				for (auto& [name, functions] : componentNamesAndFunctions)
@@ -201,7 +202,7 @@ namespace DYE::DYEditor
 						continue;
 					}
 
-					SerializedComponent serializedComponent = serializedEntity.TryAddComponentOfType(name);
+					SerializedComponent serializedComponent = serializedEntity.TryAddOrGetComponentHandleOfType(name);
 					if (functions.Serialize == nullptr)
 					{
 						// A 'Serialize' function is not provided for the given component type. Skip the process.
@@ -209,6 +210,16 @@ namespace DYE::DYEditor
 					}
 
 					SerializationResult const result = functions.Serialize(entity, serializedComponent);
+				}
+
+				if (entity.template HasComponent<EntityDeserializationResult>())
+				{
+					// Emplace serialized unrecognized component data back.
+					auto &deserializationResult = entity.template GetComponent<EntityDeserializationResult>();
+					for (auto &serializedComponent : deserializationResult.UnrecognizedSerializedComponents)
+					{
+						serializedEntity.PushSerializedComponent(serializedComponent);
+					}
 				}
 			}
 		);
@@ -228,7 +239,7 @@ namespace DYE::DYEditor
 				continue;
 			}
 
-			SerializedComponent serializedComponent = serializedEntity.TryAddComponentOfType(name);
+			SerializedComponent serializedComponent = serializedEntity.TryAddOrGetComponentHandleOfType(name);
 			if (functions.Serialize == nullptr)
 			{
 				// A 'Serialize' function is not provided for the given component type. Skip the process.
@@ -236,6 +247,16 @@ namespace DYE::DYEditor
 			}
 
 			SerializationResult const result = functions.Serialize(entity, serializedComponent);
+		}
+
+		if (entity.HasComponent<EntityDeserializationResult>())
+		{
+			// Emplace serialized unrecognized component data back.
+			auto &deserializationResult = entity.GetComponent<EntityDeserializationResult>();
+			for (auto &serializedComponent : deserializationResult.UnrecognizedSerializedComponents)
+			{
+				serializedEntity.PushSerializedComponent(serializedComponent);
+			}
 		}
 
 		return serializedEntity;

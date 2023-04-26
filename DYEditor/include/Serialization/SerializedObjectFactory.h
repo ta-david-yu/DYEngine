@@ -18,7 +18,7 @@ namespace DYE::DYEditor
 	struct EntityDeserializationResult
 	{
 		std::vector<std::string> UnrecognizedComponentTypeNames {};
-		std::vector<SerializedComponent> UnrecognizedSerializedComponentHandles {};
+		std::vector<SerializedComponent> UnrecognizedSerializedComponents {};
 		bool Success = true;
 	};
 

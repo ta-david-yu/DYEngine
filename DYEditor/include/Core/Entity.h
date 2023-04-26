@@ -30,7 +30,7 @@ namespace DYE::DYEditor
 		template<typename T, typename... Args>
 		T& AddComponent(Args&&...args)
 		{
-			DYE_ASSERT(!this->HasComponent<T>() && "Entity::AddComponent: Entity already has component of the given type.");
+			DYE_ASSERT(!this->HasComponent<T>() && "Entity::PushSerializedComponent: Entity already has component of the given type.");
 			return m_World->m_Registry.emplace<T>(m_EntityIdentifier, std::forward<Args>(args)...);
 		}
 

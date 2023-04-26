@@ -30,7 +30,7 @@ namespace DYE::DYEditor
 		return handles;
 	}
 
-	bool SerializedEntity::TryRemoveComponentOfType(const std::string &typeName)
+	bool SerializedEntity::TryRemoveComponentHandleOfType(const std::string &typeName)
 	{
 		toml::table* pEntityTable = IsHandle()? m_pEntityTableHandle : &m_EntityTable;
 		toml::node* pArrayOfComponentTables = pEntityTable->get(ArrayOfComponentTablesKey);
@@ -61,7 +61,7 @@ namespace DYE::DYEditor
 		return true;
 	}
 
-	SerializedComponent SerializedEntity::TryAddComponentOfType(const std::string &typeName)
+	SerializedComponent SerializedEntity::TryAddOrGetComponentHandleOfType(const std::string &typeName)
 	{
 		toml::table* pEntityTable = IsHandle()? m_pEntityTableHandle : &m_EntityTable;
 		toml::array* pArrayOfComponentTables = pEntityTable->get_as<toml::array>(ArrayOfComponentTablesKey);
@@ -107,6 +107,22 @@ namespace DYE::DYEditor
 		return SerializedComponent(pComponentTable);
 	}
 
+	void SerializedEntity::PushSerializedComponent(const SerializedComponent &serializedComponent)
+	{
+		toml::table* pEntityTable = IsHandle()? m_pEntityTableHandle : &m_EntityTable;
+		toml::array* pArrayOfComponentTables = pEntityTable->get_as<toml::array>(ArrayOfComponentTablesKey);
+
+		toml::table const &componentTable = serializedComponent.IsHandle()? *serializedComponent.m_pComponentTableHandle : serializedComponent.m_ComponentTable;
+		if (pArrayOfComponentTables == nullptr)
+		{
+			// Emplace a component array into the entity table if it doesn't exist yet.
+			auto [iterator, insertionResult] = pEntityTable->emplace(ArrayOfComponentTablesKey, toml::array{});
+			pArrayOfComponentTables = iterator->second.as_array();
+		}
+
+		pArrayOfComponentTables->push_back(componentTable);
+	}
+
 	SerializedEntity::SerializedEntity(toml::table *pEntityTableHandle) : m_pEntityTableHandle(pEntityTableHandle), m_IsHandle(true)
 	{
 	}
@@ -114,5 +130,4 @@ namespace DYE::DYEditor
 	SerializedEntity::SerializedEntity(toml::table &&entityTable) : m_EntityTable(entityTable), m_IsHandle(false)
 	{
 	}
-
 }

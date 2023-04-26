@@ -24,6 +24,9 @@ namespace DYE::DYEditor
 		std::optional<std::string> TryGetTypeName() const;
 		void SetTypeName(std::string const& typeName);
 
+		/// \return Return a copy that is not a handle.
+		SerializedComponent CloneAsNonHandle() const;
+
 		template<typename T>
 		std::optional<T> TryGetPrimitiveTypePropertyValue(std::string_view const& propertyName) const
 		{

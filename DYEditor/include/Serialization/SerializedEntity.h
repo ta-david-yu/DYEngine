@@ -16,9 +16,12 @@ namespace DYE::DYEditor
 		inline bool IsHandle() const { return m_IsHandle; }
 		std::vector<SerializedComponent> GetSerializedComponentHandles();
 		/// \return true if a component of the given type is removed.
-		bool TryRemoveComponentOfType(std::string const& typeName);
+		bool TryRemoveComponentHandleOfType(const std::string &typeName);
 		/// \return a SerializedComponentHandle of the newly added component OR the existing component of the given type.
-		SerializedComponent TryAddComponentOfType(std::string const& typeName);
+		SerializedComponent TryAddOrGetComponentHandleOfType(const std::string &typeName);
+
+		/// Emplace the given serialized component as a serialized component handle.
+		void PushSerializedComponent(const SerializedComponent &serializedComponent);
 
 	private:
 		explicit SerializedEntity(toml::table* pEntityTableHandle);
