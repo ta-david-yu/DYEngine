@@ -400,8 +400,8 @@ namespace DYE::DYEditor
 		sprintf(entityInspectorWindowName, "%s%s", debugMode ? "Entity Inspector (Debug)" : "Entity Inspector", k_EntityInspectorWindowId);
 		if (ImGui::Begin(entityInspectorWindowName))
 		{
-			// Draw inspector window context menu.
-			if (ImGui::BeginPopupContextWindow())
+			// Draw inspector window title context menu.
+			if (ImGui::BeginPopupContextItem())
 			{
 				if (ImGui::MenuItem("Normal", nullptr, !debugMode))
 				{
@@ -1235,6 +1235,55 @@ namespace DYE::DYEditor
 			}
 
 			ImGui::Spacing();
+		}
+
+		// Finally, if the entity has EntityDeserializationResult, we want to draw the deserialization report in the inspector.
+		// (i.e. Unrecognized components etc)
+		if (entity.HasComponent<EntityDeserializationResult>())
+		{
+			EntityDeserializationResult &deserializationResult = entity.GetComponent<EntityDeserializationResult>();
+
+			ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(1.000f, 0.000f, 0.000f, 0.310f));
+			bool const showUnrecognizedSystems = ImGui::CollapsingHeader("Unrecognized Components");
+			ImGui::PopStyleColor();
+			if (showUnrecognizedSystems)
+			{
+				if (ImGui::BeginTable("Unrecognized Component Table", 1, ImGuiTableFlags_RowBg))
+				{
+					int indexToRemove = -1;
+					for (int i = 0; i < deserializationResult.UnrecognizedComponentTypeNames.size(); ++i)
+					{
+						auto const &typeName = deserializationResult.UnrecognizedComponentTypeNames[i];
+
+						ImGui::TableNextRow();
+						ImGui::TableSetColumnIndex(0);
+						ImGui::PushID(typeName.c_str());
+
+						char label[128];
+						sprintf(label, "Component '%s' is unknown in the TypeRegistry.", typeName.c_str());
+						ImGui::Bullet();
+						ImGui::Selectable(label, false);
+
+						char const *popupId = "Unknown component popup";
+						if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+						{
+							ImGui::OpenPopup(popupId);
+						}
+
+						if (ImGui::BeginPopup(popupId))
+						{
+							if (ImGui::Selectable("Copy Name"))
+							{
+								ImGui::SetClipboardText(typeName.c_str());
+							}
+							ImGui::EndPopup();
+						}
+						ImGui::PopID();
+					}
+
+					ImGui::EndTable();
+				}
+			}
 		}
 
 		return isEntityChangedThisFrame;

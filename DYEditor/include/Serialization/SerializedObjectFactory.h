@@ -15,9 +15,11 @@ namespace DYE::DYEditor
 	class Scene;
 	struct ComponentTypeDescriptor;
 
-	struct ApplySerializedEntityResult
+	struct EntityDeserializationResult
 	{
-		std::vector<std::string> UnrecognizedComponentTypeNames;
+		std::vector<std::string> UnrecognizedComponentTypeNames {};
+		std::vector<SerializedComponent> UnrecognizedSerializedComponentHandles {};
+		bool Success = true;
 	};
 
 	class SerializedObjectFactory
@@ -35,7 +37,7 @@ namespace DYE::DYEditor
 
 		/// SerializedEntity -> Entity. \n
 		/// This function assumes the given Entity is empty and doesn't do any clean-up on the Entity.
-		static ApplySerializedEntityResult ApplySerializedEntityToEmptyEntity(SerializedEntity& serializedEntity, DYE::DYEditor::Entity& entity);
+		static EntityDeserializationResult ApplySerializedEntityToEmptyEntity(SerializedEntity& serializedEntity, DYE::DYEditor::Entity& entity);
 
 		/// Scene -> SerializedScene
 		static SerializedScene CreateSerializedScene(Scene& scene);

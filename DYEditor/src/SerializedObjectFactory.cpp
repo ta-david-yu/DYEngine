@@ -86,13 +86,19 @@ namespace DYE::DYEditor
 		{
 			DYEditor::Entity entity = scene.World.CreateEntity();
 			auto result = ApplySerializedEntityToEmptyEntity(serializedEntityHandle, entity);
+
+			if (!result.Success)
+			{
+				// If the deserialized entity has some issue during deserialization, add the result as component to the entity.
+				entity.AddComponent<EntityDeserializationResult>(result);
+			}
 		}
 	}
 
-	ApplySerializedEntityResult SerializedObjectFactory::ApplySerializedEntityToEmptyEntity(SerializedEntity &serializedEntity,
+	EntityDeserializationResult SerializedObjectFactory::ApplySerializedEntityToEmptyEntity(SerializedEntity &serializedEntity,
 																	 DYEditor::Entity &entity)
 	{
-		std::vector<std::string> unrecognizedComponentNames;
+		EntityDeserializationResult result;
 
 		std::vector<SerializedComponent> serializedComponentHandles = serializedEntity.GetSerializedComponentHandles();
 		for (auto& serializedComponentHandle : serializedComponentHandles)
@@ -112,7 +118,9 @@ namespace DYE::DYEditor
 				// to the unrecognized component list OR component.
 				// TODO: Keep track of unrecognized component so we could show it in the entity inspector.
 				DYE_LOG("Entity has an unrecognized component of type '%s'.", typeName.c_str());
-				unrecognizedComponentNames.push_back(typeName);
+				result.Success = false;
+				result.UnrecognizedComponentTypeNames.push_back(typeName);
+				result.UnrecognizedSerializedComponentHandles.push_back(serializedComponentHandle);
 				continue;
 			}
 
@@ -127,7 +135,7 @@ namespace DYE::DYEditor
 
 			try
 			{
-				DeserializationResult const result = componentTypeFunctions.Deserialize(serializedComponentHandle, entity);
+				DeserializationResult const deserializeComponentResult = componentTypeFunctions.Deserialize(serializedComponentHandle, entity);
 			}
 			catch (std::exception& exception)
 			{
@@ -136,7 +144,7 @@ namespace DYE::DYEditor
 			}
 		}
 
-		return { .UnrecognizedComponentTypeNames = std::move(unrecognizedComponentNames) };
+		return std::move(result);
 	}
 
 	SerializedScene SerializedObjectFactory::CreateSerializedScene(Scene &scene)
