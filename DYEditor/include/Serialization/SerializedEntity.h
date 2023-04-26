@@ -15,12 +15,15 @@ namespace DYE::DYEditor
 
 		inline bool IsHandle() const { return m_IsHandle; }
 		std::vector<SerializedComponent> GetSerializedComponentHandles();
+
 		/// \return true if a component of the given type is removed.
 		bool TryRemoveComponentHandleOfType(const std::string &typeName);
-		/// \return a SerializedComponentHandle of the newly added component OR the existing component of the given type.
-		SerializedComponent TryAddOrGetComponentHandleOfType(const std::string &typeName);
 
-		/// Emplace the given serialized component as a serialized component handle.
+		/// \return a SerializedComponentHandle of the newly added component OR the existing component of the given type.
+		SerializedComponent AddOrGetComponentHandleOfType(const std::string &typeName);
+
+		/// Push the given serialized component as a serialized component handle.
+		/// It doesn't check component duplication.
 		void PushSerializedComponent(const SerializedComponent &serializedComponent);
 
 	private:

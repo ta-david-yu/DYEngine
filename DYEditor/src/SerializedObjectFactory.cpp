@@ -157,7 +157,7 @@ namespace DYE::DYEditor
 		(
 			[&serializedScene, &scene](SystemDescriptor const &systemDescriptor, ExecutionPhase phase)
 			{
-				serializedScene.TryAddSystemHandle
+				serializedScene.AddOrReplaceSystemHandle
 					(
 						SerializedScene::AddSystemParameters
 							{
@@ -174,7 +174,7 @@ namespace DYE::DYEditor
 		// Populate unrecognized/unknown systems.
 		for (auto unrecognizedSystemDescriptor : scene.UnrecognizedSystems)
 		{
-			serializedScene.TryAddSystemHandle
+			serializedScene.AddOrReplaceSystemHandle
 				(
 					SerializedScene::AddSystemParameters
 						{
@@ -202,7 +202,7 @@ namespace DYE::DYEditor
 						continue;
 					}
 
-					SerializedComponent serializedComponent = serializedEntity.TryAddOrGetComponentHandleOfType(name);
+					SerializedComponent serializedComponent = serializedEntity.AddOrGetComponentHandleOfType(name);
 					if (functions.Serialize == nullptr)
 					{
 						// A 'Serialize' function is not provided for the given component type. Skip the process.
@@ -239,7 +239,7 @@ namespace DYE::DYEditor
 				continue;
 			}
 
-			SerializedComponent serializedComponent = serializedEntity.TryAddOrGetComponentHandleOfType(name);
+			SerializedComponent serializedComponent = serializedEntity.AddOrGetComponentHandleOfType(name);
 			if (functions.Serialize == nullptr)
 			{
 				// A 'Serialize' function is not provided for the given component type. Skip the process.

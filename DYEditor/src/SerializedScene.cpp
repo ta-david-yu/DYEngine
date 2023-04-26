@@ -87,7 +87,7 @@ namespace DYE::DYEditor
 		return SerializedEntity(pNewEntityTableHandle);
 	}
 
-	SerializedSystemHandle SerializedScene::TryAddSystemHandle(AddSystemParameters addSystemParams)
+	SerializedSystemHandle SerializedScene::AddOrReplaceSystemHandle(AddSystemParameters addSystemParams)
 	{
 		toml::array* pArrayOfSystemTables = m_SceneTable.get_as<toml::array>(ArrayOfSystemTablesKey);
 

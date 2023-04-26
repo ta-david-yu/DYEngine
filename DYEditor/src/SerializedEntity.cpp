@@ -61,7 +61,7 @@ namespace DYE::DYEditor
 		return true;
 	}
 
-	SerializedComponent SerializedEntity::TryAddOrGetComponentHandleOfType(const std::string &typeName)
+	SerializedComponent SerializedEntity::AddOrGetComponentHandleOfType(const std::string &typeName)
 	{
 		toml::table* pEntityTable = IsHandle()? m_pEntityTableHandle : &m_EntityTable;
 		toml::array* pArrayOfComponentTables = pEntityTable->get_as<toml::array>(ArrayOfComponentTablesKey);
