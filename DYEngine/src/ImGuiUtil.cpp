@@ -1638,6 +1638,15 @@ namespace DYE::ImGuiUtil
 				ImGui::PushID(controlID);
 
 				auto &element = elements[i];
+
+				ImGui::InvisibleButton("Element Drag Handle", ImVec2 {ImGuiUtil::Settings::ControlLabelWidth, ImGui::GetTextLineHeightWithSpacing()});
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+				}
+
+				ImGui::SameLine();
+
 				changed |= controlFunction(controlID, element);
 				lastControlActivated |= ImGuiUtil::IsControlActivated();
 				lastControlDeactivated |= ImGuiUtil::IsControlDeactivated();

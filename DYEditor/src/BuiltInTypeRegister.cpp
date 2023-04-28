@@ -119,18 +119,42 @@ namespace DYE::DYEditor
 		SerializationResult
 		ChildrenComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
 		{
-			// TODO
-			//serializedComponent.SetPrimitiveTypePropertyValue("ParentGUID", entity.GetComponent<ParentComponent>().ParentGUID);
+			auto const &childrenGUIDs = entity.GetComponent<ChildrenComponent>().ChildrenGUIDs;
+			SerializedArray serializedArray;
 
+			for (int i = 0; i < childrenGUIDs.size(); ++i)
+			{
+				DYE::GUID const &childGUID = childrenGUIDs[i];
+				serializedArray.InsertElementAtIndex(i, childGUID);
+			}
+
+			serializedComponent.SetArrayPropertyValue("Children", std::move(serializedArray));
 			return {};
 		}
 
 		DeserializationResult
 		ChildrenComponent_Deserialize(SerializedComponent &serializedComponent, DYE::DYEditor::Entity &entity)
 		{
-			// TODO
-			//auto &parentComponent = entity.AddOrGetComponent<ParentComponent>();
-			//parentComponent.ParentGUID = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::GUID>("ParentGUID");
+			auto &childrenComponent = entity.AddOrGetComponent<ChildrenComponent>();
+			childrenComponent.ChildrenGUIDs.clear();
+
+			auto tryGetSerializedArray = serializedComponent.TryGetArrayProperty("Children");
+			if (!tryGetSerializedArray.has_value())
+			{
+				return {};
+			}
+
+			auto &serializedArray = tryGetSerializedArray.value();
+			childrenComponent.ChildrenGUIDs.reserve(serializedArray.Size());
+			for (int i = 0; i < serializedArray.Size(); i++)
+			{
+				auto tryGetElement = serializedArray.TryGetElementAtIndex<GUID>(i);
+				if (!tryGetElement.has_value())
+				{
+					continue;
+				}
+				childrenComponent.ChildrenGUIDs.push_back(tryGetElement.value());
+			}
 
 			return {};
 		}
@@ -147,6 +171,9 @@ namespace DYE::DYEditor
 				return ImGuiUtil::DrawGUIDControl(std::string(id), guid);
 			};
 			changed |= ImGuiUtil::Internal::ArrayControl("Children", childrenGUIDs, lambda).Draw();
+			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
+			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
+			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
 
 			return changed;
 		}
@@ -420,7 +447,6 @@ namespace DYE::DYEditor
 			{
 				.ShouldBeIncludedInNormalAddComponentList = true,
 				.ShouldDrawInNormalInspector = true,
-				.Add = BuiltInFunctions::ChildrenComponent_DebugAdd,
 				.Serialize = BuiltInFunctions::ChildrenComponent_Serialize,
 				.Deserialize = BuiltInFunctions::ChildrenComponent_Deserialize,
 				.DrawInspector = BuiltInFunctions::ChildrenComponent_DrawInspector

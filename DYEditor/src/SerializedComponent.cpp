@@ -37,6 +37,24 @@ namespace DYE::DYEditor
 
 	}
 
+	std::optional<SerializedArray> SerializedComponent::TryGetArrayProperty(const std::string_view &propertyName) const
+	{
+		toml::table const* pComponentTable = IsHandle() ? m_pComponentTableHandle : &m_ComponentTable;
+		toml::array const* pArray = pComponentTable->get_as<toml::array>(propertyName);
+		if (pArray == nullptr)
+		{
+			return {};
+		}
+
+		return SerializedArray(*pArray);
+	}
+
+	void SerializedComponent::SetArrayPropertyValue(const std::string_view &propertyName, SerializedArray array)
+	{
+		toml::table* pComponentTable = IsHandle() ? m_pComponentTableHandle : &m_ComponentTable;
+		pComponentTable->insert_or_assign(propertyName, array.m_Array);
+	}
+
 	template<>
 	std::optional<DYE::GUID> SerializedComponent::TryGetPrimitiveTypePropertyValue(std::string_view const& propertyName) const
 	{
