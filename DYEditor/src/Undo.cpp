@@ -96,6 +96,7 @@ namespace DYE::DYEditor
 		}
 
 		// Collapse operations into the group & remove it from the undo list.
+		int const numberCollapsedOfOperations = (s_Data.LatestOperationIndex + 1) - s_Data.CurrentGroupBeginIndex;
 		auto rangeToInsertBegin = s_Data.Operations.begin() + s_Data.CurrentGroupBeginIndex;
 		auto rangeToInsertEnd = s_Data.Operations.begin() + s_Data.LatestOperationIndex + 1;
 
@@ -106,6 +107,7 @@ namespace DYE::DYEditor
 
 		s_Data.Operations.erase(rangeToInsertBegin, rangeToInsertEnd);
 
+		sprintf(s_Data.CurrentGroupOperation->Description, "%s (Group with %d Operations)", s_Data.CurrentGroupOperation->Description, numberCollapsedOfOperations);
 		s_Data.Operations.emplace_back(std::move(s_Data.CurrentGroupOperation));
 		s_Data.LatestOperationIndex = s_Data.Operations.size() - 1;
 	}

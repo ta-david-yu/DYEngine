@@ -685,8 +685,10 @@ namespace DYE::DYEditor
 			if (ImGui::Selectable("Create Empty"))
 			{
 				// Select the newly created entity.
+				// For now, the entity is always put at the end of the list.
 				*pCurrentSelectedEntity = scene.World.CreateEntity("Entity");
-				Undo::RegisterEntityCreation(scene.World, *pCurrentSelectedEntity, scene.World.GetNumberOfEntities() - 1);
+				int const indexInWorldArray = scene.World.GetNumberOfEntities() - 1;
+				Undo::RegisterEntityCreation(scene.World, *pCurrentSelectedEntity, indexInWorldArray);
 				changed = true;
 			}
 			ImGui::EndPopup();

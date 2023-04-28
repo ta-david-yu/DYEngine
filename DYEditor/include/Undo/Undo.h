@@ -23,6 +23,13 @@ namespace DYE::DYEditor
 		static void PerformUndo();
 		static void PerformRedo();
 
+		// All the undo operations called after StartGroupOperation & before EndGroupOperation
+		// will be collapsed into one group undoable operation.
+		static void StartGroupOperation(const char *description);
+
+		// See StartGroupOperation function for more details.
+		static void EndGroupOperation();
+
 		// Call this after creating a new entity.
 		static void RegisterEntityCreation(World& world, Entity& entity);
 		// Call this after creating a new entity.
