@@ -34,6 +34,7 @@ namespace DYE::DYEditor
 		/// Destroy an entity with the given GUID.
 		/// The operation is very slow because we have to iterate through every entities' ID components.
 		void DestroyEntityWithGUID(GUID entityGUID);
+		/// The operation is very slow because we have to iterate through every entities' ID components.
 		std::optional<Entity> TryGetEntityWithGUID(GUID entityGUID);
 		/// Get the index of the given entity inside Entity Handle array.
 		std::optional<std::size_t> TryGetEntityIndex(Entity &entity);

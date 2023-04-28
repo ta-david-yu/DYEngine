@@ -6,8 +6,8 @@
 #include <utility>
 #include <vector>
 
-#include "glm/glm.hpp"
-#include "glm/gtx/quaternion.hpp"
+#include <glm/glm.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #define DYE_PROPERTY()
 
@@ -33,6 +33,9 @@ namespace DYE
 	/// Filepath relative to 'assets' folder
 	using AssetPath  = std::filesystem::path;
 	using Quaternion = glm::quat;
+
+	template <typename T>
+	using Array = std::vector<T>;
 
 	// TODO: need to figure out a way to handle enum type
 	//		 maybe we can let user provide a specialized template function that

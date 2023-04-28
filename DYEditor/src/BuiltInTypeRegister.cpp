@@ -88,6 +88,82 @@ namespace DYE::DYEditor
 		}
 
 		SerializationResult
+		ParentComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
+		{
+			serializedComponent.SetPrimitiveTypePropertyValue("ParentGUID", entity.GetComponent<ParentComponent>().ParentGUID);
+
+			return {};
+		}
+
+		DeserializationResult
+		ParentComponent_Deserialize(SerializedComponent &serializedComponent, DYE::DYEditor::Entity &entity)
+		{
+			auto &parentComponent = entity.AddOrGetComponent<ParentComponent>();
+			parentComponent.ParentGUID = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::GUID>("ParentGUID");
+
+			return {};
+		}
+
+		bool ParentComponent_DrawInspector(DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
+		{
+			auto &parentComponent = entity.GetComponent<ParentComponent>();
+
+			bool const changed = ImGuiUtil::DrawGUIDControl("ParentGUID", parentComponent.ParentGUID);
+			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
+			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
+			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+
+			return changed;
+		}
+
+		SerializationResult
+		ChildrenComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
+		{
+			// TODO
+			//serializedComponent.SetPrimitiveTypePropertyValue("ParentGUID", entity.GetComponent<ParentComponent>().ParentGUID);
+
+			return {};
+		}
+
+		DeserializationResult
+		ChildrenComponent_Deserialize(SerializedComponent &serializedComponent, DYE::DYEditor::Entity &entity)
+		{
+			// TODO
+			//auto &parentComponent = entity.AddOrGetComponent<ParentComponent>();
+			//parentComponent.ParentGUID = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::GUID>("ParentGUID");
+
+			return {};
+		}
+
+		bool ChildrenComponent_DrawInspector(DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
+		{
+			auto &childrenComponent = entity.GetComponent<ChildrenComponent>();
+
+			bool changed = false;
+			auto &childrenGUIDs = childrenComponent.ChildrenGUIDs;
+
+			ImGuiTreeNodeFlags const flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap;
+			if (ImGui::TreeNodeEx("Children##TreeNode", flags))
+			{
+				char controlID[16];
+				for (int i = 0; i < childrenGUIDs.size(); i++)
+				{
+					sprintf(controlID, "Element %d", i);
+
+					auto &guid = childrenComponent.ChildrenGUIDs[i];
+					changed |= ImGuiUtil::DrawGUIDControl(controlID, guid);
+					drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
+					drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
+					drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+				}
+
+				ImGui::TreePop();
+			}
+
+			return changed;
+		}
+
+		SerializationResult
 		TransformComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
 		{
 			auto const &transformComponent = entity.GetComponent<TransformComponent>();
@@ -320,19 +396,47 @@ namespace DYE::DYEditor
 		);
 
 		s_NameComponentTypeDescriptor = ComponentTypeDescriptor
-			{
-				.ShouldBeIncludedInNormalAddComponentList = false,
-				.ShouldDrawInNormalInspector = false,
-				.Add = BuiltInFunctions::NameComponent_Add,
+		{
+			.ShouldBeIncludedInNormalAddComponentList = false,
+			.ShouldDrawInNormalInspector = false,
+			.Add = BuiltInFunctions::NameComponent_Add,
 
-				.Serialize = BuiltInFunctions::NameComponent_Serialize,
-				.Deserialize = BuiltInFunctions::NameComponent_Deserialize,
-				.DrawInspector = BuiltInFunctions::NameComponent_DrawInspector,
-			};
+			.Serialize = BuiltInFunctions::NameComponent_Serialize,
+			.Deserialize = BuiltInFunctions::NameComponent_Deserialize,
+			.DrawInspector = BuiltInFunctions::NameComponent_DrawInspector,
+		};
 		TypeRegistry::RegisterComponentType<NameComponent>
 		(
 			NameComponentName,
 			s_NameComponentTypeDescriptor
+		);
+
+		TypeRegistry::RegisterComponentType<ParentComponent>
+		(
+			"Parent",
+			ComponentTypeDescriptor
+			{
+				.ShouldBeIncludedInNormalAddComponentList = true,
+				.ShouldDrawInNormalInspector = true,
+				.Serialize = BuiltInFunctions::ParentComponent_Serialize,
+				.Deserialize = BuiltInFunctions::ParentComponent_Deserialize,
+				.DrawInspector = BuiltInFunctions::ParentComponent_DrawInspector
+			}
+		);
+
+
+		TypeRegistry::RegisterComponentType<ChildrenComponent>
+		(
+			"Children",
+			ComponentTypeDescriptor
+			{
+				.ShouldBeIncludedInNormalAddComponentList = true,
+				.ShouldDrawInNormalInspector = true,
+				.Add = BuiltInFunctions::ChildrenComponent_DebugAdd,
+				.Serialize = BuiltInFunctions::ChildrenComponent_Serialize,
+				.Deserialize = BuiltInFunctions::ChildrenComponent_Deserialize,
+				.DrawInspector = BuiltInFunctions::ChildrenComponent_DrawInspector
+			}
 		);
 
 		TypeRegistry::RegisterComponentType<TransformComponent>

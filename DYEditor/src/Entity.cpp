@@ -1,6 +1,7 @@
 #include "Core/Entity.h"
 
 #include "Core/World.h"
+#include "Components/IDComponent.h"
 #include "Components/NameComponent.h"
 
 namespace DYE::DYEditor
@@ -30,6 +31,16 @@ namespace DYE::DYEditor
 		return this->GetComponent<NameComponent>().Name;
 	}
 
+	std::optional<GUID> Entity::TryGetGUID()
+	{
+		if (!this->HasComponent<IDComponent>())
+		{
+			return {};
+		}
+
+		return this->GetComponent<IDComponent>().ID;
+	}
+
 	void Entity::RemoveAllComponents()
 	{
 		for (auto [id, storage] : m_World->m_Registry.storage())
@@ -37,5 +48,4 @@ namespace DYE::DYEditor
 			storage.remove(m_EntityIdentifier);
 		}
 	}
-
 }

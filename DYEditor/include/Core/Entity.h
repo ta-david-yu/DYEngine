@@ -62,6 +62,8 @@ namespace DYE::DYEditor
 		/// \return
 		std::optional<std::string> TryGetName();
 
+		std::optional<GUID> TryGetGUID();
+
 		template<typename T>
 		std::optional<std::reference_wrapper<T>> TryGetComponent()
 		{

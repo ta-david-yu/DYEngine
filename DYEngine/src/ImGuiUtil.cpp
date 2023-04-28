@@ -805,7 +805,7 @@ namespace DYE::ImGuiUtil
 		bool changed = false;
 
 		auto guidString =  guid.ToString();
-		changed |= ImGuiUtil::DrawTextControl("ID", guidString);
+		changed |= ImGuiUtil::DrawTextControl(label, guidString);
 		s_Context.UpdateLastControlState();
 		if (changed)
 		{
