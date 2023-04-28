@@ -16,6 +16,10 @@ namespace DYE::DYEditor
 	{
 		std::vector<std::unique_ptr<UndoOperationBase>> Operations;
 		int LatestOperationIndex = -1;
+
+		bool IsInGroup = false;
+		int CurrentGroupBeginIndex = -1;
+		std::unique_ptr<GroupUndoOperation> CurrentGroupOperation;
 	};
 
 	static UndoData s_Data;
@@ -59,6 +63,51 @@ namespace DYE::DYEditor
 
 		s_Data.LatestOperationIndex = nextOperationIndexToRedo;
 		s_Data.Operations[s_Data.LatestOperationIndex]->Redo();
+	}
+
+	void Undo::StartGroupOperation(const char *description)
+	{
+		if (s_Data.IsInGroup)
+		{
+			// It's already in a group operation.
+			// End the previous one first.
+			EndGroupOperation();
+		}
+
+		s_Data.IsInGroup = true;
+		s_Data.CurrentGroupBeginIndex = s_Data.LatestOperationIndex + 1;
+		s_Data.CurrentGroupOperation = std::make_unique<GroupUndoOperation>();
+		std::strcpy(s_Data.CurrentGroupOperation->Description, description);
+	}
+
+	void Undo::EndGroupOperation()
+	{
+		DYE_ASSERT_LOG_WARN(s_Data.IsInGroup, "You shouldn't call EndGroupOperation without calling StartGroupOperation first.");
+
+		s_Data.IsInGroup = false;
+
+		bool const isEmptyGroupOperation = s_Data.LatestOperationIndex < s_Data.CurrentGroupBeginIndex;
+		if (isEmptyGroupOperation)
+		{
+			DYE_LOG("Ending Undo Group Operation '%s' without any actual operation inside.", s_Data.CurrentGroupOperation->Description);
+			auto ptr = s_Data.CurrentGroupOperation.release();
+			delete ptr; // Because we release ownership of the operation manually, we need to free the memory on our own.
+			return;
+		}
+
+		// Collapse operations into the group & remove it from the undo list.
+		auto rangeToInsertBegin = s_Data.Operations.begin() + s_Data.CurrentGroupBeginIndex;
+		auto rangeToInsertEnd = s_Data.Operations.begin() + s_Data.LatestOperationIndex + 1;
+
+		s_Data.CurrentGroupOperation->OperationCollection.insert(
+										s_Data.CurrentGroupOperation->OperationCollection.end(),
+										std::make_move_iterator(rangeToInsertBegin),
+										std::make_move_iterator(rangeToInsertEnd));
+
+		s_Data.Operations.erase(rangeToInsertBegin, rangeToInsertEnd);
+
+		s_Data.Operations.emplace_back(std::move(s_Data.CurrentGroupOperation));
+		s_Data.LatestOperationIndex = s_Data.Operations.size() - 1;
 	}
 
 	void Undo::RegisterEntityCreation(World &world, Entity &entity)
