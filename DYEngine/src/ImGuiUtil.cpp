@@ -1668,6 +1668,8 @@ namespace DYE::ImGuiUtil
 					ImGui::ItemSize(previewWindowSize); ImGui::SameLine();
 					controlFunction(controlID, element);
 					ImGui::EndDragDropSource();
+
+					lastControlActivated = true;
 				}
 				if (ImGui::BeginDragDropTarget())
 				{
@@ -1675,9 +1677,15 @@ namespace DYE::ImGuiUtil
 					{
 						IM_ASSERT(payload->DataSize == sizeof(int));
 						int payloadIndex = *(const int*)payload->Data;
-						Type temp = elements[i];
-						elements[i] = elements[payloadIndex];
-						elements[payloadIndex] = temp;
+
+						if (payloadIndex != i)
+						{
+							Type temp = elements[i];
+							elements[i] = elements[payloadIndex];
+							elements[payloadIndex] = temp;
+
+							lastControlDeactivatedAfterEdit = true;
+						}
 					}
 					ImGui::EndDragDropTarget();
 				}
