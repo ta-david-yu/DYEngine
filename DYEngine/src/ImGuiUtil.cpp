@@ -81,6 +81,7 @@ namespace DYE::ImGuiUtil
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -158,6 +159,7 @@ namespace DYE::ImGuiUtil
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -251,6 +253,7 @@ namespace DYE::ImGuiUtil
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -365,6 +368,7 @@ namespace DYE::ImGuiUtil
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -398,6 +402,7 @@ namespace DYE::ImGuiUtil
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -455,6 +460,7 @@ namespace DYE::ImGuiUtil
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -513,6 +519,7 @@ namespace DYE::ImGuiUtil
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -549,6 +556,7 @@ namespace DYE::ImGuiUtil
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -582,6 +590,7 @@ namespace DYE::ImGuiUtil
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -696,6 +705,7 @@ namespace DYE::ImGuiUtil
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -726,6 +736,7 @@ namespace DYE::ImGuiUtil
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -836,6 +847,7 @@ namespace DYE::ImGuiUtil
 		ImGui::PushID(label.c_str());
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -877,6 +889,7 @@ namespace DYE::ImGuiUtil
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -927,6 +940,7 @@ namespace DYE::ImGuiUtil
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -1624,8 +1638,8 @@ namespace DYE::ImGuiUtil
 
 		ImGui::PushID(arrayLabel.c_str());
 
-		ImGuiTreeNodeFlags const flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap;
-		if (ImGui::TreeNodeEx("Array Tree Node", flags, "%s (%d)", arrayLabel.c_str(), elements.size()))
+		ImGuiTreeNodeFlags const treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap;
+		if (ImGui::TreeNodeEx("Array Tree Node", treeNodeFlags, "%s (%d)", arrayLabel.c_str(), elements.size()))
 		{
 			char controlID[16];
 			ImGuiUtil::Settings::ControlLabelWidth = 80;
@@ -1638,11 +1652,34 @@ namespace DYE::ImGuiUtil
 				ImGui::PushID(controlID);
 
 				auto &element = elements[i];
-
-				ImGui::InvisibleButton("Element Drag Handle", ImVec2 {ImGuiUtil::Settings::ControlLabelWidth, ImGui::GetTextLineHeightWithSpacing()});
-				if (ImGui::IsItemHovered())
+				float const elementWidgetWidth = ImGui::GetContentRegionAvail().x;
+				float const dragHandleWidth = ImGuiUtil::Settings::ControlLabelWidth - 10;
+				ImGui::InvisibleButton("Element Drag Handle", ImVec2 {dragHandleWidth, ImGui::GetTextLineHeightWithSpacing()});
+				if (!ImGui::IsDragDropActive() && ImGui::IsItemHovered())
 				{
 					ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+				}
+
+				ImGuiDragDropFlags const dragDropFlags = ImGuiDragDropFlags_None;
+				if (ImGui::BeginDragDropSource(dragDropFlags))
+				{
+					ImGui::SetDragDropPayload("ArrayElementIndex", &i, sizeof(int));
+					auto const previewWindowSize = ImVec2 {elementWidgetWidth, ImGui::GetTextLineHeightWithSpacing()};
+					ImGui::ItemSize(previewWindowSize); ImGui::SameLine();
+					controlFunction(controlID, element);
+					ImGui::EndDragDropSource();
+				}
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ArrayElementIndex"))
+					{
+						IM_ASSERT(payload->DataSize == sizeof(int));
+						int payloadIndex = *(const int*)payload->Data;
+						Type temp = elements[i];
+						elements[i] = elements[payloadIndex];
+						elements[payloadIndex] = temp;
+					}
+					ImGui::EndDragDropTarget();
 				}
 
 				ImGui::SameLine();
