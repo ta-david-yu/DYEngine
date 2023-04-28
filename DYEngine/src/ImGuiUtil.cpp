@@ -1,4 +1,5 @@
 #include "ImGui/ImGuiUtil.h"
+#include "ImGui/ImGuiUtil_Internal.h"
 
 #include "FileSystem/FileSystem.h"
 #include "Graphics/Camera.h"
@@ -1600,5 +1601,198 @@ namespace DYE::ImGuiUtil
 		ImGui::EndPopup();
 
 		return result;
+	}
+
+	// !!!! INTERNAL FUNCTION SECTIONS !!!!
+
+
+	template<typename Type, typename ControlFunc>
+	bool Internal::ArrayControl<Type, ControlFunc>::Draw()
+	{
+		auto &arrayLabel = Label;
+		std::vector<Type> &elements = Elements;
+		auto &controlFunction = ControlFunction;
+
+		s_Context.Reset();
+		// We use a local variable to keep track of it because this Control is a compound control.
+		// We will set the value to s_Context.LastControlDeactivatedAfterEdit at the end.
+		bool lastControlActivated = false;
+		bool lastControlDeactivated = false;
+		bool lastControlDeactivatedAfterEdit = false;
+
+		bool changed = false;
+
+		ImGui::PushID(arrayLabel.c_str());
+
+		ImGuiTreeNodeFlags const flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap;
+		if (ImGui::TreeNodeEx("Array Tree Node", flags, "%s (%d)", arrayLabel.c_str(), elements.size()))
+		{
+			char controlID[16];
+			ImGuiUtil::Settings::ControlLabelWidth = 80;
+			ImGui::Separator();
+			int indexToRemove = -1;
+			int indexToInsertNewElement = -1;
+			for (int i = 0; i < elements.size(); i++)
+			{
+				sprintf(controlID, "Element %d", i);
+				ImGui::PushID(controlID);
+
+				auto &element = elements[i];
+				changed |= controlFunction(controlID, element);
+				lastControlActivated |= ImGuiUtil::IsControlActivated();
+				lastControlDeactivated |= ImGuiUtil::IsControlDeactivated();
+				lastControlDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+
+				ImGui::SameLine();
+				if (ImGui::SmallButton("-"))
+				{
+					indexToRemove = i;
+					changed = true;
+					lastControlDeactivatedAfterEdit = true;
+				}
+				lastControlActivated |= ImGui::IsItemActivated();
+				lastControlDeactivated |= ImGui::IsItemDeactivated();
+				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
+				{
+					ImGui::BeginTooltip();
+					ImGui::SetTooltip("Remove this element");
+					ImGui::EndTooltip();
+				}
+
+				ImGui::SameLine();
+				if (ImGui::SmallButton("+"))
+				{
+					indexToInsertNewElement = i + 1;
+					changed = true;
+					lastControlDeactivatedAfterEdit = true;
+				}
+				lastControlActivated |= ImGui::IsItemActivated();
+				lastControlDeactivated |= ImGui::IsItemDeactivated();
+				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
+				{
+					ImGui::BeginTooltip();
+					ImGui::SetTooltip("Add a new element under");
+					ImGui::EndTooltip();
+				}
+
+				ImGui::PopID();
+			}
+
+			if (indexToRemove != -1)
+			{
+				elements.erase(elements.begin() + indexToRemove);
+			}
+			else if (indexToInsertNewElement != -1)
+			{
+				// TODO: for now, we just insert with a default value using {}
+				elements.insert(elements.begin() + indexToInsertNewElement, Type {});
+			}
+
+			ImGuiUtil::Settings::ControlLabelWidth = ImGuiUtil::Settings::DefaultControlLabelWidth;
+
+			ImGui::TreePop();
+		}
+
+		ImGui::PopID();
+
+		s_Context.IsLastControlActivated = lastControlActivated;
+		s_Context.IsLastControlDeactivated = lastControlDeactivated;
+		s_Context.IsLastControlDeactivatedAfterEdit = lastControlDeactivatedAfterEdit;
+
+		return changed;
+	}
+
+	template struct Internal::ArrayControl<DYE::GUID, bool (*)(const char *,::DYE::GUID &)>;
+
+	template<typename Type, typename ControlFunc>
+	bool Internal::DrawArrayOfTypeControls(const std::string& arrayLabel, std::vector<Type> &elements, ControlFunc controlFunction)
+	{
+		s_Context.Reset();
+		// We use a local variable to keep track of it because this Control is a compound control.
+		// We will set the value to s_Context.LastControlDeactivatedAfterEdit at the end.
+		bool lastControlActivated = false;
+		bool lastControlDeactivated = false;
+		bool lastControlDeactivatedAfterEdit = false;
+
+		bool changed = false;
+
+		ImGui::PushID(arrayLabel.c_str());
+
+		ImGuiTreeNodeFlags const flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap;
+		if (ImGui::TreeNodeEx("Array Tree Node", flags, "%s (%d)", arrayLabel.c_str(), elements.size()))
+		{
+			char controlID[16];
+			ImGuiUtil::Settings::ControlLabelWidth = 80;
+			ImGui::Separator();
+			int indexToRemove = -1;
+			int indexToInsertNewElement = -1;
+			for (int i = 0; i < elements.size(); i++)
+			{
+				sprintf(controlID, "Element %d", i);
+				ImGui::PushID(controlID);
+
+				auto &element = elements[i];
+				changed |= controlFunction(controlID, element);
+				lastControlActivated |= ImGuiUtil::IsControlActivated();
+				lastControlDeactivated |= ImGuiUtil::IsControlDeactivated();
+				lastControlDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+
+				ImGui::SameLine();
+				if (ImGui::SmallButton("-"))
+				{
+					indexToRemove = i;
+					changed = true;
+					lastControlDeactivatedAfterEdit = true;
+				}
+				lastControlActivated |= ImGui::IsItemActivated();
+				lastControlDeactivated |= ImGui::IsItemDeactivated();
+				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
+				{
+					ImGui::BeginTooltip();
+					ImGui::SetTooltip("Remove this element");
+					ImGui::EndTooltip();
+				}
+
+				ImGui::SameLine();
+				if (ImGui::SmallButton("+"))
+				{
+					indexToInsertNewElement = i + 1;
+					changed = true;
+					lastControlDeactivatedAfterEdit = true;
+				}
+				lastControlActivated |= ImGui::IsItemActivated();
+				lastControlDeactivated |= ImGui::IsItemDeactivated();
+				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
+				{
+					ImGui::BeginTooltip();
+					ImGui::SetTooltip("Add a new element under");
+					ImGui::EndTooltip();
+				}
+
+				ImGui::PopID();
+			}
+
+			if (indexToRemove != -1)
+			{
+				elements.erase(elements.begin() + indexToRemove);
+			}
+			else if (indexToInsertNewElement != -1)
+			{
+				// TODO: for now, we just insert with a default value using {}
+				elements.insert(elements.begin() + indexToInsertNewElement, Type {});
+			}
+
+			ImGuiUtil::Settings::ControlLabelWidth = ImGuiUtil::Settings::DefaultControlLabelWidth;
+
+			ImGui::TreePop();
+		}
+
+		ImGui::PopID();
+
+		s_Context.IsLastControlActivated = lastControlActivated;
+		s_Context.IsLastControlDeactivated = lastControlDeactivated;
+		s_Context.IsLastControlDeactivatedAfterEdit = lastControlDeactivatedAfterEdit;
+
+		return changed;
 	}
 }

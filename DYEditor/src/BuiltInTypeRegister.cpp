@@ -6,7 +6,7 @@
 #include "Serialization/SerializedObjectFactory.h"
 #include "Math/Color.h"
 #include "ImGui/ImGuiUtil.h"
-#include "ImGui/EditorImGuiUtil.h"
+#include "ImGui/ImGuiUtil_Internal.h"
 #include "FileSystem/FileSystem.h"
 
 // All the built-in component & system types are in here.
@@ -142,23 +142,13 @@ namespace DYE::DYEditor
 			bool changed = false;
 			auto &childrenGUIDs = childrenComponent.ChildrenGUIDs;
 
-			ImGuiTreeNodeFlags const flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap;
-			if (ImGui::TreeNodeEx("Children##TreeNode", flags))
+			ImGuiUtil::Internal::GUIDControlFunctionPointer lambda = [](char const* id, GUID &guid) -> bool
 			{
-				char controlID[16];
-				for (int i = 0; i < childrenGUIDs.size(); i++)
-				{
-					sprintf(controlID, "Element %d", i);
+				return ImGuiUtil::DrawGUIDControl(std::string(id), guid);
+			};
+			auto arrayControl = ImGuiUtil::Internal::ArrayControl("Children", childrenGUIDs, lambda);
 
-					auto &guid = childrenComponent.ChildrenGUIDs[i];
-					changed |= ImGuiUtil::DrawGUIDControl(controlID, guid);
-					drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
-					drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
-					drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
-				}
-
-				ImGui::TreePop();
-			}
+			changed |= arrayControl.Draw();
 
 			return changed;
 		}
