@@ -146,9 +146,7 @@ namespace DYE::DYEditor
 			{
 				return ImGuiUtil::DrawGUIDControl(std::string(id), guid);
 			};
-			auto arrayControl = ImGuiUtil::Internal::ArrayControl("Children", childrenGUIDs, lambda);
-
-			changed |= arrayControl.Draw();
+			changed |= ImGuiUtil::Internal::ArrayControl("Children", childrenGUIDs, lambda).Draw();
 
 			return changed;
 		}
