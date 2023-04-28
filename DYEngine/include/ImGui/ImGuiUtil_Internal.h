@@ -21,8 +21,4 @@ namespace DYE::ImGuiUtil::Internal
 
 	using GUIDControlFunctionPointer = bool (*)(const char *,::DYE::GUID &);
 	extern template struct ArrayControl<DYE::GUID, GUIDControlFunctionPointer>;
-	//extern template bool ArrayControl<DYE::GUID, GUIDControlFunctionPointer>::Draw();
-
-	template<typename Type, typename ControlFunc>
-	bool DrawArrayOfTypeControls(const std::string& arrayLabel, std::vector<Type> &elements, ControlFunc controlFunction);
 }
