@@ -1678,7 +1678,7 @@ namespace DYE::ImGuiUtil
 					{
 						ImGui::SetDragDropPayload("ArrayIndex", &i, sizeof(int));
 
-						// Preview tooltip.
+						// Preview the element control in the drag tooltip.
 						auto const previewWindowSize = ImVec2 {elementWidgetSize.x, ImGui::GetTextLineHeightWithSpacing()};
 						ImGui::ItemSize(previewWindowSize);
 						ImGui::SameLine();
@@ -1696,7 +1696,7 @@ namespace DYE::ImGuiUtil
 				float const originalAlpha = ImGui::GetStyle().Alpha;
 				if (isBeingDragged)
 				{
-					ImGui::GetStyle().Alpha = 0.3f;
+					ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.3f);
 				}
 
 				changed |= controlFunction(controlID, element);
@@ -1799,7 +1799,7 @@ namespace DYE::ImGuiUtil
 				ImGui::SetCursorPos(originalCursorPos);
 				if (isBeingDragged)
 				{
-					ImGui::GetStyle().Alpha = originalAlpha;
+					ImGui::PopStyleVar();
 				}
 				ImGui::PopID();
 			}
