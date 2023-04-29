@@ -6,6 +6,8 @@
 
 namespace DYE::ImGuiUtil::Internal
 {
+	void InteractableItem(const char* str_id, const ImVec2& size_arg);
+
 	template<typename Type, typename ControlFunc>
 	struct ArrayControl
 	{

@@ -1618,7 +1618,24 @@ namespace DYE::ImGuiUtil
 	}
 
 	// !!!! INTERNAL FUNCTION SECTIONS !!!!
+	void Internal::InteractableItem(const char *str_id, const ImVec2 &size_arg)
+	{
+		ImGuiContext& g = *GImGui;
+		ImGuiWindow* window = ImGui::GetCurrentWindow();
+		if (window->SkipItems)
+		{
+			return;
+		}
 
+		// Cannot use zero-size for InvisibleButton(). Unlike Button() there is not way to fallback using the label size.
+		IM_ASSERT(size_arg.x != 0.0f && size_arg.y != 0.0f);
+
+		const ImGuiID id = window->GetID(str_id);
+		ImVec2 size = ImGui::CalcItemSize(size_arg, 0.0f, 0.0f);
+		const ImRect bb(window->DC.CursorPos, ImVec2(window->DC.CursorPos.x + size.x, window->DC.CursorPos.y + size.y));
+		ImGui::ItemSize(size);
+		ImGui::ItemAdd(bb, id);
+	}
 
 	template<typename Type, typename ControlFunc>
 	bool Internal::ArrayControl<Type, ControlFunc>::Draw()
@@ -1740,7 +1757,7 @@ namespace DYE::ImGuiUtil
 				originalCursorPos = ImGui::GetCursorPos();
 				{
 					ImGui::SetCursorScreenPos(elementWidgetScreenPos);
-					ImGui::InvisibleButton("ElementDropHandle_Upper", ImVec2 {elementWidgetSize.x, elementWidgetSize.y * 0.5f});
+					Internal::InteractableItem("ElementDropHandle_Upper", ImVec2 {elementWidgetSize.x, elementWidgetSize.y * 0.5f});
 					if (ImGui::BeginDragDropTarget())
 					{
 						ImGuiPayload const* dropPayload = ImGui::AcceptDragDropPayload("ArrayIndex", ImGuiDragDropFlags_AcceptPeekOnly);
@@ -1768,7 +1785,7 @@ namespace DYE::ImGuiUtil
 						ImGui::EndDragDropTarget();
 					}
 
-					ImGui::InvisibleButton("ElementDropHandle_Lower", ImVec2 {elementWidgetSize.x, elementWidgetSize.y * 0.5f});
+					Internal::InteractableItem("ElementDropHandle_Lower", ImVec2 {elementWidgetSize.x, elementWidgetSize.y * 0.5f});
 					if (ImGui::BeginDragDropTarget())
 					{
 						ImGuiPayload const* dropPayload = ImGui::AcceptDragDropPayload("ArrayIndex", ImGuiDragDropFlags_AcceptPeekOnly);
