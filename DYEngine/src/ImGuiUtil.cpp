@@ -1655,9 +1655,8 @@ namespace DYE::ImGuiUtil
 				ImGui::PushID(controlID);
 
 				auto &element = elements[i];
-				float const elementWidgetWidth = ImGui::GetContentRegionAvail().x;
 				float const dragHandleWidth = ImGuiUtil::Settings::ControlLabelWidth - 12;
-				ImGui::InvisibleButton("Element Drag Handle", ImVec2 {dragHandleWidth, ImGui::GetTextLineHeightWithSpacing()});
+				ImGui::InvisibleButton("ElementDragHandle", ImVec2 {dragHandleWidth, ImGui::GetTextLineHeightWithSpacing()});
 				if (!ImGui::IsDragDropActive() && ImGui::IsItemHovered())
 				{
 					ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
@@ -1666,10 +1665,10 @@ namespace DYE::ImGuiUtil
 				ImGuiDragDropFlags const dragDropFlags = ImGuiDragDropFlags_None;
 				if (ImGui::BeginDragDropSource(dragDropFlags))
 				{
-					ImGui::SetDragDropPayload("ArrayElementIndex", &i, sizeof(int));
+					ImGui::SetDragDropPayload("ArrayIndex", &i, sizeof(int));
 					{
 						// Preview tooltip.
-						auto const previewWindowSize = ImVec2 {elementWidgetWidth, ImGui::GetTextLineHeightWithSpacing()};
+						auto const previewWindowSize = ImVec2 {elementWidgetSize.x, ImGui::GetTextLineHeightWithSpacing()};
 						ImGui::ItemSize(previewWindowSize); ImGui::SameLine();
 						controlFunction(controlID, element);
 					}
@@ -1683,7 +1682,7 @@ namespace DYE::ImGuiUtil
 				}
 				if (ImGui::BeginDragDropTarget())
 				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ArrayElementIndex"))
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ArrayIndex"))
 					{
 						IM_ASSERT(payload->DataSize == sizeof(int));
 						int payloadIndex = *(const int*)payload->Data;
