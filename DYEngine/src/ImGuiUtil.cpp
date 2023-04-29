@@ -1648,12 +1648,15 @@ namespace DYE::ImGuiUtil
 			int indexToInsertNewElement = -1;
 			for (int i = 0; i < elements.size(); i++)
 			{
+				ImVec2 const elementWidgetPosition = ImGui::GetCursorPos();
+				ImVec2 const elementWidgetSize = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetTextLineHeightWithSpacing());
+
 				sprintf(controlID, "Element %d", i);
 				ImGui::PushID(controlID);
 
 				auto &element = elements[i];
 				float const elementWidgetWidth = ImGui::GetContentRegionAvail().x;
-				float const dragHandleWidth = ImGuiUtil::Settings::ControlLabelWidth - 10;
+				float const dragHandleWidth = ImGuiUtil::Settings::ControlLabelWidth - 12;
 				ImGui::InvisibleButton("Element Drag Handle", ImVec2 {dragHandleWidth, ImGui::GetTextLineHeightWithSpacing()});
 				if (!ImGui::IsDragDropActive() && ImGui::IsItemHovered())
 				{
@@ -1664,12 +1667,19 @@ namespace DYE::ImGuiUtil
 				if (ImGui::BeginDragDropSource(dragDropFlags))
 				{
 					ImGui::SetDragDropPayload("ArrayElementIndex", &i, sizeof(int));
-					auto const previewWindowSize = ImVec2 {elementWidgetWidth, ImGui::GetTextLineHeightWithSpacing()};
-					ImGui::ItemSize(previewWindowSize); ImGui::SameLine();
-					controlFunction(controlID, element);
+					{
+						// Preview tooltip.
+						auto const previewWindowSize = ImVec2 {elementWidgetWidth, ImGui::GetTextLineHeightWithSpacing()};
+						ImGui::ItemSize(previewWindowSize); ImGui::SameLine();
+						controlFunction(controlID, element);
+					}
+
 					ImGui::EndDragDropSource();
 
 					lastControlActivated = true;
+
+					ImGui::PopID();
+					continue;
 				}
 				if (ImGui::BeginDragDropTarget())
 				{
@@ -1684,6 +1694,7 @@ namespace DYE::ImGuiUtil
 							elements[i] = elements[payloadIndex];
 							elements[payloadIndex] = temp;
 
+							changed = true;
 							lastControlDeactivatedAfterEdit = true;
 						}
 					}
