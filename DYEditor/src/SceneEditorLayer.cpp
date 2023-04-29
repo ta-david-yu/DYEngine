@@ -1278,9 +1278,19 @@ namespace DYE::DYEditor
 							{
 								ImGui::SetClipboardText(typeName.c_str());
 							}
+							if (ImGui::Selectable("Delete"))
+							{
+								indexToRemove = i;
+							}
 							ImGui::EndPopup();
 						}
 						ImGui::PopID();
+					}
+
+					if (indexToRemove != -1)
+					{
+						deserializationResult.UnrecognizedComponentTypeNames.erase(deserializationResult.UnrecognizedComponentTypeNames.begin() + indexToRemove);
+						deserializationResult.UnrecognizedSerializedComponents.erase(deserializationResult.UnrecognizedSerializedComponents.begin() + indexToRemove);
 					}
 
 					ImGui::EndTable();
