@@ -743,7 +743,7 @@ namespace DYE::ImGuiUtil
 		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
 		{
-			char buffer[2];
+			char buffer[2] = "";
 			buffer[0] = character;
 			isValueChanged |= ImGui::InputText("##character", buffer, 2);
 			s_Context.UpdateLastControlState();
@@ -1650,8 +1650,6 @@ namespace DYE::ImGuiUtil
 			{
 				int SrcIndex = -1;
 				int DstIndex = -1;
-
-				inline bool HasOperation() const { return SrcIndex != DstIndex; }
 			};
 			MoveElement moveElement;
 
@@ -1660,15 +1658,16 @@ namespace DYE::ImGuiUtil
 				sprintf(controlID, "Element %d", i);
 				ImGui::PushID(controlID);
 
-				ImVec2 const elementWidgetPosition = ImGui::GetCursorPos();
-				ImVec2 const elementWidgetSize = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetTextLineHeightWithSpacing());
+				ImVec2 const elementWidgetScreenPos = ImGui::GetCursorScreenPos();
+				ImVec2 const elementWidgetSize = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing());
 				auto &element = elements[i];
 
 				// Draw draggable target as invisible button.
+				bool isBeingDragged = false;
 				ImVec2 originalCursorPos = ImGui::GetCursorPos();
 				{
 					float const dragHandleWidth = ImGuiUtil::Settings::ControlLabelWidth - 12;
-					ImGui::InvisibleButton("ElementDragHandle", ImVec2 {dragHandleWidth, ImGui::GetTextLineHeightWithSpacing()});
+					ImGui::InvisibleButton("ElementDragHandle", ImVec2 {dragHandleWidth, ImGui::GetFrameHeightWithSpacing()});
 					if (!ImGui::IsDragDropActive() && ImGui::IsItemHovered())
 					{
 						ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
@@ -1688,12 +1687,17 @@ namespace DYE::ImGuiUtil
 						ImGui::EndDragDropSource();
 
 						lastControlActivated = true;
-
-						ImGui::PopID();
-						continue;
+						isBeingDragged = true;
 					}
 				}
 				ImGui::SetCursorPos(originalCursorPos);
+
+				// If the element is being used a drag source, we make the control & buttons of this element transparent.
+				float const originalAlpha = ImGui::GetStyle().Alpha;
+				if (isBeingDragged)
+				{
+					ImGui::GetStyle().Alpha = 0.3f;
+				}
 
 				changed |= controlFunction(controlID, element);
 				lastControlActivated |= ImGuiUtil::IsControlActivated();
@@ -1735,33 +1739,30 @@ namespace DYE::ImGuiUtil
 				// Draw 2 droppable targets as invisible buttons.
 				originalCursorPos = ImGui::GetCursorPos();
 				{
-					ImGui::SetCursorPos(elementWidgetPosition);
+					ImGui::SetCursorScreenPos(elementWidgetScreenPos);
 					ImGui::InvisibleButton("ElementDropHandle_Upper", ImVec2 {elementWidgetSize.x, elementWidgetSize.y * 0.5f});
 					if (ImGui::BeginDragDropTarget())
 					{
 						ImGuiPayload const* dropPayload = ImGui::AcceptDragDropPayload("ArrayIndex", ImGuiDragDropFlags_AcceptPeekOnly);
 						if (dropPayload != nullptr)
 						{
-							if (dropPayload->IsPreview())
+							DYE_ASSERT(dropPayload->DataSize == sizeof(int));
+							int payloadIndex = *(const int *) dropPayload->Data;
+							bool const isSource = payloadIndex == i;
+
+							if (dropPayload->IsPreview() && !isSource)
 							{
 								auto const dropTargetRect = ImGui::GetCurrentContext()->DragDropTargetRect;
-								ImVec2 const previewLineBegin = dropTargetRect.GetTL();
-								ImVec2 const previewLineEnd = dropTargetRect.GetTR();
+								ImVec2 const previewLineBegin = elementWidgetScreenPos;
+								ImVec2 const previewLineEnd = ImVec2(previewLineBegin.x + elementWidgetSize.x, previewLineBegin.y);
 								ImGui::GetWindowDrawList()->AddLine(previewLineBegin, previewLineEnd,
 																	ImGui::GetColorU32(ImGuiCol_DragDropTarget), 2);
-								DYE_LOG("Preview Upper %d", i);
 							}
 
-							if (dropPayload->IsDelivery())
+							if (dropPayload->IsDelivery() && !isSource)
 							{
-								DYE_ASSERT(dropPayload->DataSize == sizeof(int));
-								int payloadIndex = *(const int *) dropPayload->Data;
-
-								if (payloadIndex != i)
-								{
-									moveElement.SrcIndex = payloadIndex;
-									moveElement.DstIndex = i;
-								}
+								moveElement.SrcIndex = payloadIndex;
+								moveElement.DstIndex = i;
 							}
 						}
 						ImGui::EndDragDropTarget();
@@ -1773,34 +1774,33 @@ namespace DYE::ImGuiUtil
 						ImGuiPayload const* dropPayload = ImGui::AcceptDragDropPayload("ArrayIndex", ImGuiDragDropFlags_AcceptPeekOnly);
 						if (dropPayload != nullptr)
 						{
-							if (dropPayload->IsPreview())
+							DYE_ASSERT(dropPayload->DataSize == sizeof(int));
+							int payloadIndex = *(const int *) dropPayload->Data;
+							bool const isSource = payloadIndex == i;
+
+							if (dropPayload->IsPreview() && !isSource)
 							{
 								auto const dropTargetRect = ImGui::GetCurrentContext()->DragDropTargetRect;
-								ImVec2 const previewLineBegin = dropTargetRect.GetBL();
-								ImVec2 const previewLineEnd = dropTargetRect.GetBR();
+								ImVec2 const previewLineBegin = ImVec2(elementWidgetScreenPos.x, elementWidgetScreenPos.y + elementWidgetSize.y);
+								ImVec2 const previewLineEnd = ImVec2(previewLineBegin.x + elementWidgetSize.x, previewLineBegin.y);
 								ImGui::GetWindowDrawList()->AddLine(previewLineBegin, previewLineEnd,
 																	ImGui::GetColorU32(ImGuiCol_DragDropTarget), 2);
-
-								DYE_LOG("Preview Lower %d", i);
 							}
 
-							if (dropPayload->IsDelivery())
+							if (dropPayload->IsDelivery() && !isSource)
 							{
-								DYE_ASSERT(dropPayload->DataSize == sizeof(int));
-								int payloadIndex = *(const int *) dropPayload->Data;
-
-								if (payloadIndex != i)
-								{
-									moveElement.SrcIndex = payloadIndex;
-									moveElement.DstIndex = i + 1;
-								}
+								moveElement.SrcIndex = payloadIndex;
+								moveElement.DstIndex = i + 1;
 							}
 						}
 						ImGui::EndDragDropTarget();
 					}
 				}
 				ImGui::SetCursorPos(originalCursorPos);
-
+				if (isBeingDragged)
+				{
+					ImGui::GetStyle().Alpha = originalAlpha;
+				}
 				ImGui::PopID();
 			}
 
@@ -1813,8 +1813,12 @@ namespace DYE::ImGuiUtil
 				// TODO: for now, we just insert with a default value using {}
 				elements.insert(elements.begin() + indexToInsertNewElement, Type {});
 			}
-			else if (moveElement.HasOperation())
+			// Notice here we also don't do anything if the destination is right after the source (i.e. SrcIndex + 1 != DstIndex),
+			// that's because inserting an element 'after' the element is the same as not moving at all.
+			else if (moveElement.SrcIndex != moveElement.DstIndex &&
+					 moveElement.SrcIndex + 1 != moveElement.DstIndex)
 			{
+
 				Type temp = elements[moveElement.SrcIndex];
 				elements.insert(elements.begin() + moveElement.DstIndex, temp);
 
