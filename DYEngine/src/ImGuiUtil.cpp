@@ -1756,6 +1756,9 @@ namespace DYE::ImGuiUtil
 				// Draw 2 droppable targets as invisible buttons.
 				originalCursorPos = ImGui::GetCursorPos();
 				{
+					auto const previewLineColor = ImGui::GetColorU32(ImGuiCol_DragDropTarget);
+					float const previewLineHeadRadius = 4;
+
 					ImGui::SetCursorScreenPos(elementWidgetScreenPos);
 					Internal::InteractableItem("ElementDropHandle_Upper", ImVec2 {elementWidgetSize.x, elementWidgetSize.y * 0.5f});
 					if (ImGui::BeginDragDropTarget())
@@ -1769,11 +1772,10 @@ namespace DYE::ImGuiUtil
 
 							if (dropPayload->IsPreview() && !isSource)
 							{
-								auto const dropTargetRect = ImGui::GetCurrentContext()->DragDropTargetRect;
 								ImVec2 const previewLineBegin = elementWidgetScreenPos;
 								ImVec2 const previewLineEnd = ImVec2(previewLineBegin.x + elementWidgetSize.x, previewLineBegin.y);
-								ImGui::GetWindowDrawList()->AddLine(previewLineBegin, previewLineEnd,
-																	ImGui::GetColorU32(ImGuiCol_DragDropTarget), 2);
+								ImGui::GetWindowDrawList()->AddCircle(previewLineBegin, previewLineHeadRadius, previewLineColor, 4);
+								ImGui::GetWindowDrawList()->AddLine(previewLineBegin, previewLineEnd, previewLineColor, 2);
 							}
 
 							if (dropPayload->IsDelivery() && !isSource)
@@ -1797,11 +1799,10 @@ namespace DYE::ImGuiUtil
 
 							if (dropPayload->IsPreview() && !isSource)
 							{
-								auto const dropTargetRect = ImGui::GetCurrentContext()->DragDropTargetRect;
 								ImVec2 const previewLineBegin = ImVec2(elementWidgetScreenPos.x, elementWidgetScreenPos.y + elementWidgetSize.y);
 								ImVec2 const previewLineEnd = ImVec2(previewLineBegin.x + elementWidgetSize.x, previewLineBegin.y);
-								ImGui::GetWindowDrawList()->AddLine(previewLineBegin, previewLineEnd,
-																	ImGui::GetColorU32(ImGuiCol_DragDropTarget), 2);
+								ImGui::GetWindowDrawList()->AddCircle(previewLineBegin, previewLineHeadRadius, previewLineColor, 4);
+								ImGui::GetWindowDrawList()->AddLine(previewLineBegin, previewLineEnd, previewLineColor, 2);
 							}
 
 							if (dropPayload->IsDelivery() && !isSource)
