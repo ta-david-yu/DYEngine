@@ -13,7 +13,6 @@ namespace DYE::DYEditor
 	using EntityInstanceID = std::uint32_t;
 
 	class Entity;
-
 	class World
 	{
 		// We need this so Entity could access m_Registry for entt operation.
@@ -60,17 +59,29 @@ namespace DYE::DYEditor
 			}
 		}
 
-
-		template<typename... Components>
+		/*
+		template<typename... ComponentTypes>
 		auto GetView()
 		{
-			return m_Registry.view<Components...>();
+			return m_Registry.view<ComponentTypes...>();
 		}
 
-		template<typename... Components>
+		template<typename... ComponentTypes>
 		auto GetView() const
 		{
-			return m_Registry.view<Components...>();
+			return m_Registry.view<ComponentTypes...>();
+		}*/
+
+		template<typename ComponentType, typename... ComponentTypes, typename... ExcludeTypes>
+		auto GetView(Exclude<ExcludeTypes...> excludes = {})
+		{
+			return m_Registry.view<ComponentType, ComponentTypes..., ExcludeTypes...>(excludes);
+		}
+
+		template<typename ComponentType, typename... ComponentTypes, typename... ExcludeTypes>
+		auto GetView(Exclude<ExcludeTypes...> excludes = {}) const
+		{
+			return m_Registry.view<ComponentType, ComponentTypes..., ExcludeTypes...>(excludes);
 		}
 
 		bool IsEmpty() const;
