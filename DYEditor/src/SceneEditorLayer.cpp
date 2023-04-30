@@ -839,7 +839,7 @@ namespace DYE::DYEditor
 					if (ImGui::BeginDragDropTarget())
 					{
 						ImGuiPayload const *dropPayload = ImGui::AcceptDragDropPayload("EntityGUID",
-																					   ImGuiDragDropFlags_AcceptBeforeDelivery);
+																					   ImGuiDragDropFlags_AcceptPeekOnly);
 						if (dropPayload != nullptr)
 						{
 							DYE_ASSERT(dropPayload->DataSize == sizeof(DYE::GUID));
@@ -848,12 +848,10 @@ namespace DYE::DYEditor
 
 							if (dropPayload->IsPreview() && !isSource)
 							{
-								/*
 								ImVec2 const previewLineBegin = entityWidgetScreenPos;
 								ImVec2 const previewLineEnd = ImVec2(previewLineBegin.x + entityWidgetSize.x, previewLineBegin.y);
 								ImGui::GetWindowDrawList()->AddLine(previewLineBegin, previewLineEnd,
-																	ImGui::GetColorU32(ImGuiCol_DragDropTarget), 2);*/
-								sprintf(dragDropDebug, "%s Upper", name.c_str());
+																	ImGui::GetColorU32(ImGuiCol_DragDropTarget), 2);
 							}
 
 							if (dropPayload->IsDelivery() && !isSource)
@@ -881,12 +879,7 @@ namespace DYE::DYEditor
 
 							if (dropPayload->IsPreview() && !isSource)
 							{
-								/*
-								ImVec2 const previewLineBegin = entityWidgetScreenPos;
-								ImVec2 const previewLineEnd = ImVec2(previewLineBegin.x + entityWidgetSize.x, previewLineBegin.y);
-								ImGui::GetWindowDrawList()->AddLine(previewLineBegin, previewLineEnd,
-																	ImGui::GetColorU32(ImGuiCol_DragDropTarget), 2);*/
-								sprintf(dragDropDebug, "%s Middle", name.c_str());
+								// Do nothing here.
 							}
 
 							if (dropPayload->IsDelivery() && !isSource)
@@ -905,7 +898,7 @@ namespace DYE::DYEditor
 					if (ImGui::BeginDragDropTarget())
 					{
 						ImGuiPayload const *dropPayload = ImGui::AcceptDragDropPayload("EntityGUID",
-																					   ImGuiDragDropFlags_AcceptBeforeDelivery);
+																					   ImGuiDragDropFlags_AcceptPeekOnly);
 						if (dropPayload != nullptr)
 						{
 							DYE_ASSERT(dropPayload->DataSize == sizeof(DYE::GUID));
@@ -914,12 +907,10 @@ namespace DYE::DYEditor
 
 							if (dropPayload->IsPreview() && !isSource)
 							{
-								/*
-								ImVec2 const previewLineBegin = entityWidgetScreenPos;
+								ImVec2 const previewLineBegin = ImVec2(entityWidgetScreenPos.x, entityWidgetScreenPos.y + entityWidgetSize.y);
 								ImVec2 const previewLineEnd = ImVec2(previewLineBegin.x + entityWidgetSize.x, previewLineBegin.y);
 								ImGui::GetWindowDrawList()->AddLine(previewLineBegin, previewLineEnd,
-																	ImGui::GetColorU32(ImGuiCol_DragDropTarget), 2);*/
-								sprintf(dragDropDebug, "%s Lower", name.c_str());
+																	ImGui::GetColorU32(ImGuiCol_DragDropTarget), 2);
 							}
 
 							if (dropPayload->IsDelivery() && !isSource)
