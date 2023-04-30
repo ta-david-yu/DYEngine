@@ -752,8 +752,29 @@ namespace DYE::DYEditor
 					ImVec2 const entityWidgetSize = ImVec2(ImGui::GetContentRegionAvail().x,
 														   ImGui::GetTextLineHeightWithSpacing());
 
-					bool const isNodeOpen = ImGui::TreeNodeEx((void *) (std::uint64_t) entity.GetInstanceID(), flags,
-															  name.c_str());
+					void const* treeNodeId = (void *) (std::uint64_t) entity.GetInstanceID();
+					bool const isNodeOpen = ImGui::TreeNodeEx(treeNodeId, flags, name.c_str());
+					if (ImGui::BeginPopupContextItem())
+					{
+						// Draw entity context menu right after TreeNode call.
+						if (ImGui::Selectable("Delete"))
+						{
+							Undo::DeleteEntity(scene.World, entity, indexInWorld);
+							changed = true;
+						}
+						if (ImGui::Selectable("Create Empty"))
+						{
+							// Select the newly created entity.
+							// For now, the entity is always put at the end of the list.
+							// TODO: make it a child of the clicked tree node entity.
+							*pCurrentSelectedEntity = scene.World.CreateEntity("Entity");
+							int const indexInWorldArray = scene.World.GetNumberOfEntities() - 1;
+							Undo::RegisterEntityCreation(scene.World, *pCurrentSelectedEntity, indexInWorldArray);
+							changed = true;
+						}
+						ImGui::EndPopup();
+					}
+
 					ImVec2 const entityTreeNodeSize = ImGui::GetItemRectSize();
 					float const entityWidgetCenterY = entityWidgetScreenPos.y + entityTreeNodeSize.y * 0.5f;
 
@@ -912,17 +933,6 @@ namespace DYE::DYEditor
 					}
 
 					ImGui::SetCursorPos(originalCursorPos);
-
-					// Draw entity context menu.
-					if (ImGui::BeginPopupContextItem())
-					{
-						if (ImGui::Selectable("Delete"))
-						{
-							Undo::DeleteEntity(scene.World, entity, indexInWorld);
-							changed = true;
-						}
-						ImGui::EndPopup();
-					}
 				}
 			);
 

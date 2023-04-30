@@ -5,6 +5,7 @@
 
 #include <optional>
 #include <vector>
+#include <unordered_map>
 #include <entt/entt.hpp>
 
 namespace DYE::DYEditor
@@ -15,21 +16,21 @@ namespace DYE::DYEditor
 	class Entity;
 	class World
 	{
-		// We need this so Entity could access m_Registry for entt operation.
+		// We need this so Entity could access world.m_Registry for entt operation.
 		friend class Entity;
+		friend class SerializedObjectFactory;
+		friend class EntityCreationOperation;
+		friend class EntityDeletionOperation;
 		friend entt::registry& GetWorldUnderlyingRegistry(World& world);
 	public:
 		World();
 		~World() = default;
 
-		/// Create an entity at the given location inside the internal Entity Handle array.
-		/// This method is for engine-internally use (e.g. Undo/redo entity creation etc).
-		Entity CreateEntityAtIndex(std::size_t index);
-		Entity CreateEntity();
 		Entity CreateEntity(std::string const& name);
+		Entity CreateEntityAtIndex(std::string const& name, std::size_t index);
 		Entity CreateEntityWithGUID(std::string const& name, GUID guid);
 		Entity WrapIdentifierIntoEntity(EntityIdentifier identifier);
-		void DestroyEntity(Entity const& entity);
+		void DestroyEntity(Entity entity);
 		/// Destroy an entity with the given GUID.
 		/// The operation is very slow because we have to iterate through every entities' ID components.
 		void DestroyEntityWithGUID(GUID entityGUID);
@@ -77,23 +78,40 @@ namespace DYE::DYEditor
 			return m_Registry.group<OwnedTypes...>(gets, excludes);
 		}
 
+		template<typename... OwnedTypes, typename... GetTypes, typename... ExcludeTypes>
+		auto GetGroup(Get_t<GetTypes...> gets = {}, Exclude_t<ExcludeTypes...> excludes = {}) const
+		{
+			return m_Registry.group<OwnedTypes...>(gets, excludes);
+		}
+
 		bool IsEmpty() const;
 		void Reserve(std::size_t size);
 		void Clear();
 		std::size_t GetNumberOfEntities() const { return m_EntityHandles.size(); }
 
+	private:
+		/// Create an empty entity that is not tracked by the internal Entity Handle array.
+		/// You need to make sure to call RegisterUntrackedEntity after adding an IDComponent to the entity.
+		/// This method is for engine-internally use (e.g. Deserialization, Undo/redo entity creation etc).
+		Entity createUntrackedEntity();
+
+		/// This method is for engine-internally use (e.g. Deserialization, Undo/redo entity creation etc).
+		void registerUntrackedEntityAtIndex(Entity entity, std::size_t index);
 
 	private:
-		void destroyEntityWithIdentifier(EntityIdentifier identifier);
-
 		struct EntityHandle
 		{
 			EntityIdentifier Identifier;
 		};
 
 		GUIDFactory m_EntityGUIDFactory;
-		entt::registry m_Registry;
+
 		std::vector<EntityHandle> m_EntityHandles;
+
+		using Map = std::unordered_map<GUID, EntityIdentifier>;
+		Map m_GUIDToEntityIdentifierMap;
+
+		entt::registry m_Registry;
 	};
 
 	entt::registry& GetWorldUnderlyingRegistry(World& world);

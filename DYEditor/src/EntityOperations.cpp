@@ -13,16 +13,18 @@ namespace DYE::DYEditor
 
 	void EntityCreationOperation::Redo()
 	{
-		Entity entity = pWorld->CreateEntityAtIndex(IndexInWorldEntityArray);
+		Entity entity = pWorld->createUntrackedEntity();
 		SerializedObjectFactory::ApplySerializedEntityToEmptyEntity(CreatedSerializedEntity, entity);
+		pWorld->registerUntrackedEntityAtIndex(entity, IndexInWorldEntityArray);
 	}
 
 	// EntityDeletionOperation
 
 	void EntityDeletionOperation::Undo()
 	{
-		Entity entity = pWorld->CreateEntityAtIndex(IndexInWorldEntityArray);
+		Entity entity = pWorld->createUntrackedEntity();
 		SerializedObjectFactory::ApplySerializedEntityToEmptyEntity(DeletedSerializedEntity, entity);
+		pWorld->registerUntrackedEntityAtIndex(entity, IndexInWorldEntityArray);
 	}
 
 	void EntityDeletionOperation::Redo()
