@@ -712,14 +712,6 @@ namespace DYE::DYEditor
 		};
 		static DebugContext debugContext;
 
-		ImGui::Begin("Hierarchy Debug Window");
-
-		ImGui::Text(dragDropDebug);
-		ImGui::Checkbox("Show Widget Rect", &debugContext.ShowWidgetRect);
-		ImGui::Checkbox("Show TreeNode Rect", &debugContext.ShowTreeNodeRect);
-
-		ImGui::End();
-
 		// Draw all entities.
 		scene.World.ForEachEntityAndIndex
 			(
@@ -748,9 +740,12 @@ namespace DYE::DYEditor
 					ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
 					if (isSelected) flags |= ImGuiTreeNodeFlags_Selected;
 
-					ImVec2 const entityWidgetScreenPos = ImGui::GetCursorScreenPos();
+					ImVec2 const entityTreeNodeScreenPos = ImGui::GetCursorScreenPos();
 					ImVec2 const entityWidgetSize = ImVec2(ImGui::GetContentRegionAvail().x,
 														   ImGui::GetTextLineHeightWithSpacing());
+
+					float const spacingBetweenTreeNode = ImGui::GetStyle().ItemSpacing.y;
+					ImVec2 const entityWidgetScreenPos = ImVec2(entityTreeNodeScreenPos.x, entityTreeNodeScreenPos.y - spacingBetweenTreeNode * 0.5f);
 
 					void const* treeNodeId = (void *) (std::uint64_t) entity.GetInstanceID();
 					bool const isNodeOpen = ImGui::TreeNodeEx(treeNodeId, flags, name.c_str());
@@ -776,21 +771,26 @@ namespace DYE::DYEditor
 					}
 
 					ImVec2 const entityTreeNodeSize = ImGui::GetItemRectSize();
-					float const entityWidgetCenterY = entityWidgetScreenPos.y + entityTreeNodeSize.y * 0.5f;
+					float const entityWidgetCenterY = entityTreeNodeScreenPos.y + entityTreeNodeSize.y * 0.5f;
 
-					ImVec2 const debugDrawCenter = ImVec2(entityWidgetScreenPos.x, entityWidgetCenterY);
-					ImGui::GetWindowDrawList()->AddCircle(debugDrawCenter, 2, ImColor(ImVec4(1, 1, 1, 1)), 4);
+					if (debugContext.ShowTreeNodeRect || debugContext.ShowWidgetRect)
+					{
+						ImVec2 const widgetHeadCenter = ImVec2(entityTreeNodeScreenPos.x, entityWidgetCenterY);
+						ImGui::GetWindowDrawList()->AddCircle(widgetHeadCenter, 2, ImColor(ImVec4(1, 1, 1, 0.5f)), 4);
+					}
 
 					if (debugContext.ShowTreeNodeRect)
 					{
-						ImGui::GetWindowDrawList()->AddRect(entityWidgetScreenPos,
-															ImVec2(entityWidgetScreenPos.x + entityTreeNodeSize.x,
-																   entityWidgetScreenPos.y + entityTreeNodeSize.y),
+						ImGui::GetWindowDrawList()->AddCircle(entityTreeNodeScreenPos, 2, ImColor(ImVec4(1, 1, 1, 1)), 4);
+						ImGui::GetWindowDrawList()->AddRect(entityTreeNodeScreenPos,
+															ImVec2(entityTreeNodeScreenPos.x + entityTreeNodeSize.x,
+																   entityTreeNodeScreenPos.y + entityTreeNodeSize.y),
 															ImColor(ImVec4(1, 1, 1, 0.5f)));
 					}
 
 					if (debugContext.ShowWidgetRect)
 					{
+						ImGui::GetWindowDrawList()->AddCircle(entityWidgetScreenPos, 2, ImColor(ImVec4(0, 1, 0, 1)), 4);
 						ImGui::GetWindowDrawList()->AddRect(entityWidgetScreenPos,
 															ImVec2(entityWidgetScreenPos.x + entityWidgetSize.x,
 																   entityWidgetScreenPos.y + entityWidgetSize.y),
@@ -825,17 +825,17 @@ namespace DYE::DYEditor
 
 					ImVec2 const originalCursorPos = ImGui::GetCursorPos();
 
-					// Divide the entity tree node widget into 3 drop handle rows:
-					// 	1. Upper (0.25f): insert the dragged entity above the dropped entity.
-					//  2. Middle(0.50f): make the dragged entity a child of the dropped entity.
-					//  3. Lower (0.25f): insert the dragged entity below the dropped entity.
-					float const upperSize = 0.2f;
-					float const middleSize = 0.55f;
-					float const lowerSize = 1.0f - upperSize - middleSize;
+					// Divide the entity widget into 3 drop handle rows:
+					// 	1. Upper: insert the dragged entity above the dropped entity.
+					//  2. Middle: make the dragged entity a child of the dropped entity.
+					//  3. Lower: insert the dragged entity below the dropped entity.
+					float const upperSize = spacingBetweenTreeNode * 0.5f;
+					float const lowerSize = spacingBetweenTreeNode * 0.5f;
+					float const middleSize = entityWidgetSize.y - upperSize - lowerSize;
 
 					ImGui::SetCursorScreenPos(entityWidgetScreenPos);
 					ImGuiUtil::Internal::InteractableItem("EntityDropHandle_Upper",
-														  ImVec2(entityWidgetSize.x, entityWidgetSize.y * upperSize));
+														  ImVec2(entityWidgetSize.x, upperSize));
 					if (ImGui::BeginDragDropTarget())
 					{
 						ImGuiPayload const *dropPayload = ImGui::AcceptDragDropPayload("EntityGUID",
@@ -866,9 +866,9 @@ namespace DYE::DYEditor
 					}
 
 					ImGui::SetCursorScreenPos(
-						ImVec2(entityWidgetScreenPos.x, entityWidgetScreenPos.y + entityWidgetSize.y * upperSize));
+						ImVec2(entityWidgetScreenPos.x, entityWidgetScreenPos.y + upperSize));
 					ImGuiUtil::Internal::InteractableItem("EntityDropHandle_Middle",
-														  ImVec2(entityWidgetSize.x, entityWidgetSize.y * middleSize));
+														  ImVec2(entityWidgetSize.x, middleSize));
 					if (ImGui::BeginDragDropTarget())
 					{
 						ImGuiPayload const *dropPayload = ImGui::AcceptDragDropPayload("EntityGUID",
@@ -898,11 +898,10 @@ namespace DYE::DYEditor
 						ImGui::EndDragDropTarget();
 					}
 
-					ImGui::SetCursorScreenPos(ImVec2(entityWidgetScreenPos.x, entityWidgetScreenPos.y +
-																			  entityWidgetSize.y *
-																			  (upperSize + middleSize)));
+					ImGui::SetCursorScreenPos(
+						ImVec2(entityWidgetScreenPos.x, entityWidgetScreenPos.y + upperSize + middleSize));
 					ImGuiUtil::Internal::InteractableItem("EntityDropHandle_Lower",
-														  ImVec2(entityWidgetSize.x, entityWidgetSize.y * lowerSize));
+														  ImVec2(entityWidgetSize.x, lowerSize));
 					if (ImGui::BeginDragDropTarget())
 					{
 						ImGuiPayload const *dropPayload = ImGui::AcceptDragDropPayload("EntityGUID",
@@ -935,6 +934,14 @@ namespace DYE::DYEditor
 					ImGui::SetCursorPos(originalCursorPos);
 				}
 			);
+
+		ImGui::Begin("Hierarchy Debug Window");
+
+		ImGui::Text(dragDropDebug);
+		ImGui::Checkbox("Show Widget Rect", &debugContext.ShowWidgetRect);
+		ImGui::Checkbox("Show TreeNode Rect", &debugContext.ShowTreeNodeRect);
+
+		ImGui::End();
 
 		return changed;
 	}
