@@ -29,15 +29,15 @@ namespace DYE::DYEditor
 		Entity CreateEntity();
 		Entity CreateEntity(std::string const& name);
 		Entity CreateEntityWithGUID(std::string const& name, GUID guid);
-		void DestroyEntity(Entity& entity);
-		void DestroyEntity(EntityIdentifier identifier);
+		Entity WrapIdentifierIntoEntity(EntityIdentifier identifier);
+		void DestroyEntity(Entity const& entity);
 		/// Destroy an entity with the given GUID.
 		/// The operation is very slow because we have to iterate through every entities' ID components.
 		void DestroyEntityWithGUID(GUID entityGUID);
 		/// The operation is very slow because we have to iterate through every entities' ID components.
 		std::optional<Entity> TryGetEntityWithGUID(GUID entityGUID);
 		/// Get the index of the given entity inside Entity Handle array.
-		std::optional<std::size_t> TryGetEntityIndex(Entity &entity);
+		std::optional<std::size_t> TryGetEntityIndex(Entity const &entity);
 
 		template<typename Func>
 		void ForEachEntity(Func function)
@@ -50,7 +50,7 @@ namespace DYE::DYEditor
 		}
 
 		template<typename Func>
-		void ForEachEntityWithIndex(Func function)
+		void ForEachEntityAndIndex(Func function)
 		{
 			for (std::size_t i = 0; i < m_EntityHandles.size(); i++)
 			{
@@ -60,6 +60,19 @@ namespace DYE::DYEditor
 			}
 		}
 
+
+		template<typename... Components>
+		auto GetView()
+		{
+			return m_Registry.view<Components...>();
+		}
+
+		template<typename... Components>
+		auto GetView() const
+		{
+			return m_Registry.view<Components...>();
+		}
+
 		bool IsEmpty() const;
 		void Reserve(std::size_t size);
 		void Clear();
@@ -67,6 +80,8 @@ namespace DYE::DYEditor
 
 
 	private:
+		void destroyEntityWithIdentifier(EntityIdentifier identifier);
+
 		struct EntityHandle
 		{
 			EntityIdentifier Identifier;

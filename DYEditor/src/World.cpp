@@ -46,12 +46,17 @@ namespace DYE::DYEditor
 		return entity;
 	}
 
-	void World::DestroyEntity(Entity &entity)
+	Entity World::WrapIdentifierIntoEntity(EntityIdentifier identifier)
 	{
-		DestroyEntity(entity.m_EntityIdentifier);
+		return Entity(*this, identifier);
 	}
 
-	void World::DestroyEntity(EntityIdentifier identifier)
+	void World::DestroyEntity(Entity const& entity)
+	{
+		destroyEntityWithIdentifier(entity.m_EntityIdentifier);
+	}
+
+	void World::destroyEntityWithIdentifier(EntityIdentifier identifier)
 	{
 		auto newEnd = std::remove_if(m_EntityHandles.begin(), m_EntityHandles.end(),
 					   [identifier](EntityHandle &element)
@@ -69,7 +74,7 @@ namespace DYE::DYEditor
 		{
 			if (idComponent.ID == entityGUID)
 			{
-				DestroyEntity(entity);
+				destroyEntityWithIdentifier(entity);
 				break;
 			}
 		}
@@ -88,7 +93,7 @@ namespace DYE::DYEditor
 		return {};
 	}
 
-	std::optional<std::size_t> World::TryGetEntityIndex(Entity &entity)
+	std::optional<std::size_t> World::TryGetEntityIndex(Entity const &entity)
 	{
 		if (entity.m_World != this)
 		{

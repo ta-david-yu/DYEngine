@@ -52,7 +52,7 @@ void ImGuiSystem1::Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecutePa
 void RotateHasAngularVelocitySystem::Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params)
 {
 	auto& registry = DYE::DYEditor::GetWorldUnderlyingRegistry(world);
-	auto view = registry.view<HasAngularVelocity, DYE::DYEditor::TransformComponent>();
+	auto view = world.GetView<HasAngularVelocity, DYE::DYEditor::TransformComponent>();// registry.view<HasAngularVelocity, DYE::DYEditor::TransformComponent>();
 
 	for (auto&& [entity, hasAngularVelocity, transform] : view.each())
 	{
@@ -82,7 +82,7 @@ void CreateEntitiesSystem::Execute(DYE::DYEditor::World &world, DYE::DYEditor::E
 			}
 			world.CreateEntity(name).AddOrGetComponent<PrintMessageOnTeardown>().Message = std::to_string(i);
 		}
-		world.DestroyEntity(entity);
+		world.DestroyEntity(world.WrapIdentifierIntoEntity(entity));
 	}
 }
 
