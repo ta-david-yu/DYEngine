@@ -59,19 +59,6 @@ namespace DYE::DYEditor
 			}
 		}
 
-		/*
-		template<typename... ComponentTypes>
-		auto GetView()
-		{
-			return m_Registry.view<ComponentTypes...>();
-		}
-
-		template<typename... ComponentTypes>
-		auto GetView() const
-		{
-			return m_Registry.view<ComponentTypes...>();
-		}*/
-
 		template<typename Type, typename... Types, typename... ExcludeTypes>
 		auto GetView(Exclude_t<ExcludeTypes...> excludes = {})
 		{
