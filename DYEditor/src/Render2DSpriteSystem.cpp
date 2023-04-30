@@ -24,9 +24,8 @@ namespace DYE::DYEditor
 	{
 		m_NumberOfRenderedEntitiesLastFrame = 0;
 		auto& registry = DYEditor::GetWorldUnderlyingRegistry(world);
-
 		// We use group here because we know Render2DSpriteSystem is the main critical path for SpriteRendererComponent.
-		auto group = registry.group<SpriteRendererComponent>(entt::get<TransformComponent>);
+		auto group = world.GetGroup<SpriteRendererComponent>(Get<TransformComponent>);
 		for (auto entity : group)
 		{
 			auto [sprite, transform] = group.get<SpriteRendererComponent, TransformComponent>(entity);

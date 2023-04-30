@@ -72,16 +72,22 @@ namespace DYE::DYEditor
 			return m_Registry.view<ComponentTypes...>();
 		}*/
 
-		template<typename ComponentType, typename... ComponentTypes, typename... ExcludeTypes>
-		auto GetView(Exclude<ExcludeTypes...> excludes = {})
+		template<typename Type, typename... Types, typename... ExcludeTypes>
+		auto GetView(Exclude_t<ExcludeTypes...> excludes = {})
 		{
-			return m_Registry.view<ComponentType, ComponentTypes..., ExcludeTypes...>(excludes);
+			return m_Registry.view<Type, Types..., ExcludeTypes...>(excludes);
 		}
 
-		template<typename ComponentType, typename... ComponentTypes, typename... ExcludeTypes>
-		auto GetView(Exclude<ExcludeTypes...> excludes = {}) const
+		template<typename Type, typename... Types, typename... ExcludeTypes>
+		auto GetView(Exclude_t<ExcludeTypes...> excludes = {}) const
 		{
-			return m_Registry.view<ComponentType, ComponentTypes..., ExcludeTypes...>(excludes);
+			return m_Registry.view<Type, Types..., ExcludeTypes...>(excludes);
+		}
+
+		template<typename... OwnedTypes, typename... GetTypes, typename... ExcludeTypes>
+		auto GetGroup(Get_t<GetTypes...> gets = {}, Exclude_t<ExcludeTypes...> excludes = {})
+		{
+			return m_Registry.group<OwnedTypes...>(gets, excludes);
 		}
 
 		bool IsEmpty() const;
