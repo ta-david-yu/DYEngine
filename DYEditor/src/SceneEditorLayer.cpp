@@ -834,6 +834,12 @@ namespace DYE::DYEditor
 						ImGui::TreePop();
 					}
 
+					if (!ImGui::IsDragDropActive())
+					{
+						// If the user is not dragging, we don't have to draw invisible drop handles.
+						return;
+					}
+
 					ImVec2 const originalCursorPos = ImGui::GetCursorPos();
 
 					// Divide the entity widget into 3 drop handle rows:
@@ -943,12 +949,8 @@ namespace DYE::DYEditor
 			changed = true;
 		}
 
-		ImGui::Begin("Hierarchy Debug Window");
-
 		ImGui::Checkbox("Show Widget Rect", &debugContext.ShowWidgetRect);
 		ImGui::Checkbox("Show TreeNode Rect", &debugContext.ShowTreeNodeRect);
-
-		ImGui::End();
 
 		return changed;
 	}

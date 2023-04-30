@@ -1676,36 +1676,38 @@ namespace DYE::ImGuiUtil
 				ImGui::PushID(controlID);
 
 				ImVec2 const elementWidgetScreenPos = ImGui::GetCursorScreenPos();
-				ImVec2 const elementWidgetSize = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing());
+				ImVec2 const elementWidgetSize = ImVec2(ImGui::GetContentRegionAvail().x,
+														ImGui::GetFrameHeightWithSpacing());
 				auto &element = elements[i];
 
 				// Draw draggable target as invisible button.
 				bool isBeingDragged = false;
 				ImVec2 originalCursorPos = ImGui::GetCursorPos();
+
+				float const dragHandleWidth = ImGuiUtil::Settings::ControlLabelWidth - 12;
+				ImGui::InvisibleButton("ElementDragHandle",
+									   ImVec2 {dragHandleWidth, ImGui::GetFrameHeightWithSpacing()});
+				if (!ImGui::IsDragDropActive() && ImGui::IsItemHovered())
 				{
-					float const dragHandleWidth = ImGuiUtil::Settings::ControlLabelWidth - 12;
-					ImGui::InvisibleButton("ElementDragHandle", ImVec2 {dragHandleWidth, ImGui::GetFrameHeightWithSpacing()});
-					if (!ImGui::IsDragDropActive() && ImGui::IsItemHovered())
-					{
-						ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
-					}
+					ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+				}
 
-					ImGuiDragDropFlags const dragDropFlags = ImGuiDragDropFlags_None;
-					if (ImGui::BeginDragDropSource(dragDropFlags))
-					{
-						ImGui::SetDragDropPayload("ArrayIndex", &i, sizeof(int));
+				ImGuiDragDropFlags const dragDropFlags = ImGuiDragDropFlags_None;
+				if (ImGui::BeginDragDropSource(dragDropFlags))
+				{
+					ImGui::SetDragDropPayload("ArrayIndex", &i, sizeof(int));
 
-						// Preview the element control in the drag tooltip.
-						auto const previewWindowSize = ImVec2 {elementWidgetSize.x, ImGui::GetTextLineHeightWithSpacing()};
-						ImGui::ItemSize(previewWindowSize);
-						ImGui::SameLine();
-						controlFunction(controlID, element);
+					// Preview the element control in the drag tooltip.
+					auto const previewWindowSize = ImVec2 {elementWidgetSize.x,
+														   ImGui::GetTextLineHeightWithSpacing()};
+					ImGui::ItemSize(previewWindowSize);
+					ImGui::SameLine();
+					controlFunction(controlID, element);
 
-						ImGui::EndDragDropSource();
+					ImGui::EndDragDropSource();
 
-						lastControlActivated = true;
-						isBeingDragged = true;
-					}
+					lastControlActivated = true;
+					isBeingDragged = true;
 				}
 				ImGui::SetCursorPos(originalCursorPos);
 
@@ -1753,17 +1755,21 @@ namespace DYE::ImGuiUtil
 					ImGui::EndTooltip();
 				}
 
-				// Draw 2 droppable targets as invisible buttons.
-				originalCursorPos = ImGui::GetCursorPos();
+				if (ImGui::IsDragDropActive())    // We only draw invisible drop handles when the user is dragging.
 				{
+					// Draw 2 droppable targets as invisible buttons.
+					originalCursorPos = ImGui::GetCursorPos();
+
 					auto const previewLineColor = ImGui::GetColorU32(ImGuiCol_DragDropTarget);
 					float const previewLineHeadRadius = 4;
 
 					ImGui::SetCursorScreenPos(elementWidgetScreenPos);
-					Internal::InteractableItem("ElementDropHandle_Upper", ImVec2 {elementWidgetSize.x, elementWidgetSize.y * 0.5f});
+					Internal::InteractableItem("ElementDropHandle_Upper",
+											   ImVec2 {elementWidgetSize.x, elementWidgetSize.y * 0.5f});
 					if (ImGui::BeginDragDropTarget())
 					{
-						ImGuiPayload const* dropPayload = ImGui::AcceptDragDropPayload("ArrayIndex", ImGuiDragDropFlags_AcceptPeekOnly);
+						ImGuiPayload const *dropPayload = ImGui::AcceptDragDropPayload("ArrayIndex",
+																					   ImGuiDragDropFlags_AcceptPeekOnly);
 						if (dropPayload != nullptr)
 						{
 							DYE_ASSERT(dropPayload->DataSize == sizeof(int));
@@ -1773,9 +1779,12 @@ namespace DYE::ImGuiUtil
 							if (dropPayload->IsPreview() && !isSource)
 							{
 								ImVec2 const previewLineBegin = elementWidgetScreenPos;
-								ImVec2 const previewLineEnd = ImVec2(previewLineBegin.x + elementWidgetSize.x, previewLineBegin.y);
-								ImGui::GetWindowDrawList()->AddCircle(previewLineBegin, previewLineHeadRadius, previewLineColor, 4);
-								ImGui::GetWindowDrawList()->AddLine(previewLineBegin, previewLineEnd, previewLineColor, 2);
+								ImVec2 const previewLineEnd = ImVec2(previewLineBegin.x + elementWidgetSize.x,
+																	 previewLineBegin.y);
+								ImGui::GetWindowDrawList()->AddCircle(previewLineBegin, previewLineHeadRadius,
+																	  previewLineColor, 4);
+								ImGui::GetWindowDrawList()->AddLine(previewLineBegin, previewLineEnd, previewLineColor,
+																	2);
 							}
 
 							if (dropPayload->IsDelivery() && !isSource)
@@ -1787,10 +1796,12 @@ namespace DYE::ImGuiUtil
 						ImGui::EndDragDropTarget();
 					}
 
-					Internal::InteractableItem("ElementDropHandle_Lower", ImVec2 {elementWidgetSize.x, elementWidgetSize.y * 0.5f});
+					Internal::InteractableItem("ElementDropHandle_Lower",
+											   ImVec2 {elementWidgetSize.x, elementWidgetSize.y * 0.5f});
 					if (ImGui::BeginDragDropTarget())
 					{
-						ImGuiPayload const* dropPayload = ImGui::AcceptDragDropPayload("ArrayIndex", ImGuiDragDropFlags_AcceptPeekOnly);
+						ImGuiPayload const *dropPayload = ImGui::AcceptDragDropPayload("ArrayIndex",
+																					   ImGuiDragDropFlags_AcceptPeekOnly);
 						if (dropPayload != nullptr)
 						{
 							DYE_ASSERT(dropPayload->DataSize == sizeof(int));
@@ -1799,10 +1810,14 @@ namespace DYE::ImGuiUtil
 
 							if (dropPayload->IsPreview() && !isSource)
 							{
-								ImVec2 const previewLineBegin = ImVec2(elementWidgetScreenPos.x, elementWidgetScreenPos.y + elementWidgetSize.y);
-								ImVec2 const previewLineEnd = ImVec2(previewLineBegin.x + elementWidgetSize.x, previewLineBegin.y);
-								ImGui::GetWindowDrawList()->AddCircle(previewLineBegin, previewLineHeadRadius, previewLineColor, 4);
-								ImGui::GetWindowDrawList()->AddLine(previewLineBegin, previewLineEnd, previewLineColor, 2);
+								ImVec2 const previewLineBegin = ImVec2(elementWidgetScreenPos.x,
+																	   elementWidgetScreenPos.y + elementWidgetSize.y);
+								ImVec2 const previewLineEnd = ImVec2(previewLineBegin.x + elementWidgetSize.x,
+																	 previewLineBegin.y);
+								ImGui::GetWindowDrawList()->AddCircle(previewLineBegin, previewLineHeadRadius,
+																	  previewLineColor, 4);
+								ImGui::GetWindowDrawList()->AddLine(previewLineBegin, previewLineEnd, previewLineColor,
+																	2);
 							}
 
 							if (dropPayload->IsDelivery() && !isSource)
@@ -1813,8 +1828,9 @@ namespace DYE::ImGuiUtil
 						}
 						ImGui::EndDragDropTarget();
 					}
+					ImGui::SetCursorPos(originalCursorPos);
 				}
-				ImGui::SetCursorPos(originalCursorPos);
+
 				if (isBeingDragged)
 				{
 					ImGui::PopStyleVar();
