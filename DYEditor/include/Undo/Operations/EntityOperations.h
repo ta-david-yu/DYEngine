@@ -42,6 +42,17 @@ namespace DYE::DYEditor
 		std::size_t IndexInWorldEntityArray = 0;
 	};
 
+	class EntityMoveOperation final : public UndoOperationBase
+	{
+	public:
+		void Undo() override;
+		void Redo() override;
+
+		World *pWorld;
+		int IndexBeforeMove = 0;
+		int IndexToInsert = 0;
+	};
+
 	class ComponentModificationOperation final : public UndoOperationBase
 	{
 	public:

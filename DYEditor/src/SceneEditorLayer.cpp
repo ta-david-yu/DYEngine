@@ -704,7 +704,6 @@ namespace DYE::DYEditor
 			ImGui::SeparatorText("Untitled");
 		}
 
-		char dragDropDebug[256] = "";
 		struct DebugContext
 		{
 			bool ShowWidgetRect = false;
@@ -712,10 +711,22 @@ namespace DYE::DYEditor
 		};
 		static DebugContext debugContext;
 
+		struct MoveEntity
+		{
+			bool HasOperation = false;
+			Entity Entity;
+			std::size_t SrcIndex = 0;
+			std::size_t DstIndex = 0;
+		};
+		MoveEntity moveEntity;
+
+		auto itemSpacing = ImGui::GetStyle().ItemSpacing;
+		itemSpacing.y = 6;
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, itemSpacing);
 		// Draw all entities.
 		scene.World.ForEachEntityAndIndex
 			(
-				[&changed, &scene, &pCurrentSelectedEntity, &dragDropDebug](DYEditor::Entity &entity,
+				[&changed, &scene, &pCurrentSelectedEntity, &moveEntity](DYEditor::Entity &entity,
 																			std::size_t indexInWorld)
 				{
 					auto tryGetNameResult = entity.TryGetName();
@@ -810,7 +821,7 @@ namespace DYE::DYEditor
 					ImGuiDragDropFlags const dragHandleFlags = ImGuiDragDropFlags_None;
 					if (ImGui::BeginDragDropSource(dragHandleFlags))
 					{
-						ImGui::SetDragDropPayload("EntityGUID", &guid, sizeof(DYE::GUID));
+						ImGui::SetDragDropPayload("EntityIndex", &indexInWorld, sizeof(std::size_t));
 
 						// Preview the entity in the drag tooltip.
 						ImGui::Text(name.c_str());
@@ -838,15 +849,15 @@ namespace DYE::DYEditor
 														  ImVec2(entityWidgetSize.x, upperSize));
 					if (ImGui::BeginDragDropTarget())
 					{
-						ImGuiPayload const *dropPayload = ImGui::AcceptDragDropPayload("EntityGUID",
+						ImGuiPayload const *dropPayload = ImGui::AcceptDragDropPayload("EntityIndex",
 																					   ImGuiDragDropFlags_AcceptPeekOnly);
 						if (dropPayload != nullptr)
 						{
-							DYE_ASSERT(dropPayload->DataSize == sizeof(DYE::GUID));
-							DYE::GUID payloadGUID = *(const DYE::GUID *) dropPayload->Data;
-							bool const isSource = payloadGUID == guid;
+							DYE_ASSERT(dropPayload->DataSize == sizeof(std::size_t));
+							std::size_t payloadIndex = *(const std::size_t *) dropPayload->Data;
+							bool const isSource = payloadIndex == indexInWorld;
 
-							if (dropPayload->IsPreview() && !isSource)
+							if (dropPayload->IsPreview())
 							{
 								ImVec2 const previewLineBegin = entityWidgetScreenPos;
 								ImVec2 const previewLineEnd = ImVec2(previewLineBegin.x + entityWidgetSize.x, previewLineBegin.y);
@@ -856,8 +867,9 @@ namespace DYE::DYEditor
 
 							if (dropPayload->IsDelivery() && !isSource)
 							{
-								//moveElement.SrcIndex = payloadIndex;
-								//moveElement.DstIndex = i;
+								moveEntity.HasOperation = true;
+								moveEntity.SrcIndex = payloadIndex;
+								moveEntity.DstIndex = indexInWorld;
 							}
 						}
 						ImGui::EndDragDropTarget();
@@ -869,23 +881,18 @@ namespace DYE::DYEditor
 														  ImVec2(entityWidgetSize.x, middleSize));
 					if (ImGui::BeginDragDropTarget())
 					{
-						ImGuiPayload const *dropPayload = ImGui::AcceptDragDropPayload("EntityGUID",
+						ImGuiPayload const *dropPayload = ImGui::AcceptDragDropPayload("EntityIndex",
 																					   ImGuiDragDropFlags_AcceptBeforeDelivery);
 						if (dropPayload != nullptr)
 						{
-							DYE_ASSERT(dropPayload->DataSize == sizeof(DYE::GUID));
-							DYE::GUID payloadGUID = *(const DYE::GUID *) dropPayload->Data;
-							bool const isSource = payloadGUID == guid;
-
-							if (dropPayload->IsPreview() && !isSource)
-							{
-								// Do nothing here.
-							}
+							DYE_ASSERT(dropPayload->DataSize == sizeof(std::size_t));
+							std::size_t payloadIndex = *(const std::size_t *) dropPayload->Data;
+							bool const isSource = payloadIndex == indexInWorld;
 
 							if (dropPayload->IsDelivery() && !isSource)
 							{
-								//moveElement.SrcIndex = payloadIndex;
-								//moveElement.DstIndex = i;
+								// Do nothing here for now:
+								// TODO: make payload entity a child of the current entity.
 							}
 						}
 						ImGui::EndDragDropTarget();
@@ -897,15 +904,15 @@ namespace DYE::DYEditor
 														  ImVec2(entityWidgetSize.x, lowerSize));
 					if (ImGui::BeginDragDropTarget())
 					{
-						ImGuiPayload const *dropPayload = ImGui::AcceptDragDropPayload("EntityGUID",
+						ImGuiPayload const *dropPayload = ImGui::AcceptDragDropPayload("EntityIndex",
 																					   ImGuiDragDropFlags_AcceptPeekOnly);
 						if (dropPayload != nullptr)
 						{
-							DYE_ASSERT(dropPayload->DataSize == sizeof(DYE::GUID));
-							DYE::GUID payloadGUID = *(const DYE::GUID *) dropPayload->Data;
-							bool const isSource = payloadGUID == guid;
+							DYE_ASSERT(dropPayload->DataSize == sizeof(std::size_t));
+							std::size_t payloadIndex = *(const std::size_t *) dropPayload->Data;
+							bool const isSource = payloadIndex == indexInWorld;
 
-							if (dropPayload->IsPreview() && !isSource)
+							if (dropPayload->IsPreview())
 							{
 								ImVec2 const previewLineBegin = ImVec2(entityWidgetScreenPos.x, entityWidgetScreenPos.y + entityWidgetSize.y);
 								ImVec2 const previewLineEnd = ImVec2(previewLineBegin.x + entityWidgetSize.x, previewLineBegin.y);
@@ -915,8 +922,9 @@ namespace DYE::DYEditor
 
 							if (dropPayload->IsDelivery() && !isSource)
 							{
-								//moveElement.SrcIndex = payloadIndex;
-								//moveElement.DstIndex = i;
+								moveEntity.HasOperation = true;
+								moveEntity.SrcIndex = payloadIndex;
+								moveEntity.DstIndex = indexInWorld + 1;
 							}
 						}
 						ImGui::EndDragDropTarget();
@@ -926,9 +934,17 @@ namespace DYE::DYEditor
 				}
 			);
 
+		ImGui::PopStyleVar();
+
+		int moveDiff = ((int) moveEntity.DstIndex - (int) moveEntity.SrcIndex);
+		if (moveEntity.HasOperation && moveDiff != 1 && moveDiff != 0)
+		{
+			Undo::MoveEntity(scene.World, scene.World.GetEntityAtIndex(moveEntity.SrcIndex), moveEntity.SrcIndex, moveEntity.DstIndex);
+			changed = true;
+		}
+
 		ImGui::Begin("Hierarchy Debug Window");
 
-		ImGui::Text(dragDropDebug);
 		ImGui::Checkbox("Show Widget Rect", &debugContext.ShowWidgetRect);
 		ImGui::Checkbox("Show TreeNode Rect", &debugContext.ShowTreeNodeRect);
 

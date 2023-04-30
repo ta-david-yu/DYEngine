@@ -136,6 +136,12 @@ namespace DYE::DYEditor
 		return {};
 	}
 
+	Entity World::GetEntityAtIndex(std::size_t index)
+	{
+		DYE_ASSERT(index < m_EntityHandles.size());
+		return Entity(*this, m_EntityHandles[index].Identifier);
+	}
+
 	bool World::IsEmpty() const
 	{
 		return m_Registry.empty();

@@ -1842,13 +1842,13 @@ namespace DYE::ImGuiUtil
 
 				if (moveElement.SrcIndex < moveElement.DstIndex)
 				{
-					// The source index is before destination index,
+					// The source index is smaller than the destination index,
 					// we can safely erase with source index.
 					elements.erase(elements.begin() + moveElement.SrcIndex);
 				}
 				else if (moveElement.SrcIndex > moveElement.DstIndex)
 				{
-					// The destination index is after destination index,
+					// The destination index is bigger than the destination index,
 					// we need to increment the source index by 1.
 					elements.erase(elements.begin() + moveElement.SrcIndex + 1);
 				}

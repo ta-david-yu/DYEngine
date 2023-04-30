@@ -112,13 +112,13 @@ namespace DYE::DYEditor
 		s_Data.LatestOperationIndex = s_Data.Operations.size() - 1;
 	}
 
-	void Undo::RegisterEntityCreation(World &world, Entity &entity)
+	void Undo::RegisterEntityCreation(World &world, Entity entity)
 	{
 		auto tryGetIndexResult = world.TryGetEntityIndex(entity);
 		RegisterEntityCreation(world, entity, tryGetIndexResult.has_value()? tryGetIndexResult.value() : 0);
 	}
 
-	void Undo::RegisterEntityCreation(World &world, Entity &entity, std::size_t indexInWorldHandleArray)
+	void Undo::RegisterEntityCreation(World &world, Entity entity, std::size_t indexInWorldHandleArray)
 	{
 		auto operation = std::make_unique<EntityCreationOperation>();
 		operation->pWorld = &world;
@@ -131,13 +131,13 @@ namespace DYE::DYEditor
 		pushNewOperation(std::move(operation));
 	}
 
-	void Undo::DeleteEntity(World &world, Entity &entity)
+	void Undo::DeleteEntity(World &world, Entity entity)
 	{
 		auto tryGetIndexResult = world.TryGetEntityIndex(entity);
 		DeleteEntity(world, entity, tryGetIndexResult.has_value()? tryGetIndexResult.value() : 0);
 	}
 
-	void Undo::DeleteEntity(World &world, Entity &entity, std::size_t indexInWorldHandleArray)
+	void Undo::DeleteEntity(World &world, Entity entity, std::size_t indexInWorldHandleArray)
 	{
 		auto operation = std::make_unique<EntityDeletionOperation>();
 		operation->pWorld = &world;
@@ -152,7 +152,40 @@ namespace DYE::DYEditor
 		pushNewOperation(std::move(operation));
 	}
 
-	void Undo::RegisterComponentModification(Entity &entity,
+	void Undo::MoveEntity(World &world, Entity entity, int indexBeforeMove, int indexToInsert)
+	{
+		auto operation = std::make_unique<EntityMoveOperation>();
+		operation->pWorld = &world;
+		operation->IndexBeforeMove = indexBeforeMove;
+		operation->IndexToInsert = indexToInsert;
+
+		auto &entityHandles = world.m_EntityHandles;
+		if (indexBeforeMove < indexToInsert)
+		{
+			entityHandles.insert(entityHandles.begin() + indexToInsert, entityHandles[indexBeforeMove]);
+
+			// The old index is smaller than the new index.
+			// We can safely erase it with the original index.
+			entityHandles.erase(entityHandles.begin() + indexBeforeMove);
+		}
+		else if (indexBeforeMove > indexToInsert)
+		{
+			entityHandles.insert(entityHandles.begin() + indexToInsert, entityHandles[indexBeforeMove]);
+
+			// The old index is bigger than the new index.
+			// We need to increment the erasure index by 1.
+			entityHandles.erase(entityHandles.begin() + indexBeforeMove + 1);
+		}
+
+		sprintf(operation->Description, "Move Entity '%s' from %d to %d",
+				entity.TryGetName().value().c_str(),
+				indexBeforeMove,
+				indexToInsert);
+
+		pushNewOperation(std::move(operation));
+	}
+
+	void Undo::RegisterComponentModification(Entity entity,
 											SerializedComponent componentBeforeModification,
 											SerializedComponent componentAfterModification)
 	{
@@ -178,7 +211,7 @@ namespace DYE::DYEditor
 		pushNewOperation(std::move(operation));
 	}
 
-	void Undo::AddComponent(Entity &entity, std::string const &componentTypeName, ComponentTypeDescriptor typeDescriptor)
+	void Undo::AddComponent(Entity entity, std::string const &componentTypeName, ComponentTypeDescriptor typeDescriptor)
 	{
 		auto operation = std::make_unique<ComponentAdditionOperation>();
 		operation->pWorld = &entity.GetWorld();
@@ -195,7 +228,7 @@ namespace DYE::DYEditor
 		pushNewOperation(std::move(operation));
 	}
 
-	void Undo::RemoveComponent(Entity &entity, const std::string &componentTypeName, ComponentTypeDescriptor typeDescriptor)
+	void Undo::RemoveComponent(Entity entity, const std::string &componentTypeName, ComponentTypeDescriptor typeDescriptor)
 	{
 		auto operation = std::make_unique<ComponentRemovalOperation>();
 		operation->pWorld = &entity.GetWorld();

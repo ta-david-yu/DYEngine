@@ -18,9 +18,14 @@ namespace DYE::DYEditor
 	{
 		// We need this so Entity could access world.m_Registry for entt operation.
 		friend class Entity;
+
+		friend class Undo;
 		friend class SerializedObjectFactory;
+
 		friend class EntityCreationOperation;
 		friend class EntityDeletionOperation;
+		friend class EntityMoveOperation;
+
 		friend entt::registry& GetWorldUnderlyingRegistry(World& world);
 	public:
 		World();
@@ -38,6 +43,8 @@ namespace DYE::DYEditor
 		std::optional<Entity> TryGetEntityWithGUID(GUID entityGUID);
 		/// Get the index of the given entity inside Entity Handle array.
 		std::optional<std::size_t> TryGetEntityIndex(Entity const &entity);
+
+		Entity GetEntityAtIndex(std::size_t index);
 
 		template<typename Func>
 		void ForEachEntity(Func function)
