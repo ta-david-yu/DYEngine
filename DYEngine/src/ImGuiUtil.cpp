@@ -1670,6 +1670,24 @@ namespace DYE::ImGuiUtil
 			};
 			MoveElement moveElement;
 
+			if (elements.size() == 0)
+			{
+				if (ImGui::SmallButton("+"))
+				{
+					indexToInsertNewElement = 0;
+					changed = true;
+					lastControlDeactivatedAfterEdit = true;
+				}
+				lastControlActivated |= ImGui::IsItemActivated();
+				lastControlDeactivated |= ImGui::IsItemDeactivated();
+				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
+				{
+					ImGui::BeginTooltip();
+					ImGui::SetTooltip("Add a new element");
+					ImGui::EndTooltip();
+				}
+			}
+
 			for (int i = 0; i < elements.size(); i++)
 			{
 				sprintf(controlID, "Element %d", i);
