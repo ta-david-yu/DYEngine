@@ -389,7 +389,7 @@ namespace DYE::DYEditor
 		ImGuiWindowFlags const hierarchyWindowFlags = m_IsActiveSceneDirty? ImGuiWindowFlags_UnsavedDocument : ImGuiWindowFlags_None;
 		if (ImGui::Begin(k_SceneHierarchyWindowId, nullptr, hierarchyWindowFlags))
 		{
-			bool const isHierarchyChanged = drawSceneEntityHierarchyPanel(activeScene, &m_CurrentlySelectedEntityInHierarchyPanel);
+			bool const isHierarchyChanged = drawSceneEntityHierarchyPanelSimple(activeScene, &m_CurrentlySelectedEntityInHierarchyPanel);
 			m_IsActiveSceneDirty |= isHierarchyChanged;
 		}
 		ImGui::End();
@@ -988,6 +988,183 @@ namespace DYE::DYEditor
 
 		ImGui::Checkbox("Show Widget Rect", &debugContext.ShowWidgetRect);
 		ImGui::Checkbox("Show TreeNode Rect", &debugContext.ShowTreeNodeRect);
+
+		return changed;
+	}
+
+	bool SceneEditorLayer::drawSceneEntityHierarchyPanelSimple(Scene &scene, DYEditor::Entity *pCurrentSelectedEntity)
+	{
+		bool changed = false;
+
+		// Draw scene hierarchy context menu.
+		if (ImGui::BeginPopupContextWindow())
+		{
+			if (ImGui::Selectable("Create Empty"))
+			{
+				// Select the newly created entity.
+				// For now, the entity is always put at the end of the list.
+				*pCurrentSelectedEntity = scene.World.CreateEntity("Entity");
+				int const indexInWorldArray = scene.World.GetNumberOfEntities() - 1;
+				Undo::RegisterEntityCreation(scene.World, *pCurrentSelectedEntity, indexInWorldArray);
+				changed = true;
+			}
+			ImGui::EndPopup();
+		}
+
+		// Draw scene name as title.
+		if (!scene.Name.empty())
+		{
+			ImGui::SeparatorText(scene.Name.c_str());
+		}
+		else
+		{
+			ImGui::SeparatorText("Untitled");
+		}
+
+		auto itemSpacing = ImGui::GetStyle().ItemSpacing;
+		itemSpacing.y = 6;
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, itemSpacing);
+
+		struct HierarchyLevel
+		{
+			DYE::GUID LevelParentGUID = (DYE::GUID) 0;
+			int NumberOfEntitiesLeft = 0;
+			bool IsOpen = false;
+		};
+		std::vector<HierarchyLevel> levelStack;
+		// We reserve to make sure the array doesn't re-allocate during foreach.
+		levelStack.reserve(scene.World.GetNumberOfEntities());
+
+		// Draw all entities.
+		scene.World.ForEachEntityAndIndex
+			(
+				[&changed, &scene, &pCurrentSelectedEntity, &levelStack]
+					(DYEditor::Entity &entity, std::size_t indexInWorld)
+				{
+					auto tryGetNameResult = entity.TryGetName();
+					if (!tryGetNameResult.has_value())
+					{
+						// No name, skip it.
+						return;
+					}
+
+					auto tryGetGUIDResult = entity.TryGetGUID();
+					if (!tryGetGUIDResult.has_value())
+					{
+						// No GUID, skip it.
+						return;
+					}
+
+					auto &name = tryGetNameResult.value();
+					auto guid = tryGetGUIDResult.value();
+					auto tryGetChildrenComponent = entity.TryGetComponent<ChildrenComponent>();
+
+					auto tryGetParent = entity.TryGetComponent<ParentComponent>();
+					auto parentGUID = tryGetParent.has_value()? tryGetParent.value().get().ParentGUID : (DYE::GUID) 0;
+
+					int childrenCount = tryGetChildrenComponent.has_value()? tryGetChildrenComponent.value().get().ChildrenGUIDs.size() : 0;
+
+					HierarchyLevel *pLevel = levelStack.empty()? nullptr : &levelStack.back();
+					while
+					(
+						pLevel != nullptr &&
+						pLevel->LevelParentGUID != parentGUID &&
+						pLevel->NumberOfEntitiesLeft == 0
+					)
+					{
+						// The top level is not the parent of the current entity
+						// && It's also an empty level (all the entities of that level have been iterated)
+						// -> We will pop the top level.
+
+						// If the tree node of the level is open,
+						// we need to pop it.
+						if (pLevel->IsOpen)
+						{
+							ImGui::TreePop();
+						}
+
+						// Pop the level from the stack.
+						levelStack.pop_back();
+
+						pLevel = levelStack.empty()? nullptr : &levelStack.back();
+					}
+
+					bool const isEntityShown = pLevel == nullptr || pLevel->IsOpen;
+					bool const isLeafNode = childrenCount == 0;
+
+					bool const isSelected = entity == *pCurrentSelectedEntity;
+
+					ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanFullWidth;
+					if (isSelected) flags |= ImGuiTreeNodeFlags_Selected;
+					if (isLeafNode)
+					{
+						flags |= (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+					}
+
+					void const* treeNodeId = (void *) (std::uint64_t) entity.GetInstanceID();
+					bool isNodeOpen = false;
+					if (isEntityShown)
+					{
+						isNodeOpen = ImGui::TreeNodeEx(treeNodeId, flags, name.c_str()) && !isLeafNode;
+						if (ImGui::BeginPopupContextItem())
+						{
+							// Draw entity context menu right after TreeNode call.
+							if (ImGui::Selectable("Delete"))
+							{
+								Undo::DeleteEntity(scene.World, entity, indexInWorld);
+								changed = true;
+							}
+							if (ImGui::Selectable("Create Empty"))
+							{
+								// Select the newly created entity.
+								// For now, the entity is always put at the end of the list.
+								// TODO: make it a child of the clicked tree node entity.
+								*pCurrentSelectedEntity = scene.World.CreateEntity("Entity");
+								int const indexInWorldArray = scene.World.GetNumberOfEntities() - 1;
+								Undo::RegisterEntityCreation(scene.World, *pCurrentSelectedEntity, indexInWorldArray);
+								changed = true;
+							}
+							ImGui::EndPopup();
+						}
+						if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+						{
+							*pCurrentSelectedEntity = entity;
+						}
+					}
+
+					if (pLevel != nullptr)
+					{
+						pLevel->NumberOfEntitiesLeft--;
+					}
+
+					if (childrenCount > 0)
+					{
+						levelStack.push_back
+						(
+							{
+								.LevelParentGUID = guid,
+								.NumberOfEntitiesLeft = childrenCount,
+								.IsOpen = isNodeOpen
+							}
+						);
+					}
+				}
+			);
+
+		for (auto level : levelStack)
+		{
+			// There are some levels left in the stack,
+			// we need to make sure to pop the corresponding tree nodes if they are open.
+			if (!level.IsOpen)
+			{
+				continue;
+			}
+
+			ImGui::TreePop();
+		}
+
+		ImGui::PopStyleVar();
+
 
 		return changed;
 	}
