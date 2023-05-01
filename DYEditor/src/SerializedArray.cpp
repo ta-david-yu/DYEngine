@@ -16,15 +16,15 @@ namespace DYE::DYEditor
 	template<>
 	std::optional<DYE::GUID> SerializedArray::TryGetElementAtIndex(int index) const
 	{
-		auto guidString = m_Array.get(index)->value<std::string>();
-		if (!guidString.has_value())
+		auto tryGetGUIDString = m_Array.get(index)->value<std::string>();
+		if (!tryGetGUIDString.has_value())
 		{
 			return {};
 		}
 
 		try
 		{
-			std::uint64_t guidInt = std::stoul(guidString.value());
+			std::uint64_t guidInt = std::stoull(tryGetGUIDString.value());
 			return GUID(guidInt);
 		}
 		catch (const std::exception& e)
