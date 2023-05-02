@@ -76,7 +76,8 @@ namespace DYE::DYEditor
 		static void DrawUndoHistoryWindow(bool *pIsOpen);
 
 	private:
-		static EntityDeletionOperation *destroyEntityWithoutDestroyingChildren(Entity entity, std::size_t indexInWorldHandleArray);
+		/// This method only deletes the entity. It does not update hierarchical information (i.e. children, parent).
+		static EntityDeletionOperation *deleteEntityButNotChildren(Entity entity, std::size_t indexInWorldHandleArray);
 
 		static void pushNewOperation(std::unique_ptr<UndoOperationBase> operation);
 	};

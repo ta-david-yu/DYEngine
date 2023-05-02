@@ -155,30 +155,69 @@ namespace DYE::DYEditor
 	{
 		Undo::StartGroupOperation("Delete Entity Recursively (On-going)");
 
-		// Get the name and the children of the entity before deleting it.
+		// Get name, guid and the children of the entity before deleting it.
 		std::string entityName = entity.TryGetName().value();
+		GUID entityGUID = entity.TryGetGUID().value();
 		auto allChildren = EntityUtil::GetAllChildrenRecursive(entity);
 
+		// Remove the entity from its old Parent's ChildrenComponent if it has a parent.
+		auto tryGetOldParent = entity.TryGetComponent<ParentComponent>();
+		if (tryGetOldParent.has_value())
+		{
+			auto tryGetOldParentEntity = entity.GetWorld().TryGetEntityWithGUID(tryGetOldParent.value().get().ParentGUID);
+			DYE_ASSERT_LOG_WARN(tryGetOldParentEntity.has_value(),
+								"The entity has a parent component already but the old GUID '%s' wasn't referencing to a valid entity.",
+								tryGetOldParent.value().get().ParentGUID.ToString().c_str());
+
+			Entity oldParent = tryGetOldParentEntity.value();
+
+			auto tryGetChildren = oldParent.TryGetComponent<ChildrenComponent>();
+			ChildrenComponent *pChildrenComponent = nullptr;
+			if (tryGetChildren.has_value())
+			{
+				pChildrenComponent = &tryGetChildren.value().get();
+			}
+			else
+			{
+				// If the parent doesn't have a children component,
+				// we will add one first and then do the modification.
+				Undo::AddComponent(oldParent, ChildrenComponentName,
+								   TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
+				pChildrenComponent = &oldParent.GetComponent<ChildrenComponent>();
+			}
+
+			auto serializedChildrenComponentBeforeModification =
+				SerializedObjectFactory::CreateSerializedComponentOfType(oldParent, ChildrenComponentName,
+																		 TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
+			// Erase the entity from the old parent's children list.
+			std::erase(pChildrenComponent->ChildrenGUIDs, entityGUID);
+			auto serializedChildrenComponentAfterModification =
+				SerializedObjectFactory::CreateSerializedComponentOfType(oldParent, ChildrenComponentName,
+																		 TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
+
+			Undo::RegisterComponentModification(oldParent, serializedChildrenComponentBeforeModification,
+												serializedChildrenComponentAfterModification);
+		}
+
 		// Delete the entity and its children.
-		EntityDeletionOperation *pParentDeletionOperation = destroyEntityWithoutDestroyingChildren(entity, indexInWorldHandleArray);
+		EntityDeletionOperation *pParentDeletionOperation = deleteEntityButNotChildren(entity, indexInWorldHandleArray);
 		for (auto childEntity : allChildren)
 		{
-			destroyEntityWithoutDestroyingChildren(childEntity, indexInWorldHandleArray);
+			deleteEntityButNotChildren(childEntity, indexInWorldHandleArray);
 		}
 
 		// Set the operation description based on the result.
 		char operationDescription[128] = "";
 		sprintf(operationDescription,
-				"Delete Entity '%s' (GUID: %s) and %zu children",
+				"Delete Entity '%s' and %zu children",
 				entityName.c_str(),
-				pParentDeletionOperation->EntityGUID.ToString().c_str(),
 				allChildren.size());
 		Undo::SetCurrentGroupOperationDescription(operationDescription);
 
 		Undo::EndGroupOperation();
 	}
 
-	EntityDeletionOperation *Undo::destroyEntityWithoutDestroyingChildren(Entity entity, std::size_t indexInWorldHandleArray)
+	EntityDeletionOperation *Undo::deleteEntityButNotChildren(Entity entity, std::size_t indexInWorldHandleArray)
 	{
 		auto operation = std::make_unique<EntityDeletionOperation>();
 		operation->pWorld = &entity.GetWorld();
@@ -272,26 +311,26 @@ namespace DYE::DYEditor
 			// Moving under an entity that's behind in the entity handle list,
 			// we don't need to increment our pointer/index.
 			EntityUtil::ForEntityAndEachChildPreorder
-				(
-					entity,
-					[&indexToInsert, &movePointer](Entity childEntity)
-					{
-						Undo::MoveEntity(childEntity, movePointer, indexToInsert);
-					}
-				);
+			(
+				entity,
+				[&indexToInsert, &movePointer](Entity childEntity)
+				{
+					Undo::MoveEntity(childEntity, movePointer, indexToInsert);
+				}
+			);
 		}
 		else
 		{
 			EntityUtil::ForEntityAndEachChildPreorder
-				(
-					entity,
-					[&indexToInsert, &movePointer](Entity childEntity)
-					{
-						Undo::MoveEntity(childEntity, movePointer, indexToInsert);
-						movePointer++;
-						indexToInsert++;
-					}
-				);
+			(
+				entity,
+				[&indexToInsert, &movePointer](Entity childEntity)
+				{
+					Undo::MoveEntity(childEntity, movePointer, indexToInsert);
+					movePointer++;
+					indexToInsert++;
+				}
+			);
 		}
 
 		// Entity's old Parent's ChildrenComponent modification.
