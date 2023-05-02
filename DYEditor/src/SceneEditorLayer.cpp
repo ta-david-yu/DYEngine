@@ -14,6 +14,7 @@
 #include "Input/InputManager.h"
 #include "Event/MouseEvent.h"
 #include "Util/Time.h"
+#include "Util/EntityUtil.h"
 #include "ProjectConfig.h"
 #include "ImGui/EditorWindowManager.h"
 #include "ImGui/ImGuiUtil.h"
@@ -848,11 +849,12 @@ namespace DYE::DYEditor
 					{
 						ImGui::BeginTooltip();
 						ImGui::TextUnformatted("Children with preorder:");
-						entity.ForEachChildRecursive
+						EntityUtil::ForEachChildRecursive
 						(
+							entity,
 							[](Entity childEntity)
 							{
-								ImGui::TextUnformatted(childEntity.TryGetName().value().c_str());
+								  ImGui::TextUnformatted(childEntity.TryGetName().value().c_str());
 							}
 						);
 						ImGui::EndTooltip();

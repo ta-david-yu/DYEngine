@@ -71,7 +71,7 @@ set(HEADER_FILES
         include/Undo/Operations/EntityOperations.h
         include/Type/DrawComponentHeaderContext.h
         include/Undo/Operations/SystemOperations.h
-        include/Components/HierarchyComponents.h include/Serialization/SerializedArray.h src/SerializedArray.cpp)
+        include/Components/HierarchyComponents.h include/Serialization/SerializedArray.h src/SerializedArray.cpp include/Util/EntityUtil.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")
