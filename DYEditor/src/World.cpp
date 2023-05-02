@@ -1,6 +1,7 @@
 #include "Core/World.h"
 
 #include "Core/Entity.h"
+#include "Util/EntityUtil.h"
 #include "Components/IDComponent.h"
 #include "Components/NameComponent.h"
 
@@ -55,30 +56,57 @@ namespace DYE::DYEditor
 		return Entity(*this, identifier);
 	}
 
-	void World::DestroyEntity(Entity entity)
+	void World::DestroyEntityAndChildren(Entity entityToDestroy)
 	{
-		auto identifier = entity.m_EntityIdentifier;
+		auto tryGetIndex = TryGetEntityIndex(entityToDestroy);
+		DYE_ASSERT(tryGetIndex.has_value());
 
-		auto tryGetGUID = entity.TryGetGUID();
+		auto allChildren = EntityUtil::GetAllChildrenRecursive(entityToDestroy);
+
+		// Where the entity is located at in the handle array.
+		// We will use the same value for children later because the child index shifts down when we remove an entity at the index.
+		auto const indexInHandleArray = tryGetIndex.value();
+
+		// Destroy the entity.
+		auto tryGetGUID = entityToDestroy.TryGetGUID();
+
 		if (tryGetGUID.has_value())
 		{
+			auto guid = tryGetGUID.value();
+
 			// Remove it from the GUID map if it has a GUID/IDComponent.
-			m_GUIDToEntityIdentifierMap.erase(tryGetGUID.value());
+			m_GUIDToEntityIdentifierMap.erase(guid);
+
+			// If the entity has a parent, we need to remove its GUID from the parent's children list.
+			auto tryGetParent = entityToDestroy.TryGetComponent<ParentComponent>();
+			if (tryGetParent.has_value())
+			{
+				auto &parent = tryGetParent.value().get();
+				auto parentEntity = TryGetEntityWithGUID(parent.ParentGUID);
+				auto &parentChildrenComponent = parentEntity->GetComponent<ChildrenComponent>();
+				std::erase(parentChildrenComponent.ChildrenGUIDs, guid);
+			}
 		}
 
-		// Remove the identifier from the handles array.
-		auto newEnd = std::remove_if(m_EntityHandles.begin(), m_EntityHandles.end(),
-									 [identifier](EntityHandle &element)
-									 {
-										 return element.Identifier == identifier;
-									 });
-		m_EntityHandles.erase(newEnd, m_EntityHandles.end());
+		m_EntityHandles.erase(m_EntityHandles.begin() + indexInHandleArray);
+		m_Registry.destroy(entityToDestroy.m_EntityIdentifier);
 
-		// Remove the entity from the actual world registry.
-		m_Registry.destroy(identifier);
+		// Destroy all children entity.
+		for (auto childEntity : allChildren)
+		{
+			auto tryGetChildGUID = childEntity.TryGetGUID();
+			if (tryGetChildGUID.has_value())
+			{
+				// Remove it from the GUID map if it has a GUID/IDComponent.
+				m_GUIDToEntityIdentifierMap.erase(tryGetChildGUID.value());
+			}
+
+			m_EntityHandles.erase(m_EntityHandles.begin() + indexInHandleArray);
+			m_Registry.destroy(childEntity.m_EntityIdentifier);
+		}
 	}
 
-	void World::DestroyEntityWithGUID(GUID entityGUID)
+	void World::DestroyEntityAndChildrenWithGUID(GUID entityGUID)
 	{
 		auto findItr = m_GUIDToEntityIdentifierMap.find(entityGUID);
 		if (findItr == m_GUIDToEntityIdentifierMap.end())
@@ -88,20 +116,44 @@ namespace DYE::DYEditor
 		}
 
 		auto identifier = findItr->second;
+		Entity entityToDestroy = WrapIdentifierIntoEntity(identifier);
+		auto tryGetIndex = TryGetEntityIndex(entityToDestroy);
+		DYE_ASSERT(tryGetIndex.has_value());
 
-		// Remove it from the GUID map.
-		m_GUIDToEntityIdentifierMap.erase(findItr);
+		auto allChildren = EntityUtil::GetAllChildrenRecursive(entityToDestroy);
 
-		// Remove the identifier from the handles array.
-		auto newEnd = std::remove_if(m_EntityHandles.begin(), m_EntityHandles.end(),
-									 [identifier](EntityHandle &element)
-									 {
-										 return element.Identifier == identifier;
-									 });
-		m_EntityHandles.erase(newEnd, m_EntityHandles.end());
+		// Where the entity is located at in the handle array.
+		// We will use the same value for children later because the child index shifts down when we remove an entity at the index.
+		auto const indexInHandleArray = tryGetIndex.value();
 
-		// Remove the entity from the actual world registry.
-		m_Registry.destroy(identifier);
+		// If the entity has a parent, we need to remove its GUID from the parent's children list.
+		auto tryGetParent = entityToDestroy.TryGetComponent<ParentComponent>();
+		if (tryGetParent.has_value())
+		{
+			auto &parent = tryGetParent.value().get();
+			auto parentEntity = TryGetEntityWithGUID(parent.ParentGUID);
+			auto &parentChildrenComponent = parentEntity->GetComponent<ChildrenComponent>();
+			std::erase(parentChildrenComponent.ChildrenGUIDs, entityGUID);
+		}
+
+		// Destroy the entity.
+		m_GUIDToEntityIdentifierMap.erase(entityGUID);
+		m_EntityHandles.erase(m_EntityHandles.begin() + indexInHandleArray);
+		m_Registry.destroy(entityToDestroy.m_EntityIdentifier);
+
+		// Destroy all children entity.
+		for (auto childEntity : allChildren)
+		{
+			auto tryGetChildGUID = childEntity.TryGetGUID();
+			if (tryGetChildGUID.has_value())
+			{
+				// Remove it from the GUID map if it has a GUID/IDComponent.
+				m_GUIDToEntityIdentifierMap.erase(tryGetChildGUID.value());
+			}
+
+			m_EntityHandles.erase(m_EntityHandles.begin() + indexInHandleArray);
+			m_Registry.destroy(childEntity.m_EntityIdentifier);
+		}
 	}
 
 	std::optional<Entity> World::TryGetEntityWithGUID(GUID entityGUID)
@@ -176,6 +228,55 @@ namespace DYE::DYEditor
 		DYE_ASSERT_LOG_WARN(!m_GUIDToEntityIdentifierMap.contains(tryGetGUID.value()), "The given entity's GUID has already been tracked in the map.");
 
 		m_GUIDToEntityIdentifierMap.insert({tryGetGUID.value(), entity.m_EntityIdentifier});
+	}
+
+	void World::destroyEntityWithoutDestroyingChildren(Entity entity)
+	{
+		auto identifier = entity.m_EntityIdentifier;
+
+		auto tryGetGUID = entity.TryGetGUID();
+		if (tryGetGUID.has_value())
+		{
+			// Remove it from the GUID map if it has a GUID/IDComponent.
+			m_GUIDToEntityIdentifierMap.erase(tryGetGUID.value());
+		}
+
+		// Remove the identifier from the handles array.
+		auto newEnd = std::remove_if(m_EntityHandles.begin(), m_EntityHandles.end(),
+									 [identifier](EntityHandle &element)
+									 {
+										 return element.Identifier == identifier;
+									 });
+		m_EntityHandles.erase(newEnd, m_EntityHandles.end());
+
+		// Remove the entity from the actual world registry.
+		m_Registry.destroy(identifier);
+	}
+
+	void World::destroyEntityByGUIDWithoutDestroyingChildren(DYE::GUID entityGUID)
+	{
+		auto findItr = m_GUIDToEntityIdentifierMap.find(entityGUID);
+		if (findItr == m_GUIDToEntityIdentifierMap.end())
+		{
+			// There is no entity with the given GUID recorded in the map, skip the function.
+			return;
+		}
+
+		auto identifier = findItr->second;
+
+		// Remove it from the GUID map.
+		m_GUIDToEntityIdentifierMap.erase(findItr);
+
+		// Remove the identifier from the handles array.
+		auto newEnd = std::remove_if(m_EntityHandles.begin(), m_EntityHandles.end(),
+									 [identifier](EntityHandle &element)
+									 {
+										 return element.Identifier == identifier;
+									 });
+		m_EntityHandles.erase(newEnd, m_EntityHandles.end());
+
+		// Remove the entity from the actual world registry.
+		m_Registry.destroy(identifier);
 	}
 
 	entt::registry& GetWorldUnderlyingRegistry(World &world)

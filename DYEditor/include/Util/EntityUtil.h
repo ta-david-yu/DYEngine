@@ -7,12 +7,13 @@ namespace DYE::DYEditor::EntityUtil
 	/// Check recursively if potential child is under potential parent's hierarchy.
 	bool IsChildOf(Entity potentialChild, Entity potentialParent);
 
+	/// Get an array of children of the given entity recursively in depth-first order.
 	std::vector<Entity> GetAllChildrenRecursive(Entity root);
 
 	/// Iterate through the entity and its all children (including nth degree children)
-	/// using depth-first search.
+	/// using depth-first order (preorder). You should not destroy any entity during the iteration.
 	template<typename Func>
-	void ForEntityAndEachChildRecursive(Entity root, Func func)
+	void ForEntityAndEachChildPreorder(Entity root, Func func)
 	{
 		std::stack<Entity> entityStack;
 		entityStack.push(root);
@@ -47,9 +48,10 @@ namespace DYE::DYEditor::EntityUtil
 	}
 
 	/// Iterate through all children (including nth degree children)
-	/// using depth-first search.
+	/// using depth-first order (preorder). You should not destroy any entity during the iteration.
+	/// If you really have to, consider using GetAllChildrenRecursive to get an array of children.
 	template<typename Func>
-	void ForEachChildRecursive(Entity root, Func func)
+	void ForEachChildPreorder(Entity root, Func func)
 	{
 		std::stack<Entity> entityStack;
 		entityStack.push(root);

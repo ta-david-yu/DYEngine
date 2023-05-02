@@ -853,14 +853,14 @@ namespace DYE::DYEditor
 					{
 						ImGui::BeginTooltip();
 						ImGui::TextUnformatted("Children with preorder:");
-						EntityUtil::ForEachChildRecursive
-						(
-							entity,
-							[](Entity childEntity)
-							{
-								  ImGui::TextUnformatted(childEntity.TryGetName().value().c_str());
-							}
-						);
+						EntityUtil::ForEachChildPreorder
+							(
+								entity,
+								[](Entity childEntity)
+								{
+									ImGui::TextUnformatted(childEntity.TryGetName().value().c_str());
+								}
+							);
 						ImGui::EndTooltip();
 					}
 

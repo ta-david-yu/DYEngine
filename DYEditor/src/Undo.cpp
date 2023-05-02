@@ -149,7 +149,7 @@ namespace DYE::DYEditor
 
 		sprintf(operation->Description, "Delete Entity '%s' (GUID: %s)", entity.TryGetName().value().c_str(), operation->EntityGUID.ToString().c_str());
 
-		operation->pWorld->DestroyEntityWithGUID(operation->EntityGUID);
+		operation->pWorld->destroyEntityByGUIDWithoutDestroyingChildren(operation->EntityGUID);
 
 		pushNewOperation(std::move(operation));
 	}
@@ -229,27 +229,27 @@ namespace DYE::DYEditor
 		{
 			// Moving under an entity that's behind in the entity handle list,
 			// we don't need to increment our pointer/index.
-			EntityUtil::ForEntityAndEachChildRecursive
-			(
-				entity,
-				[&indexToInsert, &movePointer](Entity childEntity)
-				{
-					Undo::MoveEntity(childEntity, movePointer, indexToInsert);
-				}
-			);
+			EntityUtil::ForEntityAndEachChildPreorder
+				(
+					entity,
+					[&indexToInsert, &movePointer](Entity childEntity)
+					{
+						Undo::MoveEntity(childEntity, movePointer, indexToInsert);
+					}
+				);
 		}
 		else
 		{
-			EntityUtil::ForEntityAndEachChildRecursive
-			(
-				entity,
-				[&indexToInsert, &movePointer](Entity childEntity)
-				{
-					Undo::MoveEntity(childEntity, movePointer, indexToInsert);
-					movePointer++;
-					indexToInsert++;
-				}
-			);
+			EntityUtil::ForEntityAndEachChildPreorder
+				(
+					entity,
+					[&indexToInsert, &movePointer](Entity childEntity)
+					{
+						Undo::MoveEntity(childEntity, movePointer, indexToInsert);
+						movePointer++;
+						indexToInsert++;
+					}
+				);
 		}
 
 		// Entity's old Parent's ChildrenComponent modification.

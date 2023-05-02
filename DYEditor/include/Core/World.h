@@ -35,11 +35,12 @@ namespace DYE::DYEditor
 		Entity CreateEntityAtIndex(std::string const& name, std::size_t index);
 		Entity CreateEntityWithGUID(std::string const& name, GUID guid);
 		Entity WrapIdentifierIntoEntity(EntityIdentifier identifier);
-		void DestroyEntity(Entity entity);
-		/// Destroy an entity with the given GUID.
-		/// The operation is very slow because we have to iterate through every entities' ID components.
-		void DestroyEntityWithGUID(GUID entityGUID);
-		/// The operation is very slow because we have to iterate through every entities' ID components.
+
+		/// This method also destroys all the children under the entity.
+		void DestroyEntityAndChildren(Entity entityToDestroy);
+		/// This method also destroys all the children under the entity.
+		void DestroyEntityAndChildrenWithGUID(GUID entityGUID);
+
 		std::optional<Entity> TryGetEntityWithGUID(GUID entityGUID);
 		/// Get the index of the given entity inside Entity Handle array.
 		std::optional<std::size_t> TryGetEntityIndex(Entity const &entity);
@@ -97,13 +98,23 @@ namespace DYE::DYEditor
 		std::size_t GetNumberOfEntities() const { return m_EntityHandles.size(); }
 
 	private:
-		/// Create an empty entity that is not tracked by the internal Entity Handle array.
-		/// You need to make sure to call RegisterUntrackedEntity after adding an IDComponent to the entity.
+		/// Create an empty entity that is not tracked by the internal Entity Handle array & GUID map.
+		/// You need to make sure to call registerUntrackedEntityAtIndex after adding an IDComponent to the entity.
 		/// This method is for engine-internally use (e.g. Deserialization, Undo/redo entity creation etc).
 		Entity createUntrackedEntity();
 
 		/// This method is for engine-internally use (e.g. Deserialization, Undo/redo entity creation etc).
 		void registerUntrackedEntityAtIndex(Entity entity, std::size_t index);
+
+		/// This method doesn't destroy the entity's children & update related hierarchy components.
+		/// It is meant for engine-internally use (e.g. Undo/redo entity destruction).
+		/// You should avoid using this on a single entity but instead on a batch of entity hierarchy.
+		void destroyEntityWithoutDestroyingChildren(Entity entity);
+
+		/// This method doesn't destroy the entity's children & update related hierarchy components.
+		/// It is meant for engine-internally use (e.g. Undo/redo entity destruction).
+		/// You should avoid using this on a single entity but instead on a batch of entity hierarchy.
+		void destroyEntityByGUIDWithoutDestroyingChildren(GUID entityGUID);
 
 	private:
 		struct EntityHandle
