@@ -393,6 +393,8 @@ namespace DYE::DYEditor
 	}
 
 	static ComponentTypeDescriptor s_NameComponentTypeDescriptor;
+	static ComponentTypeDescriptor s_ParentComponentTypeDescriptor;
+	static ComponentTypeDescriptor s_ChildrenComponentTypeDescriptor;
 
 	void RegisterBuiltInTypes()
 	{
@@ -410,25 +412,24 @@ namespace DYE::DYEditor
 			}
 		);
 
-		s_NameComponentTypeDescriptor = ComponentTypeDescriptor
-		{
-			.ShouldBeIncludedInNormalAddComponentList = false,
-			.ShouldDrawInNormalInspector = false,
-			.Add = BuiltInFunctions::NameComponent_Add,
-
-			.Serialize = BuiltInFunctions::NameComponent_Serialize,
-			.Deserialize = BuiltInFunctions::NameComponent_Deserialize,
-			.DrawInspector = BuiltInFunctions::NameComponent_DrawInspector,
-		};
-		TypeRegistry::RegisterComponentType<NameComponent>
+		s_NameComponentTypeDescriptor = TypeRegistry::RegisterComponentType<NameComponent>
 		(
 			NameComponentName,
-			s_NameComponentTypeDescriptor
+			ComponentTypeDescriptor
+			{
+				.ShouldBeIncludedInNormalAddComponentList = false,
+				.ShouldDrawInNormalInspector = false,
+				.Add = BuiltInFunctions::NameComponent_Add,
+
+				.Serialize = BuiltInFunctions::NameComponent_Serialize,
+				.Deserialize = BuiltInFunctions::NameComponent_Deserialize,
+				.DrawInspector = BuiltInFunctions::NameComponent_DrawInspector,
+			}
 		);
 
-		TypeRegistry::RegisterComponentType<ParentComponent>
+		s_ParentComponentTypeDescriptor = TypeRegistry::RegisterComponentType<ParentComponent>
 		(
-			"Parent",
+			ParentComponentName,
 			ComponentTypeDescriptor
 			{
 				.ShouldBeIncludedInNormalAddComponentList = true,
@@ -440,9 +441,9 @@ namespace DYE::DYEditor
 		);
 
 
-		TypeRegistry::RegisterComponentType<ChildrenComponent>
+		s_ChildrenComponentTypeDescriptor = TypeRegistry::RegisterComponentType<ChildrenComponent>
 		(
-			"Children",
+			ChildrenComponentName,
 			ComponentTypeDescriptor
 			{
 				.ShouldBeIncludedInNormalAddComponentList = true,
@@ -502,5 +503,15 @@ namespace DYE::DYEditor
 	ComponentTypeDescriptor TypeRegistry::GetComponentTypeDescriptor_NameComponent()
 	{
 		return s_NameComponentTypeDescriptor;
+	}
+
+	ComponentTypeDescriptor TypeRegistry::GetComponentTypeDescriptor_ParentComponent()
+	{
+		return s_ParentComponentTypeDescriptor;
+	}
+
+	ComponentTypeDescriptor TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent()
+	{
+		return s_ChildrenComponentTypeDescriptor;
 	}
 }

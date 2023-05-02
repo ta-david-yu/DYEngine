@@ -5,6 +5,8 @@
 #include "Undo/Operations/SystemOperations.h"
 
 #include "Serialization/SerializedObjectFactory.h"
+#include "Type/BuiltInTypeRegister.h"
+#include "Util/EntityUtil.h"
 #include "ImGui/ImGuiUtil.h"
 
 #include <memory>
@@ -152,14 +154,14 @@ namespace DYE::DYEditor
 		pushNewOperation(std::move(operation));
 	}
 
-	void Undo::MoveEntity(World &world, Entity entity, int indexBeforeMove, int indexToInsert)
+	void Undo::MoveEntity(Entity entity, int indexBeforeMove, int indexToInsert)
 	{
 		auto operation = std::make_unique<EntityMoveOperation>();
-		operation->pWorld = &world;
+		operation->pWorld = &entity.GetWorld();
 		operation->IndexBeforeMove = indexBeforeMove;
 		operation->IndexToInsert = indexToInsert;
 
-		auto &entityHandles = world.m_EntityHandles;
+		auto &entityHandles = operation->pWorld->m_EntityHandles;
 		if (indexBeforeMove < indexToInsert)
 		{
 			entityHandles.insert(entityHandles.begin() + indexToInsert, entityHandles[indexBeforeMove]);
@@ -183,6 +185,169 @@ namespace DYE::DYEditor
 				indexToInsert);
 
 		pushNewOperation(std::move(operation));
+	}
+
+	void Undo::SetEntityParent(Entity entity, int entityIndexBeforeSet, Entity newParent, int parentIndex)
+	{
+		auto tryGetEntityGUID = entity.TryGetGUID();
+		if (!tryGetEntityGUID.has_value())
+		{
+			DYE_LOG("The given entity doesn't have a GUID. SetEntityParent operation skipped.");
+			return;
+		}
+
+		auto tryGetParentGUID = newParent.TryGetGUID();
+		if (!tryGetParentGUID.has_value())
+		{
+			DYE_LOG("The given parent doesn't have a GUID. SetEntityParent operation skipped.");
+			return;
+		}
+
+		auto entityGUID = tryGetEntityGUID.value();
+		auto parentGUID = tryGetParentGUID.value();
+
+		// This is a group operation include:
+		//	1. A collection of MoveEntity operations: to move root, children, children of children... under the new parent.
+		//	2. Three ComponentModification operations: to modify entity's original parent.ChildrenComponent & entity.ParentComponent & parent.ChildrenComponent.
+		char operationDescription[128] = "";
+		sprintf(operationDescription, "Set the parent of '%s' to '%s'", entity.TryGetName().value().c_str(), newParent.TryGetName().value().c_str());
+		Undo::StartGroupOperation(operationDescription);
+
+		// Move entities order in the entity handle array.
+		// We want to insert at parent index + 1 because that's the head of the parent's children list (if there is any).
+		// TODO A: update the index to the end of the parent children list so we could put the entity at the end of the children list
+		// 	See below TODO B.
+		int indexToInsert = parentIndex + 1;
+		int movePointer = entityIndexBeforeSet;
+		if (entityIndexBeforeSet < parentIndex)
+		{
+			// Moving under an entity that's behind in the entity handle list,
+			// we don't need to increment our pointer/index.
+			EntityUtil::ForEntityAndEachChildRecursive
+			(
+				entity,
+				[&indexToInsert, &movePointer](Entity childEntity)
+				{
+					Undo::MoveEntity(childEntity, movePointer, indexToInsert);
+				}
+			);
+		}
+		else
+		{
+			EntityUtil::ForEntityAndEachChildRecursive
+			(
+				entity,
+				[&indexToInsert, &movePointer](Entity childEntity)
+				{
+					Undo::MoveEntity(childEntity, movePointer, indexToInsert);
+					movePointer++;
+					indexToInsert++;
+				}
+			);
+		}
+
+		// Entity's old Parent's ChildrenComponent modification.
+		auto tryGetOldParent = entity.TryGetComponent<ParentComponent>();
+		if (tryGetOldParent.has_value())
+		{
+			auto tryGetOldParentEntity = entity.GetWorld().TryGetEntityWithGUID(tryGetOldParent.value().get().ParentGUID);
+			DYE_ASSERT_LOG_WARN(tryGetOldParentEntity.has_value(),
+								"The entity has a parent component already but the old GUID '%s' wasn't referencing to a valid entity.",
+								tryGetOldParent.value().get().ParentGUID.ToString().c_str());
+
+			Entity oldParent = tryGetOldParentEntity.value();
+
+			auto tryGetChildren = oldParent.TryGetComponent<ChildrenComponent>();
+			ChildrenComponent *pChildrenComponent = nullptr;
+			if (tryGetChildren.has_value())
+			{
+				pChildrenComponent = &tryGetChildren.value().get();
+			}
+			else
+			{
+				// If the parent doesn't have a children component,
+				// we will add one first and then do the modification.
+				Undo::AddComponent(oldParent, ChildrenComponentName,
+								   TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
+				pChildrenComponent = &oldParent.GetComponent<ChildrenComponent>();
+			}
+
+			auto serializedChildrenComponentBeforeModification =
+				SerializedObjectFactory::CreateSerializedComponentOfType(oldParent, ChildrenComponentName,
+																		 TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
+			// Erase the entity from the old parent's children list.
+			std::erase(pChildrenComponent->ChildrenGUIDs, entityGUID);
+			auto serializedChildrenComponentAfterModification =
+				SerializedObjectFactory::CreateSerializedComponentOfType(oldParent, ChildrenComponentName,
+																		 TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
+
+			Undo::RegisterComponentModification(oldParent, serializedChildrenComponentBeforeModification,
+												serializedChildrenComponentAfterModification);
+		}
+
+		// Entity's ParentComponent modification.
+		{
+			auto tryGetEntityParent = entity.TryGetComponent<ParentComponent>();
+			ParentComponent *pParentComponent = nullptr;
+			if (tryGetEntityParent.has_value())
+			{
+				pParentComponent = &tryGetEntityParent.value().get();
+			}
+			else
+			{
+				// If the entity doesn't have a parent component,
+				// we will add one first and then do the modification.
+				Undo::AddComponent(entity, ParentComponentName,
+								   TypeRegistry::GetComponentTypeDescriptor_ParentComponent());
+				pParentComponent = &entity.GetComponent<ParentComponent>();
+			}
+
+			auto serializedParentComponentBeforeModification =
+				SerializedObjectFactory::CreateSerializedComponentOfType(entity, ParentComponentName,
+																		 TypeRegistry::GetComponentTypeDescriptor_ParentComponent());
+			pParentComponent->ParentGUID = parentGUID;
+			auto serializedParentComponentAfterModification =
+				SerializedObjectFactory::CreateSerializedComponentOfType(entity, ParentComponentName,
+																		 TypeRegistry::GetComponentTypeDescriptor_ParentComponent());
+
+			Undo::RegisterComponentModification(entity, serializedParentComponentBeforeModification,
+												serializedParentComponentAfterModification);
+		}
+
+		// ParentEntity's ChildrenComponent modification.
+		{
+			auto tryGetChildren = newParent.TryGetComponent<ChildrenComponent>();
+			ChildrenComponent *pChildrenComponent = nullptr;
+			if (tryGetChildren.has_value())
+			{
+				pChildrenComponent = &tryGetChildren.value().get();
+			}
+			else
+			{
+				// If the parent doesn't have a children component,
+				// we will add one first and then do the modification.
+				Undo::AddComponent(newParent, ChildrenComponentName,
+								   TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
+				pChildrenComponent = &newParent.GetComponent<ChildrenComponent>();
+			}
+
+			auto serializedChildrenComponentBeforeModification =
+				SerializedObjectFactory::CreateSerializedComponentOfType(newParent, ChildrenComponentName,
+																		 TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
+			// For now, we always insert the entity to the start of the new parent children list.
+			// TODO B: we want to push it to the end by default,
+			//  for that we also need to know how many children (recursively) the new parent already has.
+			//	See above at TODO A
+			pChildrenComponent->ChildrenGUIDs.insert(pChildrenComponent->ChildrenGUIDs.begin(), entityGUID);
+			auto serializedChildrenComponentAfterModification =
+				SerializedObjectFactory::CreateSerializedComponentOfType(newParent, ChildrenComponentName,
+																		 TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
+
+			Undo::RegisterComponentModification(newParent, serializedChildrenComponentBeforeModification,
+												serializedChildrenComponentAfterModification);
+		}
+
+		Undo::EndGroupOperation();
 	}
 
 	void Undo::RegisterComponentModification(Entity entity,
@@ -422,6 +587,13 @@ namespace DYE::DYEditor
 						s_Data.LatestOperationIndex = i;
 					}
 				}
+				if (ImGui::IsItemHovered() && operation.HasTooltip())
+				{
+					ImGui::BeginTooltip();
+					operation.DrawTooltip();
+					ImGui::EndTooltip();
+				}
+
 				ImGui::PopStyleVar();
 				ImGui::PopID();
 

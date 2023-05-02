@@ -710,7 +710,7 @@ namespace DYE::DYEditor
 		struct DebugContext
 		{
 			bool ShowWidgetRect = false;
-			bool ShowTreeNodeRect = true;
+			bool ShowTreeNodeRect = false;
 		};
 		static DebugContext debugContext;
 
@@ -720,6 +720,8 @@ namespace DYE::DYEditor
 			Entity Entity;
 			std::size_t SrcIndex = 0;
 			std::size_t DstIndex = 0;
+
+			bool BecomeChildOfDst = false;
 		};
 		MoveEntity moveEntity;
 
@@ -814,11 +816,11 @@ namespace DYE::DYEditor
 					flags |= (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
 				}
 
-				void const* treeNodeId = (void *) (std::uint64_t) entity.GetInstanceID();
 				bool isNodeOpen = false;
 				if (isEntityShown)
 				{
-					isNodeOpen = ImGui::TreeNodeEx(treeNodeId, flags, name.c_str()) && !isLeafNode;
+					// We use GUID as the id of the TreeNode.
+					isNodeOpen = ImGui::TreeNodeEx(guid.ToString().c_str(), flags, name.c_str()) && !isLeafNode;
 					if (ImGui::BeginPopupContextItem())
 					{
 						// Draw entity context menu right after TreeNode call.
@@ -961,8 +963,14 @@ namespace DYE::DYEditor
 
 							if (dropPayload->IsDelivery() && !isSource)
 							{
-								// Do nothing here for now:
-								// TODO: make payload entity a child of the current entity.
+								moveEntity.HasOperation = true;
+								moveEntity.SrcIndex = payloadIndex;
+								moveEntity.DstIndex = indexInWorld;
+								moveEntity.BecomeChildOfDst = true;
+
+								// Open/expand the dropped entity (new parent) tree node.
+								ImGuiID newParentTreeNodeId = ImGui::GetCurrentWindow()->GetID(guid.ToString().c_str());
+								ImGui::TreeNodeSetOpen(newParentTreeNodeId, true);
 							}
 						}
 						ImGui::EndDragDropTarget();
@@ -1039,13 +1047,32 @@ namespace DYE::DYEditor
 		ImGui::PopStyleVar();
 
 		int moveDiff = ((int) moveEntity.DstIndex - (int) moveEntity.SrcIndex);
-		if (moveEntity.HasOperation && moveDiff != 1 && moveDiff != 0)
+
+		if (moveEntity.HasOperation)
 		{
-			Undo::MoveEntity(scene.World.GetEntityAtIndex(moveEntity.SrcIndex), moveEntity.SrcIndex,
-							 moveEntity.DstIndex);
-			changed = true;
+			if (moveEntity.BecomeChildOfDst)
+			{
+				Entity srcEntity = scene.World.GetEntityAtIndex(moveEntity.SrcIndex);
+				Entity dstEntity = scene.World.GetEntityAtIndex(moveEntity.DstIndex);
+
+				Undo::SetEntityParent
+				(
+					srcEntity,
+					moveEntity.SrcIndex,
+					dstEntity,
+					moveEntity.DstIndex
+				);
+			}
+			else if (moveDiff != 1 && moveDiff != 0)
+			{
+				Undo::MoveEntity(scene.World.GetEntityAtIndex(moveEntity.SrcIndex), moveEntity.SrcIndex,
+								 moveEntity.DstIndex);
+				changed = true;
+			}
 		}
 
+		// FIXME: delete debugging drawing here
+		ImGui::Separator();
 		ImGui::Checkbox("Show Widget Rect", &debugContext.ShowWidgetRect);
 		ImGui::Checkbox("Show TreeNode Rect", &debugContext.ShowTreeNodeRect);
 

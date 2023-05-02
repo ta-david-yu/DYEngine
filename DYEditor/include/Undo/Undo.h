@@ -40,7 +40,10 @@ namespace DYE::DYEditor
 		// Perform entity destruction that can be restored with undo.
 		static void DeleteEntity(World& world, Entity entity, std::size_t indexInWorldHandleArray);
 
-		static void MoveEntity(World& world, Entity entity, int indexBeforeMove, int indexToInsert);
+		/// Avoid using this cuz it only moves the given entity, children are ignored.
+		/// (We will probably want to remove this at some point)
+		static void MoveEntity(Entity entity, int indexBeforeMove, int indexToInsert);
+		static void SetEntityParent(Entity entity, int entityIndexBeforeSet, Entity newParent, int parentIndex);
 
 		// Call this after component modification.
 		static void RegisterComponentModification(Entity entity,
