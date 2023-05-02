@@ -843,6 +843,21 @@ namespace DYE::DYEditor
 						*pCurrentSelectedEntity = entity;
 					}
 
+					// FIXME: For debugging
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::BeginTooltip();
+						ImGui::TextUnformatted("Children with preorder:");
+						entity.ForEachChildRecursive
+						(
+							[](Entity childEntity)
+							{
+								ImGui::TextUnformatted(childEntity.TryGetName().value().c_str());
+							}
+						);
+						ImGui::EndTooltip();
+					}
+
 					ImVec2 const entityTreeNodeSize = ImGui::GetItemRectSize();
 					float const entityWidgetCenterY = entityTreeNodeScreenPos.y + entityTreeNodeSize.y * 0.5f;
 
@@ -1024,7 +1039,8 @@ namespace DYE::DYEditor
 		int moveDiff = ((int) moveEntity.DstIndex - (int) moveEntity.SrcIndex);
 		if (moveEntity.HasOperation && moveDiff != 1 && moveDiff != 0)
 		{
-			Undo::MoveEntity(scene.World, scene.World.GetEntityAtIndex(moveEntity.SrcIndex), moveEntity.SrcIndex, moveEntity.DstIndex);
+			Undo::MoveEntity(scene.World.GetEntityAtIndex(moveEntity.SrcIndex), moveEntity.SrcIndex,
+							 moveEntity.DstIndex);
 			changed = true;
 		}
 

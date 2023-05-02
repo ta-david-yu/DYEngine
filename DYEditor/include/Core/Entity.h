@@ -2,11 +2,14 @@
 
 #include "Util/Macro.h"
 #include "Core/World.h"
+#include "Components/HierarchyComponents.h"
 
 #include <string>
 #include <vector>
 #include <optional>
 #include <functional>
+#include <stack>
+
 #include <entt/entt.hpp>
 
 namespace DYE::DYEditor
@@ -17,6 +20,7 @@ namespace DYE::DYEditor
 	{
 		// We need this so World could call the private ctor.
 		friend class World;
+
 	public:
 		/// Create a null entity.
 		Entity() = default;
@@ -81,6 +85,50 @@ namespace DYE::DYEditor
 		}
 
 		void RemoveAllComponents();
+
+		/// Iterate through all children (including nth degree children)
+		/// using depth-first search.
+		template<typename Func>
+		void ForEachChildRecursive(Func func)
+		{
+			std::stack<Entity> entityStack;
+			entityStack.push(*this);
+
+			bool isRoot = true;
+
+			while (!entityStack.empty())
+			{
+				Entity entity = entityStack.top();
+
+				// We use a flag to skip the first entity in the stack (which is the parent).
+				if (!isRoot)
+				{
+					func(entity);
+				}
+				isRoot = false;
+
+				entityStack.pop();
+				auto tryGetChild = entity.TryGetComponent<ChildrenComponent>();
+				if (!tryGetChild.has_value())
+				{
+					// No child, nothing to push into the stack.
+					continue;
+				}
+
+				auto &childrenGUIDs = tryGetChild.value().get().ChildrenGUIDs;
+				for (int i = childrenGUIDs.size() - 1; i >= 0; i--)
+				{
+					auto childGUID = childrenGUIDs[i];
+					auto tryGetEntityWithGUID = m_World->TryGetEntityWithGUID(childGUID);
+					if (!tryGetEntityWithGUID.has_value())
+					{
+						continue;
+					}
+					// Push the child into the stack.
+					entityStack.push(tryGetEntityWithGUID.value());
+				}
+			}
+		}
 
 		bool operator==(Entity const& other) const
 		{
