@@ -890,129 +890,138 @@ namespace DYE::DYEditor
 																   entityWidgetScreenPos.y + entityWidgetSize.y),
 															ImColor(ImVec4(0, 1, 0, 0.5f)));
 					}
-				}
 
-				// Make the entity tree node a drag source.
-				ImGuiDragDropFlags const dragHandleFlags = ImGuiDragDropFlags_None;
-				if (ImGui::BeginDragDropSource(dragHandleFlags))
-				{
-					ImGui::SetDragDropPayload("EntityIndex", &indexInWorld, sizeof(std::size_t));
-
-					// Preview the entity in the drag tooltip.
-					ImGui::Text(name.c_str());
-
-					ImGui::EndDragDropSource();
-				}
-
-				// We draw invisible drop handles if the user is dragging an entity.
-				if (ImGui::IsDragDropActive())
-				{
-					ImVec2 const originalCursorPos = ImGui::GetCursorPos();
-
-					// Divide the entity widget into 3 drop handle rows:
-					// 	1. Upper: insert the dragged entity above the dropped entity.
-					//  2. Middle: make the dragged entity a child of the dropped entity.
-					//  3. Lower: insert the dragged entity below the dropped entity.
-					float const upperSize = spacingBetweenTreeNode * 0.5f;
-					float const lowerSize = spacingBetweenTreeNode * 0.5f;
-					float const middleSize = entityWidgetSize.y - upperSize - lowerSize;
-
-					ImGui::SetCursorScreenPos(entityWidgetScreenPos);
-					ImGuiUtil::Internal::InteractableItem("EntityDropHandle_Upper",
-														  ImVec2(entityWidgetSize.x, upperSize));
-					if (ImGui::BeginDragDropTarget())
+					// Make the entity tree node a drag source.
+					ImGuiDragDropFlags const dragHandleFlags = ImGuiDragDropFlags_None;
+					if (ImGui::BeginDragDropSource(dragHandleFlags))
 					{
-						ImGuiPayload const *dropPayload = ImGui::AcceptDragDropPayload("EntityIndex",
-																					   ImGuiDragDropFlags_AcceptPeekOnly);
-						if (dropPayload != nullptr)
-						{
-							DYE_ASSERT(dropPayload->DataSize == sizeof(std::size_t));
-							std::size_t payloadIndex = *(const std::size_t *) dropPayload->Data;
-							bool const isSource = payloadIndex == indexInWorld;
+						ImGui::SetDragDropPayload("EntityIndex", &indexInWorld, sizeof(std::size_t));
 
-							if (dropPayload->IsPreview())
-							{
-								ImVec2 const previewLineBegin = entityWidgetScreenPos;
-								ImVec2 const previewLineEnd = ImVec2(previewLineBegin.x + entityWidgetSize.x,
-																	 previewLineBegin.y);
-								ImGui::GetWindowDrawList()->AddLine(previewLineBegin, previewLineEnd,
-																	ImGui::GetColorU32(ImGuiCol_DragDropTarget), 2);
-							}
+						// Preview the entity in the drag tooltip.
+						ImGui::Text(name.c_str());
 
-							if (dropPayload->IsDelivery() && !isSource)
-							{
-								moveEntity.HasOperation = true;
-								moveEntity.SrcIndex = payloadIndex;
-								moveEntity.DstIndex = indexInWorld;
-							}
-						}
-						ImGui::EndDragDropTarget();
+						ImGui::EndDragDropSource();
 					}
 
-					ImGui::SetCursorScreenPos(
-						ImVec2(entityWidgetScreenPos.x, entityWidgetScreenPos.y + upperSize));
-					ImGuiUtil::Internal::InteractableItem("EntityDropHandle_Middle",
-														  ImVec2(entityWidgetSize.x, middleSize));
-					if (ImGui::BeginDragDropTarget())
+					// We draw invisible drop handles if the user is dragging an entity.
+					if (ImGui::IsDragDropActive())
 					{
-						ImGuiPayload const *dropPayload = ImGui::AcceptDragDropPayload("EntityIndex",
-																					   ImGuiDragDropFlags_AcceptBeforeDelivery);
-						if (dropPayload != nullptr)
+						ImVec2 const originalCursorPos = ImGui::GetCursorPos();
+
+						// Divide the entity widget into 3 drop handle rows:
+						// 	1. Upper: insert the dragged entity above the dropped entity.
+						//  2. Middle: make the dragged entity a child of the dropped entity.
+						//  3. Lower: insert the dragged entity below the dropped entity.
+						float const upperSize = spacingBetweenTreeNode * 0.5f;
+						float const lowerSize = spacingBetweenTreeNode * 0.5f;
+						float const middleSize = entityWidgetSize.y - upperSize - lowerSize;
+
+						ImGui::SetCursorScreenPos(entityWidgetScreenPos);
+						ImGuiUtil::Internal::InteractableItem("EntityDropHandle_Upper",
+															  ImVec2(entityWidgetSize.x, upperSize));
+						if (ImGui::BeginDragDropTarget())
 						{
-							DYE_ASSERT(dropPayload->DataSize == sizeof(std::size_t));
-							std::size_t payloadIndex = *(const std::size_t *) dropPayload->Data;
-							bool const isSource = payloadIndex == indexInWorld;
-
-							if (dropPayload->IsDelivery() && !isSource)
+							ImGuiPayload const *dropPayload = ImGui::AcceptDragDropPayload("EntityIndex",
+																						   ImGuiDragDropFlags_AcceptPeekOnly);
+							if (dropPayload != nullptr)
 							{
-								moveEntity.HasOperation = true;
-								moveEntity.SrcIndex = payloadIndex;
-								moveEntity.DstIndex = indexInWorld;
-								moveEntity.BecomeChildOfDst = true;
+								DYE_ASSERT(dropPayload->DataSize == sizeof(std::size_t));
+								std::size_t payloadIndex = *(const std::size_t *) dropPayload->Data;
+								bool const isSource = payloadIndex == indexInWorld;
 
-								// Open/expand the dropped entity (new parent) tree node.
-								ImGuiID newParentTreeNodeId = ImGui::GetCurrentWindow()->GetID(guid.ToString().c_str());
-								ImGui::TreeNodeSetOpen(newParentTreeNodeId, true);
+								if (dropPayload->IsPreview())
+								{
+									ImVec2 const previewLineBegin = entityWidgetScreenPos;
+									ImVec2 const previewLineEnd = ImVec2(previewLineBegin.x + entityWidgetSize.x,
+																		 previewLineBegin.y);
+									ImGui::GetWindowDrawList()->AddLine(previewLineBegin, previewLineEnd,
+																		ImGui::GetColorU32(ImGuiCol_DragDropTarget), 2);
+								}
+
+								if (dropPayload->IsDelivery() && !isSource)
+								{
+									moveEntity.HasOperation = true;
+									moveEntity.SrcIndex = payloadIndex;
+									moveEntity.DstIndex = indexInWorld;
+
+									DYE_LOG("DROP UPPER");
+								}
 							}
+							ImGui::EndDragDropTarget();
 						}
-						ImGui::EndDragDropTarget();
+
+						ImGui::SetCursorScreenPos(
+							ImVec2(entityWidgetScreenPos.x, entityWidgetScreenPos.y + upperSize));
+						ImGuiUtil::Internal::InteractableItem("EntityDropHandle_Middle",
+															  ImVec2(entityWidgetSize.x, middleSize));
+						if (ImGui::BeginDragDropTarget())
+						{
+							ImGuiPayload const *dropPayload = ImGui::AcceptDragDropPayload("EntityIndex",
+																						   ImGuiDragDropFlags_AcceptBeforeDelivery);
+							if (dropPayload != nullptr)
+							{
+								DYE_ASSERT(dropPayload->DataSize == sizeof(std::size_t));
+								std::size_t payloadIndex = *(const std::size_t *) dropPayload->Data;
+								bool const isSource = payloadIndex == indexInWorld;
+
+								if (dropPayload->IsDelivery() && !isSource)
+								{
+									moveEntity.HasOperation = true;
+									moveEntity.SrcIndex = payloadIndex;
+									moveEntity.DstIndex = indexInWorld;
+									moveEntity.BecomeChildOfDst = true;
+
+									DYE_LOG("DROP MIDDLE BEFORE");
+
+									// Open/expand the dropped entity (new parent) tree node.
+									ImGuiID newParentTreeNodeId = ImGui::GetCurrentWindow()->GetID(guid.ToString().c_str());
+									ImGui::TreeNodeSetOpen(newParentTreeNodeId, true);
+
+									DYE_LOG("DROP MIDDLE AFTER");
+								}
+							}
+							ImGui::EndDragDropTarget();
+						}
+
+						ImGui::SetCursorScreenPos(
+							ImVec2(entityWidgetScreenPos.x, entityWidgetScreenPos.y + upperSize + middleSize));
+						ImGuiUtil::Internal::InteractableItem("EntityDropHandle_Lower",
+															  ImVec2(entityWidgetSize.x, lowerSize));
+						if (ImGui::BeginDragDropTarget())
+						{
+							ImGuiPayload const *dropPayload = ImGui::AcceptDragDropPayload("EntityIndex",
+																						   ImGuiDragDropFlags_AcceptPeekOnly);
+							if (dropPayload != nullptr)
+							{
+								DYE_ASSERT(dropPayload->DataSize == sizeof(std::size_t));
+								std::size_t payloadIndex = *(const std::size_t *) dropPayload->Data;
+								bool const isSource = payloadIndex == indexInWorld;
+
+								if (dropPayload->IsPreview())
+								{
+									ImVec2 const previewLineBegin = ImVec2(entityWidgetScreenPos.x,
+																		   entityWidgetScreenPos.y + entityWidgetSize.y);
+									ImVec2 const previewLineEnd = ImVec2(previewLineBegin.x + entityWidgetSize.x,
+																		 previewLineBegin.y);
+									ImGui::GetWindowDrawList()->AddLine(previewLineBegin, previewLineEnd,
+																		ImGui::GetColorU32(ImGuiCol_DragDropTarget), 2);
+								}
+
+								if (dropPayload->IsDelivery() && !isSource)
+								{
+									moveEntity.HasOperation = true;
+									moveEntity.SrcIndex = payloadIndex;
+									moveEntity.DstIndex = indexInWorld + 1;
+
+									DYE_LOG("DROP LOWER");
+								}
+							}
+							ImGui::EndDragDropTarget();
+						}
+
+						ImGui::SetCursorPos(originalCursorPos);
 					}
 
-					ImGui::SetCursorScreenPos(
-						ImVec2(entityWidgetScreenPos.x, entityWidgetScreenPos.y + upperSize + middleSize));
-					ImGuiUtil::Internal::InteractableItem("EntityDropHandle_Lower",
-														  ImVec2(entityWidgetSize.x, lowerSize));
-					if (ImGui::BeginDragDropTarget())
-					{
-						ImGuiPayload const *dropPayload = ImGui::AcceptDragDropPayload("EntityIndex",
-																					   ImGuiDragDropFlags_AcceptPeekOnly);
-						if (dropPayload != nullptr)
-						{
-							DYE_ASSERT(dropPayload->DataSize == sizeof(std::size_t));
-							std::size_t payloadIndex = *(const std::size_t *) dropPayload->Data;
-							bool const isSource = payloadIndex == indexInWorld;
-
-							if (dropPayload->IsPreview())
-							{
-								ImVec2 const previewLineBegin = ImVec2(entityWidgetScreenPos.x,
-																	   entityWidgetScreenPos.y + entityWidgetSize.y);
-								ImVec2 const previewLineEnd = ImVec2(previewLineBegin.x + entityWidgetSize.x,
-																	 previewLineBegin.y);
-								ImGui::GetWindowDrawList()->AddLine(previewLineBegin, previewLineEnd,
-																	ImGui::GetColorU32(ImGuiCol_DragDropTarget), 2);
-							}
-
-							if (dropPayload->IsDelivery() && !isSource)
-							{
-								moveEntity.HasOperation = true;
-								moveEntity.SrcIndex = payloadIndex;
-								moveEntity.DstIndex = indexInWorld + 1;
-							}
-						}
-						ImGui::EndDragDropTarget();
-					}
-
-					ImGui::SetCursorPos(originalCursorPos);
 				}
 
 				if (pLevel != nullptr)
