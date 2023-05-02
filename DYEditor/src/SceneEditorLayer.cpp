@@ -389,7 +389,7 @@ namespace DYE::DYEditor
 		ImGuiWindowFlags const hierarchyWindowFlags = m_IsActiveSceneDirty? ImGuiWindowFlags_UnsavedDocument : ImGuiWindowFlags_None;
 		if (ImGui::Begin(k_SceneHierarchyWindowId, nullptr, hierarchyWindowFlags))
 		{
-			bool const isHierarchyChanged = drawSceneEntityHierarchyPanelSimple(activeScene, &m_CurrentlySelectedEntityInHierarchyPanel);
+			bool const isHierarchyChanged = drawSceneEntityHierarchyPanel(activeScene, &m_CurrentlySelectedEntityInHierarchyPanel);
 			m_IsActiveSceneDirty |= isHierarchyChanged;
 		}
 		ImGui::End();
@@ -722,12 +722,19 @@ namespace DYE::DYEditor
 		};
 		MoveEntity moveEntity;
 
-		std::vector<int> numberOfChildrenForHierarchyLevels;
-
-
 		auto itemSpacing = ImGui::GetStyle().ItemSpacing;
 		itemSpacing.y = 6;
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, itemSpacing);
+
+		struct HierarchyLevel
+		{
+			DYE::GUID LevelParentGUID = (DYE::GUID) 0;
+			std::size_t NumberOfEntitiesLeft = 0;
+			bool IsOpen = false;
+		};
+		std::vector<HierarchyLevel> levelStack;
+		// We reserve to make sure the array doesn't re-allocate during foreach.
+		levelStack.reserve(scene.World.GetNumberOfEntities());
 
 		// Draw all entities.
 		scene.World.ForEachEntityAndIndex
@@ -735,7 +742,7 @@ namespace DYE::DYEditor
 			[&changed,
 			 &scene,
 			 &pCurrentSelectedEntity,
-			 &numberOfChildrenForHierarchyLevels,
+			 &levelStack,
 			 &moveEntity]
 			 (DYEditor::Entity &entity, std::size_t indexInWorld)
 			{
@@ -757,6 +764,39 @@ namespace DYE::DYEditor
 				auto &guid = tryGetGUIDResult.value();
 				auto tryGetChildrenComponent = entity.TryGetComponent<ChildrenComponent>();
 
+				auto tryGetParent = entity.TryGetComponent<ParentComponent>();
+				auto parentGUID = tryGetParent.has_value()? tryGetParent.value().get().ParentGUID : (DYE::GUID) 0;
+
+				std::size_t childrenCount = tryGetChildrenComponent.has_value()? tryGetChildrenComponent.value().get().ChildrenGUIDs.size() : 0;
+
+				HierarchyLevel *pLevel = levelStack.empty()? nullptr : &levelStack.back();
+				while
+				(
+					pLevel != nullptr &&
+					pLevel->LevelParentGUID != parentGUID &&
+					pLevel->NumberOfEntitiesLeft == 0
+				)
+				{
+					// The top level is not the parent of the current entity
+					// && It's also an empty level (all the entities of that level have been iterated)
+					// -> We will pop the top level.
+
+					// If the tree node of the level is open,
+					// we need to pop it.
+					if (pLevel->IsOpen)
+					{
+						ImGui::TreePop();
+					}
+
+					// Pop the level from the stack.
+					levelStack.pop_back();
+
+					pLevel = levelStack.empty()? nullptr : &levelStack.back();
+				}
+
+				bool const isEntityShown = pLevel == nullptr || pLevel->IsOpen;
+				bool const isLeafNode = childrenCount == 0;
+
 				bool const isSelected = entity == *pCurrentSelectedEntity;
 
 				ImVec2 const entityTreeNodeScreenPos = ImGui::GetCursorScreenPos();
@@ -766,68 +806,69 @@ namespace DYE::DYEditor
 				float const spacingBetweenTreeNode = ImGui::GetStyle().ItemSpacing.y;
 				ImVec2 const entityWidgetScreenPos = ImVec2(entityTreeNodeScreenPos.x, entityTreeNodeScreenPos.y - spacingBetweenTreeNode * 0.5f);
 
-				ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+				ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanFullWidth;
 				if (isSelected) flags |= ImGuiTreeNodeFlags_Selected;
-
-				bool const isLeaf = !tryGetChildrenComponent.has_value() || tryGetChildrenComponent.value().get().ChildrenGUIDs.size() == 0;
-				if (isLeaf)
+				if (isLeafNode)
 				{
 					flags |= (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
 				}
 
 				void const* treeNodeId = (void *) (std::uint64_t) entity.GetInstanceID();
-				bool const isNodeOpen = ImGui::TreeNodeEx(treeNodeId, flags, name.c_str()) && !isLeaf;
-				if (ImGui::BeginPopupContextItem())
+				bool isNodeOpen = false;
+				if (isEntityShown)
 				{
-					// Draw entity context menu right after TreeNode call.
-					if (ImGui::Selectable("Delete"))
+					isNodeOpen = ImGui::TreeNodeEx(treeNodeId, flags, name.c_str()) && !isLeafNode;
+					if (ImGui::BeginPopupContextItem())
 					{
-						Undo::DeleteEntity(scene.World, entity, indexInWorld);
-						changed = true;
+						// Draw entity context menu right after TreeNode call.
+						if (ImGui::Selectable("Delete"))
+						{
+							Undo::DeleteEntity(scene.World, entity, indexInWorld);
+							changed = true;
+						}
+						if (ImGui::Selectable("Create Empty"))
+						{
+							// Select the newly created entity.
+							// For now, the entity is always put at the end of the list.
+							// TODO: make it a child of the clicked tree node entity.
+							*pCurrentSelectedEntity = scene.World.CreateEntity("Entity");
+							int const indexInWorldArray = scene.World.GetNumberOfEntities() - 1;
+							Undo::RegisterEntityCreation(scene.World, *pCurrentSelectedEntity, indexInWorldArray);
+							changed = true;
+						}
+						ImGui::EndPopup();
 					}
-					if (ImGui::Selectable("Create Empty"))
+					if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
 					{
-						// Select the newly created entity.
-						// For now, the entity is always put at the end of the list.
-						// TODO: make it a child of the clicked tree node entity.
-						*pCurrentSelectedEntity = scene.World.CreateEntity("Entity");
-						int const indexInWorldArray = scene.World.GetNumberOfEntities() - 1;
-						Undo::RegisterEntityCreation(scene.World, *pCurrentSelectedEntity, indexInWorldArray);
-						changed = true;
+						*pCurrentSelectedEntity = entity;
 					}
-					ImGui::EndPopup();
-				}
 
-				ImVec2 const entityTreeNodeSize = ImGui::GetItemRectSize();
-				float const entityWidgetCenterY = entityTreeNodeScreenPos.y + entityTreeNodeSize.y * 0.5f;
+					ImVec2 const entityTreeNodeSize = ImGui::GetItemRectSize();
+					float const entityWidgetCenterY = entityTreeNodeScreenPos.y + entityTreeNodeSize.y * 0.5f;
 
-				if (debugContext.ShowTreeNodeRect || debugContext.ShowWidgetRect)
-				{
-					ImVec2 const widgetHeadCenter = ImVec2(entityTreeNodeScreenPos.x, entityWidgetCenterY);
-					ImGui::GetWindowDrawList()->AddCircle(widgetHeadCenter, 2, ImColor(ImVec4(1, 1, 1, 0.5f)), 4);
-				}
+					if (debugContext.ShowTreeNodeRect || debugContext.ShowWidgetRect)
+					{
+						ImVec2 const widgetHeadCenter = ImVec2(entityTreeNodeScreenPos.x, entityWidgetCenterY);
+						ImGui::GetWindowDrawList()->AddCircle(widgetHeadCenter, 2, ImColor(ImVec4(1, 1, 1, 0.5f)), 4);
+					}
 
-				if (debugContext.ShowTreeNodeRect)
-				{
-					ImGui::GetWindowDrawList()->AddCircle(entityTreeNodeScreenPos, 2, ImColor(ImVec4(1, 1, 1, 1)), 4);
-					ImGui::GetWindowDrawList()->AddRect(entityTreeNodeScreenPos,
-														ImVec2(entityTreeNodeScreenPos.x + entityTreeNodeSize.x,
-															   entityTreeNodeScreenPos.y + entityTreeNodeSize.y),
-														ImColor(ImVec4(1, 1, 1, 0.5f)));
-				}
+					if (debugContext.ShowTreeNodeRect)
+					{
+						ImGui::GetWindowDrawList()->AddCircle(entityTreeNodeScreenPos, 2, ImColor(ImVec4(1, 1, 1, 1)), 4);
+						ImGui::GetWindowDrawList()->AddRect(entityTreeNodeScreenPos,
+															ImVec2(entityTreeNodeScreenPos.x + entityTreeNodeSize.x,
+																   entityTreeNodeScreenPos.y + entityTreeNodeSize.y),
+															ImColor(ImVec4(1, 1, 1, 0.5f)));
+					}
 
-				if (debugContext.ShowWidgetRect)
-				{
-					ImGui::GetWindowDrawList()->AddCircle(entityWidgetScreenPos, 2, ImColor(ImVec4(0, 1, 0, 1)), 4);
-					ImGui::GetWindowDrawList()->AddRect(entityWidgetScreenPos,
-														ImVec2(entityWidgetScreenPos.x + entityWidgetSize.x,
-															   entityWidgetScreenPos.y + entityWidgetSize.y),
-														ImColor(ImVec4(0, 1, 0, 0.5f)));
-				}
-
-				if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
-				{
-					*pCurrentSelectedEntity = entity;
+					if (debugContext.ShowWidgetRect)
+					{
+						ImGui::GetWindowDrawList()->AddCircle(entityWidgetScreenPos, 2, ImColor(ImVec4(0, 1, 0, 1)), 4);
+						ImGui::GetWindowDrawList()->AddRect(entityWidgetScreenPos,
+															ImVec2(entityWidgetScreenPos.x + entityWidgetSize.x,
+																   entityWidgetScreenPos.y + entityWidgetSize.y),
+															ImColor(ImVec4(0, 1, 0, 0.5f)));
+					}
 				}
 
 				// Make the entity tree node a drag source.
@@ -947,35 +988,36 @@ namespace DYE::DYEditor
 					ImGui::SetCursorPos(originalCursorPos);
 				}
 
-
-				// TODO: update hierarchy children information.
-				// 	...
-
-				if (isNodeOpen)
+				if (pLevel != nullptr)
 				{
-					bool const hasChildren = tryGetChildrenComponent.has_value();
-					if (hasChildren)
-					{
+					pLevel->NumberOfEntitiesLeft--;
+				}
 
-
-						// TODO: we need to do some stack operation (i.e. push the number of children into numberOfChildrenForHierarchyLevels)
-						//		For now just gonna list all the GUIDs out.
-						auto &childrenGUIDs = tryGetChildrenComponent.value().get().ChildrenGUIDs;
-						numberOfChildrenForHierarchyLevels.push_back(childrenGUIDs.size());
-
-						for (auto childGUID : childrenGUIDs)
+				if (childrenCount > 0)
+				{
+					levelStack.push_back
+					(
 						{
-							if (ImGui::TreeNode(childGUID.ToString().c_str()))
-							{
-								ImGui::TreePop();
-							}
+							.LevelParentGUID = guid,
+							.NumberOfEntitiesLeft = childrenCount,
+							.IsOpen = isNodeOpen
 						}
-					}
-
-					ImGui::TreePop();
+					);
 				}
 			}
 		);
+
+		for (auto level : levelStack)
+		{
+			// There are some levels left in the stack,
+			// we need to make sure to pop the corresponding tree nodes if they are open.
+			if (!level.IsOpen)
+			{
+				continue;
+			}
+
+			ImGui::TreePop();
+		}
 
 		ImGui::PopStyleVar();
 
