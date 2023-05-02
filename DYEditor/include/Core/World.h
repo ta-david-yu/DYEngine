@@ -109,12 +109,12 @@ namespace DYE::DYEditor
 		/// This method doesn't destroy the entity's children & update related hierarchy components.
 		/// It is meant for engine-internally use (e.g. Undo/redo entity destruction).
 		/// You should avoid using this on a single entity but instead on a batch of entity hierarchy.
-		void destroyEntityWithoutDestroyingChildren(Entity entity);
+		void destroyEntityButNotChildren(Entity entity);
 
 		/// This method doesn't destroy the entity's children & update related hierarchy components.
 		/// It is meant for engine-internally use (e.g. Undo/redo entity destruction).
 		/// You should avoid using this on a single entity but instead on a batch of entity hierarchy.
-		void destroyEntityByGUIDWithoutDestroyingChildren(GUID entityGUID);
+		void destroyEntityByGUIDButNotChildren(DYE::GUID entityGUID);
 
 	private:
 		struct EntityHandle

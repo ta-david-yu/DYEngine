@@ -227,7 +227,7 @@ namespace DYE::DYEditor
 
 		sprintf(operation->Description, "Delete Entity '%s' (GUID: %s)", entity.TryGetName().value().c_str(), operation->EntityGUID.ToString().c_str());
 
-		operation->pWorld->destroyEntityByGUIDWithoutDestroyingChildren(operation->EntityGUID);
+		operation->pWorld->destroyEntityByGUIDButNotChildren(operation->EntityGUID);
 
 		EntityDeletionOperation *rawOperationPtr = operation.get();
 		pushNewOperation(std::move(operation));

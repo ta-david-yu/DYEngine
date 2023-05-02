@@ -230,7 +230,7 @@ namespace DYE::DYEditor
 		m_GUIDToEntityIdentifierMap.insert({tryGetGUID.value(), entity.m_EntityIdentifier});
 	}
 
-	void World::destroyEntityWithoutDestroyingChildren(Entity entity)
+	void World::destroyEntityButNotChildren(Entity entity)
 	{
 		auto identifier = entity.m_EntityIdentifier;
 
@@ -253,7 +253,7 @@ namespace DYE::DYEditor
 		m_Registry.destroy(identifier);
 	}
 
-	void World::destroyEntityByGUIDWithoutDestroyingChildren(DYE::GUID entityGUID)
+	void World::destroyEntityByGUIDButNotChildren(DYE::GUID entityGUID)
 	{
 		auto findItr = m_GUIDToEntityIdentifierMap.find(entityGUID);
 		if (findItr == m_GUIDToEntityIdentifierMap.end())

@@ -8,7 +8,7 @@ namespace DYE::DYEditor
 
 	void EntityCreationOperation::Undo()
 	{
-		pWorld->destroyEntityByGUIDWithoutDestroyingChildren(EntityGUID);
+		pWorld->destroyEntityByGUIDButNotChildren(EntityGUID);
 	}
 
 	void EntityCreationOperation::Redo()
@@ -29,7 +29,7 @@ namespace DYE::DYEditor
 
 	void EntityDeletionOperation::Redo()
 	{
-		pWorld->destroyEntityByGUIDWithoutDestroyingChildren(EntityGUID);
+		pWorld->destroyEntityByGUIDButNotChildren(EntityGUID);
 	}
 
 	// EntityMoveOperation
