@@ -725,9 +725,11 @@ namespace DYE::DYEditor
 		};
 		MoveEntity moveEntity;
 
-		auto itemSpacing = ImGui::GetStyle().ItemSpacing;
-		itemSpacing.y = 6;
+		auto itemSpacing = ImGui::GetStyle().ItemSpacing; itemSpacing.y = 6;
+		auto framePadding = ImGui::GetStyle().FramePadding; framePadding.x = 3;
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, itemSpacing);
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, framePadding);
+		ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, 13);
 
 		struct HierarchyLevel
 		{
@@ -1044,7 +1046,8 @@ namespace DYE::DYEditor
 			ImGui::TreePop();
 		}
 
-		ImGui::PopStyleVar();
+		// Pop ItemSpacing, FramePadding and IndentSpacing.
+		ImGui::PopStyleVar(3);
 
 		int moveDiff = ((int) moveEntity.DstIndex - (int) moveEntity.SrcIndex);
 
