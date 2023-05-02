@@ -82,6 +82,16 @@ namespace DYE::DYEditor
 		std::strcpy(s_Data.CurrentGroupOperation->Description, description);
 	}
 
+	void Undo::SetCurrentGroupOperationDescription(const char *description)
+	{
+		if (!s_Data.IsInGroup)
+		{
+			return;
+		}
+
+		std::strcpy(s_Data.CurrentGroupOperation->Description, description);
+	}
+
 	void Undo::EndGroupOperation()
 	{
 		DYE_ASSERT_LOG_WARN(s_Data.IsInGroup, "You shouldn't call EndGroupOperation without calling StartGroupOperation first.");
@@ -133,16 +143,45 @@ namespace DYE::DYEditor
 		pushNewOperation(std::move(operation));
 	}
 
-	void Undo::DeleteEntity(World &world, Entity entity)
+	void Undo::DeleteEntityRecursively(Entity entity)
 	{
-		auto tryGetIndexResult = world.TryGetEntityIndex(entity);
-		DeleteEntity(world, entity, tryGetIndexResult.has_value()? tryGetIndexResult.value() : 0);
+		auto tryGetIndexResult = entity.GetWorld().TryGetEntityIndex(entity);
+		DYE_ASSERT_LOG_WARN(tryGetIndexResult.has_value(), "Couldn't find the given entity inside the handle array.");
+
+		DeleteEntityRecursively(entity, tryGetIndexResult.has_value() ? tryGetIndexResult.value() : 0);
 	}
 
-	void Undo::DeleteEntity(World &world, Entity entity, std::size_t indexInWorldHandleArray)
+	void Undo::DeleteEntityRecursively(Entity entity, std::size_t indexInWorldHandleArray)
+	{
+		Undo::StartGroupOperation("Delete Entity Recursively (On-going)");
+
+		// Get the name and the children of the entity before deleting it.
+		std::string entityName = entity.TryGetName().value();
+		auto allChildren = EntityUtil::GetAllChildrenRecursive(entity);
+
+		// Delete the entity and its children.
+		EntityDeletionOperation *pParentDeletionOperation = destroyEntityWithoutDestroyingChildren(entity, indexInWorldHandleArray);
+		for (auto childEntity : allChildren)
+		{
+			destroyEntityWithoutDestroyingChildren(childEntity, indexInWorldHandleArray);
+		}
+
+		// Set the operation description based on the result.
+		char operationDescription[128] = "";
+		sprintf(operationDescription,
+				"Delete Entity '%s' (GUID: %s) and %zu children",
+				entityName.c_str(),
+				pParentDeletionOperation->EntityGUID.ToString().c_str(),
+				allChildren.size());
+		Undo::SetCurrentGroupOperationDescription(operationDescription);
+
+		Undo::EndGroupOperation();
+	}
+
+	EntityDeletionOperation *Undo::destroyEntityWithoutDestroyingChildren(Entity entity, std::size_t indexInWorldHandleArray)
 	{
 		auto operation = std::make_unique<EntityDeletionOperation>();
-		operation->pWorld = &world;
+		operation->pWorld = &entity.GetWorld();
 		operation->EntityGUID = entity.GetComponent<IDComponent>().ID;
 		operation->DeletedSerializedEntity = SerializedObjectFactory::CreateSerializedEntity(entity);
 		operation->IndexInWorldEntityArray = indexInWorldHandleArray;
@@ -151,7 +190,10 @@ namespace DYE::DYEditor
 
 		operation->pWorld->destroyEntityByGUIDWithoutDestroyingChildren(operation->EntityGUID);
 
+		EntityDeletionOperation *rawOperationPtr = operation.get();
 		pushNewOperation(std::move(operation));
+
+		return rawOperationPtr;
 	}
 
 	void Undo::MoveEntity(Entity entity, int indexBeforeMove, int indexToInsert)
@@ -212,7 +254,7 @@ namespace DYE::DYEditor
 		auto entityGUID = tryGetEntityGUID.value();
 		auto parentGUID = tryGetParentGUID.value();
 
-		// This is a group operation include:
+		// This is a group operation that includes:
 		//	1. A collection of MoveEntity operations: to move root, children, children of children... under the new parent.
 		//	2. Three ComponentModification operations: to modify entity's original parent.ChildrenComponent & entity.ParentComponent & parent.ChildrenComponent.
 		char operationDescription[128] = "";

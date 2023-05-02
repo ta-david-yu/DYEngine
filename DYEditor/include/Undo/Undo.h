@@ -11,6 +11,7 @@ namespace DYE::DYEditor
 	class Entity;
 
 	class UndoOperationBase;
+	class EntityDeletionOperation;
 
 	class Undo
 	{
@@ -23,22 +24,26 @@ namespace DYE::DYEditor
 		static void PerformUndo();
 		static void PerformRedo();
 
-		// All the undo operations called after StartGroupOperation & before EndGroupOperation
-		// will be collapsed into one group undoable operation.
+		/// All the undo operations called after StartGroupOperation & before EndGroupOperation
+		/// will be collapsed into one group undoable operation.
 		static void StartGroupOperation(const char *description);
 
-		// See StartGroupOperation function for more details.
+		/// Set the description name of the current group operation,
+		/// this method does nothing if the Undo system is not in a group operation.
+		static void SetCurrentGroupOperationDescription(const char *description);
+
+		/// See StartGroupOperation function for more details.
 		static void EndGroupOperation();
 
-		// Call this after creating a new entity.
+		/// Call this after creating a new entity.
 		static void RegisterEntityCreation(World& world, Entity entity);
-		// Call this after creating a new entity.
+		/// Call this after creating a new entity.
 		static void RegisterEntityCreation(World& world, Entity entity, std::size_t indexInWorldHandleArray);
 
-		// Perform entity destruction that can be restored with undo.
-		static void DeleteEntity(World& world, Entity entity);
-		// Perform entity destruction that can be restored with undo.
-		static void DeleteEntity(World& world, Entity entity, std::size_t indexInWorldHandleArray);
+		/// Perform entity destruction (including all children) that can be restored with undo.
+		static void DeleteEntityRecursively(Entity entity);
+		/// Perform entity destruction (including all children) that can be restored with undo.
+		static void DeleteEntityRecursively(Entity entity, std::size_t indexInWorldHandleArray);
 
 		/// Avoid using this cuz it only moves the given entity, children are ignored.
 		/// (We will probably want to remove this at some point)
@@ -71,6 +76,8 @@ namespace DYE::DYEditor
 		static void DrawUndoHistoryWindow(bool *pIsOpen);
 
 	private:
+		static EntityDeletionOperation *destroyEntityWithoutDestroyingChildren(Entity entity, std::size_t indexInWorldHandleArray);
+
 		static void pushNewOperation(std::unique_ptr<UndoOperationBase> operation);
 	};
 }

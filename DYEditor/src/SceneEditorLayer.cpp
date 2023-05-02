@@ -828,7 +828,7 @@ namespace DYE::DYEditor
 						// Draw entity context menu right after TreeNode call.
 						if (ImGui::Selectable("Delete"))
 						{
-							Undo::DeleteEntity(scene.World, entity, indexInWorld);
+							Undo::DeleteEntityRecursively(entity, indexInWorld);
 							changed = true;
 						}
 						if (ImGui::Selectable("Create Empty"))
@@ -1202,7 +1202,7 @@ namespace DYE::DYEditor
 							// Draw entity context menu right after TreeNode call.
 							if (ImGui::Selectable("Delete"))
 							{
-								Undo::DeleteEntity(scene.World, entity, indexInWorld);
+								Undo::DeleteEntityRecursively(entity, indexInWorld);
 								changed = true;
 							}
 							if (ImGui::Selectable("Create Empty"))
