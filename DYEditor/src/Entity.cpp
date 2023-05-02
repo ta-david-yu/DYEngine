@@ -6,19 +6,19 @@
 
 namespace DYE::DYEditor
 {
-	Entity::Entity(World &world, EntityIdentifier identifier) : m_World(&world), m_EntityIdentifier(identifier)
+	Entity::Entity(World &world, EntityIdentifier identifier) : m_pWorld(&world), m_EntityIdentifier(identifier)
 	{
 	}
 
 	bool Entity::IsValid() const
 	{
-		if (m_World == nullptr)
+		if (m_pWorld == nullptr)
 		{
 			return false;
 		}
 
 		bool const isNullEntity = m_EntityIdentifier == entt::null;
-		return !isNullEntity && m_World->m_Registry.valid(m_EntityIdentifier);
+		return !isNullEntity && m_pWorld->m_Registry.valid(m_EntityIdentifier);
 	}
 
 	std::optional<std::string> Entity::TryGetName()
@@ -43,7 +43,7 @@ namespace DYE::DYEditor
 
 	void Entity::RemoveAllComponents()
 	{
-		for (auto [id, storage] : m_World->m_Registry.storage())
+		for (auto [id, storage] : m_pWorld->m_Registry.storage())
 		{
 			storage.remove(m_EntityIdentifier);
 		}

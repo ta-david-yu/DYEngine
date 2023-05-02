@@ -118,7 +118,7 @@ namespace DYE::DYEditor
 
 	std::optional<std::size_t> World::TryGetEntityIndex(Entity const &entity)
 	{
-		if (entity.m_World != this)
+		if (entity.m_pWorld != this)
 		{
 			return {};
 		}
