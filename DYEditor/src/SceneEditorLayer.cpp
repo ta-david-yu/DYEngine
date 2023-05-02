@@ -943,8 +943,6 @@ namespace DYE::DYEditor
 									moveEntity.HasOperation = true;
 									moveEntity.SrcIndex = payloadIndex;
 									moveEntity.DstIndex = indexInWorld;
-
-									DYE_LOG("DROP UPPER");
 								}
 							}
 							ImGui::EndDragDropTarget();
@@ -971,13 +969,9 @@ namespace DYE::DYEditor
 									moveEntity.DstIndex = indexInWorld;
 									moveEntity.BecomeChildOfDst = true;
 
-									DYE_LOG("DROP MIDDLE BEFORE");
-
 									// Open/expand the dropped entity (new parent) tree node.
 									ImGuiID newParentTreeNodeId = ImGui::GetCurrentWindow()->GetID(guid.ToString().c_str());
 									ImGui::TreeNodeSetOpen(newParentTreeNodeId, true);
-
-									DYE_LOG("DROP MIDDLE AFTER");
 								}
 							}
 							ImGui::EndDragDropTarget();
@@ -1012,8 +1006,6 @@ namespace DYE::DYEditor
 									moveEntity.HasOperation = true;
 									moveEntity.SrcIndex = payloadIndex;
 									moveEntity.DstIndex = indexInWorld + 1;
-
-									DYE_LOG("DROP LOWER");
 								}
 							}
 							ImGui::EndDragDropTarget();

@@ -30,7 +30,7 @@ set(SOURCE_FILES
         src/EntityOperations.cpp
         src/SystemOperations.cpp
         src/UndoOperationBase.cpp
-        src/HierarchyComponents.cpp)
+        src/HierarchyComponents.cpp src/EntityUtil.cpp)
 set(HEADER_FILES
         include/SceneEditorLayer.h
         include/SceneRuntimeLayer.h

@@ -1,27 +1,42 @@
-#include "Core/Entity.h"
-
-#include <vector>
+#include "Util/EntityUtil.h"
 
 namespace DYE::DYEditor::EntityUtil
 {
-	/// Check recursively if potential child is under potential parent's hierarchy.
-	bool IsChildOf(Entity potentialChild, Entity potentialParent);
-
-	std::vector<Entity> GetAllChildrenRecursive(Entity root);
-
-	/// Iterate through the entity and its all children (including nth degree children)
-	/// using depth-first search.
-	template<typename Func>
-	void ForEntityAndEachChildRecursive(Entity root, Func func)
+	bool IsChildOf(Entity potentialChild, Entity potentialParent)
 	{
-		std::stack<Entity> entityStack;
-		entityStack.push(root);
+		if (!potentialChild.HasComponent<ParentComponent>())
+		{
+			return false;
+		}
 
+		if (!potentialParent.HasComponent<ChildrenComponent>())
+		{
+			return false;
+		}
+
+		if (potentialChild == potentialParent)
+		{
+			return false;
+		}
+
+		// Go through all children using DFS.
+		std::stack<Entity> entityStack;
+		entityStack.push(potentialParent);
+		bool isRoot = true;
 		while (!entityStack.empty())
 		{
 			Entity entity = entityStack.top();
 
-			func(entity);
+			// We use a flag to skip the first entity in the stack (which is the parent).
+			if (!isRoot)
+			{
+				if (entity == potentialChild)
+				{
+					// We find a child in the potential parent!
+					return true;
+				}
+			}
+			isRoot = false;
 
 			entityStack.pop();
 			auto tryGetChild = entity.TryGetComponent<ChildrenComponent>();
@@ -35,7 +50,7 @@ namespace DYE::DYEditor::EntityUtil
 			for (int i = childrenGUIDs.size() - 1; i >= 0; i--)
 			{
 				auto childGUID = childrenGUIDs[i];
-				auto tryGetEntityWithGUID = root.GetWorld().TryGetEntityWithGUID(childGUID);
+				auto tryGetEntityWithGUID = potentialParent.GetWorld().TryGetEntityWithGUID(childGUID);
 				if (!tryGetEntityWithGUID.has_value())
 				{
 					continue;
@@ -44,13 +59,14 @@ namespace DYE::DYEditor::EntityUtil
 				entityStack.push(tryGetEntityWithGUID.value());
 			}
 		}
+
+		return false;
 	}
 
-	/// Iterate through all children (including nth degree children)
-	/// using depth-first search.
-	template<typename Func>
-	void ForEachChildRecursive(Entity root, Func func)
+	std::vector<Entity> GetAllChildrenRecursive(Entity root)
 	{
+		std::vector<Entity> result;
+
 		std::stack<Entity> entityStack;
 		entityStack.push(root);
 
@@ -63,7 +79,7 @@ namespace DYE::DYEditor::EntityUtil
 			// We use a flag to skip the first entity in the stack (which is the parent).
 			if (!isRoot)
 			{
-				func(entity);
+				result.push_back(entity);
 			}
 			isRoot = false;
 
@@ -88,5 +104,7 @@ namespace DYE::DYEditor::EntityUtil
 				entityStack.push(tryGetEntityWithGUID.value());
 			}
 		}
+
+		return std::move(result);
 	}
 }

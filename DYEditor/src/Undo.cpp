@@ -203,6 +203,12 @@ namespace DYE::DYEditor
 			return;
 		}
 
+		if (EntityUtil::IsChildOf(newParent, entity))
+		{
+			DYE_LOG("You cannot make an entity be the child of its own child.");
+			return;
+		}
+
 		auto entityGUID = tryGetEntityGUID.value();
 		auto parentGUID = tryGetParentGUID.value();
 
