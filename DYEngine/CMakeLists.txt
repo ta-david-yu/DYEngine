@@ -59,7 +59,7 @@ set(HEADER_FILES
         include/Core/Application.h
         include/Graphics/WindowBase.h
         include/Graphics/SDLWindow.h
-        include/Util/Time.h
+        include/Core/Time.h
         include/Event/Event.h
         include/Event/ApplicationEvent.h
         include/Input/KeyCode.h

@@ -1,7 +1,7 @@
 #include "Scene/SceneLayer.h"
 
 #include "Util/Macro.h"
-#include "Util/Time.h"
+#include "Core/Time.h"
 #include "Graphics/WindowBase.h"
 #include "Util/Logger.h"
 #include "Scene/GameObject.h"

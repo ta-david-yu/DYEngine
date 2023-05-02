@@ -3,7 +3,7 @@
 #include "Core/World.h"
 #include "Core/Entity.h"
 #include "ImGui/ImGuiUtil.h"
-#include "Util/Time.h"
+#include "Core/Time.h"
 #include "Math/Math.h"
 
 #include "TestComponents.h"
