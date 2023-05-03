@@ -82,9 +82,11 @@ namespace DYE::DYEditor
 
 		// Populate entities.
 		scene.World.Reserve(serializedEntityHandles.size());
-		for (auto& serializedEntityHandle : serializedEntityHandles)
+		for (int i = 0; i < serializedEntityHandles.size(); i++)
 		{
-			DYEditor::Entity entity = scene.World.CreateEntity();
+			auto& serializedEntityHandle = serializedEntityHandles[i];
+
+			DYEditor::Entity entity = scene.World.createUntrackedEntity();
 			auto result = ApplySerializedEntityToEmptyEntity(serializedEntityHandle, entity);
 
 			if (!result.Success)
@@ -92,6 +94,8 @@ namespace DYE::DYEditor
 				// If the deserialized entity has some issue during deserialization, add the result as component to the entity.
 				entity.AddComponent<EntityDeserializationResult>(result);
 			}
+
+			scene.World.registerUntrackedEntityAtIndex(entity, i);
 		}
 	}
 

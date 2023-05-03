@@ -6,7 +6,7 @@
 #include "Serialization/SerializedObjectFactory.h"
 #include "Math/Color.h"
 #include "ImGui/ImGuiUtil.h"
-#include "ImGui/EditorImGuiUtil.h"
+#include "ImGui/ImGuiUtil_Internal.h"
 #include "FileSystem/FileSystem.h"
 
 // All the built-in component & system types are in here.
@@ -80,6 +80,97 @@ namespace DYE::DYEditor
 			auto &nameComponent = entity.GetComponent<NameComponent>();
 
 			bool const changed = ImGuiUtil::DrawTextControl("Name", nameComponent.Name);
+			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
+			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
+			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+
+			return changed;
+		}
+
+		SerializationResult
+		ParentComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
+		{
+			serializedComponent.SetPrimitiveTypePropertyValue("ParentGUID", entity.GetComponent<ParentComponent>().ParentGUID);
+
+			return {};
+		}
+
+		DeserializationResult
+		ParentComponent_Deserialize(SerializedComponent &serializedComponent, DYE::DYEditor::Entity &entity)
+		{
+			auto &parentComponent = entity.AddOrGetComponent<ParentComponent>();
+			parentComponent.ParentGUID = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::GUID>("ParentGUID");
+
+			return {};
+		}
+
+		bool ParentComponent_DrawInspector(DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
+		{
+			auto &parentComponent = entity.GetComponent<ParentComponent>();
+
+			bool const changed = ImGuiUtil::DrawGUIDControl("ParentGUID", parentComponent.ParentGUID);
+			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
+			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
+			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+
+			return changed;
+		}
+
+		SerializationResult
+		ChildrenComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
+		{
+			auto const &childrenGUIDs = entity.GetComponent<ChildrenComponent>().ChildrenGUIDs;
+			SerializedArray serializedArray;
+
+			for (int i = 0; i < childrenGUIDs.size(); ++i)
+			{
+				DYE::GUID const &childGUID = childrenGUIDs[i];
+				serializedArray.InsertElementAtIndex(i, childGUID);
+			}
+
+			serializedComponent.SetArrayPropertyValue("Children", std::move(serializedArray));
+			return {};
+		}
+
+		DeserializationResult
+		ChildrenComponent_Deserialize(SerializedComponent &serializedComponent, DYE::DYEditor::Entity &entity)
+		{
+			auto &childrenComponent = entity.AddOrGetComponent<ChildrenComponent>();
+			childrenComponent.ChildrenGUIDs.clear();
+
+			auto tryGetSerializedArray = serializedComponent.TryGetArrayProperty("Children");
+			if (!tryGetSerializedArray.has_value())
+			{
+				return {};
+			}
+
+			auto &serializedArray = tryGetSerializedArray.value();
+			childrenComponent.ChildrenGUIDs.reserve(serializedArray.Size());
+			for (int i = 0; i < serializedArray.Size(); i++)
+			{
+				auto tryGetElement = serializedArray.TryGetElementAtIndex<GUID>(i);
+				if (!tryGetElement.has_value())
+				{
+					continue;
+				}
+				childrenComponent.ChildrenGUIDs.push_back(tryGetElement.value());
+			}
+
+			return {};
+		}
+
+		bool ChildrenComponent_DrawInspector(DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
+		{
+			auto &childrenComponent = entity.GetComponent<ChildrenComponent>();
+
+			bool changed = false;
+			auto &childrenGUIDs = childrenComponent.ChildrenGUIDs;
+
+			ImGuiUtil::Internal::GUIDControlFunctionPointer lambda = [](char const* id, GUID &guid) -> bool
+			{
+				return ImGuiUtil::DrawGUIDControl(std::string(id), guid);
+			};
+			changed |= ImGuiUtil::Internal::ArrayControl("Children", childrenGUIDs, lambda).Draw();
 			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
 			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
 			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
@@ -302,6 +393,8 @@ namespace DYE::DYEditor
 	}
 
 	static ComponentTypeDescriptor s_NameComponentTypeDescriptor;
+	static ComponentTypeDescriptor s_ParentComponentTypeDescriptor;
+	static ComponentTypeDescriptor s_ChildrenComponentTypeDescriptor;
 
 	void RegisterBuiltInTypes()
 	{
@@ -319,7 +412,10 @@ namespace DYE::DYEditor
 			}
 		);
 
-		s_NameComponentTypeDescriptor = ComponentTypeDescriptor
+		s_NameComponentTypeDescriptor = TypeRegistry::RegisterComponentType<NameComponent>
+		(
+			NameComponentName,
+			ComponentTypeDescriptor
 			{
 				.ShouldBeIncludedInNormalAddComponentList = false,
 				.ShouldDrawInNormalInspector = false,
@@ -328,11 +424,34 @@ namespace DYE::DYEditor
 				.Serialize = BuiltInFunctions::NameComponent_Serialize,
 				.Deserialize = BuiltInFunctions::NameComponent_Deserialize,
 				.DrawInspector = BuiltInFunctions::NameComponent_DrawInspector,
-			};
-		TypeRegistry::RegisterComponentType<NameComponent>
+			}
+		);
+
+		s_ParentComponentTypeDescriptor = TypeRegistry::RegisterComponentType<ParentComponent>
 		(
-			NameComponentName,
-			s_NameComponentTypeDescriptor
+			ParentComponentName,
+			ComponentTypeDescriptor
+			{
+				.ShouldBeIncludedInNormalAddComponentList = true,
+				.ShouldDrawInNormalInspector = true,
+				.Serialize = BuiltInFunctions::ParentComponent_Serialize,
+				.Deserialize = BuiltInFunctions::ParentComponent_Deserialize,
+				.DrawInspector = BuiltInFunctions::ParentComponent_DrawInspector
+			}
+		);
+
+
+		s_ChildrenComponentTypeDescriptor = TypeRegistry::RegisterComponentType<ChildrenComponent>
+		(
+			ChildrenComponentName,
+			ComponentTypeDescriptor
+			{
+				.ShouldBeIncludedInNormalAddComponentList = true,
+				.ShouldDrawInNormalInspector = true,
+				.Serialize = BuiltInFunctions::ChildrenComponent_Serialize,
+				.Deserialize = BuiltInFunctions::ChildrenComponent_Deserialize,
+				.DrawInspector = BuiltInFunctions::ChildrenComponent_DrawInspector
+			}
 		);
 
 		TypeRegistry::RegisterComponentType<TransformComponent>
@@ -384,5 +503,15 @@ namespace DYE::DYEditor
 	ComponentTypeDescriptor TypeRegistry::GetComponentTypeDescriptor_NameComponent()
 	{
 		return s_NameComponentTypeDescriptor;
+	}
+
+	ComponentTypeDescriptor TypeRegistry::GetComponentTypeDescriptor_ParentComponent()
+	{
+		return s_ParentComponentTypeDescriptor;
+	}
+
+	ComponentTypeDescriptor TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent()
+	{
+		return s_ChildrenComponentTypeDescriptor;
 	}
 }

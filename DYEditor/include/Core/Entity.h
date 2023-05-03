@@ -2,11 +2,14 @@
 
 #include "Util/Macro.h"
 #include "Core/World.h"
+#include "Components/HierarchyComponents.h"
 
 #include <string>
 #include <vector>
 #include <optional>
 #include <functional>
+#include <stack>
+
 #include <entt/entt.hpp>
 
 namespace DYE::DYEditor
@@ -17,12 +20,13 @@ namespace DYE::DYEditor
 	{
 		// We need this so World could call the private ctor.
 		friend class World;
+
 	public:
 		/// Create a null entity.
 		Entity() = default;
 		Entity(Entity const& other) = default;
 
-		World& GetWorld() { return *m_World; }
+		World& GetWorld() { return *m_pWorld; }
 		EntityIdentifier GetIdentifier() const { return m_EntityIdentifier; }
 		EntityInstanceID GetInstanceID() const { return static_cast<EntityInstanceID>(m_EntityIdentifier); }
 		bool IsValid() const;
@@ -31,7 +35,7 @@ namespace DYE::DYEditor
 		T& AddComponent(Args&&...args)
 		{
 			DYE_ASSERT(!this->HasComponent<T>() && "Entity::PushSerializedComponent: Entity already has component of the given type.");
-			return m_World->m_Registry.emplace<T>(m_EntityIdentifier, std::forward<Args>(args)...);
+			return m_pWorld->m_Registry.emplace<T>(m_EntityIdentifier, std::forward<Args>(args)...);
 		}
 
 		template<typename T, typename... Args>
@@ -41,26 +45,28 @@ namespace DYE::DYEditor
 			{
 				return GetComponent<T>();
 			}
-			return m_World->m_Registry.emplace<T>(m_EntityIdentifier, std::forward<Args>(args)...);
+			return m_pWorld->m_Registry.emplace<T>(m_EntityIdentifier, std::forward<Args>(args)...);
 		}
 
 		/// \return the number of removed components. 0 if the entity doesn't own the given component.
 		template<typename T>
 		std::size_t RemoveComponent()
 		{
-			return m_World->m_Registry.remove<T>(m_EntityIdentifier);
+			return m_pWorld->m_Registry.remove<T>(m_EntityIdentifier);
 		}
 
 		template<typename T>
 		T& GetComponent()
 		{
 			DYE_ASSERT(this->HasComponent<T>() && "Entity::GetComponent: Entity doesn't have component of the given type.");
-			return m_World->m_Registry.get<T>(m_EntityIdentifier);
+			return m_pWorld->m_Registry.get<T>(m_EntityIdentifier);
 		}
 
 		/// Syntactic sugar for TryGetComponent<NameComponent>().Name
 		/// \return
 		std::optional<std::string> TryGetName();
+
+		std::optional<GUID> TryGetGUID();
 
 		template<typename T>
 		std::optional<std::reference_wrapper<T>> TryGetComponent()
@@ -69,20 +75,20 @@ namespace DYE::DYEditor
 			{
 				return {};
 			}
-			return m_World->m_Registry.get<T>(m_EntityIdentifier);
+			return m_pWorld->m_Registry.get<T>(m_EntityIdentifier);
 		}
 
 		template<typename T>
 		bool HasComponent() const
 		{
-			return m_World->m_Registry.all_of<T>(m_EntityIdentifier);
+			return m_pWorld->m_Registry.all_of<T>(m_EntityIdentifier);
 		}
 
 		void RemoveAllComponents();
 
 		bool operator==(Entity const& other) const
 		{
-			return m_EntityIdentifier == other.m_EntityIdentifier && m_World == other.m_World;
+			return m_EntityIdentifier == other.m_EntityIdentifier && m_pWorld == other.m_pWorld;
 		}
 
 		bool operator!=(Entity const& other) const
@@ -94,7 +100,7 @@ namespace DYE::DYEditor
 		/// Create an Entity with the given World & the internal handle.
 		explicit Entity(World& world, EntityIdentifier identifier);
 
-		World* m_World = nullptr;
+		World* m_pWorld = nullptr;
 		EntityIdentifier m_EntityIdentifier = entt::null;
 	};
 }

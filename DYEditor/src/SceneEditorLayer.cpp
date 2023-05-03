@@ -13,14 +13,16 @@
 #include "Graphics/Framebuffer.h"
 #include "Input/InputManager.h"
 #include "Event/MouseEvent.h"
-#include "Util/Time.h"
+#include "Core/Time.h"
+#include "Util/EntityUtil.h"
 #include "ProjectConfig.h"
 #include "ImGui/EditorWindowManager.h"
-#include "ImGui/EditorImGuiUtil.h"
 #include "ImGui/ImGuiUtil.h"
+#include "ImGui/ImGuiUtil_Internal.h"
 #include "Undo/Undo.h"
 
 #include "Components/NameComponent.h"
+#include "Components/HierarchyComponents.h"
 #include "Components/TransformComponent.h"
 #include "Components/CameraComponent.h"
 #include "Systems/RegisterCameraSystem.h"
@@ -29,6 +31,7 @@
 #include <unordered_set>
 #include <stack>
 #include <iostream>
+
 #include <imgui.h>
 #include <imgui_stdlib.h>
 
@@ -685,8 +688,10 @@ namespace DYE::DYEditor
 			if (ImGui::Selectable("Create Empty"))
 			{
 				// Select the newly created entity.
+				// For now, the entity is always put at the end of the list.
 				*pCurrentSelectedEntity = scene.World.CreateEntity("Entity");
-				Undo::RegisterEntityCreation(scene.World, *pCurrentSelectedEntity, scene.World.GetNumberOfEntities() - 1);
+				int const indexInWorldArray = scene.World.GetNumberOfEntities() - 1;
+				Undo::RegisterEntityCreation(scene.World, *pCurrentSelectedEntity, indexInWorldArray);
 				changed = true;
 			}
 			ImGui::EndPopup();
@@ -702,49 +707,654 @@ namespace DYE::DYEditor
 			ImGui::SeparatorText("Untitled");
 		}
 
+		struct DebugContext
+		{
+			bool ShowWidgetRect = false;
+			bool ShowTreeNodeRect = false;
+		};
+		static DebugContext debugContext;
+
+		struct SetParentAction
+		{
+			bool HasOperation = false;
+			std::size_t SrcIndex = 0;
+			std::size_t DstParentIndex = 0;
+			std::size_t DstFlatIndexRelativeToParent = 0;
+		};
+		SetParentAction setParent;
+
+		struct ReorderAtTopHierarchyAction
+		{
+			bool HasOperation = false;
+			std::size_t SrcIndex = 0;
+			std::size_t DstIndex = 0;
+		};
+		ReorderAtTopHierarchyAction reorderAtTop;
+
+		auto itemSpacing = ImGui::GetStyle().ItemSpacing; itemSpacing.y = 6;
+		auto framePadding = ImGui::GetStyle().FramePadding; framePadding.x = 3;
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, itemSpacing);
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, framePadding);
+		ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, 13);
+
+		struct HierarchyLevel
+		{
+			DYE::GUID LevelParentGUID = (DYE::GUID) 0;
+			std::size_t NumberOfEntitiesLeft = 0;
+			bool IsOpen = false;
+		};
+		std::vector<HierarchyLevel> levelStack;
+		// We reserve to make sure the array doesn't re-allocate during foreach.
+		levelStack.reserve(scene.World.GetNumberOfEntities());
+
 		// Draw all entities.
-		scene.World.ForEachEntityWithIndex
+		scene.World.ForEachEntityAndIndex
 		(
-			[&changed, &scene, &pCurrentSelectedEntity](DYEditor::Entity& entity, std::size_t indexInWorld)
+			[&changed,
+			 &scene,
+			 &pCurrentSelectedEntity,
+			 &levelStack,
+			 &setParent,
+			 &reorderAtTop]
+			 (DYEditor::Entity &entity, std::size_t indexInWorld)
 			{
 				auto tryGetNameResult = entity.TryGetName();
 				if (!tryGetNameResult.has_value())
 				{
-					// No name, skip it
+					// No name, skip it.
 					return;
 				}
 
-				auto& name = tryGetNameResult.value();
+				auto tryGetGUIDResult = entity.TryGetGUID();
+				if (!tryGetGUIDResult.has_value())
+				{
+					// No GUID, skip it.
+					return;
+				}
+
+				auto &name = tryGetNameResult.value();
+				auto &guid = tryGetGUIDResult.value();
+				auto tryGetChildrenComponent = entity.TryGetComponent<ChildrenComponent>();
+
+				auto tryGetParent = entity.TryGetComponent<ParentComponent>();
+				auto parentGUID = tryGetParent.has_value()? tryGetParent.value().get().ParentGUID : (DYE::GUID) 0;
+
+				std::size_t childrenCount = tryGetChildrenComponent.has_value()? tryGetChildrenComponent.value().get().ChildrenGUIDs.size() : 0;
+
+				HierarchyLevel *pLevel = levelStack.empty()? nullptr : &levelStack.back();
+				while
+				(
+					pLevel != nullptr &&
+					pLevel->LevelParentGUID != parentGUID &&
+					pLevel->NumberOfEntitiesLeft == 0
+				)
+				{
+					// The top level is not the parent of the current entity
+					// && It's also an empty level (all the entities of that level have been iterated)
+					// -> We will pop the top level.
+
+					// If the tree node of the level is open,
+					// we need to pop it.
+					if (pLevel->IsOpen)
+					{
+						ImGui::TreePop();
+					}
+
+					// Pop the level from the stack.
+					levelStack.pop_back();
+
+					pLevel = levelStack.empty()? nullptr : &levelStack.back();
+				}
+
+				bool const isEntityShown = pLevel == nullptr || pLevel->IsOpen;
+				bool const isLeafNode = childrenCount == 0;
 
 				bool const isSelected = entity == *pCurrentSelectedEntity;
 
-				ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+				ImVec2 const entityTreeNodeScreenPos = ImGui::GetCursorScreenPos();
+				ImVec2 const entityWidgetSize = ImVec2(ImGui::GetContentRegionAvail().x,
+													   ImGui::GetTextLineHeightWithSpacing());
+
+				float const spacingBetweenTreeNode = ImGui::GetStyle().ItemSpacing.y;
+				ImVec2 const entityWidgetScreenPos = ImVec2(entityTreeNodeScreenPos.x, entityTreeNodeScreenPos.y - spacingBetweenTreeNode * 0.5f);
+
+				ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanFullWidth;
 				if (isSelected) flags |= ImGuiTreeNodeFlags_Selected;
-
-				bool const isNodeOpen = ImGui::TreeNodeEx((void*)(std::uint64_t) entity.GetInstanceID(), flags, name.c_str());
-				if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+				if (isLeafNode)
 				{
-					*pCurrentSelectedEntity = entity;
+					flags |= (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
 				}
 
-				// Draw entity context menu.
-				if (ImGui::BeginPopupContextItem())
+				bool isNodeOpen = false;
+				if (isEntityShown)
 				{
-					if (ImGui::Selectable("Delete"))
+					// We use GUID as the id of the TreeNode.
+					isNodeOpen = ImGui::TreeNodeEx(guid.ToString().c_str(), flags, name.c_str()) && !isLeafNode;
+					if (ImGui::BeginPopupContextItem())
 					{
-						Undo::DeleteEntity(scene.World, entity, indexInWorld);
-						changed = true;
+						// Draw entity context menu right after TreeNode call.
+						if (ImGui::Selectable("Delete"))
+						{
+							Undo::DeleteEntityRecursively(entity, indexInWorld);
+							changed = true;
+						}
+						if (ImGui::Selectable("Create Empty"))
+						{
+							// Select the newly created entity.
+							// For now, the entity is always put at the end of the list.
+							// TODO: make it a child of the clicked tree node entity.
+							*pCurrentSelectedEntity = scene.World.CreateEntity("Entity");
+							int const indexInWorldArray = scene.World.GetNumberOfEntities() - 1;
+							Undo::RegisterEntityCreation(scene.World, *pCurrentSelectedEntity, indexInWorldArray);
+							changed = true;
+						}
+						ImGui::EndPopup();
 					}
-					ImGui::EndPopup();
+					if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+					{
+						*pCurrentSelectedEntity = entity;
+					}
+
+					ImVec2 const entityTreeNodeSize = ImGui::GetItemRectSize();
+					float const entityWidgetCenterY = entityTreeNodeScreenPos.y + entityTreeNodeSize.y * 0.5f;
+
+					if (debugContext.ShowTreeNodeRect || debugContext.ShowWidgetRect)
+					{
+						ImVec2 const widgetHeadCenter = ImVec2(entityTreeNodeScreenPos.x, entityWidgetCenterY);
+						ImGui::GetWindowDrawList()->AddCircle(widgetHeadCenter, 2, ImColor(ImVec4(1, 1, 1, 0.5f)), 4);
+					}
+
+					if (debugContext.ShowTreeNodeRect)
+					{
+						ImGui::GetWindowDrawList()->AddCircle(entityTreeNodeScreenPos, 2, ImColor(ImVec4(1, 1, 1, 1)), 4);
+						ImGui::GetWindowDrawList()->AddRect(entityTreeNodeScreenPos,
+															ImVec2(entityTreeNodeScreenPos.x + entityTreeNodeSize.x,
+																   entityTreeNodeScreenPos.y + entityTreeNodeSize.y),
+															ImColor(ImVec4(1, 1, 1, 0.5f)));
+					}
+
+					if (debugContext.ShowWidgetRect)
+					{
+						ImGui::GetWindowDrawList()->AddCircle(entityWidgetScreenPos, 2, ImColor(ImVec4(0, 1, 0, 1)), 4);
+						ImGui::GetWindowDrawList()->AddRect(entityWidgetScreenPos,
+															ImVec2(entityWidgetScreenPos.x + entityWidgetSize.x,
+																   entityWidgetScreenPos.y + entityWidgetSize.y),
+															ImColor(ImVec4(0, 1, 0, 0.5f)));
+					}
+
+					// Make the entity tree node a drag source.
+					ImGuiDragDropFlags const dragHandleFlags = ImGuiDragDropFlags_None;
+					if (ImGui::BeginDragDropSource(dragHandleFlags))
+					{
+						ImGui::SetDragDropPayload("EntityIndex", &indexInWorld, sizeof(std::size_t));
+
+						// Preview the entity & its children in the drag tooltip.
+						EntityUtil::ForEntityAndEachChildPreorderWithDepth
+						(
+							entity,
+							[](Entity e, int depth)
+							{
+								for (int i = 0; i < depth; i++)
+								{
+									ImGui::Indent();
+								}
+
+								ImGui::TextUnformatted(e.TryGetName().value().c_str());
+
+								for (int i = 0; i < depth; i++)
+								{
+									ImGui::Unindent();
+								}
+							}
+						);
+
+						ImGui::EndDragDropSource();
+					}
+
+					// We draw invisible drop handles if the user is dragging an entity.
+					if (ImGui::IsDragDropActive())
+					{
+						ImVec2 const originalCursorPos = ImGui::GetCursorPos();
+
+						// Divide the entity widget into 3 drop handle rows:
+						// 	1. Upper: insert the dragged entity above the dropped entity.
+						//  2. Middle: make the dragged entity a child of the dropped entity.
+						//  3. Lower: insert the dragged entity below the dropped entity.
+						float const upperHandleHeight = spacingBetweenTreeNode * 0.5f;
+						float const lowerHandleHeight = spacingBetweenTreeNode * 0.5f;
+						float const middleHandleHeight = entityWidgetSize.y - upperHandleHeight - lowerHandleHeight;
+
+						ImGui::SetCursorScreenPos(entityWidgetScreenPos);
+						ImGuiUtil::Internal::InteractableItem("EntityDropHandle_Upper",
+															  ImVec2(entityWidgetSize.x, upperHandleHeight));
+						if (ImGui::BeginDragDropTarget())
+						{
+							ImGuiPayload const *dropPayload = ImGui::AcceptDragDropPayload("EntityIndex",
+																						   ImGuiDragDropFlags_AcceptPeekOnly);
+							if (dropPayload != nullptr)
+							{
+								DYE_ASSERT(dropPayload->DataSize == sizeof(std::size_t));
+								std::size_t payloadIndex = *(const std::size_t *) dropPayload->Data;
+								bool const isSource = payloadIndex == indexInWorld;
+
+								if (dropPayload->IsPreview())
+								{
+									ImVec2 const previewLineBegin = entityWidgetScreenPos;
+									ImVec2 const previewLineEnd = ImVec2(previewLineBegin.x + entityWidgetSize.x,
+																		 previewLineBegin.y);
+									ImGui::GetWindowDrawList()->AddLine(previewLineBegin, previewLineEnd,
+																		ImGui::GetColorU32(ImGuiCol_DragDropTarget), 2);
+								}
+
+								if (dropPayload->IsDelivery() && !isSource)
+								{
+									bool const hasParent = parentGUID != (DYE::GUID) 0;
+									auto tryGetParentEntity = entity.GetWorld().TryGetEntityWithGUID(parentGUID);
+									if (hasParent && tryGetParentEntity.has_value())
+									{
+										int parentIndex = entity.GetWorld().TryGetEntityIndex(tryGetParentEntity.value()).value();
+										setParent.HasOperation = true;
+										setParent.SrcIndex = payloadIndex;
+										setParent.DstParentIndex = parentIndex;
+										setParent.DstFlatIndexRelativeToParent = indexInWorld - parentIndex;
+									}
+									else
+									{
+										reorderAtTop.HasOperation = true;
+										reorderAtTop.SrcIndex = payloadIndex;
+										reorderAtTop.DstIndex = indexInWorld;
+									}
+								}
+							}
+							ImGui::EndDragDropTarget();
+						}
+
+						ImGui::SetCursorScreenPos(
+							ImVec2(entityWidgetScreenPos.x, entityWidgetScreenPos.y + upperHandleHeight));
+						ImGuiUtil::Internal::InteractableItem("EntityDropHandle_Middle",
+															  ImVec2(entityWidgetSize.x, middleHandleHeight));
+						if (ImGui::BeginDragDropTarget())
+						{
+							ImGuiPayload const *dropPayload = ImGui::AcceptDragDropPayload("EntityIndex",
+																						   ImGuiDragDropFlags_AcceptBeforeDelivery);
+							if (dropPayload != nullptr)
+							{
+								DYE_ASSERT(dropPayload->DataSize == sizeof(std::size_t));
+								std::size_t payloadIndex = *(const std::size_t *) dropPayload->Data;
+								bool const isSource = payloadIndex == indexInWorld;
+
+								if (dropPayload->IsDelivery() && !isSource)
+								{
+									setParent.HasOperation = true;
+									setParent.SrcIndex = payloadIndex;
+									setParent.DstParentIndex = indexInWorld;
+									setParent.DstFlatIndexRelativeToParent = -1;
+
+									// Open/expand the dropped entity (new parent) tree node.
+									ImGuiID newParentTreeNodeId = ImGui::GetCurrentWindow()->GetID(guid.ToString().c_str());
+									ImGui::TreeNodeSetOpen(newParentTreeNodeId, true);
+								}
+							}
+							ImGui::EndDragDropTarget();
+						}
+
+						ImGui::SetCursorScreenPos(
+							ImVec2(entityWidgetScreenPos.x, entityWidgetScreenPos.y + upperHandleHeight + middleHandleHeight));
+						ImGuiUtil::Internal::InteractableItem("EntityDropHandle_Lower",
+															  ImVec2(entityWidgetSize.x, lowerHandleHeight));
+						if (ImGui::BeginDragDropTarget())
+						{
+							ImGuiPayload const *dropPayload = ImGui::AcceptDragDropPayload("EntityIndex",
+																						   ImGuiDragDropFlags_AcceptPeekOnly);
+							if (dropPayload != nullptr)
+							{
+								DYE_ASSERT(dropPayload->DataSize == sizeof(std::size_t));
+								std::size_t payloadIndex = *(const std::size_t *) dropPayload->Data;
+								bool const isSource = payloadIndex == indexInWorld;
+
+								if (dropPayload->IsPreview())
+								{
+									// There could be two behaviours for the lower handle,
+									//  1. When the node is open, the lower handle will be used to insert the dragged entity as a child of the dropped handle.
+									//  2. When the node is closed, it will be used to insert below the dropped entity instead of re-parenting.
+									// Therefore, we need to draw the preview line differently to distinguish the two behaviours.
+									float const indentSpacing = ImGui::GetStyle().IndentSpacing;
+									float const previewLineStartX = isNodeOpen? entityWidgetScreenPos.x + indentSpacing : entityWidgetScreenPos.x;
+									float const previewLineWidth = isNodeOpen? entityWidgetSize.x - indentSpacing : entityWidgetSize.x;
+
+									ImVec2 const previewLineBegin = ImVec2(previewLineStartX, entityWidgetScreenPos.y + entityWidgetSize.y);
+									ImVec2 const previewLineEnd = ImVec2(previewLineStartX + previewLineWidth, previewLineBegin.y);
+									ImGui::GetWindowDrawList()->AddLine(previewLineBegin, previewLineEnd, ImGui::GetColorU32(ImGuiCol_DragDropTarget), 2);
+								}
+
+								if (dropPayload->IsDelivery() && !isSource)
+								{
+									if (isNodeOpen)
+									{
+										// If the node is open, dropping at the lower handle would be
+										// to make the entity the first child of the dropped handle entity.
+										setParent.HasOperation = true;
+										setParent.SrcIndex = payloadIndex;
+										setParent.DstParentIndex = indexInWorld;
+										setParent.DstFlatIndexRelativeToParent = 0;
+									}
+									else
+									{
+										bool const hasParent = parentGUID != (DYE::GUID) 0;
+										auto tryGetParentEntity = entity.GetWorld().TryGetEntityWithGUID(parentGUID);
+
+										if (hasParent && tryGetParentEntity.has_value())
+										{
+											int parentIndex = entity.GetWorld().TryGetEntityIndex(tryGetParentEntity.value()).value();
+											setParent.HasOperation = true;
+											setParent.SrcIndex = payloadIndex;
+											setParent.DstParentIndex = parentIndex;
+											setParent.DstFlatIndexRelativeToParent = indexInWorld - parentIndex + 1;
+										}
+										else
+										{
+											reorderAtTop.HasOperation = true;
+											reorderAtTop.SrcIndex = payloadIndex;
+											reorderAtTop.DstIndex = indexInWorld + EntityUtil::GetEntityAndAllChildrenPreorder(entity).size();
+										}
+									}
+								}
+							}
+							ImGui::EndDragDropTarget();
+						}
+
+						ImGui::SetCursorPos(originalCursorPos);
+					}
+
 				}
 
-
-				if (isNodeOpen)
+				if (pLevel != nullptr)
 				{
-					ImGui::TreePop();
+					pLevel->NumberOfEntitiesLeft--;
+				}
+
+				if (childrenCount > 0)
+				{
+					levelStack.push_back
+					(
+						{
+							.LevelParentGUID = guid,
+							.NumberOfEntitiesLeft = childrenCount,
+							.IsOpen = isNodeOpen
+						}
+					);
 				}
 			}
 		);
+
+		for (auto level : levelStack)
+		{
+			// There are some levels left in the stack,
+			// we need to make sure to pop the corresponding tree nodes if they are open.
+			if (!level.IsOpen)
+			{
+				continue;
+			}
+
+			ImGui::TreePop();
+		}
+
+		// Pop ItemSpacing, FramePadding and IndentSpacing.
+		ImGui::PopStyleVar(3);
+
+		int moveDiff = ((int) setParent.DstParentIndex - (int) setParent.SrcIndex);
+
+		static int testInsertIndex = 1;
+
+		if (setParent.HasOperation)
+		{
+			Entity srcEntity = scene.World.GetEntityAtIndex(setParent.SrcIndex);
+			Entity dstEntity = scene.World.GetEntityAtIndex(setParent.DstParentIndex);
+
+			auto tryGetParentChildren = dstEntity.TryGetComponent<ChildrenComponent>();
+			if (tryGetParentChildren.has_value())
+			{
+				int dstIndexInParent;
+
+				bool const insertBegin = setParent.DstFlatIndexRelativeToParent == 0;
+				bool const insertEnd = setParent.DstFlatIndexRelativeToParent == -1;
+				if (insertBegin || insertEnd)
+				{
+					dstIndexInParent = setParent.DstFlatIndexRelativeToParent;
+				}
+				else
+				{
+					dstIndexInParent = 0;
+
+					// We need to calculate the index in parent if it's not the first OR the last location that
+					// we are trying to insert. Basically convert 'flat-index' to 'first-degree-child-index'.
+					std::vector<Entity> newParentAndItsChildren = EntityUtil::GetEntityAndAllChildrenPreorder(
+						dstEntity);
+
+					// We start from 1 because 0 is the parent.
+					for (int flatIndex = 1; flatIndex < setParent.DstFlatIndexRelativeToParent; flatIndex++)
+					{
+						auto childEntity = newParentAndItsChildren[flatIndex];
+						if (EntityUtil::IsFirstDegreeChildOf(childEntity, dstEntity))
+						{
+							dstIndexInParent++;
+						}
+					}
+				}
+
+				Undo::SetEntityParent
+				(
+					srcEntity,
+					setParent.SrcIndex,
+					dstEntity,
+					setParent.DstParentIndex,
+					dstIndexInParent
+				);
+			}
+			else // If the parent has no children, we simply make the entity as the first child of the parent.
+			{
+				Undo::SetEntityParent
+				(
+					srcEntity,
+					setParent.SrcIndex,
+					dstEntity,
+					setParent.DstParentIndex,
+					0
+				);
+			}
+
+			changed = true;
+		}
+
+		if (reorderAtTop.HasOperation && reorderAtTop.SrcIndex != reorderAtTop.DstIndex)
+		{
+			Entity srcEntity = scene.World.GetEntityAtIndex(reorderAtTop.SrcIndex);
+			Undo::SetEntityOrderAtTopHierarchy(srcEntity, reorderAtTop.SrcIndex, reorderAtTop.DstIndex);
+			changed = true;
+		}
+
+		// FIXME: delete debugging drawing here
+		ImGui::Separator();
+		ImGui::Checkbox("Show Widget Rect", &debugContext.ShowWidgetRect);
+		ImGui::Checkbox("Show TreeNode Rect", &debugContext.ShowTreeNodeRect);
+		ImGui::InputInt("Child Index", &testInsertIndex);
+
+		return changed;
+	}
+
+	bool SceneEditorLayer::drawSceneEntityHierarchyPanelSimple(Scene &scene, DYEditor::Entity *pCurrentSelectedEntity)
+	{
+		bool changed = false;
+
+		// Draw scene hierarchy context menu.
+		if (ImGui::BeginPopupContextWindow())
+		{
+			if (ImGui::Selectable("Create Empty"))
+			{
+				// Select the newly created entity.
+				// For now, the entity is always put at the end of the list.
+				*pCurrentSelectedEntity = scene.World.CreateEntity("Entity");
+				int const indexInWorldArray = scene.World.GetNumberOfEntities() - 1;
+				Undo::RegisterEntityCreation(scene.World, *pCurrentSelectedEntity, indexInWorldArray);
+				changed = true;
+			}
+			ImGui::EndPopup();
+		}
+
+		// Draw scene name as title.
+		if (!scene.Name.empty())
+		{
+			ImGui::SeparatorText(scene.Name.c_str());
+		}
+		else
+		{
+			ImGui::SeparatorText("Untitled");
+		}
+
+		auto itemSpacing = ImGui::GetStyle().ItemSpacing;
+		itemSpacing.y = 6;
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, itemSpacing);
+
+		struct HierarchyLevel
+		{
+			DYE::GUID LevelParentGUID = (DYE::GUID) 0;
+			int NumberOfEntitiesLeft = 0;
+			bool IsOpen = false;
+		};
+		std::vector<HierarchyLevel> levelStack;
+		// We reserve to make sure the array doesn't re-allocate during foreach.
+		levelStack.reserve(scene.World.GetNumberOfEntities());
+
+		// Draw all entities.
+		scene.World.ForEachEntityAndIndex
+			(
+				[&changed, &scene, &pCurrentSelectedEntity, &levelStack]
+					(DYEditor::Entity &entity, std::size_t indexInWorld)
+				{
+					auto tryGetNameResult = entity.TryGetName();
+					if (!tryGetNameResult.has_value())
+					{
+						// No name, skip it.
+						return;
+					}
+
+					auto tryGetGUIDResult = entity.TryGetGUID();
+					if (!tryGetGUIDResult.has_value())
+					{
+						// No GUID, skip it.
+						return;
+					}
+
+					auto &name = tryGetNameResult.value();
+					auto guid = tryGetGUIDResult.value();
+					auto tryGetChildrenComponent = entity.TryGetComponent<ChildrenComponent>();
+
+					auto tryGetParent = entity.TryGetComponent<ParentComponent>();
+					auto parentGUID = tryGetParent.has_value()? tryGetParent.value().get().ParentGUID : (DYE::GUID) 0;
+
+					int childrenCount = tryGetChildrenComponent.has_value()? tryGetChildrenComponent.value().get().ChildrenGUIDs.size() : 0;
+
+					HierarchyLevel *pLevel = levelStack.empty()? nullptr : &levelStack.back();
+					while
+					(
+						pLevel != nullptr &&
+						pLevel->LevelParentGUID != parentGUID &&
+						pLevel->NumberOfEntitiesLeft == 0
+					)
+					{
+						// The top level is not the parent of the current entity
+						// && It's also an empty level (all the entities of that level have been iterated)
+						// -> We will pop the top level.
+
+						// If the tree node of the level is open,
+						// we need to pop it.
+						if (pLevel->IsOpen)
+						{
+							ImGui::TreePop();
+						}
+
+						// Pop the level from the stack.
+						levelStack.pop_back();
+
+						pLevel = levelStack.empty()? nullptr : &levelStack.back();
+					}
+
+					bool const isEntityShown = pLevel == nullptr || pLevel->IsOpen;
+					bool const isLeafNode = childrenCount == 0;
+
+					bool const isSelected = entity == *pCurrentSelectedEntity;
+
+					ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanFullWidth;
+					if (isSelected) flags |= ImGuiTreeNodeFlags_Selected;
+					if (isLeafNode)
+					{
+						flags |= (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+					}
+
+					void const* treeNodeId = (void *) (std::uint64_t) entity.GetInstanceID();
+					bool isNodeOpen = false;
+					if (isEntityShown)
+					{
+						isNodeOpen = ImGui::TreeNodeEx(treeNodeId, flags, name.c_str()) && !isLeafNode;
+						if (ImGui::BeginPopupContextItem())
+						{
+							// Draw entity context menu right after TreeNode call.
+							if (ImGui::Selectable("Delete"))
+							{
+								Undo::DeleteEntityRecursively(entity, indexInWorld);
+								changed = true;
+							}
+							if (ImGui::Selectable("Create Empty"))
+							{
+								// Select the newly created entity.
+								// For now, the entity is always put at the end of the list.
+								// TODO: make it a child of the clicked tree node entity.
+								*pCurrentSelectedEntity = scene.World.CreateEntity("Entity");
+								int const indexInWorldArray = scene.World.GetNumberOfEntities() - 1;
+								Undo::RegisterEntityCreation(scene.World, *pCurrentSelectedEntity, indexInWorldArray);
+								changed = true;
+							}
+							ImGui::EndPopup();
+						}
+						if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+						{
+							*pCurrentSelectedEntity = entity;
+						}
+					}
+
+					if (pLevel != nullptr)
+					{
+						pLevel->NumberOfEntitiesLeft--;
+					}
+
+					if (childrenCount > 0)
+					{
+						levelStack.push_back
+						(
+							{
+								.LevelParentGUID = guid,
+								.NumberOfEntitiesLeft = childrenCount,
+								.IsOpen = isNodeOpen
+							}
+						);
+					}
+				}
+			);
+
+		for (auto level : levelStack)
+		{
+			// There are some levels left in the stack,
+			// we need to make sure to pop the corresponding tree nodes if they are open.
+			if (!level.IsOpen)
+			{
+				continue;
+			}
+
+			ImGui::TreePop();
+		}
+
+		ImGui::PopStyleVar();
+
 
 		return changed;
 	}
@@ -1276,9 +1886,19 @@ namespace DYE::DYEditor
 							{
 								ImGui::SetClipboardText(typeName.c_str());
 							}
+							if (ImGui::Selectable("Delete"))
+							{
+								indexToRemove = i;
+							}
 							ImGui::EndPopup();
 						}
 						ImGui::PopID();
+					}
+
+					if (indexToRemove != -1)
+					{
+						deserializationResult.UnrecognizedComponentTypeNames.erase(deserializationResult.UnrecognizedComponentTypeNames.begin() + indexToRemove);
+						deserializationResult.UnrecognizedSerializedComponents.erase(deserializationResult.UnrecognizedSerializedComponents.begin() + indexToRemove);
 					}
 
 					ImGui::EndTable();

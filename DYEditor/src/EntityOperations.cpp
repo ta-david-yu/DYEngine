@@ -8,26 +8,68 @@ namespace DYE::DYEditor
 
 	void EntityCreationOperation::Undo()
 	{
-		pWorld->DestroyEntityWithGUID(EntityGUID);
+		pWorld->destroyEntityByGUIDButNotChildren(EntityGUID);
 	}
 
 	void EntityCreationOperation::Redo()
 	{
-		Entity entity = pWorld->CreateEntityAtIndex(IndexInWorldEntityArray);
+		Entity entity = pWorld->createUntrackedEntity();
 		SerializedObjectFactory::ApplySerializedEntityToEmptyEntity(CreatedSerializedEntity, entity);
+		pWorld->registerUntrackedEntityAtIndex(entity, IndexInWorldEntityArray);
 	}
 
 	// EntityDeletionOperation
 
 	void EntityDeletionOperation::Undo()
 	{
-		Entity entity = pWorld->CreateEntityAtIndex(IndexInWorldEntityArray);
+		Entity entity = pWorld->createUntrackedEntity();
 		SerializedObjectFactory::ApplySerializedEntityToEmptyEntity(DeletedSerializedEntity, entity);
+		pWorld->registerUntrackedEntityAtIndex(entity, IndexInWorldEntityArray);
 	}
 
 	void EntityDeletionOperation::Redo()
 	{
-		pWorld->DestroyEntityWithGUID(EntityGUID);
+		pWorld->destroyEntityByGUIDButNotChildren(EntityGUID);
+	}
+
+	// EntityMoveOperation
+
+	void EntityMoveOperation::Undo()
+	{
+		auto &entityHandles = pWorld->m_EntityHandles;
+		if (IndexBeforeMove < IndexToInsert)
+		{
+			auto handle = entityHandles[IndexToInsert - 1];
+			entityHandles.insert(entityHandles.begin() + IndexBeforeMove, handle);
+			entityHandles.erase(entityHandles.begin() + IndexToInsert);
+		}
+		else if (IndexBeforeMove > IndexToInsert)
+		{
+			auto handle = entityHandles[IndexToInsert];
+			entityHandles.insert(entityHandles.begin() + IndexBeforeMove + 1, handle);
+			entityHandles.erase(entityHandles.begin() + IndexToInsert);
+		}
+	}
+
+	void EntityMoveOperation::Redo()
+	{
+		auto &entityHandles = pWorld->m_EntityHandles;
+		if (IndexBeforeMove < IndexToInsert)
+		{
+			entityHandles.insert(entityHandles.begin() + IndexToInsert, entityHandles[IndexBeforeMove]);
+
+			// The old index is smaller than the new index.
+			// We can safely erase it with the original index.
+			entityHandles.erase(entityHandles.begin() + IndexBeforeMove);
+		}
+		else if (IndexBeforeMove > IndexToInsert)
+		{
+			entityHandles.insert(entityHandles.begin() + IndexToInsert, entityHandles[IndexBeforeMove]);
+
+			// The old index is bigger than the new index.
+			// We need to increment the erasure index by 1.
+			entityHandles.erase(entityHandles.begin() + IndexBeforeMove + 1);
+		}
 	}
 
 	// ComponentModificationOperation

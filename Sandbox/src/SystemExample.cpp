@@ -3,7 +3,7 @@
 #include "Core/World.h"
 #include "Core/Entity.h"
 #include "ImGui/ImGuiUtil.h"
-#include "Util/Time.h"
+#include "Core/Time.h"
 #include "Math/Math.h"
 
 #include "TestComponents.h"
@@ -51,8 +51,7 @@ void ImGuiSystem1::Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecutePa
 
 void RotateHasAngularVelocitySystem::Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params)
 {
-	auto& registry = DYE::DYEditor::GetWorldUnderlyingRegistry(world);
-	auto view = registry.view<HasAngularVelocity, DYE::DYEditor::TransformComponent>();
+	auto view = world.GetView<HasAngularVelocity, DYE::DYEditor::TransformComponent>();
 
 	for (auto&& [entity, hasAngularVelocity, transform] : view.each())
 	{
@@ -63,12 +62,11 @@ void RotateHasAngularVelocitySystem::Execute(DYE::DYEditor::World &world, DYE::D
 
 void CreateEntitiesSystem::Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params)
 {
-	auto& registry = DYE::DYEditor::GetWorldUnderlyingRegistry(world);
-	auto view = registry.view<CreateEntity>();
+	auto view = world.GetView<CreateEntity>();
 
 	for (auto entity : view)
 	{
-		auto& create = registry.get<CreateEntity>(entity);
+		auto& create = view.get<CreateEntity>(entity);
 		for (int i = 0; i < create.NumberOfEntitiesToCreate; ++i)
 		{
 			char name[256];
@@ -82,14 +80,13 @@ void CreateEntitiesSystem::Execute(DYE::DYEditor::World &world, DYE::DYEditor::E
 			}
 			world.CreateEntity(name).AddOrGetComponent<PrintMessageOnTeardown>().Message = std::to_string(i);
 		}
-		world.DestroyEntity(entity);
+		world.DestroyEntityAndChildren(world.WrapIdentifierIntoEntity(entity));
 	}
 }
 
 void PrintMessageOnTeardownSystem::Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params)
 {
-	auto& registry = DYE::DYEditor::GetWorldUnderlyingRegistry(world);
-	auto view = registry.view<DYE::DYEditor::NameComponent, PrintMessageOnTeardown>();
+	auto view = world.GetView<DYE::DYEditor::NameComponent, PrintMessageOnTeardown>();
 
 	for (auto&& [entity, name, message] : view.each())
 	{

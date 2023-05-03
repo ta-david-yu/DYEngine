@@ -2,7 +2,7 @@
 
 #include "Util/Logger.h"
 #include "Util/Macro.h"
-#include "Util/Time.h"
+#include "Core/Time.h"
 #include "Math/Color.h"
 #include "Math/PrimitiveTest.h"
 #include "ImGui/ImGuiUtil.h"

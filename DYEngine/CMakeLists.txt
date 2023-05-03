@@ -59,7 +59,7 @@ set(HEADER_FILES
         include/Core/Application.h
         include/Graphics/WindowBase.h
         include/Graphics/SDLWindow.h
-        include/Util/Time.h
+        include/Core/Time.h
         include/Event/Event.h
         include/Event/ApplicationEvent.h
         include/Input/KeyCode.h
@@ -118,7 +118,7 @@ set(HEADER_FILES
         include/Math/EasingFunctions.h
         include/Graphics/Framebuffer.h
         include/FileSystem/FileSystem.h
-        include/Core/GUID.h)
+        include/Core/GUID.h include/ImGui/ImGuiUtil_Internal.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")

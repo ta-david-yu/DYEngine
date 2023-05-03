@@ -72,7 +72,7 @@ namespace DYE::DYEditor
 		/// For now only 'Has', 'Add', 'Remove' have default implementations that make sense. For other functions, it's
 		/// necessary to assign user-defined functions.
 		template<typename T>
-		static void RegisterComponentType(std::string const &componentName, ComponentTypeDescriptor descriptor)
+		static ComponentTypeDescriptor RegisterComponentType(std::string const &componentName, ComponentTypeDescriptor descriptor)
 		{
 			if (descriptor.Has == nullptr)
 			{
@@ -90,6 +90,8 @@ namespace DYE::DYEditor
 			}
 
 			registerComponentType(componentName, descriptor);
+
+			return descriptor;
 		}
 
 		static void ClearRegisteredComponentTypes();
@@ -109,6 +111,10 @@ namespace DYE::DYEditor
 
 		/// A specialized function to get NameComponent's Type Descriptor. Implemented inside BuiltInTypeRegister.cpp.
 		static ComponentTypeDescriptor GetComponentTypeDescriptor_NameComponent();
+		/// A specialized function to get ParentComponent's Type Descriptor. Implemented inside BuiltInTypeRegister.cpp.
+		static ComponentTypeDescriptor GetComponentTypeDescriptor_ParentComponent();
+		/// A specialized function to get ChildrenComponent's Type Descriptor. Implemented inside BuiltInTypeRegister.cpp.
+		static ComponentTypeDescriptor GetComponentTypeDescriptor_ChildrenComponent();
 
 		/// \return a pointer to the system instance, else nullptr.
 		static SystemBase* TryGetSystemInstance(std::string const& systemName);

@@ -16,6 +16,10 @@ namespace DYE::DYEditor
 			return Description;
 		}
 
+		virtual bool HasTooltip() const { return false; }
+
+		virtual void DrawTooltip() const {}
+
 		virtual ~UndoOperationBase() = default;
 
 		char Description[128] = "Unnamed Operation";
@@ -26,6 +30,9 @@ namespace DYE::DYEditor
 	public:
 		void Undo() override;
 		void Redo() override;
+
+		bool HasTooltip() const override { return true; }
+		void DrawTooltip() const override;
 
 		std::vector<std::unique_ptr<UndoOperationBase>> OperationCollection;
 	};

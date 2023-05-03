@@ -2,6 +2,7 @@
 
 #include "Core/EditorCore.h"
 #include "Core/EditorProperty.h"
+#include "Serialization/SerializedArray.h"
 #include "Math/Rect.h"
 
 #include <string>
@@ -69,6 +70,10 @@ namespace DYE::DYEditor
 			toml::table* pComponentTable = IsHandle() ? m_pComponentTableHandle : &m_ComponentTable;
 			pComponentTable->insert_or_assign(propertyName, value);
 		}
+
+
+		std::optional<SerializedArray> TryGetArrayProperty(std::string_view const& propertyName) const;
+		void SetArrayPropertyValue(std::string_view const& propertyName, SerializedArray array);
 
 	private:
 		explicit SerializedComponent(toml::table* pComponentTableHandle);

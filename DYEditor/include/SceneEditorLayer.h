@@ -85,6 +85,7 @@ namespace DYE::DYEditor
 											bool *pIsSceneDirty);
 		static void drawSceneView(Camera &sceneViewCamera);
 		static bool drawSceneEntityHierarchyPanel(Scene &scene, DYEditor::Entity *pCurrentSelectedEntity);
+		static bool drawSceneEntityHierarchyPanelSimple(Scene &scene, DYEditor::Entity *pCurrentSelectedEntity);
 		static bool drawSceneSystemPanel(Scene& scene);
 		template<typename Func> requires std::predicate<Func, std::string const&, SystemBase const*>
 		static bool drawSceneSystemList(Scene &scene, std::vector<SystemDescriptor> &systemDescriptors, Func addSystemFilterPredicate);

@@ -15,12 +15,12 @@ namespace DYE
 
 		explicit operator std::uint64_t() const { return m_GUID; }
 
-		constexpr bool operator==(GUID const& other)
+		constexpr bool operator==(GUID const& other) const
 		{
 			return m_GUID == other.m_GUID;
 		}
 
-		constexpr bool operator!=(GUID const& other)
+		constexpr bool operator!=(GUID const& other) const
 		{
 			return m_GUID != other.m_GUID;
 		}

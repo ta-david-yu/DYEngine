@@ -1,4 +1,5 @@
 #include "ImGui/ImGuiUtil.h"
+#include "ImGui/ImGuiUtil_Internal.h"
 
 #include "FileSystem/FileSystem.h"
 #include "Graphics/Camera.h"
@@ -80,6 +81,7 @@ namespace DYE::ImGuiUtil
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -157,6 +159,7 @@ namespace DYE::ImGuiUtil
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -250,6 +253,7 @@ namespace DYE::ImGuiUtil
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -364,6 +368,7 @@ namespace DYE::ImGuiUtil
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -397,6 +402,7 @@ namespace DYE::ImGuiUtil
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -454,6 +460,7 @@ namespace DYE::ImGuiUtil
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -512,6 +519,7 @@ namespace DYE::ImGuiUtil
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -548,6 +556,7 @@ namespace DYE::ImGuiUtil
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -581,6 +590,7 @@ namespace DYE::ImGuiUtil
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -695,6 +705,7 @@ namespace DYE::ImGuiUtil
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -725,13 +736,14 @@ namespace DYE::ImGuiUtil
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
 		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
 		{
-			char buffer[2];
+			char buffer[2] = "";
 			buffer[0] = character;
 			isValueChanged |= ImGui::InputText("##character", buffer, 2);
 			s_Context.UpdateLastControlState();
@@ -805,7 +817,7 @@ namespace DYE::ImGuiUtil
 		bool changed = false;
 
 		auto guidString =  guid.ToString();
-		changed |= ImGuiUtil::DrawTextControl("ID", guidString);
+		changed |= ImGuiUtil::DrawTextControl(label, guidString);
 		s_Context.UpdateLastControlState();
 		if (changed)
 		{
@@ -835,6 +847,7 @@ namespace DYE::ImGuiUtil
 		ImGui::PushID(label.c_str());
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -876,6 +889,7 @@ namespace DYE::ImGuiUtil
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -926,6 +940,7 @@ namespace DYE::ImGuiUtil
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -1601,4 +1616,294 @@ namespace DYE::ImGuiUtil
 
 		return result;
 	}
+
+	// !!!! INTERNAL FUNCTION SECTIONS !!!!
+	void Internal::InteractableItem(const char *str_id, const ImVec2 &size_arg)
+	{
+		ImGuiContext& g = *GImGui;
+		ImGuiWindow* window = ImGui::GetCurrentWindow();
+		if (window->SkipItems)
+		{
+			return;
+		}
+
+		// Cannot use zero-size for InvisibleButton(). Unlike Button() there is not way to fallback using the label size.
+		IM_ASSERT(size_arg.x != 0.0f && size_arg.y != 0.0f);
+
+		const ImGuiID id = window->GetID(str_id);
+		ImVec2 size = ImGui::CalcItemSize(size_arg, 0.0f, 0.0f);
+		const ImRect bb(window->DC.CursorPos, ImVec2(window->DC.CursorPos.x + size.x, window->DC.CursorPos.y + size.y));
+		ImGui::ItemSize(size);
+		ImGui::ItemAdd(bb, id);
+	}
+
+	template<typename Type, typename ControlFunc>
+	bool Internal::ArrayControl<Type, ControlFunc>::Draw()
+	{
+		auto &arrayLabel = Label;
+		std::vector<Type> &elements = Elements;
+		auto &controlFunction = ControlFunction;
+
+		s_Context.Reset();
+		// We use a local variable to keep track of it because this Control is a compound control.
+		// We will set the value to s_Context.LastControlDeactivatedAfterEdit at the end.
+		bool lastControlActivated = false;
+		bool lastControlDeactivated = false;
+		bool lastControlDeactivatedAfterEdit = false;
+
+		bool changed = false;
+
+		ImGui::PushID(arrayLabel.c_str());
+
+		ImGuiTreeNodeFlags const treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap;
+		if (ImGui::TreeNodeEx("Array Tree Node", treeNodeFlags, "%s (%d)", arrayLabel.c_str(), elements.size()))
+		{
+			char controlID[16];
+			ImGuiUtil::Settings::ControlLabelWidth = 80;
+			ImGui::Separator();
+			int indexToRemove = -1;
+			int indexToInsertNewElement = -1;
+			struct MoveElement
+			{
+				int SrcIndex = -1;
+				int DstIndex = -1;
+			};
+			MoveElement moveElement;
+
+			if (elements.size() == 0)
+			{
+				if (ImGui::SmallButton("+"))
+				{
+					indexToInsertNewElement = 0;
+					changed = true;
+					lastControlDeactivatedAfterEdit = true;
+				}
+				lastControlActivated |= ImGui::IsItemActivated();
+				lastControlDeactivated |= ImGui::IsItemDeactivated();
+				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
+				{
+					ImGui::BeginTooltip();
+					ImGui::SetTooltip("Add a new element");
+					ImGui::EndTooltip();
+				}
+			}
+
+			for (int i = 0; i < elements.size(); i++)
+			{
+				sprintf(controlID, "Element %d", i);
+				ImGui::PushID(controlID);
+
+				ImVec2 const elementWidgetScreenPos = ImGui::GetCursorScreenPos();
+				ImVec2 const elementWidgetSize = ImVec2(ImGui::GetContentRegionAvail().x,
+														ImGui::GetFrameHeightWithSpacing());
+				auto &element = elements[i];
+
+				// Draw draggable target as invisible button.
+				bool isBeingDragged = false;
+				ImVec2 originalCursorPos = ImGui::GetCursorPos();
+
+				float const dragHandleWidth = ImGuiUtil::Settings::ControlLabelWidth - 12;
+				ImGui::InvisibleButton("ElementDragHandle",
+									   ImVec2 {dragHandleWidth, ImGui::GetFrameHeightWithSpacing()});
+				if (!ImGui::IsDragDropActive() && ImGui::IsItemHovered())
+				{
+					ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+				}
+
+				ImGuiDragDropFlags const dragDropFlags = ImGuiDragDropFlags_None;
+				if (ImGui::BeginDragDropSource(dragDropFlags))
+				{
+					ImGui::SetDragDropPayload("ArrayIndex", &i, sizeof(int));
+
+					// Preview the element control in the drag tooltip.
+					auto const previewWindowSize = ImVec2 {elementWidgetSize.x,
+														   ImGui::GetTextLineHeightWithSpacing()};
+					ImGui::ItemSize(previewWindowSize);
+					ImGui::SameLine();
+					controlFunction(controlID, element);
+
+					ImGui::EndDragDropSource();
+
+					lastControlActivated = true;
+					isBeingDragged = true;
+				}
+				ImGui::SetCursorPos(originalCursorPos);
+
+				// If the element is being used a drag source, we make the control & buttons of this element transparent.
+				float const originalAlpha = ImGui::GetStyle().Alpha;
+				if (isBeingDragged)
+				{
+					ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.3f);
+				}
+
+				changed |= controlFunction(controlID, element);
+				lastControlActivated |= ImGuiUtil::IsControlActivated();
+				lastControlDeactivated |= ImGuiUtil::IsControlDeactivated();
+				lastControlDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+
+				ImGui::SameLine();
+				if (ImGui::SmallButton("-"))
+				{
+					indexToRemove = i;
+					changed = true;
+					lastControlDeactivatedAfterEdit = true;
+				}
+				lastControlActivated |= ImGui::IsItemActivated();
+				lastControlDeactivated |= ImGui::IsItemDeactivated();
+				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
+				{
+					ImGui::BeginTooltip();
+					ImGui::SetTooltip("Remove this element");
+					ImGui::EndTooltip();
+				}
+
+				ImGui::SameLine();
+				if (ImGui::SmallButton("+"))
+				{
+					indexToInsertNewElement = i + 1;
+					changed = true;
+					lastControlDeactivatedAfterEdit = true;
+				}
+				lastControlActivated |= ImGui::IsItemActivated();
+				lastControlDeactivated |= ImGui::IsItemDeactivated();
+				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
+				{
+					ImGui::BeginTooltip();
+					ImGui::SetTooltip("Add a new element under");
+					ImGui::EndTooltip();
+				}
+
+				if (ImGui::IsDragDropActive())    // We only draw invisible drop handles when the user is dragging.
+				{
+					// Draw 2 droppable targets as invisible buttons.
+					originalCursorPos = ImGui::GetCursorPos();
+
+					auto const previewLineColor = ImGui::GetColorU32(ImGuiCol_DragDropTarget);
+					float const previewLineHeadRadius = 4;
+
+					ImGui::SetCursorScreenPos(elementWidgetScreenPos);
+					Internal::InteractableItem("ElementDropHandle_Upper",
+											   ImVec2 {elementWidgetSize.x, elementWidgetSize.y * 0.5f});
+					if (ImGui::BeginDragDropTarget())
+					{
+						ImGuiPayload const *dropPayload = ImGui::AcceptDragDropPayload("ArrayIndex",
+																					   ImGuiDragDropFlags_AcceptPeekOnly);
+						if (dropPayload != nullptr)
+						{
+							DYE_ASSERT(dropPayload->DataSize == sizeof(int));
+							int payloadIndex = *(const int *) dropPayload->Data;
+							bool const isSource = payloadIndex == i;
+
+							if (dropPayload->IsPreview() && !isSource)
+							{
+								ImVec2 const previewLineBegin = elementWidgetScreenPos;
+								ImVec2 const previewLineEnd = ImVec2(previewLineBegin.x + elementWidgetSize.x,
+																	 previewLineBegin.y);
+								ImGui::GetWindowDrawList()->AddCircle(previewLineBegin, previewLineHeadRadius,
+																	  previewLineColor, 4);
+								ImGui::GetWindowDrawList()->AddLine(previewLineBegin, previewLineEnd, previewLineColor,
+																	2);
+							}
+
+							if (dropPayload->IsDelivery() && !isSource)
+							{
+								moveElement.SrcIndex = payloadIndex;
+								moveElement.DstIndex = i;
+							}
+						}
+						ImGui::EndDragDropTarget();
+					}
+
+					Internal::InteractableItem("ElementDropHandle_Lower",
+											   ImVec2 {elementWidgetSize.x, elementWidgetSize.y * 0.5f});
+					if (ImGui::BeginDragDropTarget())
+					{
+						ImGuiPayload const *dropPayload = ImGui::AcceptDragDropPayload("ArrayIndex",
+																					   ImGuiDragDropFlags_AcceptPeekOnly);
+						if (dropPayload != nullptr)
+						{
+							DYE_ASSERT(dropPayload->DataSize == sizeof(int));
+							int payloadIndex = *(const int *) dropPayload->Data;
+							bool const isSource = payloadIndex == i;
+
+							if (dropPayload->IsPreview() && !isSource)
+							{
+								ImVec2 const previewLineBegin = ImVec2(elementWidgetScreenPos.x,
+																	   elementWidgetScreenPos.y + elementWidgetSize.y);
+								ImVec2 const previewLineEnd = ImVec2(previewLineBegin.x + elementWidgetSize.x,
+																	 previewLineBegin.y);
+								ImGui::GetWindowDrawList()->AddCircle(previewLineBegin, previewLineHeadRadius,
+																	  previewLineColor, 4);
+								ImGui::GetWindowDrawList()->AddLine(previewLineBegin, previewLineEnd, previewLineColor,
+																	2);
+							}
+
+							if (dropPayload->IsDelivery() && !isSource)
+							{
+								moveElement.SrcIndex = payloadIndex;
+								moveElement.DstIndex = i + 1;
+							}
+						}
+						ImGui::EndDragDropTarget();
+					}
+					ImGui::SetCursorPos(originalCursorPos);
+				}
+
+				if (isBeingDragged)
+				{
+					ImGui::PopStyleVar();
+				}
+				ImGui::PopID();
+			}
+
+			if (indexToRemove != -1)
+			{
+				elements.erase(elements.begin() + indexToRemove);
+			}
+			else if (indexToInsertNewElement != -1)
+			{
+				// TODO: for now, we just insert with a default value using {}
+				elements.insert(elements.begin() + indexToInsertNewElement, Type {});
+			}
+			// Notice here we also don't do anything if the destination is right after the source (i.e. SrcIndex + 1 != DstIndex),
+			// that's because inserting an element 'after' the element is the same as not moving at all.
+			else if (moveElement.SrcIndex != moveElement.DstIndex &&
+					 moveElement.SrcIndex + 1 != moveElement.DstIndex)
+			{
+
+				Type temp = elements[moveElement.SrcIndex];
+				elements.insert(elements.begin() + moveElement.DstIndex, temp);
+
+				if (moveElement.SrcIndex < moveElement.DstIndex)
+				{
+					// The source index is smaller than the destination index,
+					// we can safely erase with source index.
+					elements.erase(elements.begin() + moveElement.SrcIndex);
+				}
+				else if (moveElement.SrcIndex > moveElement.DstIndex)
+				{
+					// The destination index is bigger than the destination index,
+					// we need to increment the source index by 1.
+					elements.erase(elements.begin() + moveElement.SrcIndex + 1);
+				}
+
+				changed = true;
+				lastControlDeactivatedAfterEdit = true;
+			}
+
+			ImGuiUtil::Settings::ControlLabelWidth = ImGuiUtil::Settings::DefaultControlLabelWidth;
+
+			ImGui::TreePop();
+		}
+
+		ImGui::PopID();
+
+		s_Context.IsLastControlActivated = lastControlActivated;
+		s_Context.IsLastControlDeactivated = lastControlDeactivated;
+		s_Context.IsLastControlDeactivatedAfterEdit = lastControlDeactivatedAfterEdit;
+
+		return changed;
+	}
+
+	template struct Internal::ArrayControl<DYE::GUID, bool (*)(const char *,::DYE::GUID &)>;
 }
