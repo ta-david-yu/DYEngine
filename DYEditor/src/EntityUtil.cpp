@@ -1,7 +1,29 @@
 #include "Util/EntityUtil.h"
 
+#include "Components/IDComponent.h"
+
 namespace DYE::DYEditor::EntityUtil
 {
+	bool IsFirstDegreeChildOf(Entity potentialChild, Entity potentialParent)
+	{
+		if (!potentialChild.HasComponent<ParentComponent>())
+		{
+			return false;
+		}
+
+		if (!potentialParent.HasComponent<ChildrenComponent>())
+		{
+			return false;
+		}
+
+		if (potentialChild == potentialParent)
+		{
+			return false;
+		}
+
+		return potentialChild.GetComponent<ParentComponent>().ParentGUID == potentialParent.GetComponent<IDComponent>().ID;
+	}
+
 	bool IsChildOf(Entity potentialChild, Entity potentialParent)
 	{
 		if (!potentialChild.HasComponent<ParentComponent>())
@@ -63,7 +85,45 @@ namespace DYE::DYEditor::EntityUtil
 		return false;
 	}
 
-	std::vector<Entity> GetAllChildrenRecursive(Entity root)
+	std::vector<Entity> GetEntityAndAllChildrenPreorder(Entity root)
+	{
+		std::vector<Entity> result;
+
+		std::stack<Entity> entityStack;
+		entityStack.push(root);
+
+		while (!entityStack.empty())
+		{
+			Entity entity = entityStack.top();
+
+			result.push_back(entity);
+
+			entityStack.pop();
+			auto tryGetChild = entity.TryGetComponent<ChildrenComponent>();
+			if (!tryGetChild.has_value())
+			{
+				// No child, nothing to push into the stack.
+				continue;
+			}
+
+			auto &childrenGUIDs = tryGetChild.value().get().ChildrenGUIDs;
+			for (int i = childrenGUIDs.size() - 1; i >= 0; i--)
+			{
+				auto childGUID = childrenGUIDs[i];
+				auto tryGetEntityWithGUID = root.GetWorld().TryGetEntityWithGUID(childGUID);
+				if (!tryGetEntityWithGUID.has_value())
+				{
+					continue;
+				}
+				// Push the child into the stack.
+				entityStack.push(tryGetEntityWithGUID.value());
+			}
+		}
+
+		return std::move(result);
+	}
+
+	std::vector<Entity> GetAllChildrenPreorder(Entity root)
 	{
 		std::vector<Entity> result;
 

@@ -158,7 +158,7 @@ namespace DYE::DYEditor
 		// Get name, guid and the children of the entity before deleting it.
 		std::string entityName = entity.TryGetName().value();
 		GUID entityGUID = entity.TryGetGUID().value();
-		auto allChildren = EntityUtil::GetAllChildrenRecursive(entity);
+		auto allChildren = EntityUtil::GetAllChildrenPreorder(entity);
 
 		// Remove the entity from its old Parent's ChildrenComponent if it has a parent.
 		auto tryGetOldParent = entity.TryGetComponent<ParentComponent>();
@@ -235,7 +235,7 @@ namespace DYE::DYEditor
 		return rawOperationPtr;
 	}
 
-	void Undo::MoveEntity(Entity entity, int indexBeforeMove, int indexToInsert)
+	void Undo::moveEntity(Entity entity, int indexBeforeMove, int indexToInsert)
 	{
 		auto operation = std::make_unique<EntityMoveOperation>();
 		operation->pWorld = &entity.GetWorld();
@@ -268,7 +268,7 @@ namespace DYE::DYEditor
 		pushNewOperation(std::move(operation));
 	}
 
-	void Undo::SetEntityParent(Entity entity, int entityIndexBeforeSet, Entity newParent, int parentIndex)
+	void Undo::SetEntityParent(Entity entity, int entityIndexBeforeSet, Entity newParent, int parentIndex, int indexInParent)
 	{
 		auto tryGetEntityGUID = entity.TryGetGUID();
 		if (!tryGetEntityGUID.has_value())
@@ -304,9 +304,63 @@ namespace DYE::DYEditor
 		// We want to insert at parent index + 1 because that's the head of the parent's children list (if there is any).
 		// TODO A: update the index to the end of the parent children list so we could put the entity at the end of the children list
 		// 	See below TODO B.
-		int indexToInsert = parentIndex + 1;
+
+		// AddChildrenComponent: try to access parent's children component OR add a new one.
+		auto tryGetParentEntityChildren = newParent.TryGetComponent<ChildrenComponent>();
+		ChildrenComponent *pNewParentEntityChildrenComponent = nullptr;
+		if (tryGetParentEntityChildren.has_value())
+		{
+			pNewParentEntityChildrenComponent = &tryGetParentEntityChildren.value().get();
+		}
+		else
+		{
+			// If the parent doesn't have a children component,
+			// we will add one first and then do the modification.
+			Undo::AddComponent(newParent, ChildrenComponentName,
+							   TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
+			pNewParentEntityChildrenComponent = &newParent.GetComponent<ChildrenComponent>();
+		}
+
+		if (indexInParent >= pNewParentEntityChildrenComponent->ChildrenGUIDs.size())
+		{
+			// If the index in parent is bigger than parent's children list size,
+			// We will just assume the user wants to insert it at the last place.
+			indexInParent = -1;
+		}
+
+		std::vector<Entity> newParentAndItsChildren = EntityUtil::GetEntityAndAllChildrenPreorder(newParent);
+
+		// When the offset is -1, we want to place it at the end of the parent hierarchy.
+		bool const insertAtTheLastLocationInParentHierarchy = indexInParent == -1;
+
+		// Calculate the actual index offset as if the hierarchy is completely flat in pre-order.
+		int flatInsertIndexOffset = 0;
+		if (insertAtTheLastLocationInParentHierarchy)
+		{
+			flatInsertIndexOffset = newParentAndItsChildren.size();
+		}
+		else if (indexInParent == 0)
+		{
+			flatInsertIndexOffset = 1;
+		}
+		else
+		{
+			// We start from 1 because 0 is the new parent.
+			for (flatInsertIndexOffset = 1; flatInsertIndexOffset < newParentAndItsChildren.size(); flatInsertIndexOffset++)
+			{
+				Entity child = newParentAndItsChildren[flatInsertIndexOffset];
+				if (child.TryGetGUID().value() == pNewParentEntityChildrenComponent->ChildrenGUIDs[indexInParent])
+				{
+					// We find the flat index, break.
+					break;
+				}
+			}
+		}
+
+		int indexToInsert = parentIndex + flatInsertIndexOffset;
 		int movePointer = entityIndexBeforeSet;
-		if (entityIndexBeforeSet < parentIndex)
+
+		if (entityIndexBeforeSet < indexToInsert)
 		{
 			// Moving under an entity that's behind in the entity handle list,
 			// we don't need to increment our pointer/index.
@@ -315,7 +369,7 @@ namespace DYE::DYEditor
 				entity,
 				[&indexToInsert, &movePointer](Entity childEntity)
 				{
-					Undo::MoveEntity(childEntity, movePointer, indexToInsert);
+					Undo::moveEntity(childEntity, movePointer, indexToInsert);
 				}
 			);
 		}
@@ -326,7 +380,7 @@ namespace DYE::DYEditor
 				entity,
 				[&indexToInsert, &movePointer](Entity childEntity)
 				{
-					Undo::MoveEntity(childEntity, movePointer, indexToInsert);
+					Undo::moveEntity(childEntity, movePointer, indexToInsert);
 					movePointer++;
 					indexToInsert++;
 				}
@@ -362,7 +416,7 @@ namespace DYE::DYEditor
 			auto serializedChildrenComponentBeforeModification =
 				SerializedObjectFactory::CreateSerializedComponentOfType(oldParent, ChildrenComponentName,
 																		 TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
-			// Erase the entity from the old parent's children list.
+			// Remove the entity from the old parent's children list.
 			std::erase(pChildrenComponent->ChildrenGUIDs, entityGUID);
 			auto serializedChildrenComponentAfterModification =
 				SerializedObjectFactory::CreateSerializedComponentOfType(oldParent, ChildrenComponentName,
@@ -370,6 +424,16 @@ namespace DYE::DYEditor
 
 			Undo::RegisterComponentModification(oldParent, serializedChildrenComponentBeforeModification,
 												serializedChildrenComponentAfterModification);
+
+			if (newParent != oldParent)
+			{
+				// If the children list is empty after the child removal & the new parent is not the old parent,
+				// we also remove the children component from the old parent entity.
+				if (pChildrenComponent->ChildrenGUIDs.empty())
+				{
+					Undo::RemoveComponent(oldParent, ChildrenComponentName, TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
+				}
+			}
 		}
 
 		// Entity's ParentComponent modification.
@@ -403,32 +467,30 @@ namespace DYE::DYEditor
 
 		// ParentEntity's ChildrenComponent modification.
 		{
-			auto tryGetChildren = newParent.TryGetComponent<ChildrenComponent>();
-			ChildrenComponent *pChildrenComponent = nullptr;
-			if (tryGetChildren.has_value())
+			auto serializedChildrenComponentBeforeModification =
+				SerializedObjectFactory::CreateSerializedComponentOfType
+				(
+					newParent,
+					ChildrenComponentName,
+					TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent()
+				);
+
+			auto &newParentChildren = newParent.GetComponent<ChildrenComponent>();
+			if (insertAtTheLastLocationInParentHierarchy)
 			{
-				pChildrenComponent = &tryGetChildren.value().get();
+				newParentChildren.ChildrenGUIDs.insert(newParentChildren.ChildrenGUIDs.end(), entityGUID);
 			}
 			else
 			{
-				// If the parent doesn't have a children component,
-				// we will add one first and then do the modification.
-				Undo::AddComponent(newParent, ChildrenComponentName,
-								   TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
-				pChildrenComponent = &newParent.GetComponent<ChildrenComponent>();
+				newParentChildren.ChildrenGUIDs.insert(newParentChildren.ChildrenGUIDs.begin() + indexInParent, entityGUID);
 			}
-
-			auto serializedChildrenComponentBeforeModification =
-				SerializedObjectFactory::CreateSerializedComponentOfType(newParent, ChildrenComponentName,
-																		 TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
-			// For now, we always insert the entity to the start of the new parent children list.
-			// TODO B: we want to push it to the end by default,
-			//  for that we also need to know how many children (recursively) the new parent already has.
-			//	See above at TODO A
-			pChildrenComponent->ChildrenGUIDs.insert(pChildrenComponent->ChildrenGUIDs.begin(), entityGUID);
 			auto serializedChildrenComponentAfterModification =
-				SerializedObjectFactory::CreateSerializedComponentOfType(newParent, ChildrenComponentName,
-																		 TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
+				SerializedObjectFactory::CreateSerializedComponentOfType
+				(
+					newParent,
+					ChildrenComponentName,
+					TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent()
+				);
 
 			Undo::RegisterComponentModification(newParent, serializedChildrenComponentBeforeModification,
 												serializedChildrenComponentAfterModification);

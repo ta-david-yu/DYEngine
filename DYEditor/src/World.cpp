@@ -61,7 +61,7 @@ namespace DYE::DYEditor
 		auto tryGetIndex = TryGetEntityIndex(entityToDestroy);
 		DYE_ASSERT(tryGetIndex.has_value());
 
-		auto allChildren = EntityUtil::GetAllChildrenRecursive(entityToDestroy);
+		auto allChildren = EntityUtil::GetAllChildrenPreorder(entityToDestroy);
 
 		// Where the entity is located at in the handle array.
 		// We will use the same value for children later because the child index shifts down when we remove an entity at the index.
@@ -120,7 +120,7 @@ namespace DYE::DYEditor
 		auto tryGetIndex = TryGetEntityIndex(entityToDestroy);
 		DYE_ASSERT(tryGetIndex.has_value());
 
-		auto allChildren = EntityUtil::GetAllChildrenRecursive(entityToDestroy);
+		auto allChildren = EntityUtil::GetAllChildrenPreorder(entityToDestroy);
 
 		// Where the entity is located at in the handle array.
 		// We will use the same value for children later because the child index shifts down when we remove an entity at the index.

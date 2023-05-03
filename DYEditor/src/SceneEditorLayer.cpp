@@ -719,9 +719,10 @@ namespace DYE::DYEditor
 			bool HasOperation = false;
 			Entity Entity;
 			std::size_t SrcIndex = 0;
-			std::size_t DstIndex = 0;
+			std::size_t DstParentIndex = 0;
+			std::size_t DstFlatIndexRelativeToParent = 0;
 
-			bool BecomeChildOfDst = false;
+			bool Reparent = false;
 		};
 		MoveEntity moveEntity;
 
@@ -848,22 +849,6 @@ namespace DYE::DYEditor
 						*pCurrentSelectedEntity = entity;
 					}
 
-					// FIXME: For debugging
-					if (ImGui::IsItemHovered())
-					{
-						ImGui::BeginTooltip();
-						ImGui::TextUnformatted("Children with preorder:");
-						EntityUtil::ForEachChildPreorder
-							(
-								entity,
-								[](Entity childEntity)
-								{
-									ImGui::TextUnformatted(childEntity.TryGetName().value().c_str());
-								}
-							);
-						ImGui::EndTooltip();
-					}
-
 					ImVec2 const entityTreeNodeSize = ImGui::GetItemRectSize();
 					float const entityWidgetCenterY = entityTreeNodeScreenPos.y + entityTreeNodeSize.y * 0.5f;
 
@@ -897,8 +882,25 @@ namespace DYE::DYEditor
 					{
 						ImGui::SetDragDropPayload("EntityIndex", &indexInWorld, sizeof(std::size_t));
 
-						// Preview the entity in the drag tooltip.
-						ImGui::Text(name.c_str());
+						// Preview the entity & its children in the drag tooltip.
+						EntityUtil::ForEntityAndEachChildPreorderWithDepth
+						(
+							entity,
+							[](Entity e, int depth)
+							{
+								for (int i = 0; i < depth; i++)
+								{
+									ImGui::Indent();
+								}
+
+								ImGui::TextUnformatted(e.TryGetName().value().c_str());
+
+								for (int i = 0; i < depth; i++)
+								{
+									ImGui::Unindent();
+								}
+							}
+						);
 
 						ImGui::EndDragDropSource();
 					}
@@ -912,13 +914,13 @@ namespace DYE::DYEditor
 						// 	1. Upper: insert the dragged entity above the dropped entity.
 						//  2. Middle: make the dragged entity a child of the dropped entity.
 						//  3. Lower: insert the dragged entity below the dropped entity.
-						float const upperSize = spacingBetweenTreeNode * 0.5f;
-						float const lowerSize = spacingBetweenTreeNode * 0.5f;
-						float const middleSize = entityWidgetSize.y - upperSize - lowerSize;
+						float const upperHandleHeight = spacingBetweenTreeNode * 0.5f;
+						float const lowerHandleHeight = spacingBetweenTreeNode * 0.5f;
+						float const middleHandleHeight = entityWidgetSize.y - upperHandleHeight - lowerHandleHeight;
 
 						ImGui::SetCursorScreenPos(entityWidgetScreenPos);
 						ImGuiUtil::Internal::InteractableItem("EntityDropHandle_Upper",
-															  ImVec2(entityWidgetSize.x, upperSize));
+															  ImVec2(entityWidgetSize.x, upperHandleHeight));
 						if (ImGui::BeginDragDropTarget())
 						{
 							ImGuiPayload const *dropPayload = ImGui::AcceptDragDropPayload("EntityIndex",
@@ -940,18 +942,30 @@ namespace DYE::DYEditor
 
 								if (dropPayload->IsDelivery() && !isSource)
 								{
-									moveEntity.HasOperation = true;
-									moveEntity.SrcIndex = payloadIndex;
-									moveEntity.DstIndex = indexInWorld;
+									bool const hasParent = parentGUID != (DYE::GUID) 0;
+									auto tryGetParentEntity = entity.GetWorld().TryGetEntityWithGUID(parentGUID);
+									if (hasParent && tryGetParentEntity.has_value())
+									{
+										int parentIndex = entity.GetWorld().TryGetEntityIndex(tryGetParentEntity.value()).value();
+										moveEntity.HasOperation = true;
+										moveEntity.SrcIndex = payloadIndex;
+										moveEntity.DstParentIndex = parentIndex;
+										moveEntity.DstFlatIndexRelativeToParent = indexInWorld - parentIndex;
+										moveEntity.Reparent = true;
+									}
+									else
+									{
+										DYE_LOG("Drop Upper: Reorder at the highest level. Not implemented yet!");
+									}
 								}
 							}
 							ImGui::EndDragDropTarget();
 						}
 
 						ImGui::SetCursorScreenPos(
-							ImVec2(entityWidgetScreenPos.x, entityWidgetScreenPos.y + upperSize));
+							ImVec2(entityWidgetScreenPos.x, entityWidgetScreenPos.y + upperHandleHeight));
 						ImGuiUtil::Internal::InteractableItem("EntityDropHandle_Middle",
-															  ImVec2(entityWidgetSize.x, middleSize));
+															  ImVec2(entityWidgetSize.x, middleHandleHeight));
 						if (ImGui::BeginDragDropTarget())
 						{
 							ImGuiPayload const *dropPayload = ImGui::AcceptDragDropPayload("EntityIndex",
@@ -966,8 +980,9 @@ namespace DYE::DYEditor
 								{
 									moveEntity.HasOperation = true;
 									moveEntity.SrcIndex = payloadIndex;
-									moveEntity.DstIndex = indexInWorld;
-									moveEntity.BecomeChildOfDst = true;
+									moveEntity.DstParentIndex = indexInWorld;
+									moveEntity.DstFlatIndexRelativeToParent = -1;
+									moveEntity.Reparent = true;
 
 									// Open/expand the dropped entity (new parent) tree node.
 									ImGuiID newParentTreeNodeId = ImGui::GetCurrentWindow()->GetID(guid.ToString().c_str());
@@ -978,9 +993,9 @@ namespace DYE::DYEditor
 						}
 
 						ImGui::SetCursorScreenPos(
-							ImVec2(entityWidgetScreenPos.x, entityWidgetScreenPos.y + upperSize + middleSize));
+							ImVec2(entityWidgetScreenPos.x, entityWidgetScreenPos.y + upperHandleHeight + middleHandleHeight));
 						ImGuiUtil::Internal::InteractableItem("EntityDropHandle_Lower",
-															  ImVec2(entityWidgetSize.x, lowerSize));
+															  ImVec2(entityWidgetSize.x, lowerHandleHeight));
 						if (ImGui::BeginDragDropTarget())
 						{
 							ImGuiPayload const *dropPayload = ImGui::AcceptDragDropPayload("EntityIndex",
@@ -993,19 +1008,49 @@ namespace DYE::DYEditor
 
 								if (dropPayload->IsPreview())
 								{
-									ImVec2 const previewLineBegin = ImVec2(entityWidgetScreenPos.x,
-																		   entityWidgetScreenPos.y + entityWidgetSize.y);
-									ImVec2 const previewLineEnd = ImVec2(previewLineBegin.x + entityWidgetSize.x,
-																		 previewLineBegin.y);
-									ImGui::GetWindowDrawList()->AddLine(previewLineBegin, previewLineEnd,
-																		ImGui::GetColorU32(ImGuiCol_DragDropTarget), 2);
+									// There could be two behaviours for the lower handle,
+									//  1. When the node is open, the lower handle will be used to insert the dragged entity as a child of the dropped handle.
+									//  2. When the node is closed, it will be used to insert below the dropped entity instead of re-parenting.
+									// Therefore, we need to draw the preview line differently to distinguish the two behaviours.
+									float const indentSpacing = ImGui::GetStyle().IndentSpacing;
+									float const previewLineStartX = !isNodeOpen ? entityWidgetScreenPos.x : entityWidgetScreenPos.x + indentSpacing;
+
+									ImVec2 const previewLineBegin = ImVec2(previewLineStartX, entityWidgetScreenPos.y + entityWidgetSize.y);
+									ImVec2 const previewLineEnd = ImVec2(previewLineStartX + entityWidgetSize.x - indentSpacing, previewLineBegin.y);
+									ImGui::GetWindowDrawList()->AddLine(previewLineBegin, previewLineEnd, ImGui::GetColorU32(ImGuiCol_DragDropTarget), 2);
 								}
 
 								if (dropPayload->IsDelivery() && !isSource)
 								{
-									moveEntity.HasOperation = true;
-									moveEntity.SrcIndex = payloadIndex;
-									moveEntity.DstIndex = indexInWorld + 1;
+									if (isNodeOpen)
+									{
+										// If the node is open, dropping at the lower handle would be
+										// to make the entity the first child of the dropped handle entity.
+										moveEntity.HasOperation = true;
+										moveEntity.SrcIndex = payloadIndex;
+										moveEntity.DstParentIndex = indexInWorld;
+										moveEntity.DstFlatIndexRelativeToParent = 0;
+										moveEntity.Reparent = true;
+									}
+									else
+									{
+										bool const hasParent = parentGUID != (DYE::GUID) 0;
+										auto tryGetParentEntity = entity.GetWorld().TryGetEntityWithGUID(parentGUID);
+
+										if (hasParent && tryGetParentEntity.has_value())
+										{
+											int parentIndex = entity.GetWorld().TryGetEntityIndex(tryGetParentEntity.value()).value();
+											moveEntity.HasOperation = true;
+											moveEntity.SrcIndex = payloadIndex;
+											moveEntity.DstParentIndex = parentIndex;
+											moveEntity.DstFlatIndexRelativeToParent = indexInWorld - parentIndex + 1;
+											moveEntity.Reparent = true;
+										}
+										else
+										{
+											DYE_LOG("Drop Lower: Reorder at the highest level. Not implemented yet!");
+										}
+									}
 								}
 							}
 							ImGui::EndDragDropTarget();
@@ -1050,27 +1095,72 @@ namespace DYE::DYEditor
 		// Pop ItemSpacing, FramePadding and IndentSpacing.
 		ImGui::PopStyleVar(3);
 
-		int moveDiff = ((int) moveEntity.DstIndex - (int) moveEntity.SrcIndex);
+		int moveDiff = ((int) moveEntity.DstParentIndex - (int) moveEntity.SrcIndex);
+
+		static int testInsertIndex = 1;
 
 		if (moveEntity.HasOperation)
 		{
-			if (moveEntity.BecomeChildOfDst)
+			if (moveEntity.Reparent)
 			{
 				Entity srcEntity = scene.World.GetEntityAtIndex(moveEntity.SrcIndex);
-				Entity dstEntity = scene.World.GetEntityAtIndex(moveEntity.DstIndex);
+				Entity dstEntity = scene.World.GetEntityAtIndex(moveEntity.DstParentIndex);
 
-				Undo::SetEntityParent
-				(
-					srcEntity,
-					moveEntity.SrcIndex,
-					dstEntity,
-					moveEntity.DstIndex
-				);
+				auto tryGetParentChildren = dstEntity.TryGetComponent<ChildrenComponent>();
+				if (tryGetParentChildren.has_value())
+				{
+					int dstIndexInParent;
+
+					bool const insertBegin = moveEntity.DstFlatIndexRelativeToParent == 0;
+					bool const insertEnd = moveEntity.DstFlatIndexRelativeToParent == -1;
+					if (insertBegin || insertEnd)
+					{
+						dstIndexInParent = moveEntity.DstFlatIndexRelativeToParent;
+					}
+					else
+					{
+						dstIndexInParent = 0;
+
+						// We need to calculate the index in parent if it's not the first OR the last location that
+						// we are trying to insert. Basically convert 'flat-index' to 'first-degree-child-index'.
+						std::vector<Entity> newParentAndItsChildren = EntityUtil::GetEntityAndAllChildrenPreorder(dstEntity);
+
+						// We start from 1 because 0 is the parent.
+						for (int flatIndex = 1; flatIndex < moveEntity.DstFlatIndexRelativeToParent; flatIndex++)
+						{
+							auto childEntity = newParentAndItsChildren[flatIndex];
+							if (EntityUtil::IsFirstDegreeChildOf(childEntity, dstEntity))
+							{
+								dstIndexInParent++;
+							}
+						}
+					}
+
+					Undo::SetEntityParent
+					(
+						srcEntity,
+						moveEntity.SrcIndex,
+						dstEntity,
+						moveEntity.DstParentIndex,
+						dstIndexInParent
+					);
+				}
+				else // If the parent has no children, we simply make the entity as the first child of the parent.
+				{
+					Undo::SetEntityParent
+					(
+						srcEntity,
+						moveEntity.SrcIndex,
+						dstEntity,
+						moveEntity.DstParentIndex,
+						0
+					);
+				}
 			}
 			else if (moveDiff != 1 && moveDiff != 0)
 			{
-				Undo::MoveEntity(scene.World.GetEntityAtIndex(moveEntity.SrcIndex), moveEntity.SrcIndex,
-								 moveEntity.DstIndex);
+				// TODO:
+				//Undo::moveEntity(scene.World.GetEntityAtIndex(moveEntity.SrcIndex), moveEntity.SrcIndex, moveEntity.DstIndex);
 				changed = true;
 			}
 		}
@@ -1079,6 +1169,7 @@ namespace DYE::DYEditor
 		ImGui::Separator();
 		ImGui::Checkbox("Show Widget Rect", &debugContext.ShowWidgetRect);
 		ImGui::Checkbox("Show TreeNode Rect", &debugContext.ShowTreeNodeRect);
+		ImGui::InputInt("Child Index", &testInsertIndex);
 
 		return changed;
 	}

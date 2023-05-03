@@ -45,10 +45,12 @@ namespace DYE::DYEditor
 		/// Perform entity destruction (including all children) that can be restored with undo.
 		static void DeleteEntityRecursively(Entity entity, std::size_t indexInWorldHandleArray);
 
-		/// Avoid using this cuz it only moves the given entity, children are ignored.
-		/// (We will probably want to remove this at some point)
-		static void MoveEntity(Entity entity, int indexBeforeMove, int indexToInsert);
-		static void SetEntityParent(Entity entity, int entityIndexBeforeSet, Entity newParent, int parentIndex);
+		/// \param indexInParent the index of the parent's children list to insert to.
+		/// By default it's -1, which means the last place in parent's hierarchy.
+		static void SetEntityParent(Entity entity, int entityIndexBeforeSet, Entity newParent, int parentIndex, int indexInParent = -1);
+
+		/// Move the entity to the top hierarchy (set parent to null basically) at the given index location.
+		static void SetEntityOrderAtTopHierarchy(Entity entity, int entityIndexBeforeSet, int indexToInsert);
 
 		// Call this after component modification.
 		static void RegisterComponentModification(Entity entity,
@@ -76,6 +78,9 @@ namespace DYE::DYEditor
 		static void DrawUndoHistoryWindow(bool *pIsOpen);
 
 	private:
+		/// This method only moves the given entity, children are ignored. For engine internal use.
+		static void moveEntity(Entity entity, int indexBeforeMove, int indexToInsert);
+
 		/// This method only deletes the entity. It does not update hierarchical information (i.e. children, parent).
 		static EntityDeletionOperation *deleteEntityButNotChildren(Entity entity, std::size_t indexInWorldHandleArray);
 
