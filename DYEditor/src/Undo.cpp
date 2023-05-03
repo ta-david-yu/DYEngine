@@ -270,6 +270,12 @@ namespace DYE::DYEditor
 
 	void Undo::SetEntityParent(Entity entity, int entityIndexBeforeSet, Entity newParent, int parentIndex, int indexInParent)
 	{
+		if (entity == newParent)
+		{
+			DYE_LOG("You cannot set an entity as its own parent. SetEntityParent operation skipped.");
+			return;
+		}
+
 		auto tryGetEntityGUID = entity.TryGetGUID();
 		if (!tryGetEntityGUID.has_value())
 		{
@@ -494,6 +500,94 @@ namespace DYE::DYEditor
 
 			Undo::RegisterComponentModification(newParent, serializedChildrenComponentBeforeModification,
 												serializedChildrenComponentAfterModification);
+		}
+
+		Undo::EndGroupOperation();
+	}
+
+	void Undo::SetEntityOrderAtTopHierarchy(Entity entity, int entityIndexBeforeSet, int indexToInsert)
+	{
+		auto tryGetEntityGUID = entity.TryGetGUID();
+		if (!tryGetEntityGUID.has_value())
+		{
+			DYE_LOG("The given entity doesn't have a GUID. SetEntityParent operation skipped.");
+			return;
+		}
+
+		auto entityGUID = tryGetEntityGUID.value();
+
+		char operationDescription[128] = "";
+		sprintf(operationDescription, "Move Entity '%s' at Top Hierarchy", entity.TryGetName().value().c_str());
+		Undo::StartGroupOperation(operationDescription);
+
+		int movePointer = entityIndexBeforeSet;
+		if (entityIndexBeforeSet < indexToInsert)
+		{
+			// Moving under an entity that's behind in the entity handle list,
+			// we don't need to increment our pointer/index.
+			EntityUtil::ForEntityAndEachChildPreorder
+			(
+				entity,
+				[&indexToInsert, &movePointer](Entity childEntity)
+				{
+					Undo::moveEntity(childEntity, movePointer, indexToInsert);
+				}
+			);
+		}
+		else
+		{
+			EntityUtil::ForEntityAndEachChildPreorder
+			(
+				entity,
+				[&indexToInsert, &movePointer](Entity childEntity)
+				{
+					Undo::moveEntity(childEntity, movePointer, indexToInsert);
+					movePointer++;
+					indexToInsert++;
+				}
+			);
+		}
+
+		// Try to remove the entity from the old parent's children list & remove the entity's parent component if there is a parent.
+		auto tryGetOldParent = entity.TryGetComponent<ParentComponent>();
+		if (tryGetOldParent.has_value())
+		{
+			auto tryGetOldParentEntity = entity.GetWorld().TryGetEntityWithGUID(
+				tryGetOldParent.value().get().ParentGUID);
+			DYE_ASSERT_LOG_WARN(tryGetOldParentEntity.has_value(),
+								"The entity has a parent component already but the old GUID '%s' wasn't referencing to a valid entity.",
+								tryGetOldParent.value().get().ParentGUID.ToString().c_str());
+
+			Entity oldParent = tryGetOldParentEntity.value();
+
+			auto tryGetChildren = oldParent.TryGetComponent<ChildrenComponent>();
+			DYE_ASSERT_LOG_WARN(tryGetChildren.has_value(),
+								"The old parent should have children component but it doesn't for some reasons. "
+								"The entity hierarchy state could be defected.");
+
+			ChildrenComponent &childrenComponent = tryGetChildren.value().get();
+
+			auto serializedChildrenComponentBeforeModification =
+				SerializedObjectFactory::CreateSerializedComponentOfType(oldParent, ChildrenComponentName,
+																		 TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
+			// Remove the entity from the old parent's children list.
+			std::erase(childrenComponent.ChildrenGUIDs, entityGUID);
+			auto serializedChildrenComponentAfterModification =
+				SerializedObjectFactory::CreateSerializedComponentOfType(oldParent, ChildrenComponentName,
+																		 TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
+
+			Undo::RegisterComponentModification(oldParent, serializedChildrenComponentBeforeModification,
+												serializedChildrenComponentAfterModification);
+
+			// If the children list is empty after the child removal,
+			// we also remove the children component from the old parent entity.
+			if (childrenComponent.ChildrenGUIDs.empty())
+			{
+				Undo::RemoveComponent(oldParent, ChildrenComponentName, TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
+			}
+
+			// Remove the parent component from the entity.
+			Undo::RemoveComponent(entity, ParentComponentName, TypeRegistry::GetComponentTypeDescriptor_ParentComponent());
 		}
 
 		Undo::EndGroupOperation();

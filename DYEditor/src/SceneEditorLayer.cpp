@@ -714,17 +714,22 @@ namespace DYE::DYEditor
 		};
 		static DebugContext debugContext;
 
-		struct MoveEntity
+		struct SetParentAction
 		{
 			bool HasOperation = false;
-			Entity Entity;
 			std::size_t SrcIndex = 0;
 			std::size_t DstParentIndex = 0;
 			std::size_t DstFlatIndexRelativeToParent = 0;
-
-			bool Reparent = false;
 		};
-		MoveEntity moveEntity;
+		SetParentAction setParent;
+
+		struct ReorderAtTopHierarchyAction
+		{
+			bool HasOperation = false;
+			std::size_t SrcIndex = 0;
+			std::size_t DstIndex = 0;
+		};
+		ReorderAtTopHierarchyAction reorderAtTop;
 
 		auto itemSpacing = ImGui::GetStyle().ItemSpacing; itemSpacing.y = 6;
 		auto framePadding = ImGui::GetStyle().FramePadding; framePadding.x = 3;
@@ -749,7 +754,8 @@ namespace DYE::DYEditor
 			 &scene,
 			 &pCurrentSelectedEntity,
 			 &levelStack,
-			 &moveEntity]
+			 &setParent,
+			 &reorderAtTop]
 			 (DYEditor::Entity &entity, std::size_t indexInWorld)
 			{
 				auto tryGetNameResult = entity.TryGetName();
@@ -947,15 +953,16 @@ namespace DYE::DYEditor
 									if (hasParent && tryGetParentEntity.has_value())
 									{
 										int parentIndex = entity.GetWorld().TryGetEntityIndex(tryGetParentEntity.value()).value();
-										moveEntity.HasOperation = true;
-										moveEntity.SrcIndex = payloadIndex;
-										moveEntity.DstParentIndex = parentIndex;
-										moveEntity.DstFlatIndexRelativeToParent = indexInWorld - parentIndex;
-										moveEntity.Reparent = true;
+										setParent.HasOperation = true;
+										setParent.SrcIndex = payloadIndex;
+										setParent.DstParentIndex = parentIndex;
+										setParent.DstFlatIndexRelativeToParent = indexInWorld - parentIndex;
 									}
 									else
 									{
-										DYE_LOG("Drop Upper: Reorder at the highest level. Not implemented yet!");
+										reorderAtTop.HasOperation = true;
+										reorderAtTop.SrcIndex = payloadIndex;
+										reorderAtTop.DstIndex = indexInWorld;
 									}
 								}
 							}
@@ -978,11 +985,10 @@ namespace DYE::DYEditor
 
 								if (dropPayload->IsDelivery() && !isSource)
 								{
-									moveEntity.HasOperation = true;
-									moveEntity.SrcIndex = payloadIndex;
-									moveEntity.DstParentIndex = indexInWorld;
-									moveEntity.DstFlatIndexRelativeToParent = -1;
-									moveEntity.Reparent = true;
+									setParent.HasOperation = true;
+									setParent.SrcIndex = payloadIndex;
+									setParent.DstParentIndex = indexInWorld;
+									setParent.DstFlatIndexRelativeToParent = -1;
 
 									// Open/expand the dropped entity (new parent) tree node.
 									ImGuiID newParentTreeNodeId = ImGui::GetCurrentWindow()->GetID(guid.ToString().c_str());
@@ -1013,10 +1019,11 @@ namespace DYE::DYEditor
 									//  2. When the node is closed, it will be used to insert below the dropped entity instead of re-parenting.
 									// Therefore, we need to draw the preview line differently to distinguish the two behaviours.
 									float const indentSpacing = ImGui::GetStyle().IndentSpacing;
-									float const previewLineStartX = !isNodeOpen ? entityWidgetScreenPos.x : entityWidgetScreenPos.x + indentSpacing;
+									float const previewLineStartX = isNodeOpen? entityWidgetScreenPos.x + indentSpacing : entityWidgetScreenPos.x;
+									float const previewLineWidth = isNodeOpen? entityWidgetSize.x - indentSpacing : entityWidgetSize.x;
 
 									ImVec2 const previewLineBegin = ImVec2(previewLineStartX, entityWidgetScreenPos.y + entityWidgetSize.y);
-									ImVec2 const previewLineEnd = ImVec2(previewLineStartX + entityWidgetSize.x - indentSpacing, previewLineBegin.y);
+									ImVec2 const previewLineEnd = ImVec2(previewLineStartX + previewLineWidth, previewLineBegin.y);
 									ImGui::GetWindowDrawList()->AddLine(previewLineBegin, previewLineEnd, ImGui::GetColorU32(ImGuiCol_DragDropTarget), 2);
 								}
 
@@ -1026,11 +1033,10 @@ namespace DYE::DYEditor
 									{
 										// If the node is open, dropping at the lower handle would be
 										// to make the entity the first child of the dropped handle entity.
-										moveEntity.HasOperation = true;
-										moveEntity.SrcIndex = payloadIndex;
-										moveEntity.DstParentIndex = indexInWorld;
-										moveEntity.DstFlatIndexRelativeToParent = 0;
-										moveEntity.Reparent = true;
+										setParent.HasOperation = true;
+										setParent.SrcIndex = payloadIndex;
+										setParent.DstParentIndex = indexInWorld;
+										setParent.DstFlatIndexRelativeToParent = 0;
 									}
 									else
 									{
@@ -1040,15 +1046,16 @@ namespace DYE::DYEditor
 										if (hasParent && tryGetParentEntity.has_value())
 										{
 											int parentIndex = entity.GetWorld().TryGetEntityIndex(tryGetParentEntity.value()).value();
-											moveEntity.HasOperation = true;
-											moveEntity.SrcIndex = payloadIndex;
-											moveEntity.DstParentIndex = parentIndex;
-											moveEntity.DstFlatIndexRelativeToParent = indexInWorld - parentIndex + 1;
-											moveEntity.Reparent = true;
+											setParent.HasOperation = true;
+											setParent.SrcIndex = payloadIndex;
+											setParent.DstParentIndex = parentIndex;
+											setParent.DstFlatIndexRelativeToParent = indexInWorld - parentIndex + 1;
 										}
 										else
 										{
-											DYE_LOG("Drop Lower: Reorder at the highest level. Not implemented yet!");
+											reorderAtTop.HasOperation = true;
+											reorderAtTop.SrcIndex = payloadIndex;
+											reorderAtTop.DstIndex = indexInWorld + EntityUtil::GetEntityAndAllChildrenPreorder(entity).size();
 										}
 									}
 								}
@@ -1095,74 +1102,75 @@ namespace DYE::DYEditor
 		// Pop ItemSpacing, FramePadding and IndentSpacing.
 		ImGui::PopStyleVar(3);
 
-		int moveDiff = ((int) moveEntity.DstParentIndex - (int) moveEntity.SrcIndex);
+		int moveDiff = ((int) setParent.DstParentIndex - (int) setParent.SrcIndex);
 
 		static int testInsertIndex = 1;
 
-		if (moveEntity.HasOperation)
+		if (setParent.HasOperation)
 		{
-			if (moveEntity.Reparent)
+			Entity srcEntity = scene.World.GetEntityAtIndex(setParent.SrcIndex);
+			Entity dstEntity = scene.World.GetEntityAtIndex(setParent.DstParentIndex);
+
+			auto tryGetParentChildren = dstEntity.TryGetComponent<ChildrenComponent>();
+			if (tryGetParentChildren.has_value())
 			{
-				Entity srcEntity = scene.World.GetEntityAtIndex(moveEntity.SrcIndex);
-				Entity dstEntity = scene.World.GetEntityAtIndex(moveEntity.DstParentIndex);
+				int dstIndexInParent;
 
-				auto tryGetParentChildren = dstEntity.TryGetComponent<ChildrenComponent>();
-				if (tryGetParentChildren.has_value())
+				bool const insertBegin = setParent.DstFlatIndexRelativeToParent == 0;
+				bool const insertEnd = setParent.DstFlatIndexRelativeToParent == -1;
+				if (insertBegin || insertEnd)
 				{
-					int dstIndexInParent;
+					dstIndexInParent = setParent.DstFlatIndexRelativeToParent;
+				}
+				else
+				{
+					dstIndexInParent = 0;
 
-					bool const insertBegin = moveEntity.DstFlatIndexRelativeToParent == 0;
-					bool const insertEnd = moveEntity.DstFlatIndexRelativeToParent == -1;
-					if (insertBegin || insertEnd)
+					// We need to calculate the index in parent if it's not the first OR the last location that
+					// we are trying to insert. Basically convert 'flat-index' to 'first-degree-child-index'.
+					std::vector<Entity> newParentAndItsChildren = EntityUtil::GetEntityAndAllChildrenPreorder(
+						dstEntity);
+
+					// We start from 1 because 0 is the parent.
+					for (int flatIndex = 1; flatIndex < setParent.DstFlatIndexRelativeToParent; flatIndex++)
 					{
-						dstIndexInParent = moveEntity.DstFlatIndexRelativeToParent;
-					}
-					else
-					{
-						dstIndexInParent = 0;
-
-						// We need to calculate the index in parent if it's not the first OR the last location that
-						// we are trying to insert. Basically convert 'flat-index' to 'first-degree-child-index'.
-						std::vector<Entity> newParentAndItsChildren = EntityUtil::GetEntityAndAllChildrenPreorder(dstEntity);
-
-						// We start from 1 because 0 is the parent.
-						for (int flatIndex = 1; flatIndex < moveEntity.DstFlatIndexRelativeToParent; flatIndex++)
+						auto childEntity = newParentAndItsChildren[flatIndex];
+						if (EntityUtil::IsFirstDegreeChildOf(childEntity, dstEntity))
 						{
-							auto childEntity = newParentAndItsChildren[flatIndex];
-							if (EntityUtil::IsFirstDegreeChildOf(childEntity, dstEntity))
-							{
-								dstIndexInParent++;
-							}
+							dstIndexInParent++;
 						}
 					}
+				}
 
-					Undo::SetEntityParent
-					(
-						srcEntity,
-						moveEntity.SrcIndex,
-						dstEntity,
-						moveEntity.DstParentIndex,
-						dstIndexInParent
-					);
-				}
-				else // If the parent has no children, we simply make the entity as the first child of the parent.
-				{
-					Undo::SetEntityParent
-					(
-						srcEntity,
-						moveEntity.SrcIndex,
-						dstEntity,
-						moveEntity.DstParentIndex,
-						0
-					);
-				}
+				Undo::SetEntityParent
+				(
+					srcEntity,
+					setParent.SrcIndex,
+					dstEntity,
+					setParent.DstParentIndex,
+					dstIndexInParent
+				);
 			}
-			else if (moveDiff != 1 && moveDiff != 0)
+			else // If the parent has no children, we simply make the entity as the first child of the parent.
 			{
-				// TODO:
-				//Undo::moveEntity(scene.World.GetEntityAtIndex(moveEntity.SrcIndex), moveEntity.SrcIndex, moveEntity.DstIndex);
-				changed = true;
+				Undo::SetEntityParent
+				(
+					srcEntity,
+					setParent.SrcIndex,
+					dstEntity,
+					setParent.DstParentIndex,
+					0
+				);
 			}
+
+			changed = true;
+		}
+
+		if (reorderAtTop.HasOperation && reorderAtTop.SrcIndex != reorderAtTop.DstIndex)
+		{
+			Entity srcEntity = scene.World.GetEntityAtIndex(reorderAtTop.SrcIndex);
+			Undo::SetEntityOrderAtTopHierarchy(srcEntity, reorderAtTop.SrcIndex, reorderAtTop.DstIndex);
+			changed = true;
 		}
 
 		// FIXME: delete debugging drawing here
