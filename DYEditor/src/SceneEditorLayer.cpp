@@ -707,13 +707,6 @@ namespace DYE::DYEditor
 			ImGui::SeparatorText("Untitled");
 		}
 
-		struct DebugContext
-		{
-			bool ShowWidgetRect = false;
-			bool ShowTreeNodeRect = false;
-		};
-		static DebugContext debugContext;
-
 		struct SetParentAction
 		{
 			bool HasOperation = false;
@@ -857,30 +850,6 @@ namespace DYE::DYEditor
 
 					ImVec2 const entityTreeNodeSize = ImGui::GetItemRectSize();
 					float const entityWidgetCenterY = entityTreeNodeScreenPos.y + entityTreeNodeSize.y * 0.5f;
-
-					if (debugContext.ShowTreeNodeRect || debugContext.ShowWidgetRect)
-					{
-						ImVec2 const widgetHeadCenter = ImVec2(entityTreeNodeScreenPos.x, entityWidgetCenterY);
-						ImGui::GetWindowDrawList()->AddCircle(widgetHeadCenter, 2, ImColor(ImVec4(1, 1, 1, 0.5f)), 4);
-					}
-
-					if (debugContext.ShowTreeNodeRect)
-					{
-						ImGui::GetWindowDrawList()->AddCircle(entityTreeNodeScreenPos, 2, ImColor(ImVec4(1, 1, 1, 1)), 4);
-						ImGui::GetWindowDrawList()->AddRect(entityTreeNodeScreenPos,
-															ImVec2(entityTreeNodeScreenPos.x + entityTreeNodeSize.x,
-																   entityTreeNodeScreenPos.y + entityTreeNodeSize.y),
-															ImColor(ImVec4(1, 1, 1, 0.5f)));
-					}
-
-					if (debugContext.ShowWidgetRect)
-					{
-						ImGui::GetWindowDrawList()->AddCircle(entityWidgetScreenPos, 2, ImColor(ImVec4(0, 1, 0, 1)), 4);
-						ImGui::GetWindowDrawList()->AddRect(entityWidgetScreenPos,
-															ImVec2(entityWidgetScreenPos.x + entityWidgetSize.x,
-																   entityWidgetScreenPos.y + entityWidgetSize.y),
-															ImColor(ImVec4(0, 1, 0, 0.5f)));
-					}
 
 					// Make the entity tree node a drag source.
 					ImGuiDragDropFlags const dragHandleFlags = ImGuiDragDropFlags_None;
@@ -1104,8 +1073,6 @@ namespace DYE::DYEditor
 
 		int moveDiff = ((int) setParent.DstParentIndex - (int) setParent.SrcIndex);
 
-		static int testInsertIndex = 1;
-
 		if (setParent.HasOperation)
 		{
 			Entity srcEntity = scene.World.GetEntityAtIndex(setParent.SrcIndex);
@@ -1172,12 +1139,6 @@ namespace DYE::DYEditor
 			Undo::SetEntityOrderAtTopHierarchy(srcEntity, reorderAtTop.SrcIndex, reorderAtTop.DstIndex);
 			changed = true;
 		}
-
-		// FIXME: delete debugging drawing here
-		ImGui::Separator();
-		ImGui::Checkbox("Show Widget Rect", &debugContext.ShowWidgetRect);
-		ImGui::Checkbox("Show TreeNode Rect", &debugContext.ShowTreeNodeRect);
-		ImGui::InputInt("Child Index", &testInsertIndex);
 
 		return changed;
 	}
