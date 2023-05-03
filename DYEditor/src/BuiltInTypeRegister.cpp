@@ -432,8 +432,8 @@ namespace DYE::DYEditor
 			ParentComponentName,
 			ComponentTypeDescriptor
 			{
-				.ShouldBeIncludedInNormalAddComponentList = true,
-				.ShouldDrawInNormalInspector = true,
+				.ShouldBeIncludedInNormalAddComponentList = false,
+				.ShouldDrawInNormalInspector = false,
 				.Serialize = BuiltInFunctions::ParentComponent_Serialize,
 				.Deserialize = BuiltInFunctions::ParentComponent_Deserialize,
 				.DrawInspector = BuiltInFunctions::ParentComponent_DrawInspector
@@ -446,8 +446,8 @@ namespace DYE::DYEditor
 			ChildrenComponentName,
 			ComponentTypeDescriptor
 			{
-				.ShouldBeIncludedInNormalAddComponentList = true,
-				.ShouldDrawInNormalInspector = true,
+				.ShouldBeIncludedInNormalAddComponentList = false,
+				.ShouldDrawInNormalInspector = false,
 				.Serialize = BuiltInFunctions::ChildrenComponent_Serialize,
 				.Deserialize = BuiltInFunctions::ChildrenComponent_Deserialize,
 				.DrawInspector = BuiltInFunctions::ChildrenComponent_DrawInspector
