@@ -223,9 +223,10 @@ namespace DYE::DYEditor
 		m_EntityHandles.insert(m_EntityHandles.begin() + index, EntityHandle(entity.m_EntityIdentifier));
 
 		auto tryGetGUID = entity.TryGetGUID();
-		DYE_ASSERT_LOG_WARN(tryGetGUID.has_value(), "The given entity doesn't have a GUID (IDComponent), cannot be tracked.");
+		DYE_ASSERT_LOG_WARN(tryGetGUID.has_value(), "The given entity %d doesn't have a GUID (i.e. IDComponent), cannot be tracked.", entity.GetIdentifier());
 
-		DYE_ASSERT_LOG_WARN(!m_GUIDToEntityIdentifierMap.contains(tryGetGUID.value()), "The given entity's GUID has already been tracked in the map.");
+		auto guid = tryGetGUID.value();
+		DYE_ASSERT_LOG_WARN(!m_GUIDToEntityIdentifierMap.contains(guid), "The given entity's GUID (%s) has already been tracked in the map.", guid.ToString().c_str());
 
 		m_GUIDToEntityIdentifierMap.insert({tryGetGUID.value(), entity.m_EntityIdentifier});
 	}
