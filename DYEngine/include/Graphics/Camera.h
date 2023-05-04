@@ -56,6 +56,9 @@ namespace DYE
 		Math::Rect Viewport {0, 0, 1, 1};
 
 	public:
+		bool DoClearColor = true;
+
+	public:
 		float GetAspectRatio() const;
 		glm::mat4 GetProjectionMatrix(float aspectRatio) const;
 		glm::vec<2, std::uint32_t> GetTargetDimension() const;

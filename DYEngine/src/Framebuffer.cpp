@@ -202,9 +202,34 @@ namespace DYE
 		return pixelData;
 	}
 
+	void Framebuffer::ClearAttachment(std::uint32_t colorAttachmentIndex, int value)
+	{
+		DYE_ASSERT_LOG_WARN(colorAttachmentIndex < m_ColorAttachmentIDs.size(),
+							"Trying to clear color attachment index %d but there are only %zu attachments",
+							colorAttachmentIndex,
+							m_ColorAttachmentIDs.size());
+
+		FramebufferTextureFormat textureFormat = m_ColorAttachmentPropertiesList[colorAttachmentIndex].TextureFormat;
+		GLenum glTextureFormat;
+		switch (textureFormat)
+		{
+			// TODO: add more framebuffer color texture formats
+			case FramebufferTextureFormat::RGBA8: 		glTextureFormat = GL_RGBA8;
+				break;
+			case FramebufferTextureFormat::RedInteger: 	glTextureFormat = GL_RED_INTEGER;
+				break;
+		}
+
+		FramebufferTextureProperties &properties = m_ColorAttachmentPropertiesList[colorAttachmentIndex];
+		glClearTexImage(m_ColorAttachmentIDs[colorAttachmentIndex], 0, glTextureFormat, GL_INT, &value);
+	}
+
 	TextureID Framebuffer::GetColorAttachmentID(std::size_t index) const
 	{
-		DYE_ASSERT_LOG_WARN(index < m_ColorAttachmentIDs.size(), "There are only %zu color attachments but trying to access index %d.", m_ColorAttachmentIDs.size(), index);
+		DYE_ASSERT_LOG_WARN(index < m_ColorAttachmentIDs.size(),
+							"Trying to access color attachment index %d but there are only %zu.",
+							m_ColorAttachmentIDs.size(),
+							index);
 		return m_ColorAttachmentIDs[index];
 	}
 

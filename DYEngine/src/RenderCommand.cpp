@@ -109,6 +109,14 @@ namespace DYE
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
 
+	void RenderCommand::ClearDepthStencilOnly()
+	{
+		// Enable depth mask first so glClear() call actually clears depth buffer.
+		glCall(glDepthMask(GL_TRUE));
+		glCall(glEnable(GL_SCISSOR_TEST));
+		glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	}
+
 	void RenderCommand::DrawIndexedLinesNow(const VertexArray &vertexArray)
 	{
 		// Bind mesh (VAO)

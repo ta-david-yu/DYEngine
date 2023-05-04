@@ -261,8 +261,11 @@ namespace DYE::DYEditor
 	{
 		if (m_IsSceneViewDrawn)
 		{
+			m_SceneViewCamera.Properties.pTargetRenderTexture->ClearAttachment(1, -1);
+
 			// We only want to render the scene view camera if the scene view window is drawn.
-			DYE::RenderPipelineManager::RegisterCameraForNextRender(m_SceneViewCamera);
+			auto camera = m_SceneViewCamera; camera.Properties.DoClearColor = false;
+			DYE::RenderPipelineManager::RegisterCameraForNextRender(camera);
 		}
 	}
 
@@ -1857,12 +1860,12 @@ namespace DYE::DYEditor
 
 	void SceneEditorLayer::OnEndOfFrame()
 	{
-		glm::vec2 viewportSize = { m_SceneViewportBounds.Width, m_SceneViewportBounds.Height };
+		glm::vec2 viewportSize = {m_SceneViewportBounds.Width, m_SceneViewportBounds.Height};
 
 		auto [mouseX, mouseY] = ImGui::GetMousePos();
 		mouseX -= m_SceneViewportBounds.X;
 		mouseY -= m_SceneViewportBounds.Y;
-		mouseY = viewportSize.y - mouseY;	// Flip y coordinate.
+		mouseY = viewportSize.y - mouseY;    // Flip y coordinate.
 
 		int const viewportSpaceMouseX = (int) mouseX;
 		int const viewportSpaceMouseY = (int) mouseY;
@@ -1871,7 +1874,7 @@ namespace DYE::DYEditor
 		if (INPUT.GetMouseButtonDown(DYE::MouseButton::Left))
 		{
 			DYE_LOG("Viewport Pos: %d, %d", viewportSpaceMouseX, viewportSpaceMouseY);
-			DYE_LOG("Within Viewport: %s", withinViewport? "True" : "False");
+			DYE_LOG("Within Viewport: %s", withinViewport ? "True" : "False");
 		}
 
 		if (withinViewport)

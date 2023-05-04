@@ -159,8 +159,15 @@ namespace DYE
 			Math::Rect const viewportDimension = camera.Properties.GetAbsoluteViewportOfDimension(targetDimension);
 
 			RenderCommand::GetInstance().SetViewport(viewportDimension);
-			RenderCommand::GetInstance().SetClearColor(camera.Properties.ClearColor);
-			RenderCommand::GetInstance().Clear();
+			if (camera.Properties.DoClearColor)
+			{
+				RenderCommand::GetInstance().SetClearColor(camera.Properties.ClearColor);
+				RenderCommand::GetInstance().Clear();
+			}
+			else
+			{
+				RenderCommand::GetInstance().ClearDepthStencilOnly();
+			}
 
 			s_ActiveRenderPipeline->renderCamera(camera);
 

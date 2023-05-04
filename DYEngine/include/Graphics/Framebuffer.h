@@ -71,6 +71,7 @@ namespace DYE
 		void CreateOrReset();
 
 		int ReadPixelAsInteger(std::uint32_t colorAttachmentIndex, int x, int y);
+		void ClearAttachment(std::uint32_t colorAttachmentIndex, int value);
 
 		// TODO: maybe later we want to create a color texture 2d handle so others could access the color attachment as if it's
 		// 		a texture 2d, OR MAYBE NOT.
