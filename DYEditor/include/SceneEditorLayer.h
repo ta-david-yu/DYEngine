@@ -65,7 +65,6 @@ namespace DYE::DYEditor
 		SerializedScene m_SerializedSceneCacheWhenEnterPlayMode;
 		bool m_IsActiveSceneDirty = false;
 
-		DYEditor::Entity m_CurrentlySelectedEntityInHierarchyPanel;
 		DYE::GUID m_CurrentlySelectedEntityGUID;
 		std::filesystem::path m_CurrentSceneFilePath;
 
