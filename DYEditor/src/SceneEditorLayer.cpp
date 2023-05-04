@@ -149,7 +149,13 @@ namespace DYE::DYEditor
 		RuntimeState::RegisterListener(this);
 
 		// Initialize SceneView framebuffer.
-		m_SceneViewCameraTargetFramebuffer = Framebuffer::Create(FramebufferProperties {.Width = 1600, .Height = 900});
+		FramebufferProperties framebufferProperties { .Width = 1600, .Height = 900 };
+		framebufferProperties.Attachments =
+		{
+			FramebufferTextureFormat::RGBA8,
+			FramebufferTextureFormat::Depth
+		};
+		m_SceneViewCameraTargetFramebuffer = Framebuffer::Create(framebufferProperties);
 		m_SceneViewCameraTargetFramebuffer->SetDebugLabel("Scene View Framebuffer");
 		m_SceneViewCamera.Properties.TargetType = RenderTargetType::RenderTexture;
 		m_SceneViewCamera.Properties.pTargetRenderTexture = m_SceneViewCameraTargetFramebuffer.get();
@@ -673,7 +679,7 @@ namespace DYE::DYEditor
 			sceneViewCamera.Properties.pTargetRenderTexture->Resize(sceneViewWindowSize.x, sceneViewWindowSize.y);
 		}
 
-		auto sceneViewRenderTextureID = sceneViewCamera.Properties.pTargetRenderTexture->GetColorAttachmentID();
+		auto sceneViewRenderTextureID = sceneViewCamera.Properties.pTargetRenderTexture->GetColorAttachmentID(0);
 		auto imTexID = (void*)(intptr_t)(sceneViewRenderTextureID);
 		ImVec2 const uv0 = ImVec2(0, 1); ImVec2 const uv1 = ImVec2(1, 0);
 		ImGui::Image(imTexID, sceneViewWindowSize, uv0, uv1);

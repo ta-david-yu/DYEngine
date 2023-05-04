@@ -2,6 +2,7 @@
 @ZWrite Off
 @ZTest Less
 
+// Vertex shader
 #Shader Vertex
 #version 330 core
 
@@ -25,6 +26,7 @@ void main()
     gl_Position = _ProjectionMatrix * _ViewMatrix * _ModelMatrix * point4;
 };
 
+// Fragment shader
 #Shader Fragment
 #version 330 core
 
