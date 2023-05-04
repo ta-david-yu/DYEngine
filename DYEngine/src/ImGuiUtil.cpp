@@ -1412,9 +1412,13 @@ namespace DYE::ImGuiUtil
 			if (FilePathPopup_CurrentDirectory != FilePathPopup_RootDirectory)
 			{
 				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 1, 0, 1));
-				if (ImGui::Selectable("...", false, ImGuiSelectableFlags_DontClosePopups))
+				ImGuiSelectableFlags const flags = ImGuiSelectableFlags_DontClosePopups | ImGuiSelectableFlags_AllowDoubleClick;
+				if (ImGui::Selectable("...", false, flags))
 				{
-					FilePathPopup_CurrentDirectory = FilePathPopup_CurrentDirectory.parent_path();
+					if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+					{
+						FilePathPopup_CurrentDirectory = FilePathPopup_CurrentDirectory.parent_path();
+					}
 				}
 				ImGui::PopStyleColor();
 			}
@@ -1427,10 +1431,13 @@ namespace DYE::ImGuiUtil
 				{
 					// Draw directory.
 					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 1, 0, 1));
-					ImGuiSelectableFlags const flags = ImGuiSelectableFlags_DontClosePopups;
+					ImGuiSelectableFlags const flags = ImGuiSelectableFlags_DontClosePopups | ImGuiSelectableFlags_AllowDoubleClick;
 					if (ImGui::Selectable(fileNameString.c_str(), false, flags))
 					{
-						FilePathPopup_CurrentDirectory /= directoryEntry.path().filename();
+						if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+						{
+							FilePathPopup_CurrentDirectory /= directoryEntry.path().filename();
+						}
 					}
 					ImGui::PopStyleColor();
 				}
