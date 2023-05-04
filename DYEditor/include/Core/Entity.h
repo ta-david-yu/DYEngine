@@ -22,6 +22,8 @@ namespace DYE::DYEditor
 		friend class World;
 
 	public:
+		static Entity Null();
+
 		/// Create a null entity.
 		Entity() = default;
 		Entity(Entity const& other) = default;

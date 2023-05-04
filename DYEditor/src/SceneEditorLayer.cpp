@@ -390,7 +390,7 @@ namespace DYE::DYEditor
 		ImGuiWindowFlags const hierarchyWindowFlags = m_IsActiveSceneDirty? ImGuiWindowFlags_UnsavedDocument : ImGuiWindowFlags_None;
 		if (ImGui::Begin(k_SceneHierarchyWindowId, nullptr, hierarchyWindowFlags))
 		{
-			bool const isHierarchyChanged = drawSceneEntityHierarchyPanel(activeScene, &m_CurrentlySelectedEntityInHierarchyPanel);
+			bool const isHierarchyChanged = drawSceneEntityHierarchyPanel(activeScene, &m_CurrentlySelectedEntityGUID);
 			m_IsActiveSceneDirty |= isHierarchyChanged;
 		}
 		ImGui::End();
@@ -421,7 +421,8 @@ namespace DYE::DYEditor
 				ImGui::EndPopup();
 			}
 
-			m_InspectorContext.Entity = m_CurrentlySelectedEntityInHierarchyPanel;
+			auto tryGetSelectedEntity = activeScene.World.TryGetEntityWithGUID(m_CurrentlySelectedEntityGUID);
+			m_InspectorContext.Entity = tryGetSelectedEntity.has_value()? tryGetSelectedEntity.value() : Entity::Null();
 			bool const isEntityChanged = drawEntityInspector(m_InspectorContext, TypeRegistry::GetComponentTypesNamesAndDescriptors());
 			m_IsActiveSceneDirty |= isEntityChanged;
 		}
@@ -678,7 +679,7 @@ namespace DYE::DYEditor
 		ImGui::Image(imTexID, sceneViewWindowSize, uv0, uv1);
 	}
 
-	bool SceneEditorLayer::drawSceneEntityHierarchyPanel(Scene &scene, Entity *pCurrentSelectedEntity)
+	bool SceneEditorLayer::drawSceneEntityHierarchyPanel(Scene &scene, DYE::GUID *pCurrentSelectedEntityGUID)
 	{
 		bool changed = false;
 
@@ -689,9 +690,10 @@ namespace DYE::DYEditor
 			{
 				// Select the newly created entity.
 				// For now, the entity is always put at the end of the list.
-				*pCurrentSelectedEntity = scene.World.CreateEntity("Entity");
-				int const indexInWorldArray = scene.World.GetNumberOfEntities() - 1;
-				Undo::RegisterEntityCreation(scene.World, *pCurrentSelectedEntity, indexInWorldArray);
+				auto newEntity = scene.World.CreateEntity("Entity");
+				*pCurrentSelectedEntityGUID = newEntity.TryGetGUID().value();
+				int const newEntityIndexInWorld = scene.World.GetNumberOfEntities() - 1;
+				Undo::RegisterEntityCreation(scene.World, newEntity, newEntityIndexInWorld);
 				changed = true;
 			}
 			ImGui::EndPopup();
@@ -745,7 +747,7 @@ namespace DYE::DYEditor
 		(
 			[&changed,
 			 &scene,
-			 &pCurrentSelectedEntity,
+			 &pCurrentSelectedEntityGUID,
 			 &levelStack,
 			 &setParent,
 			 &reorderAtTop]
@@ -802,7 +804,7 @@ namespace DYE::DYEditor
 				bool const isEntityShown = pLevel == nullptr || pLevel->IsOpen;
 				bool const isLeafNode = childrenCount == 0;
 
-				bool const isSelected = entity == *pCurrentSelectedEntity;
+				bool const isSelected = guid == *pCurrentSelectedEntityGUID;
 
 				ImVec2 const entityTreeNodeScreenPos = ImGui::GetCursorScreenPos();
 				ImVec2 const entityWidgetSize = ImVec2(ImGui::GetContentRegionAvail().x,
@@ -836,16 +838,18 @@ namespace DYE::DYEditor
 							// Select the newly created entity.
 							// For now, the entity is always put at the end of the list.
 							// TODO: make it a child of the clicked tree node entity.
-							*pCurrentSelectedEntity = scene.World.CreateEntity("Entity");
-							int const indexInWorldArray = scene.World.GetNumberOfEntities() - 1;
-							Undo::RegisterEntityCreation(scene.World, *pCurrentSelectedEntity, indexInWorldArray);
+							auto newEntity = scene.World.CreateEntity("Entity");
+							*pCurrentSelectedEntityGUID = newEntity.TryGetGUID().value();
+							int const newEntityIndexInWorld = scene.World.GetNumberOfEntities() - 1;
+							Undo::RegisterEntityCreation(scene.World, newEntity, newEntityIndexInWorld);
+							Undo::SetEntityParent(newEntity, scene.World.GetNumberOfEntities() - 1, entity, indexInWorld);
 							changed = true;
 						}
 						ImGui::EndPopup();
 					}
 					if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
 					{
-						*pCurrentSelectedEntity = entity;
+						*pCurrentSelectedEntityGUID = guid;
 					}
 
 					ImVec2 const entityTreeNodeSize = ImGui::GetItemRectSize();

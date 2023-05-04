@@ -6,6 +6,12 @@
 
 namespace DYE::DYEditor
 {
+	Entity Entity::Null()
+	{
+		static Entity nullEntity;
+		return nullEntity;
+	}
+
 	Entity::Entity(World &world, EntityIdentifier identifier) : m_pWorld(&world), m_EntityIdentifier(identifier)
 	{
 	}

@@ -66,6 +66,7 @@ namespace DYE::DYEditor
 		bool m_IsActiveSceneDirty = false;
 
 		DYEditor::Entity m_CurrentlySelectedEntityInHierarchyPanel;
+		DYE::GUID m_CurrentlySelectedEntityGUID;
 		std::filesystem::path m_CurrentSceneFilePath;
 
 		Camera m_SceneViewCamera;
@@ -84,7 +85,7 @@ namespace DYE::DYEditor
 		static void drawEditorWindowMenuBar(Scene &currentScene, std::filesystem::path &currentScenePathContext,
 											bool *pIsSceneDirty);
 		static void drawSceneView(Camera &sceneViewCamera);
-		static bool drawSceneEntityHierarchyPanel(Scene &scene, DYEditor::Entity *pCurrentSelectedEntity);
+		static bool drawSceneEntityHierarchyPanel(Scene &scene, DYE::GUID *pCurrentSelectedEntityGUID);
 		static bool drawSceneEntityHierarchyPanelSimple(Scene &scene, DYEditor::Entity *pCurrentSelectedEntity);
 		static bool drawSceneSystemPanel(Scene& scene);
 		template<typename Func> requires std::predicate<Func, std::string const&, SystemBase const*>
