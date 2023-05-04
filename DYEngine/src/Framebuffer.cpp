@@ -22,7 +22,7 @@ namespace DYE
 			switch (format)
 			{
 				// TODO: add more depth formats
-				case FramebufferTextureFormat::DEPTH24STENCIL8:
+				case FramebufferTextureFormat::Depth24Stencil8:
 					return true;
 			}
 
@@ -99,6 +99,8 @@ namespace DYE
 			glCreateTextures(multiSampled? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D, m_ColorAttachmentIDs.size(), m_ColorAttachmentIDs.data());
 
 			// Color textures initialization & attachments.
+			// TODO: later we might want to create a color texture 2d handle so others could access the color attachment as if it's
+			// 		a texture 2d.
 			for (std::size_t i = 0; i < m_ColorAttachmentIDs.size(); i++)
 			{
 				TextureID colorAttachmentID = m_ColorAttachmentIDs[i];
@@ -110,6 +112,9 @@ namespace DYE
 					// TODO: add more framebuffer color texture formats
 					case FramebufferTextureFormat::RGBA8:
 						glTextureFormat = GL_RGBA8;
+						break;
+					case FramebufferTextureFormat::RedInteger:
+						glTextureFormat = GL_R32I;
 						break;
 				}
 
@@ -142,7 +147,7 @@ namespace DYE
 			switch (m_DepthAttachmentProperties.TextureFormat)
 			{
 				// TODO: add more framebuffer depth texture formats
-				case FramebufferTextureFormat::DEPTH24STENCIL8:
+				case FramebufferTextureFormat::Depth24Stencil8:
 					glTextureFormat = GL_DEPTH24_STENCIL8;
 					break;
 			}
@@ -165,22 +170,6 @@ namespace DYE
 			glNamedFramebufferDrawBuffer(m_ID, GL_NONE);
 		}
 
-//		// Create a color attachment (texture 2d) for the framebuffer.
-//		// TODO: later we want to create a color texture 2d handle so others could access the color attachment as if it's
-//		// 		a texture 2d.
-//		glCreateTextures(GL_TEXTURE_2D, 1, &m_ColorAttachmentID);
-//		glTextureStorage2D(m_ColorAttachmentID, 1, GL_RGBA8, m_Properties.Width, m_Properties.Height);
-//		glTextureParameteri(m_ColorAttachmentID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//		glTextureParameteri(m_ColorAttachmentID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//
-//		glNamedFramebufferTexture(m_ID, GL_COLOR_ATTACHMENT0, m_ColorAttachmentID, 0);
-//
-//		// Create depth & stencil texture for the framebuffer.
-//		glCreateTextures(GL_TEXTURE_2D, 1, &m_DepthStencilAttachmentID);
-//		glTextureStorage2D(m_DepthStencilAttachmentID, 1, GL_DEPTH24_STENCIL8, m_Properties.Width, m_Properties.Height);
-//
-//		glNamedFramebufferTexture(m_ID, GL_DEPTH_STENCIL_ATTACHMENT, m_DepthStencilAttachmentID, 0);
-
 		auto status = glCheckNamedFramebufferStatus(m_ID, GL_FRAMEBUFFER);
 		DYE_ASSERT_LOG_WARN(status == GL_FRAMEBUFFER_COMPLETE, "Framebuffer %d is incomplete.", m_ID);
 
@@ -190,6 +179,27 @@ namespace DYE
 			glObjectLabel(GL_FRAMEBUFFER, m_ID, -1, m_DebugName.c_str());
 		}
 #endif
+	}
+
+
+	int Framebuffer::ReadPixelAsInteger(std::uint32_t colorAttachmentIndex, int x, int y)
+	{
+		DYE_ASSERT_LOG_WARN(colorAttachmentIndex < m_ColorAttachmentIDs.size(),
+							"Trying to read pixel from attachment index %d but there are only %zu attachments",
+							colorAttachmentIndex,
+							m_ColorAttachmentIDs.size());
+
+
+		// FIXME: glNamedFramebufferReadBuffer for some reasons doesn't work :P
+		//	 so we need to do it the old-school way, binding/unbinding manually.
+		//glNamedFramebufferReadBuffer(m_ID, GL_COLOR_ATTACHMENT0 + colorAttachmentIndex);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, m_ID);
+		glReadBuffer(GL_COLOR_ATTACHMENT0 + colorAttachmentIndex);
+		int pixelData = -1;
+		glReadPixels(x, y, 1, 1, GL_RED_INTEGER, GL_INT, &pixelData);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		return pixelData;
 	}
 
 	TextureID Framebuffer::GetColorAttachmentID(std::size_t index) const

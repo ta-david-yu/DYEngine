@@ -43,6 +43,7 @@ uniform vec4 _MainTex_TilingOffset = vec4(1, 1, 0, 0);
 uniform vec4 _Color;
 
 layout(location = 0) out vec4 color;
+layout(location = 1) out int color2;
 
 void main()
 {
@@ -56,4 +57,5 @@ void main()
     }
 
     color = finalColor;
+    color2 = 50;
 };

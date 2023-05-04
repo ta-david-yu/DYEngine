@@ -26,6 +26,11 @@ namespace DYE::DYEditor
 {
 	class SceneRuntimeLayer;
 
+	struct SceneViewContext
+	{
+		Math::Rect ViewportBounds;
+	};
+
 	enum class InspectorMode
 	{
 		Normal,
@@ -52,6 +57,7 @@ namespace DYE::DYEditor
 		void OnEvent(DYE::Event &event) override;
 		void OnRender() override;
 		void OnImGui() override;
+		void OnEndOfFrame() override;
 
 		// Inherit from RuntimeStateListenerBase
 		void OnPlayModeStateChanged(DYE::DYEditor::ModeStateChange stateChange) override;
@@ -74,8 +80,10 @@ namespace DYE::DYEditor
 		float m_CameraMousePanMoveUnitPerSecond = 2.0f;
 		float m_CameraOrthographicSizeZoomSpeedMultiplier = 200.0f;
 
+		bool m_IsSceneViewDrawn = true;
 		bool m_IsSceneViewWindowFocused = false;
 		bool m_IsSceneViewWindowHovered = false;
+		Math::Rect m_SceneViewportBounds;
 
 		InspectorMode m_InspectorMode = InspectorMode::Normal;
 		EntityInspectorContext m_InspectorContext;
@@ -83,7 +91,7 @@ namespace DYE::DYEditor
 		static void setEditorWindowDefaultLayout(ImGuiID dockSpaceId);
 		static void drawEditorWindowMenuBar(Scene &currentScene, std::filesystem::path &currentScenePathContext,
 											bool *pIsSceneDirty);
-		static void drawSceneView(Camera &sceneViewCamera);
+		static void drawSceneView(Camera &sceneViewCamera, SceneViewContext &context);
 		static bool drawSceneEntityHierarchyPanel(Scene &scene, DYE::GUID *pCurrentSelectedEntityGUID);
 		static bool drawSceneEntityHierarchyPanelSimple(Scene &scene, DYEditor::Entity *pCurrentSelectedEntity);
 		static bool drawSceneSystemPanel(Scene& scene);

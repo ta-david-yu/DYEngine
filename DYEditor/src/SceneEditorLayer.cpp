@@ -153,6 +153,7 @@ namespace DYE::DYEditor
 		framebufferProperties.Attachments =
 		{
 			FramebufferTextureFormat::RGBA8,
+			FramebufferTextureFormat::RedInteger,
 			FramebufferTextureFormat::Depth
 		};
 		m_SceneViewCameraTargetFramebuffer = Framebuffer::Create(framebufferProperties);
@@ -258,57 +259,10 @@ namespace DYE::DYEditor
 
 	void SceneEditorLayer::OnRender()
 	{
-		DYE::RenderPipelineManager::RegisterCameraForNextRender(m_SceneViewCamera);
-	}
-
-	void SceneEditorLayer::OnPlayModeStateChanged(DYE::DYEditor::ModeStateChange stateChange)
-	{
-		auto &scene = RuntimeSceneManagement::GetActiveMainScene();
-		if (stateChange == ModeStateChange::BeforeEnterPlayMode)
+		if (m_IsSceneViewDrawn)
 		{
-			// Save a copy of the active scene as a serialized scene.
-			m_SerializedSceneCacheWhenEnterPlayMode = SerializedObjectFactory::CreateSerializedScene(scene);
-
-			// Initialize load systems.
-			scene.ForEachSystemDescriptor
-			(
-				[&scene](SystemDescriptor &systemDescriptor, ExecutionPhase phase)
-				{
-					systemDescriptor.Instance->InitializeLoad(
-						scene.World,
-						InitializeLoadParameters
-						{
-							.LoadType = InitializeLoadType::BeforeEnterPlayMode
-						});
-				}
-			);
-
-			// Execute initialize systems.
-			scene.ExecuteInitializeSystems();
-		}
-		else if (stateChange == ModeStateChange::BeforeEnterEditMode)
-		{
-			// Execute teardown systems.
-			scene.ExecuteTeardownSystems();
-
-			// Initialize load systems.
-			scene.ForEachSystemDescriptor
-			(
-				[&scene](SystemDescriptor &systemDescriptor, ExecutionPhase phase)
-				{
-					systemDescriptor.Instance->InitializeLoad(
-						scene.World,
-						InitializeLoadParameters
-						{
-							.LoadType = InitializeLoadType::BeforeEnterEditMode
-						});
-				}
-			);
-
-			// Reapply the serialized scene back to the active scene.
-			// TODO: maybe have an option to keep the changes in play mode?
-			scene.Clear();
-			SerializedObjectFactory::ApplySerializedSceneToEmptyScene(m_SerializedSceneCacheWhenEnterPlayMode, scene);
+			// We only want to render the scene view camera if the scene view window is drawn.
+			DYE::RenderPipelineManager::RegisterCameraForNextRender(m_SceneViewCamera);
 		}
 	}
 
@@ -367,10 +321,13 @@ namespace DYE::DYEditor
 		// Draw all the major editor windows.
 		// TODO: right now we make all the major windows transparent (alpha = 0.35f)
 		//		We might want to make it configurable for the users & having two values for Edit Mode and Play Mode
+
+		// Scene View
 		ImGuiWindowFlags const sceneViewWindowFlags = ImGuiWindowFlags_MenuBar;
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2 {0, 0});
 		ImGui::SetNextWindowBgAlpha(0.35f);
-		if (ImGui::Begin(k_SceneViewWindowId, nullptr, sceneViewWindowFlags))
+		m_IsSceneViewDrawn = ImGui::Begin(k_SceneViewWindowId, nullptr, sceneViewWindowFlags);
+		if (m_IsSceneViewDrawn)
 		{
 			m_IsSceneViewWindowFocused = ImGui::IsWindowFocused();
 			m_IsSceneViewWindowHovered = ImGui::IsWindowHovered();
@@ -379,11 +336,14 @@ namespace DYE::DYEditor
 			bool const editorShouldReceiveCameraInputEvent = m_IsSceneViewWindowFocused || m_IsSceneViewWindowHovered;
 			m_pApplication->GetImGuiLayer().SetBlockEvents(!editorShouldReceiveCameraInputEvent);
 
-			drawSceneView(m_SceneViewCamera);
+			SceneViewContext sceneViewContext { .ViewportBounds = m_SceneViewportBounds };
+			drawSceneView(m_SceneViewCamera, sceneViewContext);
+			m_SceneViewportBounds = sceneViewContext.ViewportBounds;
 		}
 		ImGui::End();
 		ImGui::PopStyleVar();
 
+		// System Panel
 		ImGui::SetNextWindowBgAlpha(0.35f);
 		if (ImGui::Begin(k_SceneSystemWindowId))
 		{
@@ -392,6 +352,7 @@ namespace DYE::DYEditor
 		}
 		ImGui::End();
 
+		// Scene Hierarchy
 		ImGui::SetNextWindowBgAlpha(0.35f);
 		ImGuiWindowFlags const hierarchyWindowFlags = m_IsActiveSceneDirty? ImGuiWindowFlags_UnsavedDocument : ImGuiWindowFlags_None;
 		if (ImGui::Begin(k_SceneHierarchyWindowId, nullptr, hierarchyWindowFlags))
@@ -401,9 +362,8 @@ namespace DYE::DYEditor
 		}
 		ImGui::End();
 
+		// Entity Inspector
 		ImGui::SetNextWindowBgAlpha(0.35f);
-
-		// We want to draw window with different titles in different mode (normal/debug).
 		char entityInspectorWindowName[128];
 		bool const debugMode = m_InspectorContext.Mode == InspectorMode::Debug;
 		sprintf(entityInspectorWindowName, "%s%s", debugMode ? "Entity Inspector (Debug)" : "Entity Inspector", k_EntityInspectorWindowId);
@@ -645,8 +605,23 @@ namespace DYE::DYEditor
 		}
 	}
 
-	void SceneEditorLayer::drawSceneView(Camera &sceneViewCamera)
+	void SceneEditorLayer::drawSceneView(Camera &sceneViewCamera, SceneViewContext &context)
 	{
+		// Update scene viewport bounds.
+		{
+			ImVec2 viewportOffset = ImGui::GetCursorPos();
+			ImVec2 windowSize = ImGui::GetWindowSize();
+			ImVec2 viewportBoundsMin = ImGui::GetWindowPos();
+			// We need to offset the values by the cursor position because
+			// scene view window could also draw tab/menu bar on the top,
+			// and we don't want to take those widgets into account.
+			windowSize.x -= viewportOffset.x;
+			windowSize.y -= viewportOffset.y;
+			viewportBoundsMin.x += viewportOffset.x;
+			viewportBoundsMin.y += viewportOffset.y;
+			context.ViewportBounds = Math::Rect(viewportBoundsMin.x, viewportBoundsMin.y, windowSize.x, windowSize.y);
+		}
+
 		if (ImGui::BeginMenuBar())
 		{
 			if (ImGui::BeginMenu("Camera"))
@@ -1878,5 +1853,83 @@ namespace DYE::DYEditor
 		}
 
 		return isEntityChangedThisFrame;
+	}
+
+	void SceneEditorLayer::OnEndOfFrame()
+	{
+		glm::vec2 viewportSize = { m_SceneViewportBounds.Width, m_SceneViewportBounds.Height };
+
+		auto [mouseX, mouseY] = ImGui::GetMousePos();
+		mouseX -= m_SceneViewportBounds.X;
+		mouseY -= m_SceneViewportBounds.Y;
+		mouseY = viewportSize.y - mouseY;	// Flip y coordinate.
+
+		int const viewportSpaceMouseX = (int) mouseX;
+		int const viewportSpaceMouseY = (int) mouseY;
+
+		bool const withinViewport = mouseX >= 0 && mouseY >= 0 && mouseX < viewportSize.x && mouseY < viewportSize.y;
+		if (INPUT.GetMouseButtonDown(DYE::MouseButton::Left))
+		{
+			DYE_LOG("Viewport Pos: %d, %d", viewportSpaceMouseX, viewportSpaceMouseY);
+			DYE_LOG("Within Viewport: %s", withinViewport? "True" : "False");
+		}
+
+		if (withinViewport)
+		{
+			// Read from the framebuffer second attachment.
+			int pixelValue = m_SceneViewCamera.Properties.pTargetRenderTexture->ReadPixelAsInteger(1, viewportSpaceMouseX, viewportSpaceMouseY);
+			DYE_LOG("Pixel Value: %d", pixelValue);
+		}
+	}
+
+	void SceneEditorLayer::OnPlayModeStateChanged(DYE::DYEditor::ModeStateChange stateChange)
+	{
+		auto &scene = RuntimeSceneManagement::GetActiveMainScene();
+		if (stateChange == ModeStateChange::BeforeEnterPlayMode)
+		{
+			// Save a copy of the active scene as a serialized scene.
+			m_SerializedSceneCacheWhenEnterPlayMode = SerializedObjectFactory::CreateSerializedScene(scene);
+
+			// Initialize load systems.
+			scene.ForEachSystemDescriptor
+				(
+					[&scene](SystemDescriptor &systemDescriptor, ExecutionPhase phase)
+					{
+						systemDescriptor.Instance->InitializeLoad(
+							scene.World,
+							InitializeLoadParameters
+								{
+									.LoadType = InitializeLoadType::BeforeEnterPlayMode
+								});
+					}
+				);
+
+			// Execute initialize systems.
+			scene.ExecuteInitializeSystems();
+		}
+		else if (stateChange == ModeStateChange::BeforeEnterEditMode)
+		{
+			// Execute teardown systems.
+			scene.ExecuteTeardownSystems();
+
+			// Initialize load systems.
+			scene.ForEachSystemDescriptor
+				(
+					[&scene](SystemDescriptor &systemDescriptor, ExecutionPhase phase)
+					{
+						systemDescriptor.Instance->InitializeLoad(
+							scene.World,
+							InitializeLoadParameters
+								{
+									.LoadType = InitializeLoadType::BeforeEnterEditMode
+								});
+					}
+				);
+
+			// Reapply the serialized scene back to the active scene.
+			// TODO: maybe have an option to keep the changes in play mode?
+			scene.Clear();
+			SerializedObjectFactory::ApplySerializedSceneToEmptyScene(m_SerializedSceneCacheWhenEnterPlayMode, scene);
+		}
 	}
 }

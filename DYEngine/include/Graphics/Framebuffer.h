@@ -17,12 +17,13 @@ namespace DYE
 		// TODO: add more framebuffer texture format
 		// Color
 		RGBA8,
+		RedInteger,
 
 		// Depth/Stencil
-		DEPTH24STENCIL8,
+		Depth24Stencil8,
 
 		// Defaults
-		Depth = DEPTH24STENCIL8
+		Depth = Depth24Stencil8
 	};
 
 	struct FramebufferTextureProperties
@@ -68,6 +69,8 @@ namespace DYE
 		/// Create the actual underlying implementation instance of the framebuffer.
 		/// If it's already created, it will be reset and re-created based on the internal properties.
 		void CreateOrReset();
+
+		int ReadPixelAsInteger(std::uint32_t colorAttachmentIndex, int x, int y);
 
 		// TODO: maybe later we want to create a color texture 2d handle so others could access the color attachment as if it's
 		// 		a texture 2d, OR MAYBE NOT.
