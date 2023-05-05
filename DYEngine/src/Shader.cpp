@@ -136,18 +136,17 @@ namespace DYE
         Unbind();
 
         DYE_LOG("Delete Program [%d] %s", m_ID, m_Name.c_str());
-        glCall(glDeleteProgram(m_ID));
+        glDeleteProgram(m_ID);
     }
 
     void ShaderProgram::Use() const
     {
         glCall(glUseProgram(m_ID));
-
     }
 
     void ShaderProgram::Unbind() const
     {
-        glCall(glUseProgram(0));
+        glUseProgram(0);
     }
 
 	std::optional<UniformInfo> ShaderProgram::TryGetUniformInfo(const std::string &name) const

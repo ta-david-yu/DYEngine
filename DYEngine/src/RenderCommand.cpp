@@ -35,10 +35,13 @@ namespace DYE
 			case GL_DEBUG_SEVERITY_HIGH:
 				DYE_LOG_ERROR("[OpenGL Debug HIGH] %s", message);
 				DYE_ASSERT(false);
+				break;
 			case GL_DEBUG_SEVERITY_MEDIUM:
 				DYE_LOG_WARN("[OpenGL Debug MED] %s", message);
+				break;
 			case GL_DEBUG_SEVERITY_LOW:
-				DYE_LOG_INFO("[OpenGL Debug LOW] %s", message);
+				//DYE_LOG_INFO("[OpenGL Debug LOW] %s", message);
+				break;
 		}
     }
 #endif
@@ -105,6 +108,14 @@ namespace DYE
 		glCall(glEnable(GL_SCISSOR_TEST));
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
+
+	void RenderCommand::ClearDepthStencilOnly()
+	{
+		// Enable depth mask first so glClear() call actually clears depth buffer.
+		glCall(glDepthMask(GL_TRUE));
+		glCall(glEnable(GL_SCISSOR_TEST));
+		glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	}
 
 	void RenderCommand::DrawIndexedLinesNow(const VertexArray &vertexArray)
 	{

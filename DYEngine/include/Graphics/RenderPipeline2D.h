@@ -12,6 +12,7 @@ namespace DYE
 	class RenderPipeline2D : public RenderPipelineBase
 	{
 	public:
+
 		struct RenderSubmission2D
 		{
 			std::shared_ptr<VertexArray> VertexArray;
@@ -22,8 +23,15 @@ namespace DYE
 
 		RenderPipeline2D();
 		RenderPipeline2D(RenderPipeline2D const& other) = delete;
-		void Submit(std::shared_ptr<VertexArray> &vertexArray, std::shared_ptr<Material> &material, glm::mat4 objectToWorldMatrix) override;
+		void Submit(const std::shared_ptr<VertexArray> &vertexArray, const std::shared_ptr<Material> &material,
+					glm::mat4 objectToWorldMatrix, MaterialPropertyBlock materialPropertyBlock) override;
+
+		std::shared_ptr<VertexArray> GetDefaultQuadSpriteVAO() const { return m_DefaultSpriteVAO; }
+		std::shared_ptr<Material> GetDefaultSpriteMaterial() const { return m_DefaultSpriteMaterial; }
+
+		[[deprecated("Use Submit & GetDefaultQuadSpriteVAO to submit a quad sprite instead.")]]
 		void SubmitSprite(const std::shared_ptr<Texture2D>& texture, glm::vec4 color, glm::mat4 objectToWorldMatrix);
+		[[deprecated("Use Submit & GetDefaultQuadSpriteVAO to submit a quad sprite instead.")]]
 		void SubmitTiledSprite(const std::shared_ptr<Texture2D>& texture, glm::vec4 tilingOffset, glm::vec4 color, glm::mat4 objectToWorldMatrix);
 
 	protected:

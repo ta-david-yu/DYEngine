@@ -2,6 +2,7 @@
 @ZWrite Off
 @ZTest Less
 
+// Vertex shader
 #Shader Vertex
 #version 330 core
 
@@ -25,6 +26,7 @@ void main()
     gl_Position = _ProjectionMatrix * _ViewMatrix * _ModelMatrix * point4;
 };
 
+// Fragment shader
 #Shader Fragment
 #version 330 core
 
@@ -41,6 +43,7 @@ uniform vec4 _MainTex_TilingOffset = vec4(1, 1, 0, 0);
 uniform vec4 _Color;
 
 layout(location = 0) out vec4 color;
+layout(location = 1) out int color2;
 
 void main()
 {
@@ -54,4 +57,5 @@ void main()
     }
 
     color = finalColor;
+    color2 = 50;
 };

@@ -49,6 +49,8 @@ namespace DYE
         /// Clear currently bound draw buffer (color, depth, stencil)
         void Clear();
 
+		void ClearDepthStencilOnly();
+
 		/// Draw VAO as line primitives.
 		/// \param vertexArray
 		void DrawIndexedLinesNow(const VertexArray &vertexArray);

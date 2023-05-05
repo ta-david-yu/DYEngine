@@ -26,6 +26,11 @@ namespace DYE::DYEditor
 {
 	class SceneRuntimeLayer;
 
+	struct SceneViewContext
+	{
+		Math::Rect ViewportBounds;
+	};
+
 	enum class InspectorMode
 	{
 		Normal,
@@ -52,6 +57,7 @@ namespace DYE::DYEditor
 		void OnEvent(DYE::Event &event) override;
 		void OnRender() override;
 		void OnImGui() override;
+		void OnEndOfFrame() override;
 
 		// Inherit from RuntimeStateListenerBase
 		void OnPlayModeStateChanged(DYE::DYEditor::ModeStateChange stateChange) override;
@@ -70,26 +76,26 @@ namespace DYE::DYEditor
 
 		Camera m_SceneViewCamera;
 		std::shared_ptr<Framebuffer> m_SceneViewCameraTargetFramebuffer;
+		std::shared_ptr<Framebuffer> m_SceneViewEntityIDFramebuffer;
 		float m_CameraKeyboardMoveUnitPerSecond = 10.0f;
 		float m_CameraMousePanMoveUnitPerSecond = 2.0f;
 		float m_CameraOrthographicSizeZoomSpeedMultiplier = 200.0f;
 
+		bool m_IsSceneViewDrawn = true;
 		bool m_IsSceneViewWindowFocused = false;
 		bool m_IsSceneViewWindowHovered = false;
+		Math::Rect m_SceneViewportBounds;
 
 		InspectorMode m_InspectorMode = InspectorMode::Normal;
 		EntityInspectorContext m_InspectorContext;
 
 		static void setEditorWindowDefaultLayout(ImGuiID dockSpaceId);
-		static void drawEditorWindowMenuBar(Scene &currentScene, std::filesystem::path &currentScenePathContext,
-											bool *pIsSceneDirty);
-		static void drawSceneView(Camera &sceneViewCamera);
+		static void drawEditorWindowMenuBar(Scene &currentScene, std::filesystem::path &currentScenePathContext, bool *pIsSceneDirty);
+		static void drawSceneView(Camera &sceneViewCamera, Framebuffer &entityIDFramebuffer, SceneViewContext &context);
 		static bool drawSceneEntityHierarchyPanel(Scene &scene, DYE::GUID *pCurrentSelectedEntityGUID);
-		static bool drawSceneEntityHierarchyPanelSimple(Scene &scene, DYEditor::Entity *pCurrentSelectedEntity);
 		static bool drawSceneSystemPanel(Scene& scene);
 		template<typename Func> requires std::predicate<Func, std::string const&, SystemBase const*>
 		static bool drawSceneSystemList(Scene &scene, std::vector<SystemDescriptor> &systemDescriptors, Func addSystemFilterPredicate);
-		static bool drawEntityInspector(EntityInspectorContext &context,
-										std::vector<std::pair<std::string, ComponentTypeDescriptor>> componentNamesAndDescriptors);
+		static bool drawEntityInspector(EntityInspectorContext &context, std::vector<std::pair<std::string, ComponentTypeDescriptor>> componentNamesAndDescriptors);
 	};
 }

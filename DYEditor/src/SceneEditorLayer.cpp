@@ -20,6 +20,7 @@
 #include "ImGui/ImGuiUtil.h"
 #include "ImGui/ImGuiUtil_Internal.h"
 #include "Undo/Undo.h"
+#include "SceneViewEntitySelection.h"
 
 #include "Components/NameComponent.h"
 #include "Components/HierarchyComponents.h"
@@ -145,12 +146,31 @@ namespace DYE::DYEditor
 			RuntimeSceneManagement::GetActiveMainScene().TryAddSystemByName(RegisterCameraSystem::TypeName);
 		}
 
-		// Register events.
+		// Register runtime state events.
 		RuntimeState::RegisterListener(this);
 
-		// Initialize SceneView framebuffer.
-		m_SceneViewCameraTargetFramebuffer = Framebuffer::Create(FramebufferProperties {.Width = 1600, .Height = 900});
+		// Initialize SceneViewEntitySelection shader.
+		SceneViewEntitySelection::InitializeEntityIDShader();
+
+		// Initialize SceneView frameBuffers & camera.
+		FramebufferProperties targetFramebufferProperties { .Width = 1600, .Height = 900 };
+		targetFramebufferProperties.Attachments =
+		{
+			FramebufferTextureFormat::RGBA8,
+			FramebufferTextureFormat::Depth
+		};
+		m_SceneViewCameraTargetFramebuffer = Framebuffer::Create(targetFramebufferProperties);
 		m_SceneViewCameraTargetFramebuffer->SetDebugLabel("Scene View Framebuffer");
+
+		FramebufferProperties entityIDFramebufferProperties { .Width = 1600, .Height = 900 };
+		entityIDFramebufferProperties.Attachments =
+		{
+			FramebufferTextureFormat::RedInteger,
+			FramebufferTextureFormat::Depth
+		};
+		m_SceneViewEntityIDFramebuffer = Framebuffer::Create(entityIDFramebufferProperties);
+		m_SceneViewEntityIDFramebuffer->SetDebugLabel("Scene View EntityID Framebuffer");
+
 		m_SceneViewCamera.Properties.TargetType = RenderTargetType::RenderTexture;
 		m_SceneViewCamera.Properties.pTargetRenderTexture = m_SceneViewCameraTargetFramebuffer.get();
 		m_SceneViewCamera.Position = {0, 0, 10};
@@ -252,57 +272,15 @@ namespace DYE::DYEditor
 
 	void SceneEditorLayer::OnRender()
 	{
-		DYE::RenderPipelineManager::RegisterCameraForNextRender(m_SceneViewCamera);
-	}
-
-	void SceneEditorLayer::OnPlayModeStateChanged(DYE::DYEditor::ModeStateChange stateChange)
-	{
-		auto &scene = RuntimeSceneManagement::GetActiveMainScene();
-		if (stateChange == ModeStateChange::BeforeEnterPlayMode)
+		if (m_IsSceneViewDrawn)
 		{
-			// Save a copy of the active scene as a serialized scene.
-			m_SerializedSceneCacheWhenEnterPlayMode = SerializedObjectFactory::CreateSerializedScene(scene);
+			// We only want to render the scene view camera if the scene view window is drawn.
 
-			// Initialize load systems.
-			scene.ForEachSystemDescriptor
-			(
-				[&scene](SystemDescriptor &systemDescriptor, ExecutionPhase phase)
-				{
-					systemDescriptor.Instance->InitializeLoad(
-						scene.World,
-						InitializeLoadParameters
-						{
-							.LoadType = InitializeLoadType::BeforeEnterPlayMode
-						});
-				}
-			);
+			// Register scene view camera to render what the user sees in scene view.
+			DYE::RenderPipelineManager::RegisterCameraForNextRender(m_SceneViewCamera);
 
-			// Execute initialize systems.
-			scene.ExecuteInitializeSystems();
-		}
-		else if (stateChange == ModeStateChange::BeforeEnterEditMode)
-		{
-			// Execute teardown systems.
-			scene.ExecuteTeardownSystems();
-
-			// Initialize load systems.
-			scene.ForEachSystemDescriptor
-			(
-				[&scene](SystemDescriptor &systemDescriptor, ExecutionPhase phase)
-				{
-					systemDescriptor.Instance->InitializeLoad(
-						scene.World,
-						InitializeLoadParameters
-						{
-							.LoadType = InitializeLoadType::BeforeEnterEditMode
-						});
-				}
-			);
-
-			// Reapply the serialized scene back to the active scene.
-			// TODO: maybe have an option to keep the changes in play mode?
-			scene.Clear();
-			SerializedObjectFactory::ApplySerializedSceneToEmptyScene(m_SerializedSceneCacheWhenEnterPlayMode, scene);
+			// Directly render entity id framebuffer for entity mouse selection.
+			SceneViewEntitySelection::RenderEntityIDFramebufferWithCamera(*m_SceneViewEntityIDFramebuffer, m_SceneViewCamera);
 		}
 	}
 
@@ -361,10 +339,13 @@ namespace DYE::DYEditor
 		// Draw all the major editor windows.
 		// TODO: right now we make all the major windows transparent (alpha = 0.35f)
 		//		We might want to make it configurable for the users & having two values for Edit Mode and Play Mode
+
+		// Scene View
 		ImGuiWindowFlags const sceneViewWindowFlags = ImGuiWindowFlags_MenuBar;
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2 {0, 0});
 		ImGui::SetNextWindowBgAlpha(0.35f);
-		if (ImGui::Begin(k_SceneViewWindowId, nullptr, sceneViewWindowFlags))
+		m_IsSceneViewDrawn = ImGui::Begin(k_SceneViewWindowId, nullptr, sceneViewWindowFlags);
+		if (m_IsSceneViewDrawn)
 		{
 			m_IsSceneViewWindowFocused = ImGui::IsWindowFocused();
 			m_IsSceneViewWindowHovered = ImGui::IsWindowHovered();
@@ -373,11 +354,14 @@ namespace DYE::DYEditor
 			bool const editorShouldReceiveCameraInputEvent = m_IsSceneViewWindowFocused || m_IsSceneViewWindowHovered;
 			m_pApplication->GetImGuiLayer().SetBlockEvents(!editorShouldReceiveCameraInputEvent);
 
-			drawSceneView(m_SceneViewCamera);
+			SceneViewContext sceneViewContext { .ViewportBounds = m_SceneViewportBounds };
+			drawSceneView(m_SceneViewCamera, *m_SceneViewEntityIDFramebuffer, sceneViewContext);
+			m_SceneViewportBounds = sceneViewContext.ViewportBounds;
 		}
 		ImGui::End();
 		ImGui::PopStyleVar();
 
+		// System Panel
 		ImGui::SetNextWindowBgAlpha(0.35f);
 		if (ImGui::Begin(k_SceneSystemWindowId))
 		{
@@ -386,6 +370,7 @@ namespace DYE::DYEditor
 		}
 		ImGui::End();
 
+		// Scene Hierarchy
 		ImGui::SetNextWindowBgAlpha(0.35f);
 		ImGuiWindowFlags const hierarchyWindowFlags = m_IsActiveSceneDirty? ImGuiWindowFlags_UnsavedDocument : ImGuiWindowFlags_None;
 		if (ImGui::Begin(k_SceneHierarchyWindowId, nullptr, hierarchyWindowFlags))
@@ -395,9 +380,8 @@ namespace DYE::DYEditor
 		}
 		ImGui::End();
 
+		// Entity Inspector
 		ImGui::SetNextWindowBgAlpha(0.35f);
-
-		// We want to draw window with different titles in different mode (normal/debug).
 		char entityInspectorWindowName[128];
 		bool const debugMode = m_InspectorContext.Mode == InspectorMode::Debug;
 		sprintf(entityInspectorWindowName, "%s%s", debugMode ? "Entity Inspector (Debug)" : "Entity Inspector", k_EntityInspectorWindowId);
@@ -639,8 +623,23 @@ namespace DYE::DYEditor
 		}
 	}
 
-	void SceneEditorLayer::drawSceneView(Camera &sceneViewCamera)
+	void SceneEditorLayer::drawSceneView(Camera &sceneViewCamera, Framebuffer &entityIDFramebuffer, SceneViewContext &context)
 	{
+		// Update scene viewport bounds.
+		{
+			ImVec2 viewportOffset = ImGui::GetCursorPos();
+			ImVec2 windowSize = ImGui::GetWindowSize();
+			ImVec2 viewportBoundsMin = ImGui::GetWindowPos();
+			// We need to offset the values by the cursor position because
+			// scene view window could also draw tab/menu bar on the top,
+			// and we don't want to take those widgets into account.
+			windowSize.x -= viewportOffset.x;
+			windowSize.y -= viewportOffset.y;
+			viewportBoundsMin.x += viewportOffset.x;
+			viewportBoundsMin.y += viewportOffset.y;
+			context.ViewportBounds = Math::Rect(viewportBoundsMin.x, viewportBoundsMin.y, windowSize.x, windowSize.y);
+		}
+
 		if (ImGui::BeginMenuBar())
 		{
 			if (ImGui::BeginMenu("Camera"))
@@ -671,9 +670,10 @@ namespace DYE::DYEditor
 		{
 			// Resize the target framebuffer (render texture) if the window avail region size is different with the framebuffer size.
 			sceneViewCamera.Properties.pTargetRenderTexture->Resize(sceneViewWindowSize.x, sceneViewWindowSize.y);
+			entityIDFramebuffer.Resize(sceneViewWindowSize.x, sceneViewWindowSize.y);
 		}
 
-		auto sceneViewRenderTextureID = sceneViewCamera.Properties.pTargetRenderTexture->GetColorAttachmentID();
+		auto sceneViewRenderTextureID = sceneViewCamera.Properties.pTargetRenderTexture->GetColorAttachmentID(0);
 		auto imTexID = (void*)(intptr_t)(sceneViewRenderTextureID);
 		ImVec2 const uv0 = ImVec2(0, 1); ImVec2 const uv1 = ImVec2(1, 0);
 		ImGui::Image(imTexID, sceneViewWindowSize, uv0, uv1);
@@ -683,8 +683,16 @@ namespace DYE::DYEditor
 	{
 		bool changed = false;
 
+		if (ImGui::IsWindowHovered())
+		{
+			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+			{
+				*pCurrentSelectedEntityGUID = (DYE::GUID) 0;
+			}
+		}
+
 		// Draw scene hierarchy context menu.
-		if (ImGui::BeginPopupContextWindow())
+		if (ImGui::BeginPopupContextWindow(nullptr, ImGuiPopupFlags_MouseButtonRight))
 		{
 			if (ImGui::Selectable("Create Empty"))
 			{
@@ -1143,183 +1151,6 @@ namespace DYE::DYEditor
 			Undo::SetEntityOrderAtTopHierarchy(srcEntity, reorderAtTop.SrcIndex, reorderAtTop.DstIndex);
 			changed = true;
 		}
-
-		return changed;
-	}
-
-	bool SceneEditorLayer::drawSceneEntityHierarchyPanelSimple(Scene &scene, DYEditor::Entity *pCurrentSelectedEntity)
-	{
-		bool changed = false;
-
-		// Draw scene hierarchy context menu.
-		if (ImGui::BeginPopupContextWindow())
-		{
-			if (ImGui::Selectable("Create Empty"))
-			{
-				// Select the newly created entity.
-				// For now, the entity is always put at the end of the list.
-				*pCurrentSelectedEntity = scene.World.CreateEntity("Entity");
-				int const indexInWorldArray = scene.World.GetNumberOfEntities() - 1;
-				Undo::RegisterEntityCreation(scene.World, *pCurrentSelectedEntity, indexInWorldArray);
-				changed = true;
-			}
-			ImGui::EndPopup();
-		}
-
-		// Draw scene name as title.
-		if (!scene.Name.empty())
-		{
-			ImGui::SeparatorText(scene.Name.c_str());
-		}
-		else
-		{
-			ImGui::SeparatorText("Untitled");
-		}
-
-		auto itemSpacing = ImGui::GetStyle().ItemSpacing;
-		itemSpacing.y = 6;
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, itemSpacing);
-
-		struct HierarchyLevel
-		{
-			DYE::GUID LevelParentGUID = (DYE::GUID) 0;
-			int NumberOfEntitiesLeft = 0;
-			bool IsOpen = false;
-		};
-		std::vector<HierarchyLevel> levelStack;
-		// We reserve to make sure the array doesn't re-allocate during foreach.
-		levelStack.reserve(scene.World.GetNumberOfEntities());
-
-		// Draw all entities.
-		scene.World.ForEachEntityAndIndex
-			(
-				[&changed, &scene, &pCurrentSelectedEntity, &levelStack]
-					(DYEditor::Entity &entity, std::size_t indexInWorld)
-				{
-					auto tryGetNameResult = entity.TryGetName();
-					if (!tryGetNameResult.has_value())
-					{
-						// No name, skip it.
-						return;
-					}
-
-					auto tryGetGUIDResult = entity.TryGetGUID();
-					if (!tryGetGUIDResult.has_value())
-					{
-						// No GUID, skip it.
-						return;
-					}
-
-					auto &name = tryGetNameResult.value();
-					auto guid = tryGetGUIDResult.value();
-					auto tryGetChildrenComponent = entity.TryGetComponent<ChildrenComponent>();
-
-					auto tryGetParent = entity.TryGetComponent<ParentComponent>();
-					auto parentGUID = tryGetParent.has_value()? tryGetParent.value().get().ParentGUID : (DYE::GUID) 0;
-
-					int childrenCount = tryGetChildrenComponent.has_value()? tryGetChildrenComponent.value().get().ChildrenGUIDs.size() : 0;
-
-					HierarchyLevel *pLevel = levelStack.empty()? nullptr : &levelStack.back();
-					while
-					(
-						pLevel != nullptr &&
-						pLevel->LevelParentGUID != parentGUID &&
-						pLevel->NumberOfEntitiesLeft == 0
-					)
-					{
-						// The top level is not the parent of the current entity
-						// && It's also an empty level (all the entities of that level have been iterated)
-						// -> We will pop the top level.
-
-						// If the tree node of the level is open,
-						// we need to pop it.
-						if (pLevel->IsOpen)
-						{
-							ImGui::TreePop();
-						}
-
-						// Pop the level from the stack.
-						levelStack.pop_back();
-
-						pLevel = levelStack.empty()? nullptr : &levelStack.back();
-					}
-
-					bool const isEntityShown = pLevel == nullptr || pLevel->IsOpen;
-					bool const isLeafNode = childrenCount == 0;
-
-					bool const isSelected = entity == *pCurrentSelectedEntity;
-
-					ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanFullWidth;
-					if (isSelected) flags |= ImGuiTreeNodeFlags_Selected;
-					if (isLeafNode)
-					{
-						flags |= (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
-					}
-
-					void const* treeNodeId = (void *) (std::uint64_t) entity.GetInstanceID();
-					bool isNodeOpen = false;
-					if (isEntityShown)
-					{
-						isNodeOpen = ImGui::TreeNodeEx(treeNodeId, flags, name.c_str()) && !isLeafNode;
-						if (ImGui::BeginPopupContextItem())
-						{
-							// Draw entity context menu right after TreeNode call.
-							if (ImGui::Selectable("Delete"))
-							{
-								Undo::DeleteEntityRecursively(entity, indexInWorld);
-								changed = true;
-							}
-							if (ImGui::Selectable("Create Empty"))
-							{
-								// Select the newly created entity.
-								// For now, the entity is always put at the end of the list.
-								// TODO: make it a child of the clicked tree node entity.
-								*pCurrentSelectedEntity = scene.World.CreateEntity("Entity");
-								int const indexInWorldArray = scene.World.GetNumberOfEntities() - 1;
-								Undo::RegisterEntityCreation(scene.World, *pCurrentSelectedEntity, indexInWorldArray);
-								changed = true;
-							}
-							ImGui::EndPopup();
-						}
-						if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
-						{
-							*pCurrentSelectedEntity = entity;
-						}
-					}
-
-					if (pLevel != nullptr)
-					{
-						pLevel->NumberOfEntitiesLeft--;
-					}
-
-					if (childrenCount > 0)
-					{
-						levelStack.push_back
-						(
-							{
-								.LevelParentGUID = guid,
-								.NumberOfEntitiesLeft = childrenCount,
-								.IsOpen = isNodeOpen
-							}
-						);
-					}
-				}
-			);
-
-		for (auto level : levelStack)
-		{
-			// There are some levels left in the stack,
-			// we need to make sure to pop the corresponding tree nodes if they are open.
-			if (!level.IsOpen)
-			{
-				continue;
-			}
-
-			ImGui::TreePop();
-		}
-
-		ImGui::PopStyleVar();
-
 
 		return changed;
 	}
@@ -1872,5 +1703,112 @@ namespace DYE::DYEditor
 		}
 
 		return isEntityChangedThisFrame;
+	}
+
+	void SceneEditorLayer::OnEndOfFrame()
+	{
+		// Do scene view entity selection logic (using GPU-based mouse picking).
+
+		if (!m_IsSceneViewDrawn)
+		{
+			return;
+		}
+
+		if (!m_IsSceneViewWindowHovered)
+		{
+			return;
+		}
+
+		glm::vec2 viewportSize = {m_SceneViewportBounds.Width, m_SceneViewportBounds.Height};
+
+		auto [mouseXf, mouseYf] = ImGui::GetMousePos();
+		mouseXf -= m_SceneViewportBounds.X;
+		mouseYf -= m_SceneViewportBounds.Y;
+		mouseYf = viewportSize.y - mouseYf;    // Flip y coordinate.
+
+		int const mouseX = (int) mouseXf;
+		int const mouseY = (int) mouseYf;
+
+		bool const withinViewport = mouseXf >= 0 && mouseYf >= 0 && mouseXf < viewportSize.x && mouseYf < viewportSize.y;
+		if (!withinViewport)
+		{
+			return;
+		}
+
+		if (INPUT.GetMouseButtonDown(DYE::MouseButton::Left))
+		{
+			// Read the entity id from the entity id framebuffer.
+			int pixelValue = m_SceneViewEntityIDFramebuffer->ReadPixelAsInteger(0, mouseX, mouseY);
+			if (pixelValue == -1)
+			{
+				// -1 means no entity is drawn at the mouse location.
+				// Select nothing.
+				m_CurrentlySelectedEntityGUID = (DYE::GUID) 0;
+				return;
+			}
+
+			Scene &activeScene = RuntimeSceneManagement::GetActiveMainScene();
+			Entity selectedEntity = activeScene.World.WrapIdentifierIntoEntity((EntityIdentifier) pixelValue);
+			auto tryGetGUID = selectedEntity.TryGetGUID();
+
+			if (!tryGetGUID.has_value())
+			{
+				// The entity doesn't have a GUID, we couldn't select it.
+				return;
+			}
+
+			m_CurrentlySelectedEntityGUID = tryGetGUID.value();
+		}
+	}
+
+	void SceneEditorLayer::OnPlayModeStateChanged(DYE::DYEditor::ModeStateChange stateChange)
+	{
+		auto &scene = RuntimeSceneManagement::GetActiveMainScene();
+		if (stateChange == ModeStateChange::BeforeEnterPlayMode)
+		{
+			// Save a copy of the active scene as a serialized scene.
+			m_SerializedSceneCacheWhenEnterPlayMode = SerializedObjectFactory::CreateSerializedScene(scene);
+
+			// Initialize load systems.
+			scene.ForEachSystemDescriptor
+				(
+					[&scene](SystemDescriptor &systemDescriptor, ExecutionPhase phase)
+					{
+						systemDescriptor.Instance->InitializeLoad(
+							scene.World,
+							InitializeLoadParameters
+								{
+									.LoadType = InitializeLoadType::BeforeEnterPlayMode
+								});
+					}
+				);
+
+			// Execute initialize systems.
+			scene.ExecuteInitializeSystems();
+		}
+		else if (stateChange == ModeStateChange::BeforeEnterEditMode)
+		{
+			// Execute teardown systems.
+			scene.ExecuteTeardownSystems();
+
+			// Initialize load systems.
+			scene.ForEachSystemDescriptor
+				(
+					[&scene](SystemDescriptor &systemDescriptor, ExecutionPhase phase)
+					{
+						systemDescriptor.Instance->InitializeLoad(
+							scene.World,
+							InitializeLoadParameters
+								{
+									.LoadType = InitializeLoadType::BeforeEnterEditMode
+								});
+					}
+				);
+
+			// Reapply the serialized scene back to the active scene.
+			// TODO: maybe have an option to keep the changes in play mode?
+			scene.Clear();
+			SerializedObjectFactory::ApplySerializedSceneToEmptyScene(m_SerializedSceneCacheWhenEnterPlayMode, scene);
+		}
 	}
 }

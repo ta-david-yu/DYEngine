@@ -4,10 +4,44 @@
 
 #include <cstdint>
 #include <memory>
+#include <vector>
 
 namespace DYE
 {
 	using FramebufferID = std::uint32_t;
+
+	enum class FramebufferTextureFormat
+	{
+		None = 0,
+
+		// TODO: add more framebuffer texture format
+		// Color
+		RGBA8,
+		RedInteger,
+
+		// Depth/Stencil
+		Depth24Stencil8,
+
+		// Defaults
+		Depth = Depth24Stencil8
+	};
+
+	struct FramebufferTextureProperties
+	{
+		FramebufferTextureProperties() = default;
+		FramebufferTextureProperties(FramebufferTextureFormat format) : TextureFormat(format) {}
+
+		FramebufferTextureFormat TextureFormat = FramebufferTextureFormat::None;
+		// TODO: filter/wrap mode, could possibly use Texture::Wrap/Filter Mode
+	};
+
+	struct FramebufferAttachmentProperties
+	{
+		FramebufferAttachmentProperties() = default;
+		FramebufferAttachmentProperties(std::initializer_list<FramebufferTextureProperties> attachments) : TexturePropertiesList(attachments) {}
+
+		std::vector<FramebufferTextureProperties> TexturePropertiesList;
+	};
 
 	struct FramebufferProperties
 	{
@@ -15,6 +49,7 @@ namespace DYE
 		std::uint32_t Height = 0;
 		std::uint32_t Samples = 1;
 		bool SwapChainTarget = false;
+		FramebufferAttachmentProperties Attachments;
 	};
 
 	class Framebuffer
@@ -23,7 +58,7 @@ namespace DYE
 		static std::shared_ptr<Framebuffer> Create(const FramebufferProperties& properties);
 
 		Framebuffer() = delete;
-		explicit Framebuffer(FramebufferProperties const &properties);
+		explicit Framebuffer(FramebufferProperties properties);
 		~Framebuffer();
 
 		void Bind();
@@ -35,19 +70,27 @@ namespace DYE
 		/// If it's already created, it will be reset and re-created based on the internal properties.
 		void CreateOrReset();
 
+		int ReadPixelAsInteger(std::uint32_t colorAttachmentIndex, int x, int y);
+		void ClearAttachment(std::uint32_t colorAttachmentIndex, int value);
+
 		// TODO: maybe later we want to create a color texture 2d handle so others could access the color attachment as if it's
 		// 		a texture 2d, OR MAYBE NOT.
-		TextureID GetColorAttachmentID() const { return m_ColorAttachmentID; }
+		TextureID GetColorAttachmentID(std::size_t index) const;
 		FramebufferProperties const& GetProperties() const { return m_Properties; }
 
 		void SetDebugLabel(std::string const &name);
 
 	private:
+		// By default, 0 means texture is not created on the GPU.
 		FramebufferID m_ID {0};
-		TextureID m_ColorAttachmentID;
-		TextureID m_DepthStencilAttachmentID;
-
 		FramebufferProperties m_Properties;
+
+		std::vector<FramebufferTextureProperties> m_ColorAttachmentPropertiesList;
+		FramebufferTextureProperties m_DepthAttachmentProperties = FramebufferTextureFormat::None;
+
+		std::vector<TextureID> m_ColorAttachmentIDs;
+		TextureID  m_DepthStencilAttachmentID;
+
 		std::string m_DebugName;
 	};
 }

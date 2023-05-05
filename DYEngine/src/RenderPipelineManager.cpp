@@ -40,52 +40,52 @@ namespace DYE
 		// to reduce the number of calls to window context swap.
 		// After that, sort them based on their Depth value (from low to high).
 		std::stable_sort
-			(
-				s_Cameras.begin(),
-				s_Cameras.end(),
-				[](Camera const &cameraA, Camera const &cameraB)
+		(
+			s_Cameras.begin(),
+			s_Cameras.end(),
+			[](Camera const &cameraA, Camera const &cameraB)
+			{
+				if (cameraA.Properties.TargetType != cameraB.Properties.TargetType)
 				{
-					if (cameraA.Properties.TargetType != cameraB.Properties.TargetType)
-					{
-						// Two cameras render to different target type,
-						// The one that targets a window goes first.
-						return cameraA.Properties.TargetType == RenderTargetType::Window;
-					}
-
-					RenderTargetType const targetType = cameraA.Properties.TargetType;
-					if (targetType == RenderTargetType::Window)
-					{
-						// In the case of both render to a window.
-						if (cameraA.Properties.TargetWindowIndex != cameraB.Properties.TargetWindowIndex)
-						{
-							return cameraA.Properties.TargetWindowIndex < cameraB.Properties.TargetWindowIndex;
-						}
-					}
-					else // TargetType == RenderTargetType::RenderTexture
-					{
-						if (cameraA.Properties.pTargetRenderTexture == nullptr)
-						{
-							return false;
-						}
-
-						if (cameraB.Properties.pTargetRenderTexture == nullptr)
-						{
-							return true;
-						}
-
-						auto const colorAttachmentA = cameraA.Properties.pTargetRenderTexture->GetColorAttachmentID();
-						auto const colorAttachmentB = cameraB.Properties.pTargetRenderTexture->GetColorAttachmentID();
-						if (colorAttachmentA != colorAttachmentB)
-						{
-							return colorAttachmentA < colorAttachmentB;
-						}
-					}
-
-					// If both cameras render to the same target, always render camera that has a lower depth value,
-					// so the one with higher value is rendered on top of the others.
-					return cameraA.Properties.Depth <= cameraB.Properties.Depth;
+					// Two cameras render to different target type,
+					// The one that targets a window goes first.
+					return cameraA.Properties.TargetType == RenderTargetType::Window;
 				}
-			);
+
+				RenderTargetType const targetType = cameraA.Properties.TargetType;
+				if (targetType == RenderTargetType::Window)
+				{
+					// In the case of both render to a window.
+					if (cameraA.Properties.TargetWindowIndex != cameraB.Properties.TargetWindowIndex)
+					{
+						return cameraA.Properties.TargetWindowIndex < cameraB.Properties.TargetWindowIndex;
+					}
+				}
+				else // TargetType == RenderTargetType::RenderTexture
+				{
+					if (cameraA.Properties.pTargetRenderTexture == nullptr)
+					{
+						return false;
+					}
+
+					if (cameraB.Properties.pTargetRenderTexture == nullptr)
+					{
+						return true;
+					}
+
+					auto const colorAttachmentA = cameraA.Properties.pTargetRenderTexture->GetColorAttachmentID(0);
+					auto const colorAttachmentB = cameraB.Properties.pTargetRenderTexture->GetColorAttachmentID(0);
+					if (colorAttachmentA != colorAttachmentB)
+					{
+						return colorAttachmentA < colorAttachmentB;
+					}
+				}
+
+				// If both cameras render to the same target, always render camera that has a lower depth value,
+				// so the one with higher value is rendered on top of the others.
+				return cameraA.Properties.Depth <= cameraB.Properties.Depth;
+			}
+		);
 
 		s_ActiveRenderPipeline->onPreRender();
 
@@ -159,8 +159,15 @@ namespace DYE
 			Math::Rect const viewportDimension = camera.Properties.GetAbsoluteViewportOfDimension(targetDimension);
 
 			RenderCommand::GetInstance().SetViewport(viewportDimension);
-			RenderCommand::GetInstance().SetClearColor(camera.Properties.ClearColor);
-			RenderCommand::GetInstance().Clear();
+			if (camera.Properties.DoClearColor)
+			{
+				RenderCommand::GetInstance().SetClearColor(camera.Properties.ClearColor);
+				RenderCommand::GetInstance().Clear();
+			}
+			else
+			{
+				RenderCommand::GetInstance().ClearDepthStencilOnly();
+			}
 
 			s_ActiveRenderPipeline->renderCamera(camera);
 

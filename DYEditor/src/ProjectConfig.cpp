@@ -74,6 +74,7 @@ namespace DYE::DYEditor
 	/// \return true if the configuration has been changed. Otherwise false.
 	bool ProjectConfig::DrawGenericConfigurationBrowserImGui(char const* title, bool *pIsOpen)
 	{
+		ImGui::SetNextWindowSize(ImVec2(0, 0), ImGuiCond_FirstUseEver);
 		if (!ImGui::Begin(title, pIsOpen))
 		{
 			ImGui::End();
@@ -216,6 +217,7 @@ namespace DYE::DYEditor
 
 	bool DrawRuntimeConfigurationWindow(bool *pIsOpen)
 	{
+		ImGui::SetNextWindowSize(ImVec2(0, 0), ImGuiCond_FirstUseEver);
 		if (!ImGui::Begin("Runtime Configuration", pIsOpen))
 		{
 			ImGui::End();
