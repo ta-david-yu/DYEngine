@@ -76,6 +76,7 @@ namespace DYE::DYEditor
 
 		Camera m_SceneViewCamera;
 		std::shared_ptr<Framebuffer> m_SceneViewCameraTargetFramebuffer;
+		std::shared_ptr<Framebuffer> m_SceneViewEntityIDFramebuffer;
 		float m_CameraKeyboardMoveUnitPerSecond = 10.0f;
 		float m_CameraMousePanMoveUnitPerSecond = 2.0f;
 		float m_CameraOrthographicSizeZoomSpeedMultiplier = 200.0f;
@@ -91,7 +92,7 @@ namespace DYE::DYEditor
 		static void setEditorWindowDefaultLayout(ImGuiID dockSpaceId);
 		static void drawEditorWindowMenuBar(Scene &currentScene, std::filesystem::path &currentScenePathContext,
 											bool *pIsSceneDirty);
-		static void drawSceneView(Camera &sceneViewCamera, SceneViewContext &context);
+		static void drawSceneView(Camera &sceneViewCamera, Framebuffer &entityIDFramebuffer, SceneViewContext &context);
 		static bool drawSceneEntityHierarchyPanel(Scene &scene, DYE::GUID *pCurrentSelectedEntityGUID);
 		static bool drawSceneEntityHierarchyPanelSimple(Scene &scene, DYEditor::Entity *pCurrentSelectedEntity);
 		static bool drawSceneSystemPanel(Scene& scene);

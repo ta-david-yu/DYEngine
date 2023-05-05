@@ -5,6 +5,7 @@
 #include "Graphics/RenderPipelineManager.h"
 #include "Graphics/RenderPipeline2D.h"
 #include "ImGui/ImGuiUtil.h"
+#include "SceneViewEntitySelection.h"
 
 #include <string>
 
@@ -35,13 +36,30 @@ namespace DYE::DYEditor
 				continue;
 			}
 
+			Entity wrappedEntity = world.WrapIdentifierIntoEntity(entity);
+
 			glm::mat4 modelMatrix = glm::mat4 {1.0f};
 			modelMatrix = glm::translate(modelMatrix, transform.Position);
 			modelMatrix = modelMatrix * glm::toMat4(transform.Rotation);
 			modelMatrix = glm::scale(modelMatrix, transform.Scale);
 
-			RenderPipelineManager::GetTypedActiveRenderPipelinePtr<RenderPipeline2D>()->SubmitSprite(sprite.Texture, sprite.Color, modelMatrix);
 
+			// Scale the matrix based on sprite pixels per unit.
+			modelMatrix = glm::scale(modelMatrix, sprite.Texture->GetScaleFromTextureDimensions());
+
+			MaterialPropertyBlock materialPropertyBlock;
+			materialPropertyBlock.SetTexture("_MainTex", sprite.Texture);
+			materialPropertyBlock.SetFloat4("_MainTex_TilingOffset", {1, 1, 0, 0});
+			materialPropertyBlock.SetFloat4("_Color", sprite.Color);
+
+			RenderPipeline2D *pipeline2D = RenderPipelineManager::GetTypedActiveRenderPipelinePtr<RenderPipeline2D>();
+			auto geometryVAO = pipeline2D->GetDefaultQuadSpriteVAO();
+			pipeline2D->Submit(geometryVAO, pipeline2D->GetDefaultSpriteMaterial(), modelMatrix, materialPropertyBlock);
+
+#ifdef DYE_EDITOR
+			// We only submit the sprite to the scene view selection system if it's in the editor.
+			SceneViewEntitySelection::RegisterEntityGeometry(wrappedEntity.GetInstanceID(), geometryVAO, modelMatrix);
+#endif
 			m_NumberOfRenderedEntitiesLastFrame++;
 		}
 	}

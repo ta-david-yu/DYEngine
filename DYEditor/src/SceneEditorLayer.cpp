@@ -20,6 +20,7 @@
 #include "ImGui/ImGuiUtil.h"
 #include "ImGui/ImGuiUtil_Internal.h"
 #include "Undo/Undo.h"
+#include "SceneViewEntitySelection.h"
 
 #include "Components/NameComponent.h"
 #include "Components/HierarchyComponents.h"
@@ -145,19 +146,31 @@ namespace DYE::DYEditor
 			RuntimeSceneManagement::GetActiveMainScene().TryAddSystemByName(RegisterCameraSystem::TypeName);
 		}
 
-		// Register events.
+		// Register runtime state events.
 		RuntimeState::RegisterListener(this);
 
-		// Initialize SceneView framebuffer.
-		FramebufferProperties framebufferProperties { .Width = 1600, .Height = 900 };
-		framebufferProperties.Attachments =
+		// Initialize SceneViewEntitySelection shader.
+		SceneViewEntitySelection::InitializeEntityIDShader();
+
+		// Initialize SceneView frameBuffers & camera.
+		FramebufferProperties targetFramebufferProperties { .Width = 1600, .Height = 900 };
+		targetFramebufferProperties.Attachments =
 		{
 			FramebufferTextureFormat::RGBA8,
+			FramebufferTextureFormat::Depth
+		};
+		m_SceneViewCameraTargetFramebuffer = Framebuffer::Create(targetFramebufferProperties);
+		m_SceneViewCameraTargetFramebuffer->SetDebugLabel("Scene View Framebuffer");
+
+		FramebufferProperties entityIDFramebufferProperties { .Width = 1600, .Height = 900 };
+		entityIDFramebufferProperties.Attachments =
+		{
 			FramebufferTextureFormat::RedInteger,
 			FramebufferTextureFormat::Depth
 		};
-		m_SceneViewCameraTargetFramebuffer = Framebuffer::Create(framebufferProperties);
-		m_SceneViewCameraTargetFramebuffer->SetDebugLabel("Scene View Framebuffer");
+		m_SceneViewEntityIDFramebuffer = Framebuffer::Create(entityIDFramebufferProperties);
+		m_SceneViewEntityIDFramebuffer->SetDebugLabel("Scene View EntityID Framebuffer");
+
 		m_SceneViewCamera.Properties.TargetType = RenderTargetType::RenderTexture;
 		m_SceneViewCamera.Properties.pTargetRenderTexture = m_SceneViewCameraTargetFramebuffer.get();
 		m_SceneViewCamera.Position = {0, 0, 10};
@@ -261,11 +274,13 @@ namespace DYE::DYEditor
 	{
 		if (m_IsSceneViewDrawn)
 		{
-			m_SceneViewCamera.Properties.pTargetRenderTexture->ClearAttachment(1, -1);
-
 			// We only want to render the scene view camera if the scene view window is drawn.
-			auto camera = m_SceneViewCamera; camera.Properties.DoClearColor = false;
-			DYE::RenderPipelineManager::RegisterCameraForNextRender(camera);
+
+			// Register scene view camera to render what the user sees in scene view.
+			DYE::RenderPipelineManager::RegisterCameraForNextRender(m_SceneViewCamera);
+
+			// Directly render entity id framebuffer for entity mouse selection.
+			SceneViewEntitySelection::RenderEntityIDFramebufferWithCamera(*m_SceneViewEntityIDFramebuffer, m_SceneViewCamera);
 		}
 	}
 
@@ -340,7 +355,7 @@ namespace DYE::DYEditor
 			m_pApplication->GetImGuiLayer().SetBlockEvents(!editorShouldReceiveCameraInputEvent);
 
 			SceneViewContext sceneViewContext { .ViewportBounds = m_SceneViewportBounds };
-			drawSceneView(m_SceneViewCamera, sceneViewContext);
+			drawSceneView(m_SceneViewCamera, *m_SceneViewEntityIDFramebuffer, sceneViewContext);
 			m_SceneViewportBounds = sceneViewContext.ViewportBounds;
 		}
 		ImGui::End();
@@ -608,7 +623,7 @@ namespace DYE::DYEditor
 		}
 	}
 
-	void SceneEditorLayer::drawSceneView(Camera &sceneViewCamera, SceneViewContext &context)
+	void SceneEditorLayer::drawSceneView(Camera &sceneViewCamera, Framebuffer &entityIDFramebuffer, SceneViewContext &context)
 	{
 		// Update scene viewport bounds.
 		{
@@ -655,6 +670,7 @@ namespace DYE::DYEditor
 		{
 			// Resize the target framebuffer (render texture) if the window avail region size is different with the framebuffer size.
 			sceneViewCamera.Properties.pTargetRenderTexture->Resize(sceneViewWindowSize.x, sceneViewWindowSize.y);
+			entityIDFramebuffer.Resize(sceneViewWindowSize.x, sceneViewWindowSize.y);
 		}
 
 		auto sceneViewRenderTextureID = sceneViewCamera.Properties.pTargetRenderTexture->GetColorAttachmentID(0);
@@ -1860,27 +1876,31 @@ namespace DYE::DYEditor
 
 	void SceneEditorLayer::OnEndOfFrame()
 	{
-		glm::vec2 viewportSize = {m_SceneViewportBounds.Width, m_SceneViewportBounds.Height};
-
-		auto [mouseX, mouseY] = ImGui::GetMousePos();
-		mouseX -= m_SceneViewportBounds.X;
-		mouseY -= m_SceneViewportBounds.Y;
-		mouseY = viewportSize.y - mouseY;    // Flip y coordinate.
-
-		int const viewportSpaceMouseX = (int) mouseX;
-		int const viewportSpaceMouseY = (int) mouseY;
-
-		bool const withinViewport = mouseX >= 0 && mouseY >= 0 && mouseX < viewportSize.x && mouseY < viewportSize.y;
-		if (INPUT.GetMouseButtonDown(DYE::MouseButton::Left))
+		if (!m_IsSceneViewDrawn)
 		{
-			DYE_LOG("Viewport Pos: %d, %d", viewportSpaceMouseX, viewportSpaceMouseY);
-			DYE_LOG("Within Viewport: %s", withinViewport ? "True" : "False");
+			return;
 		}
 
-		if (withinViewport)
+		glm::vec2 viewportSize = {m_SceneViewportBounds.Width, m_SceneViewportBounds.Height};
+
+		auto [mouseXf, mouseYf] = ImGui::GetMousePos();
+		mouseXf -= m_SceneViewportBounds.X;
+		mouseYf -= m_SceneViewportBounds.Y;
+		mouseYf = viewportSize.y - mouseYf;    // Flip y coordinate.
+
+		int const mouseX = (int) mouseXf;
+		int const mouseY = (int) mouseYf;
+
+		bool const withinViewport = mouseXf >= 0 && mouseYf >= 0 && mouseXf < viewportSize.x && mouseYf < viewportSize.y;
+		if (!withinViewport)
+		{
+			return;
+		}
+
+		if (INPUT.GetMouseButtonDown(DYE::MouseButton::Left))
 		{
 			// Read from the framebuffer second attachment.
-			int pixelValue = m_SceneViewCamera.Properties.pTargetRenderTexture->ReadPixelAsInteger(1, viewportSpaceMouseX, viewportSpaceMouseY);
+			int pixelValue = m_SceneViewEntityIDFramebuffer->ReadPixelAsInteger(0, mouseX, mouseY);
 			DYE_LOG("Pixel Value: %d", pixelValue);
 		}
 	}

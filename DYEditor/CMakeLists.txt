@@ -30,7 +30,7 @@ set(SOURCE_FILES
         src/EntityOperations.cpp
         src/SystemOperations.cpp
         src/UndoOperationBase.cpp
-        src/HierarchyComponents.cpp src/EntityUtil.cpp)
+        src/HierarchyComponents.cpp src/EntityUtil.cpp src/SceneViewEntitySelection.cpp)
 set(HEADER_FILES
         include/SceneEditorLayer.h
         include/SceneRuntimeLayer.h
@@ -71,7 +71,7 @@ set(HEADER_FILES
         include/Undo/Operations/EntityOperations.h
         include/Type/DrawComponentHeaderContext.h
         include/Undo/Operations/SystemOperations.h
-        include/Components/HierarchyComponents.h include/Serialization/SerializedArray.h src/SerializedArray.cpp include/Util/EntityUtil.h)
+        include/Components/HierarchyComponents.h include/Serialization/SerializedArray.h src/SerializedArray.cpp include/Util/EntityUtil.h include/SceneViewEntitySelection.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")
@@ -102,3 +102,11 @@ target_link_libraries(DYEditor PRIVATE tomlplusplus::tomlplusplus)
 if(DYE_BUILD_CODE_GENERATOR)
     add_subdirectory(DYEditorCodeGenerator)
 endif()
+
+# ===========================================================================================
+# Copy default assets to the output directory
+set(DEFAULT_ASSETS
+        assets/default/EntityIDShader.shader)
+
+include(../cmake/Modules/CopyAssets.cmake)
+CopyTextAssets(${DEFAULT_ASSETS})

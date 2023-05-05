@@ -56,16 +56,26 @@ namespace DYE
 
 	}
 
-	void RenderPipeline2D::Submit(
-		std::shared_ptr<VertexArray> &vertexArray,
-		std::shared_ptr<Material> &material,
-		glm::mat4 objectToWorldMatrix)
+	void RenderPipeline2D::Submit
+	(
+		const std::shared_ptr<VertexArray> &vertexArray,
+		const std::shared_ptr<Material> &material,
+		glm::mat4 objectToWorldMatrix,
+		MaterialPropertyBlock materialPropertyBlock
+	)
 	{
 		m_Submissions.push_back
 		(
-			RenderSubmission2D { .VertexArray = vertexArray, .Material = material, .ObjectToWorldMatrix = objectToWorldMatrix }
+			RenderSubmission2D
+			{
+				.VertexArray = vertexArray,
+				.Material = material,
+				.ObjectToWorldMatrix = objectToWorldMatrix,
+				.MaterialPropertyBlock = std::move(materialPropertyBlock)
+			}
 		);
 
+		// TODO: we want to use insertion sort to sort all the submissions everytime a new sprite is submitted
 		/*
 		Algorithm::InsertionSort
 		(
