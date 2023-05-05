@@ -1899,9 +1899,25 @@ namespace DYE::DYEditor
 
 		if (INPUT.GetMouseButtonDown(DYE::MouseButton::Left))
 		{
-			// Read from the framebuffer second attachment.
+			// Read the entity id from the entity id framebuffer.
 			int pixelValue = m_SceneViewEntityIDFramebuffer->ReadPixelAsInteger(0, mouseX, mouseY);
-			DYE_LOG("Pixel Value: %d", pixelValue);
+			if (pixelValue == -1)
+			{
+				// -1 means no entity is drawn at the mouse location. Do nothing
+				return;
+			}
+
+			Scene &activeScene = RuntimeSceneManagement::GetActiveMainScene();
+			Entity selectedEntity = activeScene.World.WrapIdentifierIntoEntity((EntityIdentifier) pixelValue);
+			auto tryGetGUID = selectedEntity.TryGetGUID();
+
+			if (!tryGetGUID.has_value())
+			{
+				// The entity doesn't have a GUID, we couldn't select it.
+				return;
+			}
+
+			m_CurrentlySelectedEntityGUID = tryGetGUID.value();
 		}
 	}
 
