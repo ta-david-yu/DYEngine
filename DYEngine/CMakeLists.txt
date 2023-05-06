@@ -139,6 +139,9 @@ add_subdirectory(extern/imgui)
 add_subdirectory(extern/glm)
 add_subdirectory(extern/stb)
 
+add_subdirectory(extern/ImGuizmo)
+target_include_directories(ImGuizmo PRIVATE extern/imgui/imgui)
+
 # ===========================================================================================
 # Build library
 add_library(DYEngine STATIC
@@ -158,7 +161,7 @@ target_include_directories(DYEngine PUBLIC extern/imgui/imgui/misc/cpp)
 target_include_directories(DYEngine PRIVATE extern/imgui/imgui/backends)
 target_include_directories(DYEngine PUBLIC extern/glm)
 target_include_directories(DYEngine PUBLIC extern/stb/include)
-target_include_directories(DYEngine PUBLIC extern/yaml-cpp/include)
+target_include_directories(DYEngine PUBLIC extern/ImGuizmo/ImGuzmo)
 
 # ===========================================================================================
 # Link external libraries
@@ -170,6 +173,7 @@ target_link_libraries(DYEngine PRIVATE glad)
 target_link_libraries(DYEngine PRIVATE imgui)
 target_link_libraries(DYEngine PRIVATE glm)
 target_link_libraries(DYEngine PRIVATE stb)
+target_link_libraries(DYEngine PRIVATE ImGuizmo)
 
 # Link winpthread because SDL2 needs it.
 # We need to specify -static because winpthread is included in the bundled MinGW distribution that comes with CLion.

@@ -23,9 +23,9 @@ target_include_directories(${LIBRARY_NAME} PRIVATE ${SDL2_INCLUDE_DIR})
 target_include_directories(${LIBRARY_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
 
 target_link_libraries(${LIBRARY_NAME} ${SDL2_LIBRARY})
-target_link_libraries(${LIBRARY_NAME} glad)
 
 # Defining IMGUI_IMPL_OPENGL_LOADER_GLAD symbol will make imgui use glad as GL loader.
 # Now it's commented out because imgui now has its own OpenGL loader (see backends/imgui_impl_opengl3_loader.h).
 # For more details, see - https://github.com/ocornut/imgui/issues/4445.
+#target_link_libraries(${LIBRARY_NAME} glad)
 #target_compile_definitions(${LIBRARY_NAME} PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLAD)
