@@ -29,6 +29,7 @@ namespace DYE::DYEditor
 	struct SceneViewContext
 	{
 		Math::Rect ViewportBounds;
+		Entity SelectedEntity = Entity::Null();
 	};
 
 	enum class InspectorMode

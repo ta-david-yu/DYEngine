@@ -33,8 +33,12 @@
 #include <stack>
 #include <iostream>
 
+#include <glm/gtc/type_ptr.hpp>
+
 #include <imgui.h>
 #include <imgui_stdlib.h>
+
+#include <ImGuizmo.h>
 
 using namespace DYE::DYEditor;
 
@@ -354,7 +358,12 @@ namespace DYE::DYEditor
 			bool const editorShouldReceiveCameraInputEvent = m_IsSceneViewWindowFocused || m_IsSceneViewWindowHovered;
 			m_pApplication->GetImGuiLayer().SetBlockEvents(!editorShouldReceiveCameraInputEvent);
 
-			SceneViewContext sceneViewContext { .ViewportBounds = m_SceneViewportBounds };
+			auto tryGetSelectedEntity = activeScene.World.TryGetEntityWithGUID(m_CurrentlySelectedEntityGUID);
+			SceneViewContext sceneViewContext
+			{
+				.ViewportBounds = m_SceneViewportBounds,
+				.SelectedEntity = tryGetSelectedEntity.has_value()? tryGetSelectedEntity.value() : Entity::Null()
+			};
 			drawSceneView(m_SceneViewCamera, *m_SceneViewEntityIDFramebuffer, sceneViewContext);
 			m_SceneViewportBounds = sceneViewContext.ViewportBounds;
 		}
@@ -677,6 +686,44 @@ namespace DYE::DYEditor
 		auto imTexID = (void*)(intptr_t)(sceneViewRenderTextureID);
 		ImVec2 const uv0 = ImVec2(0, 1); ImVec2 const uv1 = ImVec2(1, 0);
 		ImGui::Image(imTexID, sceneViewWindowSize, uv0, uv1);
+
+		// Draw selected entity's transformation gizmos.
+
+		if (!context.SelectedEntity.IsValid())
+		{
+			return;
+		}
+
+		auto tryGetEntityTransform = context.SelectedEntity.TryGetComponent<TransformComponent>();
+		if (!tryGetEntityTransform.has_value())
+		{
+			// If the entity doesn't have a transform, we don't need to draw the gizmo.
+			return;
+		}
+
+		ImGuizmo::SetOrthographic(sceneViewCamera.Properties.IsOrthographic);
+		ImGuizmo::SetDrawlist();
+
+		ImGuizmo::SetRect(context.ViewportBounds.X, context.ViewportBounds.Y, context.ViewportBounds.Width, context.ViewportBounds.Height);
+
+		glm::mat4 viewMatrix = sceneViewCamera.GetViewMatrix();
+		glm::mat4 projectionMatrix = sceneViewCamera.Properties.GetProjectionMatrix(context.ViewportBounds.Width / context.ViewportBounds.Height);
+
+		TransformComponent &transform = tryGetEntityTransform.value().get();
+		glm::mat4 transformMatrix = transform.GetTransformMatrix();
+		ImGuizmo::Manipulate
+		(
+			glm::value_ptr(viewMatrix),
+			glm::value_ptr(projectionMatrix),
+			ImGuizmo::OPERATION::TRANSLATE,
+			ImGuizmo::LOCAL,
+			glm::value_ptr(transformMatrix)
+		);
+
+		if (ImGuizmo::IsUsing())
+		{
+			transform.Position = glm::vec3(transformMatrix[3]);
+		}
 	}
 
 	bool SceneEditorLayer::drawSceneEntityHierarchyPanel(Scene &scene, DYE::GUID *pCurrentSelectedEntityGUID)
@@ -1715,6 +1762,11 @@ namespace DYE::DYEditor
 		}
 
 		if (!m_IsSceneViewWindowHovered)
+		{
+			return;
+		}
+
+		if (ImGuizmo::IsUsing() || ImGuizmo::IsOver())
 		{
 			return;
 		}
