@@ -66,6 +66,6 @@ namespace DYE::DYEditor
 
 	void Render2DSpriteSystem::DrawInspector(DYEditor::World &world)
 	{
-		ImGuiUtil::DrawReadOnlyTextWithLabel("Number Of Rendered Entities Last Frame", std::to_string(m_NumberOfRenderedEntitiesLastFrame));
+		ImGui::Text("Rendered Entities: %d", m_NumberOfRenderedEntitiesLastFrame);
 	}
 }
