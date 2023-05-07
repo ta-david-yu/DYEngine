@@ -67,15 +67,23 @@ namespace DYE::DYEditor
 		s_Data.Operations[s_Data.LatestOperationIndex]->Redo();
 	}
 
-	UndoOperationBase *Undo::GetLatestOperation()
+	void Undo::SetLatestOperationDescription(const char *fmt, ...)
+	{
+		va_list args;
+		va_start(args, fmt);
+		SetLatestOperationDescriptionArgs(fmt, args);
+		va_end(args);
+	}
+
+	void Undo::SetLatestOperationDescriptionArgs(const char *fmt, va_list args)
 	{
 		if (s_Data.LatestOperationIndex < 0 || s_Data.LatestOperationIndex >= s_Data.Operations.size())
 		{
 			// Invalid latest operation.
-			return nullptr;
+			return;
 		}
 
-		return s_Data.Operations[s_Data.LatestOperationIndex].get();
+		int offset = std::vsprintf(s_Data.Operations[s_Data.LatestOperationIndex]->Description, fmt, args);
 	}
 
 	void Undo::StartGroupOperation(const char *description)

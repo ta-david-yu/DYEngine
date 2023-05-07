@@ -279,27 +279,44 @@ namespace DYE::DYEditor
 			auto keyDownEvent = (KeyDownEvent&) event;
 			bool const control = INPUT.GetKey(KeyCode::LeftControl) || INPUT.GetKey(KeyCode::RightControl);
 			bool const shift = INPUT.GetKey(KeyCode::LeftShift) || INPUT.GetKey(KeyCode::RightShift);
+			bool const isUsingGizmo = ImGuizmo::IsUsing();
 
 			// Editor Shortcuts.
 			switch (keyDownEvent.GetKeyCode())
 			{
 				case KeyCode::Q:
 				{
+					if (isUsingGizmo)
+					{
+						break;
+					}
 					m_SceneViewContext.GizmoType = -1;
 					break;
 				}
 				case KeyCode::W:
 				{
+					if (isUsingGizmo)
+					{
+						break;
+					}
 					m_SceneViewContext.GizmoType = ImGuizmo::OPERATION::TRANSLATE;
 					break;
 				}
 				case KeyCode::E:
 				{
+					if (isUsingGizmo)
+					{
+						break;
+					}
 					m_SceneViewContext.GizmoType = ImGuizmo::OPERATION::ROTATE;
 					break;
 				}
 				case KeyCode::R:
 				{
+					if (isUsingGizmo)
+					{
+						break;
+					}
 					m_SceneViewContext.GizmoType = ImGuizmo::OPERATION::SCALE;
 					break;
 				}
@@ -324,6 +341,11 @@ namespace DYE::DYEditor
 
 				case KeyCode::Y:
 				{
+					if (isUsingGizmo)
+					{
+						break;
+					}
+
 					if (control)
 					{
 						// Ctrl + Y
@@ -332,6 +354,11 @@ namespace DYE::DYEditor
 				}
 				case KeyCode::Z:
 				{
+					if (isUsingGizmo)
+					{
+						break;
+					}
+
 					if (control && shift)
 					{
 						// Ctrl + Shift + Z
@@ -818,6 +845,8 @@ namespace DYE::DYEditor
 			return changed;
 		}
 
+		TransformComponent &transform = tryGetEntityTransform.value().get();
+
 		// End manipulating gizmo if the gizmo was not being used anymore.
 		// Make an undo operation!
 		bool const hasDeactivatedUseOfGizmoAfterEdit = context.IsTransformManipulatedByGizmo && !ImGuizmo::IsUsing();
@@ -831,6 +860,28 @@ namespace DYE::DYEditor
 				);
 
 			Undo::RegisterComponentModification(selectedEntity, context.SerializedTransform, serializedModifiedTransform);
+			if (context.GizmoType == ImGuizmo::OPERATION::TRANSLATE)
+			{
+				Undo::SetLatestOperationDescription(
+					"Move Entity '%s' to (%f, %f, %f)",
+					selectedEntity.TryGetName().value().c_str(),
+					transform.Position.x,
+					transform.Position.y,
+					transform.Position.z);
+			}
+			else if (context.GizmoType == ImGuizmo::OPERATION::ROTATE)
+			{
+				Undo::SetLatestOperationDescription("Rotate Entity '%s'", selectedEntity.TryGetName().value().c_str());
+			}
+			else if (context.GizmoType == ImGuizmo::OPERATION::SCALE)
+			{
+				Undo::SetLatestOperationDescription(
+					"Scale Entity '%s' to (%f, %f, %f)",
+					selectedEntity.TryGetName().value().c_str(),
+					transform.Scale.x,
+					transform.Scale.y,
+					transform.Scale.z);
+			}
 			context.IsTransformManipulatedByGizmo = false;
 		}
 
@@ -842,7 +893,6 @@ namespace DYE::DYEditor
 		glm::mat4 viewMatrix = sceneViewCamera.GetViewMatrix();
 		glm::mat4 projectionMatrix = sceneViewCamera.Properties.GetProjectionMatrix(context.ViewportBounds.Width / context.ViewportBounds.Height);
 
-		TransformComponent &transform = tryGetEntityTransform.value().get();
 		glm::mat4 transformMatrix = transform.GetTransformMatrix();
 		bool const manipulated = ImGuizmo::Manipulate
 		(
