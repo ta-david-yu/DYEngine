@@ -332,19 +332,22 @@ namespace DYE::DYEditor
 				}
 				case KeyCode::Z:
 				{
-					if (control)
+					if (control && shift)
 					{
-						if (shift)
-						{
-							// Ctrl + Shift + Z
-							Undo::PerformRedo();
-						}
-						else
-						{
-							// Ctrl + Z
-							Undo::PerformUndo();
-						}
+						// Ctrl + Shift + Z
+						Undo::PerformRedo();
 					}
+					else if (control)
+					{
+						// Ctrl + Z
+						Undo::PerformUndo();
+					}
+					else if (!control && !shift)
+					{
+						// Z
+						m_SceneViewContext.IsGizmoLocalSpace = !m_SceneViewContext.IsGizmoLocalSpace;
+					}
+
 					break;
 				}
 			}
@@ -758,6 +761,13 @@ namespace DYE::DYEditor
 					context.GizmoType = ImGuizmo::SCALE;
 				}
 
+				ImGui::Separator();
+
+				if (ImGui::MenuItem("Local", "Z", context.IsGizmoLocalSpace))
+				{
+					context.IsGizmoLocalSpace = !context.IsGizmoLocalSpace;
+				}
+
 				ImGui::EndMenu();
 			}
 			ImGui::PopID();
@@ -839,7 +849,7 @@ namespace DYE::DYEditor
 			glm::value_ptr(viewMatrix),
 			glm::value_ptr(projectionMatrix),
 			(ImGuizmo::OPERATION) context.GizmoType,
-			ImGuizmo::LOCAL,
+			context.IsGizmoLocalSpace? ImGuizmo::LOCAL : ImGuizmo::WORLD,
 			glm::value_ptr(transformMatrix)
 		);
 
@@ -1039,13 +1049,24 @@ namespace DYE::DYEditor
 						{
 							// Select the newly created entity.
 							// For now, the entity is always put at the end of the list.
-							// TODO: make it a child of the clicked tree node entity.
 							auto newEntity = scene.World.CreateEntity("Entity");
 							*pCurrentSelectedEntityGUID = newEntity.TryGetGUID().value();
 							int const newEntityIndexInWorld = scene.World.GetNumberOfEntities() - 1;
 							Undo::RegisterEntityCreation(scene.World, newEntity, newEntityIndexInWorld);
 							Undo::SetEntityParent(newEntity, scene.World.GetNumberOfEntities() - 1, entity, indexInWorld);
+
+							// Open the entity tree node because we want to let the user see the newly created child entity.
+							ImGui::TreeNodeSetOpen(guid.ToString().capacity(), true);
+
 							changed = true;
+						}
+						if (ImGui::Selectable("Duplicate"))
+						{
+							// TODO: duplicate entity and its children assign new GUIDs to all of them,
+							//		we might want to write a separate function in SerializedObjectFactory
+
+							// Open the entity tree node because we want to let the user see the newly created child entity.
+							ImGui::TreeNodeSetOpen(guid.ToString().capacity(), true);
 						}
 						ImGui::EndPopup();
 					}

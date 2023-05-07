@@ -32,6 +32,7 @@ namespace DYE::DYEditor
 	{
 		Math::Rect ViewportBounds;
 		int GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+		bool IsGizmoLocalSpace = true;
 		bool IsTransformManipulatedByGizmo = false;
 		SerializedComponent SerializedTransform;
 	};
