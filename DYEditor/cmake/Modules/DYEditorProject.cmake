@@ -18,6 +18,13 @@ function(DYEditor_AddEditorExecutable NAME SOURCE_ROOT_DIR INCLUDE_DIRS SOURCE_F
     target_compile_definitions(${NAME} PUBLIC DYE_EDITOR)
     target_compile_definitions(DYEditor PUBLIC DYE_EDITOR)
 
+    # Remove DYE_RUNTIME from DYEditor library explicitly because
+    # users might also call DYEditor_AddRuntimeExecutable in the same CMakeLists.txt.
+    # see - https://stackoverflow.com/questions/49049463/how-to-remove-definitions-per-target-in-cmake-2-8-12
+    get_target_property(definitions DYEditor COMPILE_DEFINITIONS)
+    list(FILTER definitions EXCLUDE REGEX [[^DYE_RUNTIME$]])
+    set_property(TARGET DYEditor PROPERTY COMPILE_DEFINITIONS ${definitions})
+
 endfunction()
 
 # Build runtime executable target called <NAME> from the given sources and generated code.
@@ -29,6 +36,13 @@ function(DYEditor_AddRuntimeExecutable NAME SOURCE_ROOT_DIR INCLUDE_DIRS SOURCE_
 
     target_compile_definitions(${NAME} PUBLIC DYE_RUNTIME)
     target_compile_definitions(DYEditor PUBLIC DYE_RUNTIME)
+
+    # Remove DYE_EDITOR from DYEditor library explicitly because
+    # users might also call DYEditor_AddEditorExecutable in the same CMakeLists.txt.
+    # see - https://stackoverflow.com/questions/49049463/how-to-remove-definitions-per-target-in-cmake-2-8-12
+    get_target_property(definitions DYEditor COMPILE_DEFINITIONS)
+    list(FILTER definitions EXCLUDE REGEX [[^DYE_EDITOR$]])
+    set_property(TARGET DYEditor PROPERTY COMPILE_DEFINITIONS ${definitions})
 
 endfunction()
 

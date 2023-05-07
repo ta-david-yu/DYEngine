@@ -2,6 +2,8 @@
 
 #include "Type/BuiltInTypeRegister.h"
 #include "Type/UserTypeRegister.h"
+#include "ProjectConfig.h"
+#include "Core/RuntimeSceneManagement.h"
 
 namespace DYE::DYEditor
 {
@@ -13,15 +15,16 @@ namespace DYE::DYEditor
 
 #ifdef DYE_RUNTIME
 		auto runtimeLayer = std::make_shared<DYEditor::SceneRuntimeLayer>();
-			pushLayerImmediate(runtimeLayer);
+		pushLayerImmediate(runtimeLayer);
 
-			std::filesystem::path firstScenePath = (std::filesystem::path) DYE::DYEditor::GetRuntimeConfig().GetOrDefault<std::string>(DYE::DYEditor::RuntimeConfigFirstSceneKey, "");
-			if (firstScenePath.empty())
-			{
-				DYE_ASSERT_RELEASE(false && "The settings for the first scene is empty."
-											"Be sure to set Project.FirstScene in the runtime configuration file (i.e. runtime.ini).");
-			}
-			DYE::DYEditor::RuntimeSceneManagement::LoadScene(firstScenePath);
+
+		std::filesystem::path firstScenePath = (std::filesystem::path) DYE::DYEditor::GetRuntimeConfig().GetOrDefault<std::string>(DYE::DYEditor::RuntimeConfigFirstSceneKey, "");
+		if (firstScenePath.empty())
+		{
+			DYE_ASSERT_RELEASE(false && "The settings for the first scene is empty."
+										"Be sure to set Project.FirstScene in the runtime configuration file (i.e. runtime.ini).");
+		}
+		DYE::DYEditor::RuntimeSceneManagement::LoadScene(firstScenePath);
 #endif
 
 #ifdef DYE_EDITOR
