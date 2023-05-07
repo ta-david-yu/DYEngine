@@ -434,7 +434,8 @@ namespace DYE::DYEditor
 		{
 			auto tryGetSelectedEntity = activeScene.World.TryGetEntityWithGUID(m_CurrentlySelectedEntityGUID);
 			auto selectedEntity = tryGetSelectedEntity.has_value()? tryGetSelectedEntity.value() : Entity::Null();
-			drawSceneView(m_SceneViewCamera, *m_SceneViewEntityIDFramebuffer, selectedEntity, m_SceneViewContext);
+			bool const sceneViewChanged = drawSceneView(m_SceneViewCamera, *m_SceneViewEntityIDFramebuffer, selectedEntity, m_SceneViewContext);
+			m_IsActiveSceneDirty |= sceneViewChanged;
 		}
 
 		// ImGuiLayer shouldn't block events when SceneView window is focused OR hovered.
@@ -706,8 +707,10 @@ namespace DYE::DYEditor
 		}
 	}
 
-	void SceneEditorLayer::drawSceneView(Camera &sceneViewCamera, Framebuffer &entityIDFramebuffer, Entity selectedEntity, SceneViewContext &context)
+	bool SceneEditorLayer::drawSceneView(Camera &sceneViewCamera, Framebuffer &entityIDFramebuffer, Entity selectedEntity, SceneViewContext &context)
 	{
+		bool changed = false;
+
 		// Update scene viewport bounds.
 		{
 			ImVec2 viewportOffset = ImGui::GetCursorPos();
@@ -769,7 +772,7 @@ namespace DYE::DYEditor
 		{
 			// If either width or height is 0, we don't need to draw the texture OR resize the framebuffer.
 			// Because the scene view window is very likely folded.
-			return;
+			return changed;
 		}
 
 		auto const& renderTextureProperties = sceneViewCamera.Properties.pTargetRenderTexture->GetProperties();
@@ -789,20 +792,20 @@ namespace DYE::DYEditor
 
 		if (!selectedEntity.IsValid())
 		{
-			return;
+			return changed;
 		}
 
 		auto tryGetEntityTransform = selectedEntity.TryGetComponent<TransformComponent>();
 		if (!tryGetEntityTransform.has_value())
 		{
 			// If the entity doesn't have a transform, we don't need to draw the gizmo.
-			return;
+			return changed;
 		}
 
 		if (context.GizmoType == -1)
 		{
 			// No gizmo type is now being used, skip it.
-			return;
+			return changed;
 		}
 
 		// End manipulating gizmo if the gizmo was not being used anymore.
@@ -842,7 +845,7 @@ namespace DYE::DYEditor
 
 		if (!manipulated)
 		{
-			return;
+			return changed;
 		}
 
 		if (!context.IsTransformManipulatedByGizmo)
@@ -864,7 +867,10 @@ namespace DYE::DYEditor
 		{
 			transform.Rotation = glm::quat(eulerRotation);
 		}
-		// TODO: Undo/redo
+
+		changed = true;
+
+		return changed;
 	}
 
 	bool SceneEditorLayer::drawSceneEntityHierarchyPanel(Scene &scene, DYE::GUID *pCurrentSelectedEntityGUID)
