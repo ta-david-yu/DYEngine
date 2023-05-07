@@ -6,4 +6,5 @@ set(GLAD_SOURCE_FILES
 add_library(${LIBRARY_NAME} STATIC
         ${GLAD_SOURCE_FILES})
 
-target_include_directories(${LIBRARY_NAME} PRIVATE include)
+target_include_directories(${LIBRARY_NAME} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include)

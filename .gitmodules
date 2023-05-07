@@ -13,3 +13,6 @@
 [submodule "DYEditor/extern/tomlplusplus/tomlplusplus"]
 	path = DYEditor/extern/tomlplusplus/tomlplusplus
 	url = git@github.com:ta-david-yu/tomlplusplus.git
+[submodule "DYEngine/extern/ImGuizmo/ImGuzmo"]
+	path = DYEngine/extern/ImGuizmo/ImGuzmo
+	url = git@github.com:ta-david-yu/ImGuizmo.git

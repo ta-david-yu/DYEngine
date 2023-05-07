@@ -9,6 +9,7 @@
 #include <imgui.h>
 #include <imgui_impl_sdl2.h>
 #include <imgui_impl_opengl3.h>
+#include <ImGuizmo.h>
 
 namespace DYE
 {
@@ -148,7 +149,7 @@ namespace DYE
 		// Use up an event if ImGui wants it
 		auto &io = ImGui::GetIO();
 		event.IsUsed |= event.IsInCategory(EventCategory::Mouse) && io.WantCaptureMouse;
-		event.IsUsed |= event.IsInCategory(EventCategory::Keyboard) && io.WantCaptureKeyboard;
+		//event.IsUsed |= event.IsInCategory(EventCategory::Keyboard) && io.WantCaptureKeyboard;
 		// TODO: implement EventCategory::TextInput maybe
 	}
 
@@ -162,6 +163,7 @@ namespace DYE
         ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
+		ImGuizmo::BeginFrame();
     }
 
     void ImGuiLayer::EndImGui()

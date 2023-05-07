@@ -67,6 +67,17 @@ namespace DYE::DYEditor
 		s_Data.Operations[s_Data.LatestOperationIndex]->Redo();
 	}
 
+	UndoOperationBase *Undo::GetLatestOperation()
+	{
+		if (s_Data.LatestOperationIndex < 0 || s_Data.LatestOperationIndex >= s_Data.Operations.size())
+		{
+			// Invalid latest operation.
+			return nullptr;
+		}
+
+		return s_Data.Operations[s_Data.LatestOperationIndex].get();
+	}
+
 	void Undo::StartGroupOperation(const char *description)
 	{
 		if (s_Data.IsInGroup)

@@ -2,10 +2,12 @@
 
 #include "SceneRuntimeLayer.h"
 #include "Core/Application.h"
+#include "Core/Time.h"
 #include "Core/RuntimeState.h"
 #include "Core/RuntimeSceneManagement.h"
 #include "Core/EditorSystem.h"
 #include "Serialization/SerializedObjectFactory.h"
+#include "ProjectConfig.h"
 #include "Type/BuiltInTypeRegister.h"
 #include "Type/UserTypeRegister.h"
 #include "Graphics/RenderPipelineManager.h"
@@ -13,13 +15,14 @@
 #include "Graphics/Framebuffer.h"
 #include "Input/InputManager.h"
 #include "Event/MouseEvent.h"
-#include "Core/Time.h"
+#include "Event/KeyEvent.h"
 #include "Util/EntityUtil.h"
-#include "ProjectConfig.h"
 #include "ImGui/EditorWindowManager.h"
 #include "ImGui/ImGuiUtil.h"
 #include "ImGui/ImGuiUtil_Internal.h"
 #include "Undo/Undo.h"
+#include "Undo/UndoOperationBase.h"
+#include "Math/Math.h"
 #include "SceneViewEntitySelection.h"
 
 #include "Components/NameComponent.h"
@@ -32,6 +35,8 @@
 #include <unordered_set>
 #include <stack>
 #include <iostream>
+
+#include <glm/gtc/type_ptr.hpp>
 
 #include <imgui.h>
 #include <imgui_stdlib.h>
@@ -176,7 +181,7 @@ namespace DYE::DYEditor
 		m_SceneViewCamera.Position = {0, 0, 10};
 
 		// Do some more editor setup based on EditorConfig settings.
-		m_InspectorMode = GetEditorConfig().GetOrDefault("Editor.DebugInspector", false)? InspectorMode::Debug : InspectorMode::Normal;
+		m_InspectorContext.Mode = GetEditorConfig().GetOrDefault("Editor.DebugInspector", false)? InspectorMode::Debug : InspectorMode::Normal;
 
 		// FIXME: Window setup should be made according to runtime config file (i.e. GetRuntimeConfig().GetOrDefault("Window.NumberOfInitialWindows")...).
 		//		For now we create a secondary window manually.
@@ -214,19 +219,19 @@ namespace DYE::DYEditor
 		}
 
 		// Scene View Camera Input.
-		if (INPUT.GetKey(KeyCode::W))
+		if (INPUT.GetKey(KeyCode::Up))
 		{
 			m_SceneViewCamera.Position.y += m_CameraKeyboardMoveUnitPerSecond * TIME.DeltaTime();
 		}
-		if (INPUT.GetKey(KeyCode::S))
+		if (INPUT.GetKey(KeyCode::Down))
 		{
 			m_SceneViewCamera.Position.y -= m_CameraKeyboardMoveUnitPerSecond * TIME.DeltaTime();
 		}
-		if (INPUT.GetKey(KeyCode::D))
+		if (INPUT.GetKey(KeyCode::Right))
 		{
 			m_SceneViewCamera.Position.x += m_CameraKeyboardMoveUnitPerSecond * TIME.DeltaTime();
 		}
-		if (INPUT.GetKey(KeyCode::A))
+		if (INPUT.GetKey(KeyCode::Left))
 		{
 			m_SceneViewCamera.Position.x -= m_CameraKeyboardMoveUnitPerSecond * TIME.DeltaTime();
 		}
@@ -267,6 +272,84 @@ namespace DYE::DYEditor
 
 			// Use the event up.
 			mouseScrolledEvent.IsUsed = true;
+		}
+
+		if (event.GetEventType() == EventType::KeyDown)
+		{
+			auto keyDownEvent = (KeyDownEvent&) event;
+			bool const control = INPUT.GetKey(KeyCode::LeftControl) || INPUT.GetKey(KeyCode::RightControl);
+			bool const shift = INPUT.GetKey(KeyCode::LeftShift) || INPUT.GetKey(KeyCode::RightShift);
+
+			// Editor Shortcuts.
+			switch (keyDownEvent.GetKeyCode())
+			{
+				case KeyCode::Q:
+				{
+					m_SceneViewContext.GizmoType = -1;
+					break;
+				}
+				case KeyCode::W:
+				{
+					m_SceneViewContext.GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+					break;
+				}
+				case KeyCode::E:
+				{
+					m_SceneViewContext.GizmoType = ImGuizmo::OPERATION::ROTATE;
+					break;
+				}
+				case KeyCode::R:
+				{
+					m_SceneViewContext.GizmoType = ImGuizmo::OPERATION::SCALE;
+					break;
+				}
+
+				case KeyCode::P:
+				{
+					if (control)
+					{
+						RuntimeState::SetIsPlayingAtTheEndOfFrame(!RuntimeState::IsPlaying());
+					}
+					break;
+				}
+
+				case KeyCode::S:
+				{
+					if (control)
+					{
+						// TODO: save scene
+					}
+					break;
+				}
+
+				case KeyCode::Y:
+				{
+					if (control)
+					{
+						// Ctrl + Y
+						Undo::PerformRedo();
+					}
+				}
+				case KeyCode::Z:
+				{
+					if (control)
+					{
+						if (shift)
+						{
+							// Ctrl + Shift + Z
+							Undo::PerformRedo();
+						}
+						else
+						{
+							// Ctrl + Z
+							Undo::PerformUndo();
+						}
+					}
+					break;
+				}
+			}
+			// Use the event up.
+			keyDownEvent.IsUsed = true;
 		}
 	}
 
@@ -345,19 +428,20 @@ namespace DYE::DYEditor
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2 {0, 0});
 		ImGui::SetNextWindowBgAlpha(0.35f);
 		m_IsSceneViewDrawn = ImGui::Begin(k_SceneViewWindowId, nullptr, sceneViewWindowFlags);
+		m_IsSceneViewWindowFocused = ImGui::IsWindowFocused();
+		m_IsSceneViewWindowHovered = ImGui::IsWindowHovered();
 		if (m_IsSceneViewDrawn)
 		{
-			m_IsSceneViewWindowFocused = ImGui::IsWindowFocused();
-			m_IsSceneViewWindowHovered = ImGui::IsWindowHovered();
-
-			// ImGuiLayer shouldn't block events when SceneView window is focused OR hovered.
-			bool const editorShouldReceiveCameraInputEvent = m_IsSceneViewWindowFocused || m_IsSceneViewWindowHovered;
-			m_pApplication->GetImGuiLayer().SetBlockEvents(!editorShouldReceiveCameraInputEvent);
-
-			SceneViewContext sceneViewContext { .ViewportBounds = m_SceneViewportBounds };
-			drawSceneView(m_SceneViewCamera, *m_SceneViewEntityIDFramebuffer, sceneViewContext);
-			m_SceneViewportBounds = sceneViewContext.ViewportBounds;
+			auto tryGetSelectedEntity = activeScene.World.TryGetEntityWithGUID(m_CurrentlySelectedEntityGUID);
+			auto selectedEntity = tryGetSelectedEntity.has_value()? tryGetSelectedEntity.value() : Entity::Null();
+			bool const sceneViewChanged = drawSceneView(m_SceneViewCamera, *m_SceneViewEntityIDFramebuffer, selectedEntity, m_SceneViewContext);
+			m_IsActiveSceneDirty |= sceneViewChanged;
 		}
+
+		// ImGuiLayer shouldn't block events when SceneView window is focused OR hovered.
+		bool const editorShouldReceiveCameraInputEvent = m_IsSceneViewDrawn && (m_IsSceneViewWindowFocused || m_IsSceneViewWindowHovered);
+		m_pApplication->GetImGuiLayer().SetBlockEvents(!editorShouldReceiveCameraInputEvent);
+
 		ImGui::End();
 		ImGui::PopStyleVar();
 
@@ -481,7 +565,7 @@ namespace DYE::DYEditor
 
 				ImGui::Separator();
 
-				if (ImGui::MenuItem("Save Scene"))
+				if (ImGui::MenuItem("Save Scene", "Ctrl+S"))
 				{
 					if (currentScenePathContext.empty())
 					{
@@ -496,7 +580,7 @@ namespace DYE::DYEditor
 					}
 				}
 
-				if (ImGui::MenuItem("Save Scene As..."))
+				if (ImGui::MenuItem("Save Scene As...", "Ctrl+Shift+S"))
 				{
 					// We store a flag here and delay opening the popup
 					// because MenuItem is Selectable and Selectable by default calls CloseCurrentPopup().
@@ -623,8 +707,10 @@ namespace DYE::DYEditor
 		}
 	}
 
-	void SceneEditorLayer::drawSceneView(Camera &sceneViewCamera, Framebuffer &entityIDFramebuffer, SceneViewContext &context)
+	bool SceneEditorLayer::drawSceneView(Camera &sceneViewCamera, Framebuffer &entityIDFramebuffer, Entity selectedEntity, SceneViewContext &context)
 	{
+		bool changed = false;
+
 		// Update scene viewport bounds.
 		{
 			ImVec2 viewportOffset = ImGui::GetCursorPos();
@@ -652,6 +738,30 @@ namespace DYE::DYEditor
 				ImGui::EndMenu();
 			}
 
+			ImGui::PushID("Gizmo");
+			if (ImGui::BeginMenu("Gizmo"))
+			{
+				if (ImGui::MenuItem("None", "Q", context.GizmoType == -1))
+				{
+					context.GizmoType = -1;
+				}
+				if (ImGui::MenuItem("Translate", "W", context.GizmoType == ImGuizmo::TRANSLATE))
+				{
+					context.GizmoType = ImGuizmo::TRANSLATE;
+				}
+				if (ImGui::MenuItem("Rotate", "E", context.GizmoType == ImGuizmo::ROTATE))
+				{
+					context.GizmoType = ImGuizmo::ROTATE;
+				}
+				if (ImGui::MenuItem("Scale", "R", context.GizmoType == ImGuizmo::SCALE))
+				{
+					context.GizmoType = ImGuizmo::SCALE;
+				}
+
+				ImGui::EndMenu();
+			}
+			ImGui::PopID();
+
 			ImGui::EndMenuBar();
 		}
 
@@ -662,7 +772,7 @@ namespace DYE::DYEditor
 		{
 			// If either width or height is 0, we don't need to draw the texture OR resize the framebuffer.
 			// Because the scene view window is very likely folded.
-			return;
+			return changed;
 		}
 
 		auto const& renderTextureProperties = sceneViewCamera.Properties.pTargetRenderTexture->GetProperties();
@@ -677,6 +787,90 @@ namespace DYE::DYEditor
 		auto imTexID = (void*)(intptr_t)(sceneViewRenderTextureID);
 		ImVec2 const uv0 = ImVec2(0, 1); ImVec2 const uv1 = ImVec2(1, 0);
 		ImGui::Image(imTexID, sceneViewWindowSize, uv0, uv1);
+
+		// Draw selected entity's transformation gizmos.
+
+		if (!selectedEntity.IsValid())
+		{
+			return changed;
+		}
+
+		auto tryGetEntityTransform = selectedEntity.TryGetComponent<TransformComponent>();
+		if (!tryGetEntityTransform.has_value())
+		{
+			// If the entity doesn't have a transform, we don't need to draw the gizmo.
+			return changed;
+		}
+
+		if (context.GizmoType == -1)
+		{
+			// No gizmo type is now being used, skip it.
+			return changed;
+		}
+
+		// End manipulating gizmo if the gizmo was not being used anymore.
+		// Make an undo operation!
+		bool const hasDeactivatedUseOfGizmoAfterEdit = context.IsTransformManipulatedByGizmo && !ImGuizmo::IsUsing();
+		if (hasDeactivatedUseOfGizmoAfterEdit)
+		{
+			auto serializedModifiedTransform = SerializedObjectFactory::CreateSerializedComponentOfType
+				(
+					selectedEntity,
+					TransformComponentName,
+					TypeRegistry::GetComponentTypeDescriptor_TransformComponent()
+				);
+
+			Undo::RegisterComponentModification(selectedEntity, context.SerializedTransform, serializedModifiedTransform);
+			context.IsTransformManipulatedByGizmo = false;
+		}
+
+		ImGuizmo::SetOrthographic(sceneViewCamera.Properties.IsOrthographic);
+		ImGuizmo::SetDrawlist();
+
+		ImGuizmo::SetRect(context.ViewportBounds.X, context.ViewportBounds.Y, context.ViewportBounds.Width, context.ViewportBounds.Height);
+
+		glm::mat4 viewMatrix = sceneViewCamera.GetViewMatrix();
+		glm::mat4 projectionMatrix = sceneViewCamera.Properties.GetProjectionMatrix(context.ViewportBounds.Width / context.ViewportBounds.Height);
+
+		TransformComponent &transform = tryGetEntityTransform.value().get();
+		glm::mat4 transformMatrix = transform.GetTransformMatrix();
+		bool const manipulated = ImGuizmo::Manipulate
+		(
+			glm::value_ptr(viewMatrix),
+			glm::value_ptr(projectionMatrix),
+			(ImGuizmo::OPERATION) context.GizmoType,
+			ImGuizmo::LOCAL,
+			glm::value_ptr(transformMatrix)
+		);
+
+		if (!manipulated)
+		{
+			return changed;
+		}
+
+		if (!context.IsTransformManipulatedByGizmo)
+		{
+			// Start manipulating gizmo,
+			// we create a serialized version of transform for undo/redo later.
+			context.SerializedTransform = SerializedObjectFactory::CreateSerializedComponentOfType
+				(
+					selectedEntity,
+					TransformComponentName,
+					TypeRegistry::GetComponentTypeDescriptor_TransformComponent()
+				);
+
+			context.IsTransformManipulatedByGizmo = true;
+		}
+
+		glm::vec3 eulerRotation = glm::eulerAngles(transform.Rotation);
+		if (Math::DecomposeTransform(transformMatrix, transform.Position, eulerRotation, transform.Scale))
+		{
+			transform.Rotation = glm::quat(eulerRotation);
+		}
+
+		changed = true;
+
+		return changed;
 	}
 
 	bool SceneEditorLayer::drawSceneEntityHierarchyPanel(Scene &scene, DYE::GUID *pCurrentSelectedEntityGUID)
@@ -1719,11 +1913,21 @@ namespace DYE::DYEditor
 			return;
 		}
 
-		glm::vec2 viewportSize = {m_SceneViewportBounds.Width, m_SceneViewportBounds.Height};
+		if (m_CurrentlySelectedEntityGUID != (DYE::GUID) 0)
+		{
+			// If an entity is selected && operating selected entity gizmo,
+			// we want to skip the scene view selection process.
+			if (ImGuizmo::IsUsing() || ImGuizmo::IsOver())
+			{
+				return;
+			}
+		}
+
+		glm::vec2 viewportSize = {m_SceneViewContext.ViewportBounds.Width, m_SceneViewContext.ViewportBounds.Height};
 
 		auto [mouseXf, mouseYf] = ImGui::GetMousePos();
-		mouseXf -= m_SceneViewportBounds.X;
-		mouseYf -= m_SceneViewportBounds.Y;
+		mouseXf -= m_SceneViewContext.ViewportBounds.X;
+		mouseYf -= m_SceneViewContext.ViewportBounds.Y;
 		mouseYf = viewportSize.y - mouseYf;    // Flip y coordinate.
 
 		int const mouseX = (int) mouseXf;
