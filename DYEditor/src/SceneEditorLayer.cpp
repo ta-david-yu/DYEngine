@@ -756,8 +756,10 @@ namespace DYE::DYEditor
 			context.ViewportBounds = Math::Rect(viewportBoundsMin.x, viewportBoundsMin.y, windowSize.x, windowSize.y);
 		}
 
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {8, 8});
 		if (ImGui::BeginMenuBar())
 		{
+			ImGui::SetNextWindowSize({400, 0});
 			if (ImGui::BeginMenu("Camera"))
 			{
 				// Scene View Camera Settings
@@ -801,6 +803,7 @@ namespace DYE::DYEditor
 
 			ImGui::EndMenuBar();
 		}
+		ImGui::PopStyleVar();
 
 		// Render SceneView as a texture image.
 		ImVec2 const sceneViewWindowSize = ImGui::GetContentRegionAvail();
