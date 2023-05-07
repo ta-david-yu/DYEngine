@@ -41,8 +41,6 @@
 #include <imgui.h>
 #include <imgui_stdlib.h>
 
-#include <ImGuizmo.h>
-
 using namespace DYE::DYEditor;
 
 namespace DYE::DYEditor
@@ -737,6 +735,7 @@ namespace DYE::DYEditor
 				ImGui::EndMenu();
 			}
 
+			ImGui::PushID("Gizmo");
 			if (ImGui::BeginMenu("Gizmo"))
 			{
 				if (ImGui::MenuItem("None", "Q", context.GizmoType == -1))
@@ -758,6 +757,7 @@ namespace DYE::DYEditor
 
 				ImGui::EndMenu();
 			}
+			ImGui::PopID();
 
 			ImGui::EndMenuBar();
 		}

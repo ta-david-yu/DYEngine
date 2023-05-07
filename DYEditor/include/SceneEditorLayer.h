@@ -17,6 +17,8 @@
 #include <concepts>
 #include <utility>
 
+#include <ImGuizmo.h>
+
 namespace DYE
 {
 	class Framebuffer;
@@ -29,7 +31,7 @@ namespace DYE::DYEditor
 	struct SceneViewContext
 	{
 		Math::Rect ViewportBounds;
-		int GizmoType = -1;
+		int GizmoType = ImGuizmo::OPERATION::TRANSLATE;
 		bool IsTransformManipulatedByGizmo = false;
 		SerializedComponent SerializedTransform;
 	};
