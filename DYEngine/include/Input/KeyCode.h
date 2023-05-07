@@ -20,12 +20,19 @@ namespace DYE
 
 		A = SDL_KeyCode::SDLK_a,
 		D = SDL_KeyCode::SDLK_d,
+		E = SDL_KeyCode::SDLK_e,
 		F = SDL_KeyCode::SDLK_f,
 		G = SDL_KeyCode::SDLK_g,
 		H = SDL_KeyCode::SDLK_h,
+		P = SDL_KeyCode::SDLK_p,
+		Q = SDL_KeyCode::SDLK_q,
+		R = SDL_KeyCode::SDLK_r,
 		S = SDL_KeyCode::SDLK_s,
 		T = SDL_KeyCode::SDLK_t,
 		W = SDL_KeyCode::SDLK_w,
+		X = SDL_KeyCode::SDLK_x,
+		Y = SDL_KeyCode::SDLK_y,
+		Z = SDL_KeyCode::SDLK_z,
 
         Right = SDL_KeyCode::SDLK_RIGHT,
         Left = SDL_KeyCode::SDLK_LEFT,
@@ -52,7 +59,14 @@ namespace DYE
 		F7 = SDL_KeyCode::SDLK_F7,
 		F8 = SDL_KeyCode::SDLK_F8,
 		F9 = SDL_KeyCode::SDLK_F9,
-		F10 = SDL_KeyCode::SDLK_F10
+		F10 = SDL_KeyCode::SDLK_F10,
+
+		LeftControl = SDL_KeyCode::SDLK_LCTRL,
+		LeftShift = SDL_KeyCode::SDLK_LSHIFT,
+		LeftAlt = SDL_KeyCode::SDLK_LALT,
+		RightControl = SDL_KeyCode::SDLK_RCTRL,
+		RightShift = SDL_KeyCode::SDLK_RSHIFT,
+		RightAlt = SDL_KeyCode::SDLK_RALT,
     };
 
 	std::string GetKeyName(KeyCode keyCode);

@@ -109,11 +109,10 @@ namespace DYE::DYEditor
 
 		static std::optional<ComponentTypeDescriptor> TryGetComponentTypeDescriptor(std::string const& componentTypeName);
 
-		/// A specialized function to get NameComponent's Type Descriptor. Implemented inside BuiltInTypeRegister.cpp.
+		/// Specialized functions to get certain built-in component Type Descriptor. Implemented inside BuiltInTypeRegister.cpp.
 		static ComponentTypeDescriptor GetComponentTypeDescriptor_NameComponent();
-		/// A specialized function to get ParentComponent's Type Descriptor. Implemented inside BuiltInTypeRegister.cpp.
+		static ComponentTypeDescriptor GetComponentTypeDescriptor_TransformComponent();
 		static ComponentTypeDescriptor GetComponentTypeDescriptor_ParentComponent();
-		/// A specialized function to get ChildrenComponent's Type Descriptor. Implemented inside BuiltInTypeRegister.cpp.
 		static ComponentTypeDescriptor GetComponentTypeDescriptor_ChildrenComponent();
 
 		/// \return a pointer to the system instance, else nullptr.

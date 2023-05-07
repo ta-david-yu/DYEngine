@@ -21,4 +21,14 @@ namespace DYE::DYEditor
 			return modelMatrix;
 		}
 	};
+
+	namespace Internal
+	{
+		/// This component is only meant for Editor,
+		/// to show rotation as euler angles in degree in the inspector.
+		struct TransformEulerAnglesHintComponent
+		{
+			glm::vec3 Value {0, 0, 0};
+		};
+	}
 }

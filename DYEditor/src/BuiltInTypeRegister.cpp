@@ -193,12 +193,9 @@ namespace DYE::DYEditor
 		TransformComponent_Deserialize(SerializedComponent &serializedComponent, DYE::DYEditor::Entity &entity)
 		{
 			auto &transformComponent = entity.AddOrGetComponent<TransformComponent>();
-			transformComponent.Position = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Vector3>(
-				"Position");
-			transformComponent.Scale = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Vector3>(
-				"Scale");
-			transformComponent.Rotation = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Quaternion>(
-				"Rotation");
+			transformComponent.Position = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Vector3>("Position");
+			transformComponent.Scale = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Vector3>("Scale");
+			transformComponent.Rotation = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Quaternion>("Rotation");
 
 			return {};
 		}
@@ -395,6 +392,7 @@ namespace DYE::DYEditor
 	static ComponentTypeDescriptor s_NameComponentTypeDescriptor;
 	static ComponentTypeDescriptor s_ParentComponentTypeDescriptor;
 	static ComponentTypeDescriptor s_ChildrenComponentTypeDescriptor;
+	static ComponentTypeDescriptor s_TransformComponentTypeDescriptor;
 
 	void RegisterBuiltInTypes()
 	{
@@ -454,9 +452,9 @@ namespace DYE::DYEditor
 			}
 		);
 
-		TypeRegistry::RegisterComponentType<TransformComponent>
+		s_TransformComponentTypeDescriptor = TypeRegistry::RegisterComponentType<TransformComponent>
 		(
-			"Transform",
+			TransformComponentName,
 			ComponentTypeDescriptor
 			{
 				.Serialize = BuiltInFunctions::TransformComponent_Serialize,
@@ -503,6 +501,11 @@ namespace DYE::DYEditor
 	ComponentTypeDescriptor TypeRegistry::GetComponentTypeDescriptor_NameComponent()
 	{
 		return s_NameComponentTypeDescriptor;
+	}
+
+	ComponentTypeDescriptor TypeRegistry::GetComponentTypeDescriptor_TransformComponent()
+	{
+		return s_TransformComponentTypeDescriptor;
 	}
 
 	ComponentTypeDescriptor TypeRegistry::GetComponentTypeDescriptor_ParentComponent()

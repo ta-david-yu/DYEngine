@@ -24,6 +24,8 @@ namespace DYE::DYEditor
 		static void PerformUndo();
 		static void PerformRedo();
 
+		static UndoOperationBase* GetLatestOperation();
+
 		/// All the undo operations called after StartGroupOperation & before EndGroupOperation
 		/// will be collapsed into one group undoable operation.
 		static void StartGroupOperation(const char *description);

@@ -29,7 +29,9 @@ namespace DYE::DYEditor
 	struct SceneViewContext
 	{
 		Math::Rect ViewportBounds;
-		Entity SelectedEntity = Entity::Null();
+		int GizmoType = -1;
+		bool IsTransformManipulatedByGizmo = false;
+		SerializedComponent SerializedTransform;
 	};
 
 	enum class InspectorMode
@@ -85,14 +87,14 @@ namespace DYE::DYEditor
 		bool m_IsSceneViewDrawn = true;
 		bool m_IsSceneViewWindowFocused = false;
 		bool m_IsSceneViewWindowHovered = false;
-		Math::Rect m_SceneViewportBounds;
+		SceneViewContext m_SceneViewContext;
 
 		InspectorMode m_InspectorMode = InspectorMode::Normal;
 		EntityInspectorContext m_InspectorContext;
 
 		static void setEditorWindowDefaultLayout(ImGuiID dockSpaceId);
 		static void drawEditorWindowMenuBar(Scene &currentScene, std::filesystem::path &currentScenePathContext, bool *pIsSceneDirty);
-		static void drawSceneView(Camera &sceneViewCamera, Framebuffer &entityIDFramebuffer, SceneViewContext &context);
+		static void drawSceneView(Camera &sceneViewCamera, Framebuffer &entityIDFramebuffer, Entity selectedEntity, SceneViewContext &context);
 		static bool drawSceneEntityHierarchyPanel(Scene &scene, DYE::GUID *pCurrentSelectedEntityGUID);
 		static bool drawSceneSystemPanel(Scene& scene);
 		template<typename Func> requires std::predicate<Func, std::string const&, SystemBase const*>

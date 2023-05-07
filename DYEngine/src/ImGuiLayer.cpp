@@ -149,7 +149,7 @@ namespace DYE
 		// Use up an event if ImGui wants it
 		auto &io = ImGui::GetIO();
 		event.IsUsed |= event.IsInCategory(EventCategory::Mouse) && io.WantCaptureMouse;
-		event.IsUsed |= event.IsInCategory(EventCategory::Keyboard) && io.WantCaptureKeyboard;
+		//event.IsUsed |= event.IsInCategory(EventCategory::Keyboard) && io.WantCaptureKeyboard;
 		// TODO: implement EventCategory::TextInput maybe
 	}
 
