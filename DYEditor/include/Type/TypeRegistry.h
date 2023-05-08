@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/EditorSystem.h"
 #include "Core/Entity.h"
 #include "Type/DrawComponentHeaderContext.h"
 #include "Type/DefaultComponentFunctions.h"
@@ -11,8 +12,6 @@
 
 namespace DYE::DYEditor
 {
-	class SystemBase;
-
 	struct SerializedEntity;
 	struct SerializedComponent;
 
