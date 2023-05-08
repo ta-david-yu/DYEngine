@@ -26,6 +26,7 @@ I did some reorganizations to the SDL2 folders so whether you use MinGW or MSVC 
 - **glm**
 - **stb_image**
 - **Dear ImGui**
+- **ImGuizmo**
 ### DYEditor
 - **entt**: use as the main object model in DYEngine. I might implement my own ECS framework if time allows it.
 - **tomlplusplus**: most of the custom text-based files in DYEditor will be stored as toml (i.e. scene/level files, asset meta files).
