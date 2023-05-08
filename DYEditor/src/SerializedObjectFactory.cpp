@@ -137,6 +137,7 @@ namespace DYE::DYEditor
 				continue;
 			}
 
+#if defined(__EXCEPTIONS)
 			try
 			{
 				DeserializationResult const deserializeComponentResult = componentTypeFunctions.Deserialize(serializedComponentHandle, entity);
@@ -146,6 +147,9 @@ namespace DYE::DYEditor
 				DYE_LOG_ERROR(exception.what());
 				DYE_ASSERT(false);
 			}
+#else
+			DeserializationResult const deserializeComponentResult = componentTypeFunctions.Deserialize(serializedComponentHandle, entity);
+#endif
 		}
 
 		return std::move(result);

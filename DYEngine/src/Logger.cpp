@@ -25,7 +25,11 @@ namespace DYE
         char formattedMsg[LOG_BUFFER_SIZE];
         char positionMsg[LOG_BUFFER_SIZE];
 
+#if defined(_MSC_VER)
+		int offset = vsprintf_s(formattedMsg, msg, args);
+#else
         int offset = std::vsprintf(formattedMsg, msg, args);
+#endif
         int length = std::snprintf(formattedMsg + offset, LOG_BUFFER_SIZE, "\n\tat %-30s:%d", file, line);
 
         // print

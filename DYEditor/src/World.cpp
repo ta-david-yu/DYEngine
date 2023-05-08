@@ -220,7 +220,7 @@ namespace DYE::DYEditor
 
 	void World::registerUntrackedEntityAtIndex(Entity entity, std::size_t index)
 	{
-		m_EntityHandles.insert(m_EntityHandles.begin() + index, EntityHandle(entity.m_EntityIdentifier));
+		m_EntityHandles.insert(m_EntityHandles.begin() + index, EntityHandle { .Identifier = entity.m_EntityIdentifier });
 
 		auto tryGetGUID = entity.TryGetGUID();
 		DYE_ASSERT_LOG_WARN(tryGetGUID.has_value(), "The given entity %d doesn't have a GUID (i.e. IDComponent), cannot be tracked.", entity.GetIdentifier());

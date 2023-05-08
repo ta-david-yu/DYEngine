@@ -22,15 +22,21 @@ namespace DYE::DYEditor
 			return {};
 		}
 
+#if defined(__EXCEPTIONS)
 		try
 		{
 			std::uint64_t guidInt = std::stoull(tryGetGUIDString.value());
 			return GUID(guidInt);
 		}
-		catch (const std::exception& e)
+		catch (std::exception const& e)
 		{
 			return {};
 		}
+#else
+		char *pEnd = nullptr;
+		std::uint64_t convertedUll = std::strtoull(tryGetGUIDString.value().c_str(), &pEnd, 10);
+		return GUID(convertedUll);
+#endif
 	}
 
 	template<>

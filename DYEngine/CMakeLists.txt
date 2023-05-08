@@ -178,7 +178,9 @@ target_link_libraries(DYEngine PRIVATE ImGuizmo)
 # Link winpthread because SDL2 needs it.
 # We need to specify -static because winpthread is included in the bundled MinGW distribution that comes with CLion.
 # We would have to modify this for other compilers at some point.
-target_link_libraries(DYEngine PRIVATE -static winpthread)
+if (MINGW)
+    target_link_libraries(DYEngine PRIVATE -static winpthread)
+endif ()
 
 # ===========================================================================================
 # Copy SDL2.dll to the output directory post-build

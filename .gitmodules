@@ -7,8 +7,8 @@
 [submodule "DYEditor/extern/entt"]
 	path = DYEditor/extern/entt
 	url = git@github.com:ta-david-yu/entt.git
-[submodule "DYEditor/DYEditorCodeGenerator/extern/fmt"]
-	path = DYEditor/DYEditorCodeGenerator/extern/fmt
+[submodule "DYEditor/DYEditorCodeGenerator/extern/fmt_tmp"]
+	path = DYEditor/DYEditorCodeGenerator/extern/fmt/fmt
 	url = git@github.com:fmtlib/fmt.git
 [submodule "DYEditor/extern/tomlplusplus/tomlplusplus"]
 	path = DYEditor/extern/tomlplusplus/tomlplusplus
