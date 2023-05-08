@@ -1,6 +1,7 @@
 #include "AppEntryPoint.h"
 #include "Core/Application.h"
 
+#include "DYEditorApplication.h"
 #include "SandboxLayer.h"
 
 namespace DYE::Sandbox
@@ -25,5 +26,6 @@ namespace DYE::Sandbox
 /// \return a new allocated Application object
 DYE::Application * DYE::CreateApplication()
 {
-    return new Sandbox::SandboxApp { "Sandbox", 60 };
+    //return new Sandbox::SandboxApp { "Sandbox", 60 };
+	return new DYE::DYEditor::DYEditorApplication { "Sandbox", 60 };
 }
