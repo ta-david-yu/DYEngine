@@ -200,18 +200,27 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 
 	std::regex const constKeywordPattern(R"(\bconst\b)");
 	std::regex const typeWithNamespacesPattern(R"(^((?:\w+::)*)(\w+)$)");
-	std::regex const dyeComponentKeywordPattern(
-		R"lit(^\s*DYE_COMPONENT\(\s*"([a-zA-Z][\w\s]*?)",\s*([a-zA-Z0-9_]+[::[a-zA-Z0-9_]+]*)\)\s*$)lit"
-	);
-	std::regex const dyeSystemKeywordPattern(
-		R"lit(^\s*DYE_SYSTEM\(\s*"([a-zA-Z][\w\s]*?)",\s*([a-zA-Z0-9_]+[::[a-zA-Z0-9_]+]*)\)\s*$)lit"
-	);
 	std::regex const dyePropertyKeywordPattern(
 		R"(^\s*DYE_PROPERTY\(\)\s*$)"
 	);
 	std::regex const variableDeclarationPattern(
 		R"((?:(?:[a-zA-Z_][a-zA-Z0-9_]*)+::)*([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:const\s+)?([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:=\s*([^;]*))?;)"
 	);
+#if defined(_MSC_VER)
+	std::regex const dyeComponentKeywordPattern(
+		R"lit(^\s*DYE_COMPONENT\(\s*"([[:alpha:]][\w\s]*?)",\s*([[:alnum:]_]+(::[[:alnum:]_]+)*)\)\s*$)lit"
+	);
+	std::regex const dyeSystemKeywordPattern(
+		R"lit(^\s*DYE_SYSTEM\(\s*"([[:alpha:]][\w\s]*?)",\s*([[:alnum:]_]+(::[[:alnum:]_]+)*)\)\s*$)lit"
+	);
+#else
+	std::regex const dyeComponentKeywordPattern(
+		R"lit(^\s*DYE_COMPONENT\(\s*"([a-zA-Z][\w\s]*?)",\s*([a-zA-Z0-9_]+[::[a-zA-Z0-9_]+]*)\)\s*$)lit"
+	);
+	std::regex const dyeSystemKeywordPattern(
+		R"lit(^\s*DYE_SYSTEM\(\s*"([a-zA-Z][\w\s]*?)",\s*([a-zA-Z0-9_]+[::[a-zA-Z0-9_]+]*)\)\s*$)lit"
+	);
+#endif
 	std::smatch match;
 
 	std::string line;
