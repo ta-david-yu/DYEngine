@@ -43,36 +43,42 @@ namespace DYE::DYEditor
 	std::optional<DYE::Vector2> SerializedArray::TryGetElementAtIndex(int index) const
 	{
 		DYE_ASSERT_LOG_WARN(false, "Not implemented!");
+		return {};
 	}
 
 	template<>
 	std::optional<DYE::Vector3> SerializedArray::TryGetElementAtIndex(int index) const
 	{
 		DYE_ASSERT_LOG_WARN(false, "Not implemented!");
+		return {};
 	}
 
 	template<>
 	std::optional<DYE::Vector4> SerializedArray::TryGetElementAtIndex(int index) const
 	{
 		DYE_ASSERT_LOG_WARN(false, "Not implemented!");
+		return {};
 	}
 
 	template<>
 	std::optional<DYE::Quaternion> SerializedArray::TryGetElementAtIndex(int index) const
 	{
 		DYE_ASSERT_LOG_WARN(false, "Not implemented!");
+		return {};
 	}
 
 	template<>
 	std::optional<DYE::AssetPath> SerializedArray::TryGetElementAtIndex(int index) const
 	{
 		DYE_ASSERT_LOG_WARN(false, "Not implemented!");
+		return {};
 	}
 
 	template<>
 	std::optional<Math::Rect> SerializedArray::TryGetElementAtIndex(int index) const
 	{
 		DYE_ASSERT_LOG_WARN(false, "Not implemented!");
+		return {};
 	}
 
 
