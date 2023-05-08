@@ -128,9 +128,11 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Mo
 
 # External library
 # Define SDL2_PATH here that will be used by FindSDL2 module
-#TODO: Link to different binaries based on compiler, right now there is only mingw version.
-#TODO: for instance if (MINGW) set(SDL2_PATH "extern/SDL2/mingw")
-set(SDL2_PATH "extern/SDL2")
+if (MSVC)
+    set(SDL2_PATH "extern/SDL2/MSVC")
+elseif (MINGW)
+    set(SDL2_PATH "extern/SDL2/MingGW")
+endif ()
 find_package(SDL2 REQUIRED)
 
 # Build external static library
@@ -184,9 +186,23 @@ endif ()
 
 # ===========================================================================================
 # Copy SDL2.dll to the output directory post-build
+if (MSVC)
+    if (${CMAKE_SIZEOF_VOID_P} MATCHES 8) # 64 bit
+        set(SDL2_DLL_PATH ${PROJECT_SOURCE_DIR}/${SDL2_PATH}/lib/x64/SDL2.dll)
+    else () # 32 bit
+        set(SDL2_DLL_PATH ${PROJECT_SOURCE_DIR}/${SDL2_PATH}/lib/x86/SDL2.dll)
+    endif ()
+elseif (MINGW)
+    if (${CMAKE_SIZEOF_VOID_P} MATCHES 8) # 64 bit
+        set(SDL2_DLL_PATH ${PROJECT_SOURCE_DIR}/${SDL2_PATH}/bin/x64/SDL2.dll)
+    else () # 32 bit
+        set(SDL2_DLL_PATH ${PROJECT_SOURCE_DIR}/${SDL2_PATH}/bin/x86/SDL2.dll)
+    endif ()
+endif ()
+
 add_custom_command(TARGET DYEngine POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${PROJECT_SOURCE_DIR}/${SDL2_PATH}/bin/SDL2.dll
+        COMMAND ${CMAKE_COMMAND} -E copy
+        ${SDL2_DLL_PATH}
         $<TARGET_FILE_DIR:DYEngine>/
         COMMENT "${PROJECT_NAME} Post Build Copy SDL2.dll")
 
