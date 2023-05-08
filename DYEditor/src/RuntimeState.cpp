@@ -73,7 +73,7 @@ namespace DYE::DYEditor
 
 	void RuntimeState::UnregisterListener(RuntimeStateListenerBase *listenerToRemove)
 	{
-		std::remove_if(s_Data.RuntimeStateListeners.begin(), s_Data.RuntimeStateListeners.end(),
+		std::erase_if(s_Data.RuntimeStateListeners,
 					   [listenerToRemove](RuntimeStateListenerBase* listener)
 					   {
 						   return  listener == listenerToRemove;

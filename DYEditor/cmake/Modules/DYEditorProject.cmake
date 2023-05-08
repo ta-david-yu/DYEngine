@@ -60,7 +60,11 @@ function(DYEditor_AddExecutable NAME SOURCE_ROOT_DIR INCLUDE_DIRS SOURCE_FILES H
     message(STATUS "[${DYE_PROJECT_NAME}] Source Files: ${DYE_PROJECT_SOURCE_FILES}")
     message(STATUS "[${DYE_PROJECT_NAME}] Header Files: ${DYE_PROJECT_HEADER_FILES}")
 
-    add_executable(${DYE_PROJECT_NAME} WIN32 ${DYE_PROJECT_SOURCE_FILES} ${DYE_PROJECT_HEADER_FILES})
+    # For now we always show the console, if you want to hide the console,
+    # 1. Add WIN32 in the build command. Like this:
+    #   add_executable(${DYE_PROJECT_NAME} WIN32 ${DYE_PROJECT_SOURCE_FILES} ${DYE_PROJECT_HEADER_FILES})
+    # 2. Remove -mconsole when linking SDL2 in DYEngine.
+    add_executable(${DYE_PROJECT_NAME} ${DYE_PROJECT_SOURCE_FILES} ${DYE_PROJECT_HEADER_FILES})
 
     target_link_libraries(${DYE_PROJECT_NAME} DYEngine)
     target_link_libraries(${DYE_PROJECT_NAME} DYEditor)

@@ -10,9 +10,10 @@
 #include "Core/GUID.h"
 
 #include <set>
+#include <cstdlib>
+
 #include <imgui.h>
 #include <imgui_stdlib.h>
-
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -821,6 +822,7 @@ namespace DYE::ImGuiUtil
 		s_Context.UpdateLastControlState();
 		if (changed)
 		{
+#if defined(__EXCEPTIONS)
 			try
 			{
 				guid = (GUID) std::stoull(guidString);
@@ -830,6 +832,11 @@ namespace DYE::ImGuiUtil
 				// If string failed to convert to guid, reset the changes.
 				changed = false;
 			}
+#else
+			char *pEnd = nullptr;
+			std::uint64_t convertedUll = std::strtoull(guidString.c_str(), &pEnd, 10);
+			guid = (GUID) convertedUll;
+#endif
 		}
 
 		return changed;

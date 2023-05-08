@@ -3,6 +3,7 @@
 #include "Type/TypeRegistry.h"
 #include "Core/Entity.h"
 #include "Core/Scene.h"
+#include "FileSystem/FileSystem.h"
 
 #include <fstream>
 #include <toml++/toml.h>
@@ -11,6 +12,11 @@ namespace DYE::DYEditor
 {
 	std::optional<SerializedScene> SerializedObjectFactory::TryLoadSerializedSceneFromFile(const std::filesystem::path &path)
 	{
+		if (!FileSystem::FileExists(path))
+		{
+			DYE_LOG("Cannot find the scene file: %s", path.string().c_str());
+		}
+
 		auto result = toml::parse_file(path.string());
 		if (!result)
 		{
@@ -95,7 +101,15 @@ namespace DYE::DYEditor
 				entity.AddComponent<EntityDeserializationResult>(result);
 			}
 
-			scene.World.registerUntrackedEntityAtIndex(entity, i);
+			auto tryGetGUID = entity.TryGetGUID();
+			if (tryGetGUID.has_value())
+			{
+				scene.World.registerUntrackedEntityAtIndex(entity, i);
+			}
+			else
+			{
+				DYE_LOG("The entity at index %d doesn't have a GUID (IDComponent), it will not be tracked by the World.", i);
+			}
 		}
 	}
 
@@ -137,6 +151,7 @@ namespace DYE::DYEditor
 				continue;
 			}
 
+#if defined(__EXCEPTIONS)
 			try
 			{
 				DeserializationResult const deserializeComponentResult = componentTypeFunctions.Deserialize(serializedComponentHandle, entity);
@@ -146,6 +161,9 @@ namespace DYE::DYEditor
 				DYE_LOG_ERROR(exception.what());
 				DYE_ASSERT(false);
 			}
+#else
+			DeserializationResult const deserializeComponentResult = componentTypeFunctions.Deserialize(serializedComponentHandle, entity);
+#endif
 		}
 
 		return std::move(result);

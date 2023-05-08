@@ -43,7 +43,7 @@ void ImGuiSystem1::Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecutePa
 	ImGui::SetNextWindowSize({200, 100}, ImGuiCond_FirstUseEver);
 	if (ImGui::Begin("ImGui System 1 Window"))
 	{
-		ImGui::Text("HEHEHE TEST");
+		ImGui::Text("MSVC TEST");
 	}
 
 	ImGui::End();

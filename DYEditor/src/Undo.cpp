@@ -83,7 +83,11 @@ namespace DYE::DYEditor
 			return;
 		}
 
+#if defined(_MSC_VER)
+		int offset = vsprintf_s(s_Data.Operations[s_Data.LatestOperationIndex]->Description, fmt, args);
+#else
 		int offset = std::vsprintf(s_Data.Operations[s_Data.LatestOperationIndex]->Description, fmt, args);
+#endif
 	}
 
 	void Undo::StartGroupOperation(const char *description)
@@ -98,7 +102,12 @@ namespace DYE::DYEditor
 		s_Data.IsInGroup = true;
 		s_Data.CurrentGroupBeginIndex = s_Data.LatestOperationIndex + 1;
 		s_Data.CurrentGroupOperation = std::make_unique<GroupUndoOperation>();
+
+#if defined(_MSC_VER)
+		strcpy_s(s_Data.CurrentGroupOperation->Description, description);
+#else
 		std::strcpy(s_Data.CurrentGroupOperation->Description, description);
+#endif
 	}
 
 	void Undo::SetCurrentGroupOperationDescription(const char *description)
@@ -108,7 +117,11 @@ namespace DYE::DYEditor
 			return;
 		}
 
+#if defined(_MSC_VER)
+		strcpy_s(s_Data.CurrentGroupOperation->Description, description);
+#else
 		std::strcpy(s_Data.CurrentGroupOperation->Description, description);
+#endif
 	}
 
 	void Undo::EndGroupOperation()
@@ -765,7 +778,7 @@ namespace DYE::DYEditor
 	void Undo::pushNewOperation(std::unique_ptr<UndoOperationBase> operation)
 	{
 		// Discard everything behind the current head.
-		s_Data.Operations.erase(s_Data.Operations.begin() + s_Data.LatestOperationIndex + 1, s_Data.Operations.end());
+		s_Data.Operations.erase(s_Data.Operations.begin() + (s_Data.LatestOperationIndex + 1), s_Data.Operations.end());
 
 		s_Data.Operations.emplace_back(std::move(operation));
 		s_Data.LatestOperationIndex = s_Data.Operations.size() - 1;

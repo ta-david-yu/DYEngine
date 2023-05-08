@@ -22,51 +22,63 @@ namespace DYE::DYEditor
 			return {};
 		}
 
+#if defined(__EXCEPTIONS)
 		try
 		{
 			std::uint64_t guidInt = std::stoull(tryGetGUIDString.value());
 			return GUID(guidInt);
 		}
-		catch (const std::exception& e)
+		catch (std::exception const& e)
 		{
 			return {};
 		}
+#else
+		char *pEnd = nullptr;
+		std::uint64_t convertedUll = std::strtoull(tryGetGUIDString.value().c_str(), &pEnd, 10);
+		return GUID(convertedUll);
+#endif
 	}
 
 	template<>
 	std::optional<DYE::Vector2> SerializedArray::TryGetElementAtIndex(int index) const
 	{
 		DYE_ASSERT_LOG_WARN(false, "Not implemented!");
+		return {};
 	}
 
 	template<>
 	std::optional<DYE::Vector3> SerializedArray::TryGetElementAtIndex(int index) const
 	{
 		DYE_ASSERT_LOG_WARN(false, "Not implemented!");
+		return {};
 	}
 
 	template<>
 	std::optional<DYE::Vector4> SerializedArray::TryGetElementAtIndex(int index) const
 	{
 		DYE_ASSERT_LOG_WARN(false, "Not implemented!");
+		return {};
 	}
 
 	template<>
 	std::optional<DYE::Quaternion> SerializedArray::TryGetElementAtIndex(int index) const
 	{
 		DYE_ASSERT_LOG_WARN(false, "Not implemented!");
+		return {};
 	}
 
 	template<>
 	std::optional<DYE::AssetPath> SerializedArray::TryGetElementAtIndex(int index) const
 	{
 		DYE_ASSERT_LOG_WARN(false, "Not implemented!");
+		return {};
 	}
 
 	template<>
 	std::optional<Math::Rect> SerializedArray::TryGetElementAtIndex(int index) const
 	{
 		DYE_ASSERT_LOG_WARN(false, "Not implemented!");
+		return {};
 	}
 
 

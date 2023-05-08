@@ -58,7 +58,6 @@ namespace DYE::DYEditor
 						{
 							bool changed = false;
 							auto& component = entity.GetComponent<TestNamespace::TestComponentA>();
-							ImGui::TextWrapped("TestNamespace::TestComponentA");
 							changed |= ImGuiUtil::DrawFloatControl("FloatValue", component.FloatValue); updateContextAfterDrawControlCall(drawInspectorContext);
 							changed |= ImGuiUtil::DrawIntControl("IntegerValue", component.IntegerValue); updateContextAfterDrawControlCall(drawInspectorContext);
 							ImGui::BeginDisabled(true); ImGuiUtil::DrawReadOnlyTextWithLabel("intCannotBeSerialized", "Variable of unsupported type 'int'"); ImGui::EndDisabled();
@@ -89,7 +88,6 @@ namespace DYE::DYEditor
 						{
 							bool changed = false;
 							auto& component = entity.GetComponent<TestNamespace::Subnamespace::SubtestComponentA>();
-							ImGui::TextWrapped("TestNamespace::Subnamespace::SubtestComponentA");
 							changed |= ImGuiUtil::DrawIntControl("IntegerValue", component.IntegerValue); updateContextAfterDrawControlCall(drawInspectorContext);
 							return changed;
 						}
@@ -107,7 +105,6 @@ namespace DYE::DYEditor
 							auto const& component = entity.GetComponent<TestComponentB>();
 							serializedComponent.SetPrimitiveTypePropertyValue("BooleanValue", component.BooleanValue);
 							std::string OneCharacter(" "); OneCharacter[0] = component.OneCharacter; serializedComponent.SetPrimitiveTypePropertyValue("OneCharacter", OneCharacter);							// Property 'ConstantFloat' will not be serialized because it is a constant variable.
-							// Property 'ConstantVector3' will not be serialized because it is a constant variable.
 							serializedComponent.SetPrimitiveTypePropertyValue("Position", component.Position);
 							serializedComponent.SetPrimitiveTypePropertyValue("vec4", component.vec4);
 							return SerializationResult {};
@@ -118,7 +115,6 @@ namespace DYE::DYEditor
 							component.BooleanValue = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<Bool>("BooleanValue");
 							component.OneCharacter = serializedComponent.GetPrimitiveTypePropertyValueOr<const char*>("OneCharacter", "a")[0];
 							// Property 'ConstantFloat' will not be serialized because it is a constant variable.
-							// Property 'ConstantVector3' will not be serialized because it is a constant variable.
 							component.Position = serializedComponent.GetPrimitiveTypePropertyValueOr<Vector3>("Position", glm::vec3 {0, 0, 5});
 							component.vec4 = serializedComponent.GetPrimitiveTypePropertyValueOr<Vector4>("vec4", glm::vec4 {1, 2, 3, 4});
 							return DeserializationResult {};
@@ -127,11 +123,9 @@ namespace DYE::DYEditor
 						{
 							bool changed = false;
 							auto& component = entity.GetComponent<TestComponentB>();
-							ImGui::TextWrapped("TestComponentB");
 							changed |= ImGuiUtil::DrawBoolControl("BooleanValue", component.BooleanValue); updateContextAfterDrawControlCall(drawInspectorContext);
 							changed |= ImGuiUtil::DrawCharControl("OneCharacter", component.OneCharacter); updateContextAfterDrawControlCall(drawInspectorContext);
 							ImGui::BeginDisabled(true); ImGuiUtil::DrawReadOnlyTextWithLabel("ConstantFloat", "Constant variable of type 'Float'"); ImGui::EndDisabled();
-							ImGui::BeginDisabled(true); ImGuiUtil::DrawReadOnlyTextWithLabel("ConstantVector3", "Constant variable of type 'Vector3'"); ImGui::EndDisabled();
 							changed |= ImGuiUtil::DrawVector3Control("Position", component.Position); updateContextAfterDrawControlCall(drawInspectorContext);
 							changed |= ImGuiUtil::DrawVector4Control("vec4", component.vec4); updateContextAfterDrawControlCall(drawInspectorContext);
 							return changed;
@@ -178,7 +172,6 @@ namespace DYE::DYEditor
 						{
 							bool changed = false;
 							auto& component = entity.GetComponent<ComponentWithAllPrimitiveProperties>();
-							ImGui::TextWrapped("ComponentWithAllPrimitiveProperties");
 							changed |= ImGuiUtil::DrawCharControl("CharVar", component.CharVar); updateContextAfterDrawControlCall(drawInspectorContext);
 							changed |= ImGuiUtil::DrawBoolControl("BoolVar", component.BoolVar); updateContextAfterDrawControlCall(drawInspectorContext);
 							changed |= ImGuiUtil::DrawIntControl("Int32Var", component.Int32Var); updateContextAfterDrawControlCall(drawInspectorContext);
@@ -227,7 +220,6 @@ namespace DYE::DYEditor
 						{
 							bool changed = false;
 							auto& component = entity.GetComponent<HasAngularVelocity>();
-							ImGui::TextWrapped("HasAngularVelocity");
 							changed |= ImGuiUtil::DrawFloatControl("AngleDegreePerSecond", component.AngleDegreePerSecond); updateContextAfterDrawControlCall(drawInspectorContext);
 							return changed;
 						}
@@ -258,7 +250,6 @@ namespace DYE::DYEditor
 						{
 							bool changed = false;
 							auto& component = entity.GetComponent<CreateEntity>();
-							ImGui::TextWrapped("CreateEntity");
 							changed |= ImGuiUtil::DrawTextControl("EntityNamePrefix", component.EntityNamePrefix); updateContextAfterDrawControlCall(drawInspectorContext);
 							changed |= ImGuiUtil::DrawIntControl("NumberOfEntitiesToCreate", component.NumberOfEntitiesToCreate); updateContextAfterDrawControlCall(drawInspectorContext);
 							return changed;
@@ -288,7 +279,6 @@ namespace DYE::DYEditor
 						{
 							bool changed = false;
 							auto& component = entity.GetComponent<PrintMessageOnTeardown>();
-							ImGui::TextWrapped("PrintMessageOnTeardown");
 							changed |= ImGuiUtil::DrawTextControl("Message", component.Message); updateContextAfterDrawControlCall(drawInspectorContext);
 							return changed;
 						}
@@ -321,7 +311,6 @@ namespace DYE::DYEditor
 						{
 							bool changed = false;
 							auto& component = entity.GetComponent<TestComponentC>();
-							ImGui::TextWrapped("TestComponentC");
 							changed |= ImGuiUtil::DrawColor4Control("ColorValue", component.ColorValue); updateContextAfterDrawControlCall(drawInspectorContext);
 							changed |= ImGuiUtil::DrawCharControl("TestChar2", component.TestChar2); updateContextAfterDrawControlCall(drawInspectorContext);
 							changed |= ImGuiUtil::DrawTextControl("TestName", component.TestName); updateContextAfterDrawControlCall(drawInspectorContext);
