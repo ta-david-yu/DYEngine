@@ -8,14 +8,16 @@ DYEngine is divided into 2 sub-project modules:
 * **DYEditor**: It provides the ECS object model using entt & an editor on top of that for editting scenes & entities. It comes with a code generation tool for generating type information of user-defined components & systems for editor type registry. The module is still in an very early stage.
 
 ## Environment Setup
-### Most of the following tools come with CLion as bundles
-- **IDE**: CLion (CMake)
-- **Build system**: Ninja
-- **Compiler**: GCC (mingw) for C++20
+### Not really a guide, just how I normally use this engine. Most of the following tools come with CLion as bundles
+- **IDE**: CLion (CMake 3.17+)
+- **Tested Compilers**: 
+  - GNU 11.2.0
+  - MSVC 19.34.31937.0
+  - Clang 15.0.1
 
-Right now I am using CLion + GCC with Mingw to configure & build the project, haven't tested it with other compiler (i.e. MSVC) yet.  
-To achieve MSVC build, you probably have to replace SDL2 library with the MSVC version (the one included in the repository is mingw version).
-You can download **SDL2-devel-2.0.12-VC.zip** in the release page of [SDL2 repository](https://github.com/libsdl-org/SDL/releases).
+Right now I am using CLion to configure & build the project.
+In order to support multiple compilers, I had to include two versions of SDL2: MinGW & MSVC versions, which I downloaded from [SDL2 repository](https://github.com/libsdl-org/SDL/releases).  
+I did some reorganizations to the SDL2 folders so whether you use MinGW or MSVC (both cl.exe and clang-cl.exe) to compile, the build system will still be able to find the correct version of library to link.
 
 ## Library Dependencies (included in the project)
 ### DYEngine
