@@ -46,7 +46,7 @@ struct TestComponentB
 	const DYE::Float ConstantFloat;
 
 	DYE_PROPERTY()
-	const DYE::Vector3 ConstantVector3;
+	const DYE::Vector3 ConstantVector3 {0, 0, 0};
 
 	DYE_PROPERTY()
 	DYE::Vector3 Position = glm::vec3 {0, 0, 5};
