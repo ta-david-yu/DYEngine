@@ -18,6 +18,47 @@
 
 namespace DYE
 {
+	namespace
+	{
+		static const char* s_FallbackMVPShaderName = "Fallback MVP Shader";
+
+		static const std::string s_FallbackMVPShaderSource =
+			R"(
+@Blend Off Off
+@ZWrite On
+@ZTest Less
+
+#Shader Vertex
+#version 330 core
+
+layout(location = 0) in vec3 position;
+layout(location = 1) in vec4 color;
+layout(location = 2) in vec2 texCoord;
+
+uniform mat4 _ModelMatrix;
+uniform mat4 _ViewMatrix;
+uniform mat4 _ProjectionMatrix;
+
+void main()
+{
+    vec4 point4 = vec4(position, 1.0);
+    gl_Position = _ProjectionMatrix * _ViewMatrix * _ModelMatrix * point4;
+};
+
+#Shader Fragment
+#version 330 core
+
+layout(location = 0) out vec4 color;
+
+void main()
+{
+    color = vec4(1, 0, 1, 1);
+};
+)";
+
+		static std::shared_ptr<ShaderProgram> s_FallbackMVPShader;
+	}
+
     /// Map the ShaderType enum to GL_(TYPE)_SHADER
     /// \param type enum ShaderType
     /// \return unsigned int (GL Shader Type)
@@ -83,6 +124,13 @@ namespace DYE
 		auto program = std::make_shared<ShaderProgram>(name);
 
 		bool success = true;
+
+		// Populate shader processors!
+		std::vector<std::unique_ptr<ShaderProcessor::ShaderProcessorBase>> shaderProcessors {};
+		shaderProcessors.emplace_back(std::make_unique<ShaderProcessor::UniformPropertyProcessor>());
+		shaderProcessors.emplace_back(std::make_unique<ShaderProcessor::BlendStateCommandProcessor>());
+		shaderProcessors.emplace_back(std::make_unique<ShaderProcessor::DepthStateCommandProcessor>());
+
 		if (!std::filesystem::exists(filepath))
 		{
 			DYE_LOG("There is no file at the given path!");
@@ -94,14 +142,7 @@ namespace DYE
 			std::string shaderProgramSource((std::istreambuf_iterator<char>(fs)),
 											(std::istreambuf_iterator<char>()));
 
-			// Populate shader processors!
-			std::vector<std::unique_ptr<ShaderProcessor::ShaderProcessorBase>> shaderProcessors {};
-			shaderProcessors.emplace_back(std::make_unique<ShaderProcessor::UniformPropertyProcessor>());
-			shaderProcessors.emplace_back(std::make_unique<ShaderProcessor::BlendStateCommandProcessor>());
-			shaderProcessors.emplace_back(std::make_unique<ShaderProcessor::DepthStateCommandProcessor>());
-
 			success = program->initializeProgramFromSource(shaderProgramSource, shaderProcessors);
-
 			if (program->HasCompileError())
 			{
 				DYE_LOG("There are compile errors in the shader!");
@@ -110,11 +151,19 @@ namespace DYE
 
 		if (!success)
 		{
-			DYE_LOG("- Failed to create shader [%d] \"%s\" from \"%s\" >>", program->m_ID, name.c_str(), filepath.string().c_str());
+			DYE_LOG("- Failed to create shader [%d] \"%s\" from \"%s\", returning fallback MVP shader >>", program->m_ID, name.c_str(), filepath.string().c_str());
 			DYE_ASSERT(false);
 
-			// We still return the program. In the future we might want to return a purple shader program.
-			return program;
+			// We will return the fallback purple MVP shader.
+			if (!s_FallbackMVPShader)
+			{
+				DYE_LOG("<< Start creating fallback MVP shader -");
+				// If the fallback mvp shader is not loaded yet, we will do that first.
+				s_FallbackMVPShader = std::make_shared<ShaderProgram>(s_FallbackMVPShaderName);
+				s_FallbackMVPShader->initializeProgramFromSource(s_FallbackMVPShaderSource, shaderProcessors);
+			}
+
+			return s_FallbackMVPShader;
 		}
 
 		DYE_LOG("- Successfully create shader (%d) \"%s\" from \"%s\" >>", program->m_ID, name.c_str(), filepath.string().c_str());
@@ -182,7 +231,7 @@ namespace DYE
 					);
 	}
 
-    bool ShaderProgram::initializeProgramFromSource(std::string &source, const std::vector<std::unique_ptr<ShaderProcessor::ShaderProcessorBase>>& shaderProcessors)
+    bool ShaderProgram::initializeProgramFromSource(std::string source, const std::vector<std::unique_ptr<ShaderProcessor::ShaderProcessorBase>>& shaderProcessors)
     {
 		bool hasCompileError = false;
 

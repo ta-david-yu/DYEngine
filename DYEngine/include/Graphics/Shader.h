@@ -86,7 +86,7 @@ namespace DYE
         /// Compile and create shader program in the GPU driver
         /// \param source the source code of the shader
         /// \return true if no compile error, else false
-        bool initializeProgramFromSource(std::string& source,  const std::vector<std::unique_ptr<ShaderProcessor::ShaderProcessorBase>>& shaderProcessors);
+        bool initializeProgramFromSource(std::string source, const std::vector<std::unique_ptr<ShaderProcessor::ShaderProcessorBase>>& shaderProcessors);
 
 		/// Parse the given shader program source code into multiple shader sources.
 		/// \param programSource
