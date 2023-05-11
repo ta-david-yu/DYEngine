@@ -134,7 +134,7 @@ namespace DYE::DYEditor
 		);
 
 		// Load the default scene indicated in editor config file.
-		std::string const &defaultScenePath = GetEditorConfig().GetOrDefault<std::string>("Editor.DefaultScene", "");
+		std::string const &defaultScenePath = GetEditorConfig().GetOrDefault<std::string>(EditorConfigKeys::DefaultScene, "");
 		std::optional<SerializedScene> serializedScene = SerializedObjectFactory::TryLoadSerializedSceneFromFile(defaultScenePath);
 		if (serializedScene.has_value())
 		{
@@ -176,12 +176,14 @@ namespace DYE::DYEditor
 		m_SceneViewEntityIDFramebuffer = Framebuffer::Create(entityIDFramebufferProperties);
 		m_SceneViewEntityIDFramebuffer->SetDebugLabel("Scene View EntityID Framebuffer");
 
-		m_SceneViewCamera.Properties.TargetType = RenderTargetType::RenderTexture;
-		m_SceneViewCamera.Properties.pTargetRenderTexture = m_SceneViewCameraTargetFramebuffer.get();
-		m_SceneViewCamera.Position = {0, 0, 10};
 
 		// Do some more editor setup based on EditorConfig settings.
-		m_InspectorContext.Mode = GetEditorConfig().GetOrDefault("Editor.DebugInspector", false)? InspectorMode::Debug : InspectorMode::Normal;
+		ProjectConfig &editorConfig = GetEditorConfig();
+		m_InspectorContext.Mode = editorConfig.GetOrDefault(EditorConfigKeys::DebugInspector, false)? InspectorMode::Debug : InspectorMode::Normal;
+		m_SceneViewCamera.Properties.TargetType = RenderTargetType::RenderTexture;
+		m_SceneViewCamera.Properties.pTargetRenderTexture = m_SceneViewCameraTargetFramebuffer.get();
+		m_SceneViewCamera.Position = editorConfig.GetOrDefault(EditorConfigKeys::SceneViewCameraPosition, glm::vec3 {0, 0, 10.0f});
+		m_SceneViewCamera.Properties.ClearColor = editorConfig.GetOrDefault(EditorConfigKeys::SceneViewCameraClearColor, glm::vec4 {0, 0, 0, 1});
 
 		// FIXME: Window setup should be made according to runtime config file (i.e. GetRuntimeConfig().GetOrDefault("Window.NumberOfInitialWindows")...).
 		//		For now we create a secondary window manually.
@@ -195,7 +197,11 @@ namespace DYE::DYEditor
 		RuntimeState::UnregisterListener(this);
 
 		// Save current active scene as default scene for the next launch.
-		GetEditorConfig().SetAndSave<std::string>("Editor.DefaultScene", m_CurrentSceneFilePath.string());
+		ProjectConfig &editorConfig = GetEditorConfig();
+		editorConfig.Set<std::string>(EditorConfigKeys::DefaultScene, m_CurrentSceneFilePath.string());
+		editorConfig.Set<glm::vec3>(EditorConfigKeys::SceneViewCameraPosition, m_SceneViewCamera.Position);
+		editorConfig.Set<glm::vec4>(EditorConfigKeys::SceneViewCameraClearColor, m_SceneViewCamera.Properties.ClearColor);
+		editorConfig.Save();
 
 		EditorWindowManager::ClearRegisteredEditorWindows();
 		TypeRegistry::ClearRegisteredComponentTypes();
@@ -507,13 +513,13 @@ namespace DYE::DYEditor
 				if (ImGui::MenuItem("Normal", nullptr, !debugMode))
 				{
 					m_InspectorContext.Mode = InspectorMode::Normal;
-					GetEditorConfig().SetAndSave("Editor.DebugInspector", false);
+					GetEditorConfig().SetAndSave(EditorConfigKeys::DebugInspector, false);
 				}
 
 				if (ImGui::MenuItem("Debug", nullptr, debugMode))
 				{
 					m_InspectorContext.Mode = InspectorMode::Debug;
-					GetEditorConfig().SetAndSave("Editor.DebugInspector", true);
+					GetEditorConfig().SetAndSave(EditorConfigKeys::DebugInspector, true);
 				}
 
 				ImGui::EndPopup();
@@ -764,8 +770,10 @@ namespace DYE::DYEditor
 			{
 				// Scene View Camera Settings
 				ImGui::PushID("Scene View Camera");
+
 				ImGuiUtil::DrawVector3Control("Position", sceneViewCamera.Position);
 				ImGuiUtil::DrawCameraPropertiesControl("Properties", sceneViewCamera.Properties);
+
 				ImGui::PopID();
 				ImGui::EndMenu();
 			}

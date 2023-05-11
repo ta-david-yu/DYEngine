@@ -161,6 +161,53 @@ namespace DYE::DYEditor
 	template float ProjectConfig::GetOrDefault<float>(const std::string &key, float const &defaultValue);
 	template int ProjectConfig::GetOrDefault<int>(const std::string &key, int const &defaultValue);
 	template std::string ProjectConfig::GetOrDefault<std::string>(const std::string &key, std::string const &defaultValue);
+	template<>
+	glm::vec3 ProjectConfig::GetOrDefault<glm::vec3>(const std::string &keyPath, glm::vec3 const &defaultValue)
+	{
+		if (!IsLoaded)
+		{
+			DYE_LOG("Config hasn't been loaded. You might have forgot to call %s first.",
+					NAME_OF(TryLoadFromOrCreateDefaultAt));
+			return defaultValue;
+		}
+
+		toml::node const *pNode = Table.get(keyPath);
+		if (pNode == nullptr)
+		{
+			return defaultValue;
+		}
+
+		toml::table const *pTable = pNode->as_table();
+		auto x = pTable->get("x")->value_or<float>(0);
+		auto y = pTable->get("y")->value_or<float>(0);
+		auto z = pTable->get("z")->value_or<float>(0);
+
+		return glm::vec3 {x, y, z};
+	}
+	template<>
+	glm::vec4 ProjectConfig::GetOrDefault<glm::vec4>(const std::string &keyPath, glm::vec4 const &defaultValue)
+	{
+		if (!IsLoaded)
+		{
+			DYE_LOG("Config hasn't been loaded. You might have forgot to call %s first.",
+					NAME_OF(TryLoadFromOrCreateDefaultAt));
+			return defaultValue;
+		}
+
+		toml::node const *pNode = Table.get(keyPath);
+		if (pNode == nullptr)
+		{
+			return defaultValue;
+		}
+
+		toml::table const *pTable = pNode->as_table();
+		auto x = pTable->get("x")->value_or<float>(0);
+		auto y = pTable->get("y")->value_or<float>(0);
+		auto z = pTable->get("z")->value_or<float>(0);
+		auto w = pTable->get("w")->value_or<float>(0);
+
+		return glm::vec4 {x, y, z, w};
+	}
 
 	template<typename T>
 	void ProjectConfig::SetAndSave(const std::string &keyPath, const T &value)
@@ -182,6 +229,40 @@ namespace DYE::DYEditor
 	template void ProjectConfig::SetAndSave<float>(const std::string &key, const float &value);
 	template void ProjectConfig::SetAndSave<int>(const std::string &key, const int &value);
 	template void ProjectConfig::SetAndSave<std::string>(const std::string &key, const std::string &value);
+	template<>
+	void ProjectConfig::SetAndSave(const std::string &key, glm::vec3 const &value)
+	{
+		if (!IsLoaded)
+		{
+			DYE_LOG("Config hasn't been loaded. You might have forgot to call %s first.",
+					NAME_OF(TryLoadFromOrCreateDefaultAt));
+			return;
+		}
+
+		toml::table table { {"x", value.x}, {"y", value.y}, {"z", value.z} };
+		table.is_inline(true);
+		Table.insert_or_assign(key, std::move(table));
+		FileStream.open(CurrentLoadedFilePath, std::ios::trunc);
+		FileStream << Table;
+		FileStream.flush();
+	}
+	template<>
+	void ProjectConfig::SetAndSave(const std::string &key, glm::vec4 const &value)
+	{
+		if (!IsLoaded)
+		{
+			DYE_LOG("Config hasn't been loaded. You might have forgot to call %s first.",
+					NAME_OF(TryLoadFromOrCreateDefaultAt));
+			return;
+		}
+
+		toml::table table { {"x", value.x}, {"y", value.y}, {"z", value.z}, {"w", value.w} };
+		table.is_inline(true);
+		Table.insert_or_assign(key, std::move(table));
+		FileStream.open(CurrentLoadedFilePath, std::ios::trunc);
+		FileStream << Table;
+		FileStream.flush();
+	}
 
 	template<typename T>
 	void ProjectConfig::Set(const std::string &keyPath, const T &value)
@@ -200,6 +281,34 @@ namespace DYE::DYEditor
 	template void ProjectConfig::Set<float>(const std::string &key, const float &value);
 	template void ProjectConfig::Set<int>(const std::string &key, const int &value);
 	template void ProjectConfig::Set<std::string>(const std::string &key, const std::string &value);
+	template<>
+	void ProjectConfig::Set(const std::string &key, glm::vec3 const &value)
+	{
+		if (!IsLoaded)
+		{
+			DYE_LOG("Config hasn't been loaded. You might have forgot to call %s first.",
+					NAME_OF(TryLoadFromOrCreateDefaultAt));
+			return;
+		}
+
+		toml::table table { {"x", value.x}, {"y", value.y}, {"z", value.z} };
+		table.is_inline(true);
+		Table.insert_or_assign(key, std::move(table));
+	}
+	template<>
+	void ProjectConfig::Set(const std::string &key, glm::vec4 const &value)
+	{
+		if (!IsLoaded)
+		{
+			DYE_LOG("Config hasn't been loaded. You might have forgot to call %s first.",
+					NAME_OF(TryLoadFromOrCreateDefaultAt));
+			return;
+		}
+
+		toml::table table { {"x", value.x}, {"y", value.y}, {"z", value.z}, {"w", value.w} };
+		table.is_inline(true);
+		Table.insert_or_assign(key, std::move(table));
+	}
 
 	ProjectConfig& GetEditorConfig()
 	{
@@ -212,8 +321,6 @@ namespace DYE::DYEditor
 		static ProjectConfig config = ProjectConfig::TryLoadFromOrCreateDefaultAt(DefaultRuntimeConfigFilePath).value();
 		return config;
 	}
-
-
 
 	bool DrawRuntimeConfigurationWindow(bool *pIsOpen)
 	{
@@ -236,10 +343,10 @@ namespace DYE::DYEditor
 			changed = true;
 		}
 
-		auto firstScenePath = (std::filesystem::path) config.GetOrDefault<std::string>(RuntimeConfigFirstSceneKey, "");
+		auto firstScenePath = (std::filesystem::path) config.GetOrDefault<std::string>(RuntimeConfigKeys::FirstScene, "");
 		if (ImGuiUtil::DrawAssetPathStringControl("First Scene", firstScenePath, { ".tscene" }))
 		{
-			config.Set(RuntimeConfigFirstSceneKey, firstScenePath.string());
+			config.Set(RuntimeConfigKeys::FirstScene, firstScenePath.string());
 			changed = true;
 		}
 

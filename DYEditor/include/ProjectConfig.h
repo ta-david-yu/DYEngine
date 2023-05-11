@@ -5,13 +5,25 @@
 #include <filesystem>
 #include <string>
 #include <toml++/toml.h>
+#include <glm/glm.hpp>
 
 namespace DYE::DYEditor
 {
-	constexpr char const* DefaultEditorConfigFilePath = "settings//editor.ini";
-	constexpr char const* DefaultRuntimeConfigFilePath = "settings//runtime.ini";
+	constexpr char const *DefaultEditorConfigFilePath = "settings//editor.ini";
+	constexpr char const *DefaultRuntimeConfigFilePath = "settings//runtime.ini";
 
-	constexpr char const* RuntimeConfigFirstSceneKey = "Project.FirstScene";
+	namespace RuntimeConfigKeys
+	{
+		constexpr char const *FirstScene = "Project.FirstScene";
+	}
+
+	namespace EditorConfigKeys
+	{
+		constexpr char const *DefaultScene = "Editor.DefaultScene";
+		constexpr char const *DebugInspector = "Editor.Inspector.DebugMode";
+		constexpr char const *SceneViewCameraPosition = "Editor.SceneView.Camera.Position";
+		constexpr char const *SceneViewCameraClearColor = "Editor.SceneView.Camera.ClearColor";
+	}
 
 	struct ProjectConfig
 	{
@@ -40,6 +52,19 @@ namespace DYE::DYEditor
 		// I hate that I have to include toml here, which is totally unnecessary if C++ was designed better.
 		toml::table Table;
 	};
+
+	template<>
+	glm::vec3 ProjectConfig::GetOrDefault<glm::vec3>(const std::string &keyPath, glm::vec3 const &defaultValue);
+	template<>
+	glm::vec4 ProjectConfig::GetOrDefault<glm::vec4>(const std::string &keyPath, glm::vec4 const &defaultValue);
+	template<>
+	void ProjectConfig::SetAndSave(const std::string &key, glm::vec3 const &value);
+	template<>
+	void ProjectConfig::SetAndSave(const std::string &key, glm::vec4 const &value);
+	template<>
+	void ProjectConfig::Set(const std::string &key, glm::vec3 const &value);
+	template<>
+	void ProjectConfig::Set(const std::string &key, glm::vec4 const &value);
 
 	ProjectConfig& GetEditorConfig();
 	ProjectConfig& GetRuntimeConfig();
