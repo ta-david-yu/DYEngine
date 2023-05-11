@@ -33,9 +33,7 @@ I did some reorganizations to the SDL2 folders so whether you use MinGW or MSVC 
 ### DYEditor Code Generator
 - **fmt**: for easier and more efficient source code generation process. Will replace it with c++ std::format library once it's widely supported by different compilers. 
 ### Pending (to include/included but not used)
-- **OpenAL-Soft**: audio system
-
-
+- **OpenAL-Soft**: audio system  
 
 ## Showcase
 The project is still in a very early stage, but I am constantly working on it. 
@@ -56,3 +54,10 @@ https://user-images.githubusercontent.com/8101387/211428433-88de9dfb-1df6-47c5-b
 **Collision detection & Debug drawing**  
 
 https://user-images.githubusercontent.com/8101387/211428722-d59a1727-b169-4b57-84ad-aef03e2e87a4.mp4
+
+## Resources
+It wouldn't have been possible to implement this project without the help of the internet!  
+Here are some resources that I use to make it happen! The list is non-exhaustive of course:  
+* **Hazel engine**: https://github.com/TheCherno/Hazel
+* **Halley engine**: https://github.com/amzeratul/halley
+* ...and a lot more to be added.
