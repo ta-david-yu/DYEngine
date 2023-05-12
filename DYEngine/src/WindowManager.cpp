@@ -162,6 +162,13 @@ namespace DYE
 	{
 		// Left - registered windows list.
 		static int selectedWindowIndex = 0;
+
+		if (selectedWindowIndex >= s_Windows.size())
+		{
+			// If the selected index is out-of-bounds, select the last item.
+			selectedWindowIndex = s_Windows.size() - 1;
+		}
+
 		{
 			const float windowWidth = 175;
 			ImGui::BeginChild("Registered Windows List", ImVec2(windowWidth, 0), true, ImGuiWindowFlags_HorizontalScrollbar);
