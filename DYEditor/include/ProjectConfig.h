@@ -14,7 +14,10 @@ namespace DYE::DYEditor
 
 	namespace RuntimeConfigKeys
 	{
+		constexpr char const *ProjectName = "Project.Name";
 		constexpr char const *FirstScene = "Project.FirstScene";
+		constexpr char const *MainWindowWidth = "Window.Main.Width";
+		constexpr char const *MainWindowHeight = "Window.Main.Height";
 	}
 
 	namespace EditorConfigKeys
@@ -44,13 +47,15 @@ namespace DYE::DYEditor
 		template<typename T>
 		void Set(std::string const &keyPath, T const &value);
 
-	private:
-		bool IsLoaded = false;
-		std::filesystem::path CurrentLoadedFilePath;
+		toml::table &Table() { return m_Table; }
 
-		std::ofstream FileStream;
+	private:
+		bool m_IsLoaded = false;
+		std::filesystem::path m_CurrentLoadedFilePath;
+
+		std::ofstream m_FileStream;
 		// I hate that I have to include toml here, which is totally unnecessary if C++ was designed better.
-		toml::table Table;
+		toml::table m_Table;
 	};
 
 	template<>

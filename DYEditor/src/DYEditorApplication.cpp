@@ -7,8 +7,8 @@
 
 namespace DYE::DYEditor
 {
-	DYEditorApplication::DYEditorApplication(const std::string &windowName, int fixedFramePerSecond)
-		: Application(windowName, fixedFramePerSecond)
+	DYEditorApplication::DYEditorApplication(WindowProperties mainWindowProperties, int fixedFramePerSecond)
+		: Application(mainWindowProperties, fixedFramePerSecond)
 	{
 		DYE::DYEditor::RegisterBuiltInTypes();
 		DYE::DYEditor::RegisterUserTypes();

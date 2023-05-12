@@ -29,8 +29,8 @@ namespace DYE::DYEditor
 			std::filesystem::permissions(path.parent_path(), std::filesystem::perms::all);
 
 			// The file doesn't exist yet, create one with default values.
-			config.IsLoaded = true;
-			config.CurrentLoadedFilePath = path;
+			config.m_IsLoaded = true;
+			config.m_CurrentLoadedFilePath = path;
 			config.InitializeAndSave();
 			return std::move(config);
 		}
@@ -45,30 +45,30 @@ namespace DYE::DYEditor
 			return {};
 		}
 
-		config.IsLoaded = true;
-		config.CurrentLoadedFilePath = path;
-		config.Table = std::move(result.table());
+		config.m_IsLoaded = true;
+		config.m_CurrentLoadedFilePath = path;
+		config.m_Table = std::move(result.table());
 		return std::move(config);
 	}
 
 	void ProjectConfig::InitializeAndSave()
 	{
-		if (!IsLoaded)
+		if (!m_IsLoaded)
 		{
 			return;
 		}
 
 		// Open the file and clean everything in it.
-		Table = toml::table();
-		FileStream.open(CurrentLoadedFilePath, std::ios::trunc);
-		FileStream.close();
+		m_Table = toml::table();
+		m_FileStream.open(m_CurrentLoadedFilePath, std::ios::trunc);
+		m_FileStream.close();
 	}
 
 	void ProjectConfig::Save()
 	{
-		FileStream.open(CurrentLoadedFilePath, std::ios::trunc);
-		FileStream << Table;
-		FileStream.close();
+		m_FileStream.open(m_CurrentLoadedFilePath, std::ios::trunc);
+		m_FileStream << m_Table;
+		m_FileStream.close();
 	}
 
 	/// \return true if the configuration has been changed. Otherwise false.
@@ -81,10 +81,11 @@ namespace DYE::DYEditor
 			return false;
 		}
 
+		ImGui::Separator();
 		bool changed = false;
 
-		ImGui::PushID(CurrentLoadedFilePath.string().c_str());
-		for (auto iterator = Table.begin(); iterator != Table.end(); iterator++)
+		ImGui::PushID(m_CurrentLoadedFilePath.string().c_str());
+		for (auto iterator = m_Table.begin(); iterator != m_Table.end(); iterator++)
 		{
 			std::string key(iterator->first.str());
 			auto &value = iterator->second;
@@ -122,6 +123,7 @@ namespace DYE::DYEditor
 			}
 		}
 
+		ImGui::Separator();
 		if (ImGui::Button("Save"))
 		{
 			Save();
@@ -135,14 +137,14 @@ namespace DYE::DYEditor
 	template<typename T>
 	T ProjectConfig::GetOrDefault(const std::string &keyPath, T const &defaultValue)
 	{
-		if (!IsLoaded)
+		if (!m_IsLoaded)
 		{
 			DYE_LOG("Config hasn't been loaded. You might have forgot to call %s first.",
 					NAME_OF(TryLoadFromOrCreateDefaultAt));
 			return defaultValue;
 		}
 
-		toml::node *node = Table.get(keyPath);
+		toml::node *node = m_Table.get(keyPath);
 		if (node == nullptr)
 		{
 			return defaultValue;
@@ -164,14 +166,14 @@ namespace DYE::DYEditor
 	template<>
 	glm::vec3 ProjectConfig::GetOrDefault<glm::vec3>(const std::string &keyPath, glm::vec3 const &defaultValue)
 	{
-		if (!IsLoaded)
+		if (!m_IsLoaded)
 		{
 			DYE_LOG("Config hasn't been loaded. You might have forgot to call %s first.",
 					NAME_OF(TryLoadFromOrCreateDefaultAt));
 			return defaultValue;
 		}
 
-		toml::node const *pNode = Table.get(keyPath);
+		toml::node const *pNode = m_Table.get(keyPath);
 		if (pNode == nullptr)
 		{
 			return defaultValue;
@@ -187,14 +189,14 @@ namespace DYE::DYEditor
 	template<>
 	glm::vec4 ProjectConfig::GetOrDefault<glm::vec4>(const std::string &keyPath, glm::vec4 const &defaultValue)
 	{
-		if (!IsLoaded)
+		if (!m_IsLoaded)
 		{
 			DYE_LOG("Config hasn't been loaded. You might have forgot to call %s first.",
 					NAME_OF(TryLoadFromOrCreateDefaultAt));
 			return defaultValue;
 		}
 
-		toml::node const *pNode = Table.get(keyPath);
+		toml::node const *pNode = m_Table.get(keyPath);
 		if (pNode == nullptr)
 		{
 			return defaultValue;
@@ -212,17 +214,17 @@ namespace DYE::DYEditor
 	template<typename T>
 	void ProjectConfig::SetAndSave(const std::string &keyPath, const T &value)
 	{
-		if (!IsLoaded)
+		if (!m_IsLoaded)
 		{
 			DYE_LOG("Config hasn't been loaded. You might have forgot to call %s first.",
 					NAME_OF(TryLoadFromOrCreateDefaultAt));
 			return;
 		}
 
-		Table.insert_or_assign(keyPath, value);
-		FileStream.open(CurrentLoadedFilePath, std::ios::trunc);
-		FileStream << Table;
-		FileStream.flush();
+		m_Table.insert_or_assign(keyPath, value);
+		m_FileStream.open(m_CurrentLoadedFilePath, std::ios::trunc);
+		m_FileStream << m_Table;
+		m_FileStream.flush();
 	}
 
 	template void ProjectConfig::SetAndSave<bool>(const std::string &key, const bool &value);
@@ -232,7 +234,7 @@ namespace DYE::DYEditor
 	template<>
 	void ProjectConfig::SetAndSave(const std::string &key, glm::vec3 const &value)
 	{
-		if (!IsLoaded)
+		if (!m_IsLoaded)
 		{
 			DYE_LOG("Config hasn't been loaded. You might have forgot to call %s first.",
 					NAME_OF(TryLoadFromOrCreateDefaultAt));
@@ -241,15 +243,15 @@ namespace DYE::DYEditor
 
 		toml::table table { {"x", value.x}, {"y", value.y}, {"z", value.z} };
 		table.is_inline(true);
-		Table.insert_or_assign(key, std::move(table));
-		FileStream.open(CurrentLoadedFilePath, std::ios::trunc);
-		FileStream << Table;
-		FileStream.flush();
+		m_Table.insert_or_assign(key, std::move(table));
+		m_FileStream.open(m_CurrentLoadedFilePath, std::ios::trunc);
+		m_FileStream << m_Table;
+		m_FileStream.flush();
 	}
 	template<>
 	void ProjectConfig::SetAndSave(const std::string &key, glm::vec4 const &value)
 	{
-		if (!IsLoaded)
+		if (!m_IsLoaded)
 		{
 			DYE_LOG("Config hasn't been loaded. You might have forgot to call %s first.",
 					NAME_OF(TryLoadFromOrCreateDefaultAt));
@@ -258,23 +260,23 @@ namespace DYE::DYEditor
 
 		toml::table table { {"x", value.x}, {"y", value.y}, {"z", value.z}, {"w", value.w} };
 		table.is_inline(true);
-		Table.insert_or_assign(key, std::move(table));
-		FileStream.open(CurrentLoadedFilePath, std::ios::trunc);
-		FileStream << Table;
-		FileStream.flush();
+		m_Table.insert_or_assign(key, std::move(table));
+		m_FileStream.open(m_CurrentLoadedFilePath, std::ios::trunc);
+		m_FileStream << m_Table;
+		m_FileStream.flush();
 	}
 
 	template<typename T>
 	void ProjectConfig::Set(const std::string &keyPath, const T &value)
 	{
-		if (!IsLoaded)
+		if (!m_IsLoaded)
 		{
 			DYE_LOG("Config hasn't been loaded. You might have forgot to call %s first.",
 					NAME_OF(TryLoadFromOrCreateDefaultAt));
 			return;
 		}
 
-		Table.insert_or_assign(keyPath, value);
+		m_Table.insert_or_assign(keyPath, value);
 	}
 
 	template void ProjectConfig::Set<bool>(const std::string &key, const bool &value);
@@ -284,7 +286,7 @@ namespace DYE::DYEditor
 	template<>
 	void ProjectConfig::Set(const std::string &key, glm::vec3 const &value)
 	{
-		if (!IsLoaded)
+		if (!m_IsLoaded)
 		{
 			DYE_LOG("Config hasn't been loaded. You might have forgot to call %s first.",
 					NAME_OF(TryLoadFromOrCreateDefaultAt));
@@ -293,12 +295,12 @@ namespace DYE::DYEditor
 
 		toml::table table { {"x", value.x}, {"y", value.y}, {"z", value.z} };
 		table.is_inline(true);
-		Table.insert_or_assign(key, std::move(table));
+		m_Table.insert_or_assign(key, std::move(table));
 	}
 	template<>
 	void ProjectConfig::Set(const std::string &key, glm::vec4 const &value)
 	{
-		if (!IsLoaded)
+		if (!m_IsLoaded)
 		{
 			DYE_LOG("Config hasn't been loaded. You might have forgot to call %s first.",
 					NAME_OF(TryLoadFromOrCreateDefaultAt));
@@ -307,7 +309,7 @@ namespace DYE::DYEditor
 
 		toml::table table { {"x", value.x}, {"y", value.y}, {"z", value.z}, {"w", value.w} };
 		table.is_inline(true);
-		Table.insert_or_assign(key, std::move(table));
+		m_Table.insert_or_assign(key, std::move(table));
 	}
 
 	ProjectConfig& GetEditorConfig()
@@ -331,15 +333,16 @@ namespace DYE::DYEditor
 			return false;
 		}
 
+		ImGui::Separator();
 		ProjectConfig& config = GetRuntimeConfig();
 
 		bool changed = false;
 		ImGui::PushID("Runtime Configuration");
 
-		auto projectName = config.GetOrDefault<std::string>("Project.Name", "Sandbox");
+		auto projectName = config.GetOrDefault<std::string>(RuntimeConfigKeys::ProjectName, "Sandbox");
 		if (ImGuiUtil::DrawTextControl("Project Name", projectName))
 		{
-			config.Set("Project.Name", projectName);
+			config.Set(RuntimeConfigKeys::ProjectName, projectName);
 			changed = true;
 		}
 
@@ -349,6 +352,22 @@ namespace DYE::DYEditor
 			config.Set(RuntimeConfigKeys::FirstScene, firstScenePath.string());
 			changed = true;
 		}
+
+		auto mainWindowWidth = config.GetOrDefault<int>(RuntimeConfigKeys::MainWindowWidth, 1600);
+		if (ImGuiUtil::DrawIntControl("Main Window Width", mainWindowWidth, 1600))
+		{
+			config.Set(RuntimeConfigKeys::MainWindowWidth, mainWindowWidth);
+			changed = true;
+		}
+
+		auto mainWindowHeight = config.GetOrDefault<int>(RuntimeConfigKeys::MainWindowHeight, 900);
+		if (ImGuiUtil::DrawIntControl("Main Window Height", mainWindowHeight, 900))
+		{
+			config.Set(RuntimeConfigKeys::MainWindowHeight, mainWindowHeight);
+			changed = true;
+		}
+
+		ImGui::Separator();
 
 		if (ImGui::Button("Save"))
 		{
