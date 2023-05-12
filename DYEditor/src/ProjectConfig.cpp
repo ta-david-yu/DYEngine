@@ -1,5 +1,6 @@
 #include "Configuration/ProjectConfig.h"
 
+#include "Configuration/SubWindowConfiguration.h"
 #include "Util/Logger.h"
 #include "Util/Macro.h"
 #include "FileSystem/FileSystem.h"
@@ -11,15 +12,6 @@
 
 namespace DYE::DYEditor
 {
-	struct EditorConfigData
-	{
-		bool IsLoaded = false;
-		std::filesystem::path CurrentLoadedFilePath;
-
-		std::ofstream FileStream;
-		toml::table Table;
-	};
-
 	std::optional<ProjectConfig> ProjectConfig::TryLoadFromOrCreateDefaultAt(const std::filesystem::path &path)
 	{
 		ProjectConfig config;
@@ -324,6 +316,65 @@ namespace DYE::DYEditor
 		return config;
 	}
 
+	bool DrawEditorConfigurationWindow(bool *pIsOpen)
+	{
+		ImGui::SetNextWindowSize(ImVec2(0, 0), ImGuiCond_FirstUseEver);
+		if (!ImGui::Begin("Editor Configuration", pIsOpen))
+		{
+			ImGui::End();
+			return false;
+		}
+
+		ProjectConfig& config = GetEditorConfig();
+
+		bool changed = false;
+		ImGui::PushID("Editor Configuration");
+		ImGui::Separator();
+
+		auto defaultScenePath = (std::filesystem::path) GetEditorConfig().GetOrDefault<std::string>(EditorConfigKeys::DefaultScene, "");
+		if (ImGuiUtil::DrawAssetPathStringControl("Default Open Scene", defaultScenePath, { ".tscene" }))
+		{
+			config.Set(EditorConfigKeys::DefaultScene, defaultScenePath.string());
+			changed = true;
+		}
+
+		bool isDebugInspector = config.GetOrDefault(EditorConfigKeys::DebugInspector, false);
+		if (ImGuiUtil::DrawBoolControl("Inspector Debug Mode", isDebugInspector))
+		{
+			config.Set(EditorConfigKeys::DebugInspector, isDebugInspector);
+			changed = true;
+		}
+
+		bool setupSubWindowsInEditMode = config.GetOrDefault(EditorConfigKeys::ShowSubWindowsInEditMode, false);
+		if (ImGuiUtil::DrawBoolControl("Setup Sub-windows In Edit Mode", setupSubWindowsInEditMode))
+		{
+			config.Set(EditorConfigKeys::ShowSubWindowsInEditMode, setupSubWindowsInEditMode);
+			if (setupSubWindowsInEditMode)
+			{
+				SetupSubWindowsBasedOnRuntimeConfig();
+			}
+			else
+			{
+				ClearSubWindowsBasedOnRuntimeConfig();
+			}
+
+			changed = true;
+		}
+
+		///////////////////////
+		ImGui::Separator();
+
+		if (ImGui::Button("Save"))
+		{
+			config.Save();
+		}
+
+		ImGui::PopID();
+		ImGui::End();
+
+		return changed;
+	}
+
 	bool DrawRuntimeConfigurationWindow(bool *pIsOpen)
 	{
 		ImGui::SetNextWindowSize(ImVec2(0, 0), ImGuiCond_FirstUseEver);
@@ -333,11 +384,11 @@ namespace DYE::DYEditor
 			return false;
 		}
 
-		ImGui::Separator();
 		ProjectConfig& config = GetRuntimeConfig();
 
 		bool changed = false;
 		ImGui::PushID("Runtime Configuration");
+		ImGui::Separator();
 
 		auto projectName = config.GetOrDefault<std::string>(RuntimeConfigKeys::ProjectName, "Sandbox");
 		if (ImGuiUtil::DrawTextControl("Project Name", projectName))
@@ -441,6 +492,7 @@ namespace DYE::DYEditor
 			ImGui::PopID();
 		}
 
+		///////////////////////
 		ImGui::Separator();
 
 		if (ImGui::Button("Save"))

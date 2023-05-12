@@ -25,6 +25,8 @@ namespace DYE::DYEditor
 	{
 		constexpr char const *DefaultScene = "Editor.DefaultScene";
 		constexpr char const *DebugInspector = "Editor.Inspector.DebugMode";
+		constexpr char const *ShowSubWindowsInEditMode = "Editor.Inspector.ShowSubWindowsInEditMode";
+
 		constexpr char const *SceneViewCameraPosition = "Editor.SceneView.Camera.Position";
 		constexpr char const *SceneViewCameraClearColor = "Editor.SceneView.Camera.ClearColor";
 	}
@@ -74,6 +76,9 @@ namespace DYE::DYEditor
 
 	ProjectConfig& GetEditorConfig();
 	ProjectConfig& GetRuntimeConfig();
+
+	// FIXME: move this function to a separate file that stores all the important editor window calls.
+	bool DrawEditorConfigurationWindow(bool *pIsOpen);
 
 	// FIXME: move this function to a separate file that stores all the important editor window calls.
 	bool DrawRuntimeConfigurationWindow(bool *pIsOpen);
