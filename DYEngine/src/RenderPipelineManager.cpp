@@ -83,7 +83,7 @@ namespace DYE
 
 				// If both cameras render to the same target, always render camera that has a lower depth value,
 				// so the one with higher value is rendered on top of the others.
-				return cameraA.Properties.Depth <= cameraB.Properties.Depth;
+				return cameraA.Properties.Depth < cameraB.Properties.Depth;
 			}
 		);
 
@@ -121,8 +121,9 @@ namespace DYE
 					pCurrentWindow = WindowManager::TryGetWindowAt(camera.Properties.TargetWindowIndex);
 					if (pCurrentWindow == nullptr)
 					{
-						DYE_LOG("The camera render window target (index=%d) doesn't exist. Skip the camera rendering.",
-								camera.Properties.TargetWindowIndex);
+						// The camera render window target doesn't exist, skip the camera rendering.
+						/*DYE_LOG("The camera render window target (index=%d) doesn't exist. Skip the camera rendering.",
+								camera.Properties.TargetWindowIndex);*/
 						continue;
 					}
 
@@ -135,7 +136,7 @@ namespace DYE
 				if (camera.Properties.pTargetRenderTexture == nullptr)
 				{
 					// TargetRenderTexture is not specified! Skip it.
-					DYE_LOG("The camera pTargetRenderTexture is null. Skip the camera rendering.");
+					//DYE_LOG("The camera pTargetRenderTexture is null. Skip the camera rendering.");
 					continue;
 				}
 
