@@ -434,9 +434,10 @@ namespace DYE::DYEditor
 
 		toml::array *pArrayOfSubWindowsTable = pArrayOfSubWindowsTableNode->as_array();
 		int numberOfSubWindows = pArrayOfSubWindowsTable->size();
-		bool subWindowsArrayResized = ImGuiUtil::DrawIntSliderControl("Number Of Sub-windows", numberOfSubWindows, 0, 31);
-		if (subWindowsArrayResized)
+		if (ImGuiUtil::DrawIntSliderControl("Number Of Sub-windows", numberOfSubWindows, 0, 31))
 		{
+			// Sub-windows array resized!
+
 			toml::table defaultSubWindowTable
 			{
 				{"Name", "SubWindow"},
@@ -447,6 +448,18 @@ namespace DYE::DYEditor
 			pArrayOfSubWindowsTable->resize(numberOfSubWindows, defaultSubWindowTable);
 
 			changed = true;
+		}
+
+		auto &editorConfig = GetEditorConfig();
+		if (editorConfig.GetOrDefault(EditorConfigKeys::ShowSubWindowsInEditMode, false))
+		{
+			// If ShowSubWindowsInEditMode is enabled in the editor config,
+			// we want to provide a button to refresh all the sub-windows in edit-mode.
+			if (ImGui::Button("Refresh Sub-windows in Edit Mode"))
+			{
+				ClearSubWindowsBasedOnRuntimeConfig();
+				SetupSubWindowsBasedOnRuntimeConfig();
+			}
 		}
 
 		ImGuiTreeNodeFlags const subWindowTreeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen;
