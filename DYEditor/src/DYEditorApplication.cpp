@@ -3,6 +3,7 @@
 #include "Type/BuiltInTypeRegister.h"
 #include "Type/UserTypeRegister.h"
 #include "Configuration/ProjectConfig.h"
+#include "Configuration/SubWindowConfiguration.h"
 #include "Core/RuntimeSceneManagement.h"
 
 namespace DYE::DYEditor
@@ -17,8 +18,9 @@ namespace DYE::DYEditor
 		auto runtimeLayer = std::make_shared<DYEditor::SceneRuntimeLayer>();
 		pushLayerImmediate(runtimeLayer);
 
+		SetupSubWindowsBasedOnRuntimeConfig();
 
-		std::filesystem::path firstScenePath = (std::filesystem::path) DYE::DYEditor::GetRuntimeConfig().GetOrDefault<std::string>(DYE::DYEditor::RuntimeConfigFirstSceneKey, "");
+		std::filesystem::path firstScenePath = (std::filesystem::path) DYE::DYEditor::GetRuntimeConfig().GetOrDefault<std::string>(RuntimeConfigKeys::FirstScene, "");
 		if (firstScenePath.empty())
 		{
 			DYE_ASSERT_RELEASE(false && "The settings for the first scene is empty."
