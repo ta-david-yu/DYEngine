@@ -3,7 +3,7 @@
 
 #include "DYEditorApplication.h"
 #include "SandboxLayer.h"
-#include "ProjectConfig.h"
+#include "Configuration/ProjectConfig.h"
 
 namespace DYE::Sandbox
 {

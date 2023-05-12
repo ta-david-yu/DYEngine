@@ -1,4 +1,4 @@
-#include "ProjectConfig.h"
+#include "Configuration/ProjectConfig.h"
 
 #include "Util/Logger.h"
 #include "Util/Macro.h"
@@ -353,6 +353,9 @@ namespace DYE::DYEditor
 			changed = true;
 		}
 
+		// Main window section.
+		ImGui::Separator();
+
 		auto mainWindowWidth = config.GetOrDefault<int>(RuntimeConfigKeys::MainWindowWidth, 1600);
 		if (ImGuiUtil::DrawIntControl("Main Window Width", mainWindowWidth, 1600))
 		{
@@ -365,6 +368,77 @@ namespace DYE::DYEditor
 		{
 			config.Set(RuntimeConfigKeys::MainWindowHeight, mainWindowHeight);
 			changed = true;
+		}
+
+		// Sub-windows section.
+		ImGui::Separator();
+
+		toml::node *pArrayOfSubWindowsTableNode = config.Table().get(RuntimeConfigKeys::SubWindows);
+		if (pArrayOfSubWindowsTableNode == nullptr)
+		{
+			// Array of sub-windows tables don't exist yet, insert one!
+			config.Table().insert(RuntimeConfigKeys::SubWindows, toml::array{});
+			pArrayOfSubWindowsTableNode = config.Table().get(RuntimeConfigKeys::SubWindows);
+		}
+
+		toml::array *pArrayOfSubWindowsTable = pArrayOfSubWindowsTableNode->as_array();
+		int numberOfSubWindows = pArrayOfSubWindowsTable->size();
+		bool subWindowsArrayResized = ImGuiUtil::DrawIntSliderControl("Number Of Sub-windows", numberOfSubWindows, 0, 31);
+		if (subWindowsArrayResized)
+		{
+			toml::table defaultSubWindowTable
+			{
+				{"Name", "SubWindow"},
+				{"Width", 1600},
+				{"Height", 900}
+			};
+
+			pArrayOfSubWindowsTable->resize(numberOfSubWindows, defaultSubWindowTable);
+
+			changed = true;
+		}
+
+		ImGuiTreeNodeFlags const subWindowTreeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen;
+		bool const subWindowsArrayExpanded = ImGui::CollapsingHeader("Sub-windows", subWindowTreeNodeFlags);
+		if (subWindowsArrayExpanded)
+		{
+			ImGui::PushID("Sub-windows");
+			ImGui::Indent();
+			for (int i = 0; i < pArrayOfSubWindowsTable->size(); ++i)
+			{
+				if (i != 0)
+				{
+					ImGui::Separator();
+				}
+
+				ImGui::PushID(i);
+
+				toml::node *pSubWindowNode = pArrayOfSubWindowsTable->get(i);
+				toml::table *pSubWindowTable = pSubWindowNode->as_table();
+
+				auto &windowName = pSubWindowTable->get("Name")->as_string()->get();
+				changed |= ImGuiUtil::DrawTextControl("Name", windowName);
+
+				int windowWidth = pSubWindowTable->get("Width")->as_integer()->get();
+				bool const widthChanged = ImGuiUtil::DrawIntControl("Width", windowWidth, 1600);
+				if (widthChanged)
+				{
+					pSubWindowTable->get("Width")->as_integer()->get() = windowWidth;
+					changed = true;
+				}
+
+				int windowHeight = pSubWindowTable->get("Height")->as_integer()->get();
+				bool const heightChanged = ImGuiUtil::DrawIntControl("Height", windowHeight, 900);
+				if (heightChanged)
+				{
+					pSubWindowTable->get("Height")->as_integer()->get() = windowHeight;
+					changed = true;
+				}
+
+				ImGui::PopID();
+			}
+			ImGui::Unindent();
+			ImGui::PopID();
 		}
 
 		ImGui::Separator();

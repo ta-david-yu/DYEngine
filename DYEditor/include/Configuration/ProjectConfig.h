@@ -4,8 +4,8 @@
 #include <functional>
 #include <filesystem>
 #include <string>
-#include <toml++/toml.h>
-#include <glm/glm.hpp>
+#include "toml++/toml.h"
+#include "glm/glm.hpp"
 
 namespace DYE::DYEditor
 {
@@ -18,6 +18,7 @@ namespace DYE::DYEditor
 		constexpr char const *FirstScene = "Project.FirstScene";
 		constexpr char const *MainWindowWidth = "Window.Main.Width";
 		constexpr char const *MainWindowHeight = "Window.Main.Height";
+		constexpr char const *SubWindows = "Window.SubWindows";
 	}
 
 	namespace EditorConfigKeys

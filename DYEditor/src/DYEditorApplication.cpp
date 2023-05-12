@@ -2,7 +2,7 @@
 
 #include "Type/BuiltInTypeRegister.h"
 #include "Type/UserTypeRegister.h"
-#include "ProjectConfig.h"
+#include "Configuration/ProjectConfig.h"
 #include "Core/RuntimeSceneManagement.h"
 
 namespace DYE::DYEditor
