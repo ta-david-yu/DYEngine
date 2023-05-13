@@ -95,8 +95,8 @@ namespace DYE::DYEditor
 		if (s_Data.IsInGroup)
 		{
 			// It's already in a group operation.
-			// End the previous one first.
-			EndGroupOperation();
+			// End the previous group before starting a new one.
+			Undo::EndGroupOperation();
 		}
 
 		s_Data.IsInGroup = true;
@@ -185,7 +185,14 @@ namespace DYE::DYEditor
 
 	void Undo::DeleteEntityRecursively(Entity entity, std::size_t indexInWorldHandleArray)
 	{
-		Undo::StartGroupOperation("Delete Entity Recursively (On-going)");
+		// If the user (or other higher level operation logic) has already included the current operation in a group operation,
+		// we want to avoid making another group.
+		bool const isAlreadyInGroupOperationBeforeThisFunctionCall = s_Data.IsInGroup;
+
+		if (!isAlreadyInGroupOperationBeforeThisFunctionCall)
+		{
+			Undo::StartGroupOperation("Delete Entity Recursively (On-going)");
+		}
 
 		// Get name, guid and the children of the entity before deleting it.
 		std::string entityName = entity.TryGetName().value();
@@ -239,14 +246,17 @@ namespace DYE::DYEditor
 		}
 
 		// Set the operation description based on the result.
-		char operationDescription[128] = "";
-		sprintf(operationDescription,
-				"Delete Entity '%s' and %zu children",
-				entityName.c_str(),
-				allChildren.size());
-		Undo::SetCurrentGroupOperationDescription(operationDescription);
+		if (!isAlreadyInGroupOperationBeforeThisFunctionCall)
+		{
+			char operationDescription[128] = "";
+			sprintf(operationDescription,
+					"Delete Entity '%s' and %zu children",
+					entityName.c_str(),
+					allChildren.size());
+			Undo::SetCurrentGroupOperationDescription(operationDescription);
 
-		Undo::EndGroupOperation();
+			Undo::EndGroupOperation();
+		}
 	}
 
 	EntityDeletionOperation *Undo::deleteEntityButNotChildren(Entity entity, std::size_t indexInWorldHandleArray)
@@ -328,15 +338,25 @@ namespace DYE::DYEditor
 			return;
 		}
 
+		// If the user (or other higher level operation logic) has already included the current operation in a group operation,
+		// we want to avoid making another group.
+		bool const isAlreadyInGroupOperationBeforeThisFunctionCall = s_Data.IsInGroup;
+
 		auto entityGUID = tryGetEntityGUID.value();
 		auto parentGUID = tryGetParentGUID.value();
 
 		// This is a group operation that includes:
 		//	1. A collection of MoveEntity operations: to move root, children, children of children... under the new parent.
 		//	2. Three ComponentModification operations: to modify entity's original parent.ChildrenComponent & entity.ParentComponent & parent.ChildrenComponent.
-		char operationDescription[128] = "";
-		sprintf(operationDescription, "Set the parent of '%s' to '%s'", entity.TryGetName().value().c_str(), newParent.TryGetName().value().c_str());
-		Undo::StartGroupOperation(operationDescription);
+		if (!isAlreadyInGroupOperationBeforeThisFunctionCall)
+		{
+			char operationDescription[128] = "";
+			sprintf(operationDescription,
+					"Set the parent of '%s' to '%s'",
+					entity.TryGetName().value().c_str(),
+					newParent.TryGetName().value().c_str());
+			Undo::StartGroupOperation(operationDescription);
+		}
 
 		// Move entities order in the entity handle array.
 		// We want to insert at parent index + 1 because that's the head of the parent's children list (if there is any).
@@ -534,7 +554,10 @@ namespace DYE::DYEditor
 												serializedChildrenComponentAfterModification);
 		}
 
-		Undo::EndGroupOperation();
+		if (!isAlreadyInGroupOperationBeforeThisFunctionCall)
+		{
+			Undo::EndGroupOperation();
+		}
 	}
 
 	void Undo::SetEntityOrderAtTopHierarchy(Entity entity, int entityIndexBeforeSet, int indexToInsert)
@@ -546,11 +569,18 @@ namespace DYE::DYEditor
 			return;
 		}
 
+		// If the user (or other higher level operation logic) has already included the current operation in a group operation,
+		// we want to avoid making another group.
+		bool const isAlreadyInGroupOperationBeforeThisFunctionCall = s_Data.IsInGroup;
+
 		auto entityGUID = tryGetEntityGUID.value();
 
-		char operationDescription[128] = "";
-		sprintf(operationDescription, "Move Entity '%s' at Top Hierarchy", entity.TryGetName().value().c_str());
-		Undo::StartGroupOperation(operationDescription);
+		if (!isAlreadyInGroupOperationBeforeThisFunctionCall)
+		{
+			char operationDescription[128] = "";
+			sprintf(operationDescription, "Move Entity '%s' at Top Hierarchy", entity.TryGetName().value().c_str());
+			Undo::StartGroupOperation(operationDescription);
+		}
 
 		int movePointer = entityIndexBeforeSet;
 		if (entityIndexBeforeSet < indexToInsert)
@@ -622,7 +652,10 @@ namespace DYE::DYEditor
 			Undo::RemoveComponent(entity, ParentComponentName, TypeRegistry::GetComponentTypeDescriptor_ParentComponent());
 		}
 
-		Undo::EndGroupOperation();
+		if (!isAlreadyInGroupOperationBeforeThisFunctionCall)
+		{
+			Undo::EndGroupOperation();
+		}
 	}
 
 	void Undo::RegisterComponentModification(Entity entity,

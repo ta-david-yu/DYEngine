@@ -1115,8 +1115,12 @@ namespace DYE::DYEditor
 							auto newEntity = scene.World.CreateEntity("Entity");
 							*pCurrentSelectedEntityGUID = newEntity.TryGetGUID().value();
 							int const newEntityIndexInWorld = scene.World.GetNumberOfEntities() - 1;
+
+							Undo::StartGroupOperation("Create Empty Entity (Temporary)");
 							Undo::RegisterEntityCreation(scene.World, newEntity, newEntityIndexInWorld);
 							Undo::SetEntityParent(newEntity, scene.World.GetNumberOfEntities() - 1, entity, indexInWorld);
+							Undo::EndGroupOperation();
+							Undo::SetLatestOperationDescription("Create Empty Entity Under Entity '%s'", name.c_str());
 
 							// Open the entity tree node because we want to let the user see the newly created child entity.
 							ImGui::TreeNodeSetOpen(nodeId, true);
