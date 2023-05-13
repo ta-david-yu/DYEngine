@@ -1098,6 +1098,7 @@ namespace DYE::DYEditor
 				if (isEntityShown)
 				{
 					// We use GUID as the id of the TreeNode.
+					ImGuiID const nodeId = ImGui::GetCurrentWindow()->GetID(guid.ToString().c_str());
 					isNodeOpen = ImGui::TreeNodeEx(guid.ToString().c_str(), flags, name.c_str()) && !isLeafNode;
 					if (ImGui::BeginPopupContextItem())
 					{
@@ -1118,7 +1119,7 @@ namespace DYE::DYEditor
 							Undo::SetEntityParent(newEntity, scene.World.GetNumberOfEntities() - 1, entity, indexInWorld);
 
 							// Open the entity tree node because we want to let the user see the newly created child entity.
-							ImGui::TreeNodeSetOpen(guid.ToString().capacity(), true);
+							ImGui::TreeNodeSetOpen(nodeId, true);
 
 							changed = true;
 						}
@@ -1128,7 +1129,7 @@ namespace DYE::DYEditor
 							//		we might want to write a separate function in SerializedObjectFactory
 
 							// Open the entity tree node because we want to let the user see the newly created child entity.
-							ImGui::TreeNodeSetOpen(guid.ToString().capacity(), true);
+							ImGui::TreeNodeSetOpen(nodeId, true);
 						}
 						ImGui::EndPopup();
 					}
