@@ -93,3 +93,19 @@ void PrintMessageOnTeardownSystem::Execute(DYE::DYEditor::World &world, DYE::DYE
 		printf("%s: %s\n", name.Name.c_str(), message.Message.c_str());
 	}
 }
+
+void PressButtonToLoadSceneImGuiSystem::Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params)
+{
+	ImGui::SetNextWindowSize({200, 100}, ImGuiCond_FirstUseEver);
+	if (ImGui::Begin("Runtime Load Scene Window"))
+	{
+		DYE::ImGuiUtil::DrawAssetPathStringControl("Scene To Load", m_ScenePath);
+
+		if (!m_ScenePath.empty() && ImGui::Button("Emit Load Scene Command"))
+		{
+			world.CreateCommandEntity().AddComponent<DYE::DYEditor::LoadSceneComponent>().SceneAssetPath = m_ScenePath;
+		}
+	}
+
+	ImGui::End();
+}

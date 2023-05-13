@@ -31,11 +31,17 @@ namespace DYE::DYEditor
 		World();
 		~World() = default;
 
+		/// Create a command entity that is supposed to live for a short life-time (i.e. one frame).
+		/// It will not be shown inside inspector (for now), and will not be tracked by the serialization system.
+		Entity CreateCommandEntity();
+
 		Entity CreateEntity(std::string const& name);
 		Entity CreateEntityAtIndex(std::string const& name, std::size_t index);
 		Entity CreateEntityWithGUID(std::string const& name, GUID guid);
 		Entity WrapIdentifierIntoEntity(EntityIdentifier identifier);
 
+		/// This method only destroys the command entity itself in the registry.
+		void DestroyCommandEntity(Entity commandEntityToDestroy);
 		/// This method also destroys all the children under the entity.
 		void DestroyEntityAndChildren(Entity entityToDestroy);
 		/// This method also destroys all the children under the entity.

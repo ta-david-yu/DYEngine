@@ -30,7 +30,12 @@ set(SOURCE_FILES
         src/EntityOperations.cpp
         src/SystemOperations.cpp
         src/UndoOperationBase.cpp
-        src/HierarchyComponents.cpp src/EntityUtil.cpp src/SceneViewEntitySelection.cpp src/SubWindowConfiguration.cpp)
+        src/HierarchyComponents.cpp
+        src/EntityUtil.cpp
+        src/SceneViewEntitySelection.cpp
+        src/SerializedArray.cpp
+        src/SubWindowConfiguration.cpp
+        src/ExecuteLoadSceneCommandSystem.cpp)
 set(HEADER_FILES
         include/SceneEditorLayer.h
         include/SceneRuntimeLayer.h
@@ -71,7 +76,13 @@ set(HEADER_FILES
         include/Undo/Operations/EntityOperations.h
         include/Type/DrawComponentHeaderContext.h
         include/Undo/Operations/SystemOperations.h
-        include/Components/HierarchyComponents.h include/Serialization/SerializedArray.h src/SerializedArray.cpp include/Util/EntityUtil.h include/SceneViewEntitySelection.h include/Configuration/SubWindowConfiguration.h)
+        include/Components/HierarchyComponents.h
+        include/Serialization/SerializedArray.h
+        include/Util/EntityUtil.h
+        include/SceneViewEntitySelection.h
+        include/Configuration/SubWindowConfiguration.h
+        include/Components/Command/LoadSceneComponent.h
+        include/Systems/ExecuteLoadSceneCommandSystem.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")

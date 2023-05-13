@@ -496,6 +496,9 @@ namespace DYE::DYEditor
 
 		static RegisterCameraSystem _RegisterCameraSystem;
 		TypeRegistry::RegisterSystem(RegisterCameraSystem::TypeName, &_RegisterCameraSystem);
+
+		static ExecuteLoadSceneCommandSystem _ExecuteLoadSceneCommandSystem;
+		TypeRegistry::RegisterSystem(ExecuteLoadSceneCommandSystem::TypeName, &_ExecuteLoadSceneCommandSystem);
 	}
 
 	ComponentTypeDescriptor TypeRegistry::GetComponentTypeDescriptor_NameComponent()

@@ -13,6 +13,12 @@ namespace DYE::DYEditor
 	{
 	}
 
+	Entity World::CreateCommandEntity()
+	{
+		auto entity = Entity(*this, m_Registry.create());
+		return entity;
+	}
+
 	Entity World::CreateEntity(std::string const& name)
 	{
 		auto entity = Entity(*this, m_Registry.create());
@@ -54,6 +60,11 @@ namespace DYE::DYEditor
 	Entity World::WrapIdentifierIntoEntity(EntityIdentifier identifier)
 	{
 		return Entity(*this, identifier);
+	}
+
+	void World::DestroyCommandEntity(DYE::DYEditor::Entity commandEntityToDestroy)
+	{
+		m_Registry.destroy(commandEntityToDestroy.m_EntityIdentifier);
 	}
 
 	void World::DestroyEntityAndChildren(Entity entityToDestroy)

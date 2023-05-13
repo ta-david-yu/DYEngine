@@ -360,6 +360,10 @@ namespace DYE::DYEditor
 		static PrintMessageOnTeardownSystem _PrintMessageOnTeardownSystem;
 		TypeRegistry::RegisterSystem("Print Message On Teardown System", &_PrintMessageOnTeardownSystem);
 
+		// System located in include/SystemExample.h
+		static PressButtonToLoadSceneImGuiSystem _PressButtonToLoadSceneImGuiSystem;
+		TypeRegistry::RegisterSystem("Runtime Load Scene ImGui System", &_PressButtonToLoadSceneImGuiSystem);
+
 	}
 
 	class UserTypeRegister_Generated

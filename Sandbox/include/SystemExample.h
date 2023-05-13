@@ -91,3 +91,12 @@ struct PrintMessageOnTeardownSystem final : public DYE::DYEditor::SystemBase
 	void Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params) final;
 };
 
+DYE_SYSTEM("Runtime Load Scene ImGui System", PressButtonToLoadSceneImGuiSystem)
+struct PressButtonToLoadSceneImGuiSystem final : public DYE::DYEditor::SystemBase
+{
+	inline DYE::DYEditor::ExecutionPhase GetPhase() const override { return DYE::DYEditor::ExecutionPhase::ImGui; }
+	void Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params) final;
+private:
+	std::filesystem::path m_ScenePath = "";
+};
+
