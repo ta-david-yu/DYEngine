@@ -14,7 +14,7 @@
 
 namespace DYE
 {
-    Application::Application(const std::string &windowName, int fixedFramePerSecond)
+    Application::Application(WindowProperties mainWindowProperties, int fixedFramePerSecond)
     {
         SDL_Init(0);
         SDL_InitSubSystem(SDL_INIT_AUDIO);
@@ -64,7 +64,7 @@ namespace DYE
 		if (WindowManager::GetNumberOfWindows() == 0)
 		{
 			// If there is no window, we create one first as the main window!
-			mainWindowPtr = WindowManager::CreateWindow(WindowProperties(windowName));
+			mainWindowPtr = WindowManager::CreateWindow(mainWindowProperties);
 			auto context = ContextBase::Create(mainWindowPtr);
 			mainWindowPtr->SetContext(context);
 			mainWindowPtr->MakeCurrent();

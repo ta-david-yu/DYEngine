@@ -13,7 +13,7 @@ namespace DYE::DYEditor
 		DYEditorApplication() = delete;
 		DYEditorApplication(const DYEditorApplication &) = delete;
 
-		explicit DYEditorApplication(const std::string &windowName, int fixedFramePerSecond = 60);
+		explicit DYEditorApplication(WindowProperties mainWindowProperties, int fixedFramePerSecond = 60);
 
 		~DYEditorApplication() final = default;
 	};

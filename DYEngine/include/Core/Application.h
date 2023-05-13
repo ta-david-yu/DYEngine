@@ -35,9 +35,7 @@ namespace DYE
 
         Application(const Application &) = delete;
 
-        /// Application Constructor
-        /// \param windowName: The name shown at the top of the app window
-        explicit Application(const std::string &windowName, int fixedFramePerSecond = 60);
+        explicit Application(WindowProperties mainWindowProperties, int fixedFramePerSecond = 60);
 
         virtual ~Application();
 

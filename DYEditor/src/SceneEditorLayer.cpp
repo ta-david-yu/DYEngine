@@ -7,7 +7,8 @@
 #include "Core/RuntimeSceneManagement.h"
 #include "Core/EditorSystem.h"
 #include "Serialization/SerializedObjectFactory.h"
-#include "ProjectConfig.h"
+#include "Configuration/ProjectConfig.h"
+#include "Configuration/SubWindowConfiguration.h"
 #include "Type/BuiltInTypeRegister.h"
 #include "Type/UserTypeRegister.h"
 #include "Graphics/RenderPipelineManager.h"
@@ -105,7 +106,7 @@ namespace DYE::DYEditor
 				},
 			[](char const *name, bool *pIsOpen, ImGuiViewport const *pMainViewportHint)
 			{
-				GetEditorConfig().DrawGenericConfigurationBrowserImGui("Editor Configuration", pIsOpen);
+				DrawEditorConfigurationWindow(pIsOpen);
 			}
 		);
 
@@ -176,7 +177,6 @@ namespace DYE::DYEditor
 		m_SceneViewEntityIDFramebuffer = Framebuffer::Create(entityIDFramebufferProperties);
 		m_SceneViewEntityIDFramebuffer->SetDebugLabel("Scene View EntityID Framebuffer");
 
-
 		// Do some more editor setup based on EditorConfig settings.
 		ProjectConfig &editorConfig = GetEditorConfig();
 		m_InspectorContext.Mode = editorConfig.GetOrDefault(EditorConfigKeys::DebugInspector, false)? InspectorMode::Debug : InspectorMode::Normal;
@@ -185,10 +185,11 @@ namespace DYE::DYEditor
 		m_SceneViewCamera.Position = editorConfig.GetOrDefault(EditorConfigKeys::SceneViewCameraPosition, glm::vec3 {0, 0, 10.0f});
 		m_SceneViewCamera.Properties.ClearColor = editorConfig.GetOrDefault(EditorConfigKeys::SceneViewCameraClearColor, glm::vec4 {0, 0, 0, 1});
 
-		// FIXME: Window setup should be made according to runtime config file (i.e. GetRuntimeConfig().GetOrDefault("Window.NumberOfInitialWindows")...).
-		//		For now we create a secondary window manually.
-		auto windowPtr = WindowManager::CreateWindow(WindowProperties("Test Window", 640, 480));
-		windowPtr->SetContext(WindowManager::GetMainWindow()->GetContext());
+		bool const shouldSetupSubWindowsBasedOnRuntimeConfig = editorConfig.GetOrDefault(EditorConfigKeys::ShowSubWindowsInEditMode, false);
+		if (shouldSetupSubWindowsBasedOnRuntimeConfig)
+		{
+			SetupSubWindowsBasedOnRuntimeConfig();
+		}
 	}
 
 	void SceneEditorLayer::OnDetach()
@@ -2052,22 +2053,27 @@ namespace DYE::DYEditor
 		auto &scene = RuntimeSceneManagement::GetActiveMainScene();
 		if (stateChange == ModeStateChange::BeforeEnterPlayMode)
 		{
+			// Open sub-windows based on runtime configuration.
+			// We don't need to check whether sub-windows are already setup OR should be setup because
+			// the function will check that for us.
+			SetupSubWindowsBasedOnRuntimeConfig();
+
 			// Save a copy of the active scene as a serialized scene.
 			m_SerializedSceneCacheWhenEnterPlayMode = SerializedObjectFactory::CreateSerializedScene(scene);
 
 			// Initialize load systems.
 			scene.ForEachSystemDescriptor
-				(
-					[&scene](SystemDescriptor &systemDescriptor, ExecutionPhase phase)
-					{
-						systemDescriptor.Instance->InitializeLoad(
-							scene.World,
-							InitializeLoadParameters
-								{
-									.LoadType = InitializeLoadType::BeforeEnterPlayMode
-								});
-					}
-				);
+			(
+				[&scene](SystemDescriptor &systemDescriptor, ExecutionPhase phase)
+				{
+					systemDescriptor.Instance->InitializeLoad(
+						scene.World,
+						InitializeLoadParameters
+						{
+							.LoadType = InitializeLoadType::BeforeEnterPlayMode
+						});
+				}
+			);
 
 			// Execute initialize systems.
 			scene.ExecuteInitializeSystems();
@@ -2079,17 +2085,26 @@ namespace DYE::DYEditor
 
 			// Initialize load systems.
 			scene.ForEachSystemDescriptor
-				(
-					[&scene](SystemDescriptor &systemDescriptor, ExecutionPhase phase)
-					{
-						systemDescriptor.Instance->InitializeLoad(
-							scene.World,
-							InitializeLoadParameters
-								{
-									.LoadType = InitializeLoadType::BeforeEnterEditMode
-								});
-					}
-				);
+			(
+				[&scene](SystemDescriptor &systemDescriptor, ExecutionPhase phase)
+				{
+					systemDescriptor.Instance->InitializeLoad(
+						scene.World,
+						InitializeLoadParameters
+						{
+							.LoadType = InitializeLoadType::BeforeEnterEditMode
+						});
+				}
+			);
+
+			// If the editor user enables sub-windows in edit mode by default,
+			// we don't close the sub-windows!
+			auto showSubWindowsInEditMode = GetEditorConfig().GetOrDefault(EditorConfigKeys::ShowSubWindowsInEditMode, false);
+			if (!showSubWindowsInEditMode)
+			{
+				// Close sub-windows based on runtime configuration.
+				ClearSubWindowsBasedOnRuntimeConfig();
+			}
 
 			// Reapply the serialized scene back to the active scene.
 			// TODO: maybe have an option to keep the changes in play mode?

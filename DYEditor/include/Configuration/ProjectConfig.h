@@ -4,8 +4,8 @@
 #include <functional>
 #include <filesystem>
 #include <string>
-#include <toml++/toml.h>
-#include <glm/glm.hpp>
+#include "toml++/toml.h"
+#include "glm/glm.hpp"
 
 namespace DYE::DYEditor
 {
@@ -14,13 +14,19 @@ namespace DYE::DYEditor
 
 	namespace RuntimeConfigKeys
 	{
+		constexpr char const *ProjectName = "Project.Name";
 		constexpr char const *FirstScene = "Project.FirstScene";
+		constexpr char const *MainWindowWidth = "Window.Main.Width";
+		constexpr char const *MainWindowHeight = "Window.Main.Height";
+		constexpr char const *SubWindows = "Window.SubWindows";
 	}
 
 	namespace EditorConfigKeys
 	{
 		constexpr char const *DefaultScene = "Editor.DefaultScene";
 		constexpr char const *DebugInspector = "Editor.Inspector.DebugMode";
+		constexpr char const *ShowSubWindowsInEditMode = "Editor.Inspector.ShowSubWindowsInEditMode";
+
 		constexpr char const *SceneViewCameraPosition = "Editor.SceneView.Camera.Position";
 		constexpr char const *SceneViewCameraClearColor = "Editor.SceneView.Camera.ClearColor";
 	}
@@ -44,13 +50,15 @@ namespace DYE::DYEditor
 		template<typename T>
 		void Set(std::string const &keyPath, T const &value);
 
-	private:
-		bool IsLoaded = false;
-		std::filesystem::path CurrentLoadedFilePath;
+		toml::table &Table() { return m_Table; }
 
-		std::ofstream FileStream;
+	private:
+		bool m_IsLoaded = false;
+		std::filesystem::path m_CurrentLoadedFilePath;
+
+		std::ofstream m_FileStream;
 		// I hate that I have to include toml here, which is totally unnecessary if C++ was designed better.
-		toml::table Table;
+		toml::table m_Table;
 	};
 
 	template<>
@@ -68,6 +76,9 @@ namespace DYE::DYEditor
 
 	ProjectConfig& GetEditorConfig();
 	ProjectConfig& GetRuntimeConfig();
+
+	// FIXME: move this function to a separate file that stores all the important editor window calls.
+	bool DrawEditorConfigurationWindow(bool *pIsOpen);
 
 	// FIXME: move this function to a separate file that stores all the important editor window calls.
 	bool DrawRuntimeConfigurationWindow(bool *pIsOpen);
