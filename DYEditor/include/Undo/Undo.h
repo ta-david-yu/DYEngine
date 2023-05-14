@@ -43,6 +43,10 @@ namespace DYE::DYEditor
 		/// Call this after creating a new entity.
 		static void RegisterEntityCreation(World& world, Entity entity, std::size_t indexInWorldHandleArray);
 
+		/// Call this to make a copy from the given entity in the given world.
+		/// \return the newly created root entity.
+		static Entity DuplicateEntityRecursively(World& world, Entity rootEntityToDuplicate);
+
 		/// Perform entity destruction (including all children) that can be restored with undo.
 		static void DeleteEntityRecursively(Entity entity);
 		/// Perform entity destruction (including all children) that can be restored with undo.

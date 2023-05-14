@@ -200,7 +200,7 @@ namespace DYE::DYEditor
 			SerializedEntity serializedEntityToDuplicate = SerializedObjectFactory::CreateSerializedEntity(entityToDuplicate);
 			SerializedObjectFactory::ApplySerializedEntityToEmptyEntity(serializedEntityToDuplicate, newEntity);
 
-			// The new duplicated entity should have a new different GUID than the original one.
+			// The newly duplicated entity should have a new GUID than the original one.
 			GUID newGUID = m_EntityGUIDFactory.Generate();
 			newEntity.GetComponent<IDComponent>().ID = newGUID;
 

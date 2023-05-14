@@ -175,6 +175,145 @@ namespace DYE::DYEditor
 		pushNewOperation(std::move(operation));
 	}
 
+	Entity Undo::DuplicateEntityRecursively(World &world, Entity rootEntityToDuplicate)
+	{
+		auto tryGetRootEntityGUID = rootEntityToDuplicate.TryGetGUID();
+		DYE_ASSERT_LOG_WARN(tryGetRootEntityGUID.has_value(), "We can't duplicate an entity without GUID.");
+
+		// If the user (or other higher level operation logic) has already included the current operation in a group operation,
+		// we want to avoid making another group.
+		bool const isAlreadyInGroupOperationBeforeThisFunctionCall = s_Data.IsInGroup;
+
+		auto tryGetRootEntityName = rootEntityToDuplicate.TryGetName();
+		std::string rootEntityName = tryGetRootEntityName.has_value()? tryGetRootEntityName.value() : "No Name";
+
+		if (!isAlreadyInGroupOperationBeforeThisFunctionCall)
+		{
+			Undo::StartGroupOperation("Duplicate Entity Recursively (On-going)");
+		}
+
+		std::vector<GUID> newDuplicateGUIDs;
+		std::vector<Entity> newEntityAndAllChildren;
+
+		// Go through the entity and its children to make copies of them.
+		struct HierarchyLevel
+		{
+			GUID NewParentGUID;
+			ChildrenComponent *pChildrenComponent = nullptr;
+			std::size_t NumberOfChildrenLeft = 0;
+		};
+
+		int const worldArrayIndexToInsertNewEntity = world.m_EntityHandles.size();
+
+		std::stack<Entity> entityStack;
+		std::stack<HierarchyLevel> hierarchyLevels;
+		entityStack.push(rootEntityToDuplicate);
+		while (!entityStack.empty())
+		{
+			Entity entityToDuplicate = entityStack.top();
+
+			auto tryGetName = entityToDuplicate.TryGetName();
+			DYE_ASSERT_LOG_WARN(tryGetName.has_value(), "The duplicate entity target doesn't have a name.");
+
+			// Make a new copy of the entity.
+			Entity newEntity = world.createUntrackedEntity();
+
+			SerializedEntity serializedEntityToDuplicate = SerializedObjectFactory::CreateSerializedEntity(entityToDuplicate);
+			SerializedObjectFactory::ApplySerializedEntityToEmptyEntity(serializedEntityToDuplicate, newEntity);
+
+			// The newly duplicated entity should have a new GUID than the original one.
+			GUID newGUID = world.m_EntityGUIDFactory.Generate();
+			newEntity.GetComponent<IDComponent>().ID = newGUID;
+
+			newDuplicateGUIDs.push_back(newGUID);
+			newEntityAndAllChildren.push_back(newEntity);
+
+			world.registerUntrackedEntityAtIndex(newEntity, world.m_EntityHandles.size());
+
+			if (!hierarchyLevels.empty())
+			{
+				// The level stack is not empty, which means the current entity has a parent.
+				// We need to reassign child's ParentComponent & parent's ChildrenComponent with the new GUIDs.
+				HierarchyLevel &level = hierarchyLevels.top();
+
+				newEntity.GetComponent<ParentComponent>().ParentGUID = level.NewParentGUID;
+
+				std::size_t const numberOfChildren = level.pChildrenComponent->ChildrenGUIDs.size();
+				level.pChildrenComponent->ChildrenGUIDs[numberOfChildren - level.NumberOfChildrenLeft] = newGUID;
+
+				level.NumberOfChildrenLeft--;
+				if (level.NumberOfChildrenLeft == 0)
+				{
+					hierarchyLevels.pop();
+				}
+			}
+
+			// Check if the current visiting entity has children.
+			// If so, we want to push it in the stack.
+			entityStack.pop();
+			auto tryGetChild = entityToDuplicate.TryGetComponent<ChildrenComponent>();
+			if (!tryGetChild.has_value())
+			{
+				// No child, nothing to push into the stack.
+				continue;
+			}
+
+			auto &childrenGUIDs = tryGetChild.value().get().ChildrenGUIDs;
+			hierarchyLevels.push
+			(
+				HierarchyLevel
+				{
+					.NewParentGUID = newGUID,
+					.pChildrenComponent = &newEntity.GetComponent<ChildrenComponent>(),
+					.NumberOfChildrenLeft = childrenGUIDs.size()
+				}
+			);
+			for (int i = childrenGUIDs.size() - 1; i >= 0; i--)
+			{
+				auto childGUID = childrenGUIDs[i];
+				auto tryGetEntityWithGUID = world.TryGetEntityWithGUID(childGUID);
+				if (!tryGetEntityWithGUID.has_value())
+				{
+					continue;
+				}
+				// Push the child into the stack.
+				entityStack.push(tryGetEntityWithGUID.value());
+			}
+		}
+
+		// FIXME: for now we remove the parent of the root.
+		//  Later we want to be able to duplicate entity at the same level.
+		Entity newRootEntity = newEntityAndAllChildren[0];
+		if (newRootEntity.HasComponent<ParentComponent>())
+		{
+			newRootEntity.RemoveComponent<ParentComponent>();
+		}
+
+		// Register all the newly created entity with the undo system.
+		for (int i = 0; i < newEntityAndAllChildren.size(); ++i)
+		{
+			Entity newEntity = newEntityAndAllChildren[i];
+			Undo::RegisterEntityCreation(world, newEntity, worldArrayIndexToInsertNewEntity + i);
+		}
+
+		// Set the operation description based on the result.
+		if (!isAlreadyInGroupOperationBeforeThisFunctionCall)
+		{
+			Undo::EndGroupOperation();
+
+			if (newEntityAndAllChildren.size() > 1)
+			{
+				Undo::SetLatestOperationDescription("Duplicate Entity '%s' and its %d children", rootEntityName.c_str(), newEntityAndAllChildren.size() - 1);
+			}
+			else
+			{
+				Undo::SetLatestOperationDescription("Duplicate Entity '%s'", rootEntityName.c_str());
+			}
+		}
+
+		return newRootEntity;
+	}
+
 	void Undo::DeleteEntityRecursively(Entity entity)
 	{
 		auto tryGetIndexResult = entity.GetWorld().TryGetEntityIndex(entity);
