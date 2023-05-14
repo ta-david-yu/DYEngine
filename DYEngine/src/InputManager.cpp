@@ -137,6 +137,13 @@ namespace DYE
 		return !m_KeyboardKeys[scanCode] && m_PreviousKeyboardKeys[scanCode];
 	}
 
+	glm::vec<2, std::int32_t> InputManager::GetMousePositionRelativeToFocusedWindow() const
+	{
+		std::int32_t mouseX, mouseY;
+		std::uint32_t const buttonState = SDL_GetMouseState(&mouseX, &mouseY);
+		return {mouseX, mouseY};
+	}
+
 	bool InputManager::GetMouseButton(MouseButton button) const
 	{
 		int const index = static_cast<int>(button) - 1;
