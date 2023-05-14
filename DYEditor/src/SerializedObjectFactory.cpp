@@ -146,7 +146,6 @@ namespace DYE::DYEditor
 			if (componentTypeFunctions.Deserialize == nullptr)
 			{
 				// The component type doesn't have a corresponding Deserialize function.
-				// // TODO: Ignore and add the component name to the unrecognized component list.
 				DYE_LOG("Component of type '%s' will not be deserialized because its Deserialize function is not provided.", typeName.c_str());
 				continue;
 			}

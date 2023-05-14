@@ -47,6 +47,9 @@ namespace DYE::DYEditor
 		/// This method also destroys all the children under the entity.
 		void DestroyEntityAndChildrenWithGUID(GUID entityGUID);
 
+		/// Duplicate an entity and all its children with new guids, and then put them at the end of the handle list.
+		Entity DuplicateEntityAndChildren(Entity rootEntityToDuplicate);
+
 		std::optional<Entity> TryGetEntityWithGUID(GUID entityGUID);
 		/// Get the index of the given entity inside Entity Handle array.
 		std::optional<std::size_t> TryGetEntityIndex(Entity const &entity);

@@ -1131,6 +1131,8 @@ namespace DYE::DYEditor
 						{
 							// TODO: duplicate entity and its children assign new GUIDs to all of them,
 							//		we might want to write a separate function in SerializedObjectFactory
+							auto newEntity = scene.World.DuplicateEntityAndChildren(entity);
+							*pCurrentSelectedEntityGUID = newEntity.TryGetGUID().value();
 
 							// Open the entity tree node because we want to let the user see the newly created child entity.
 							ImGui::TreeNodeSetOpen(nodeId, true);
@@ -1727,6 +1729,7 @@ namespace DYE::DYEditor
 
 		if (!entity.IsValid())
 		{
+			ImGui::Text("Select a valid entity to inspect.");
 			return false;
 		}
 
