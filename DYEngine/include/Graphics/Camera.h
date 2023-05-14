@@ -3,6 +3,8 @@
 #include "WindowBase.h"
 #include "Math/Rect.h"
 
+#include <utility>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
@@ -77,5 +79,23 @@ namespace DYE
 
 	public:
 		glm::mat4 GetViewMatrix() const;
+
+		/// For a viewport point, the bottom-left of the camera is (0, 0); the top-right is (1, 1).\n
+		/// For a screen point, the bottom-left of the screen is (0, 0); the right-top is (screenPixelWidth, screenPixelHeight).\n
+		/// Note that a camera viewport doesn't have to cover up a whole screen target (i.e. window/framebuffer),
+		/// therefore the corners of the viewport might not be the corners of the screen target.
+		glm::vec2 ViewportToScreenPoint(glm::vec2 viewportPoint) const;
+
+		/// For a viewport point, the bottom-left of the camera is (0, 0); the top-right is (1, 1).\n
+		/// For a screen point, the bottom-left of the screen is (0, 0); the right-top is (screenPixelWidth, screenPixelHeight).\n
+		/// Note that a camera viewport doesn't have to cover up a whole screen target (i.e. window/framebuffer),
+		/// therefore the corners of the viewport might not be the corners of the screen target.
+		glm::vec2 ScreenToViewportPoint(glm::vec2 screenPoint) const;
+
+		/// For a viewport point, the bottom-left of the camera is (0, 0); the top-right is (1, 1).
+		glm::vec3 ViewportToWorldPoint(glm::vec2 viewportPoint, float distanceFromCameraInWorldUnits) const;
+
+		/// For a screen point, the bottom-left of the screen is (0, 0); the right-top is (screenPixelWidth, screenPixelHeight).
+		glm::vec3 ScreenToWorldPoint(glm::vec2 screenPoint, float distanceFromCameraInWorldUnits) const;
 	};
 }
