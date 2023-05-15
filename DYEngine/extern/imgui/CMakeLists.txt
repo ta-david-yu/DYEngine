@@ -14,6 +14,8 @@ set(IMGUI_SDL2_IMPL_SOURCE_FILES
         "imgui/backends/imgui_impl_sdl2.cpp"
         "imgui/backends/imgui_impl_opengl3.cpp")
 
+message(STATUS "[${LIBRARY_NAME}]")
+
 add_library(${LIBRARY_NAME}
         ${IMGUI_SOURCE_FILES}
         ${IMGUI_SDL2_IMPL_SOURCE_FILES})
