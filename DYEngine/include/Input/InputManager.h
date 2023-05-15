@@ -72,6 +72,7 @@ namespace DYE
 		bool GetKeyUp(KeyCode keyCode) const;
 
 		glm::vec<2, std::int32_t> GetMousePositionRelativeToFocusedWindow() const;
+		glm::vec<2, std::int32_t> GetMousePositionRelativeToWindow(std::uint32_t windowID) const;
 		inline glm::vec<2, std::int32_t> GetGlobalMousePosition() const { return {m_MouseX, m_MouseY }; }
 		inline glm::vec<2, std::int32_t> GetGlobalMouseDelta() const { return {m_MouseX - m_PreviousMouseX, m_MouseY - m_PreviousMouseY }; }
 

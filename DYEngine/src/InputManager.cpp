@@ -1,5 +1,6 @@
 #include "Input/InputManager.h"
 
+#include "Graphics/WindowManager.h"
 #include "Util/Macro.h"
 #include "ImGui/ImGuiUtil.h"
 
@@ -135,6 +136,19 @@ namespace DYE
 		}
 
 		return !m_KeyboardKeys[scanCode] && m_PreviousKeyboardKeys[scanCode];
+	}
+
+	glm::vec<2, std::int32_t> InputManager::GetMousePositionRelativeToWindow(std::uint32_t windowID) const
+	{
+		WindowBase *pWindow = WindowManager::TryGetWindowFromID(windowID);
+		auto globalMousePosition = GetGlobalMousePosition();
+		if (pWindow == nullptr)
+		{
+			return globalMousePosition;
+		}
+
+		auto windowPosition = pWindow->GetPosition();
+		return globalMousePosition - windowPosition;
 	}
 
 	glm::vec<2, std::int32_t> InputManager::GetMousePositionRelativeToFocusedWindow() const
