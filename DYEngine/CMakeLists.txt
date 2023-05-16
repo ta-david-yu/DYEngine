@@ -146,8 +146,9 @@ add_subdirectory(extern/stb)
 add_subdirectory(extern/ImGuizmo)
 target_include_directories(ImGuizmo PRIVATE extern/imgui/imgui) # ImGuizmo depends on imgui's
 
-add_subdirectory(extern/SDL_sound)
-add_subdirectory(extern/FAudio)
+#add_subdirectory(extern/SDL_sound)
+#add_subdirectory(extern/FAudio)
+add_subdirectory(extern/raudio)
 
 # ===========================================================================================
 # Build library
@@ -169,8 +170,7 @@ target_include_directories(DYEngine PRIVATE extern/imgui/imgui/backends)
 target_include_directories(DYEngine PUBLIC extern/glm)
 target_include_directories(DYEngine PUBLIC extern/stb/include)
 target_include_directories(DYEngine PUBLIC extern/ImGuizmo/ImGuzmo)
-target_include_directories(DYEngine PUBLIC extern/SDL_sound/SDL_sound/src)
-target_include_directories(DYEngine PUBLIC extern/FAudio/FAudio/include)
+target_include_directories(DYEngine PUBLIC extern/raudio/raudio/src)
 
 # ===========================================================================================
 # Link external libraries
@@ -183,8 +183,7 @@ target_link_libraries(DYEngine PRIVATE imgui)
 target_link_libraries(DYEngine PRIVATE glm)
 target_link_libraries(DYEngine PRIVATE stb)
 target_link_libraries(DYEngine PRIVATE ImGuizmo)
-target_link_libraries(DYEngine PRIVATE SDL2_sound::SDL2_sound-static)
-target_link_libraries(DYEngine PRIVATE FAudio)
+target_link_libraries(DYEngine PRIVATE raudio)
 
 # Link winpthread because SDL2 needs it.
 # We need to specify -static because winpthread is included in the bundled MinGW distribution that comes with CLion.
