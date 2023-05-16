@@ -16,12 +16,6 @@
 [submodule "DYEngine/extern/ImGuizmo/ImGuzmo"]
 	path = DYEngine/extern/ImGuizmo/ImGuzmo
 	url = git@github.com:ta-david-yu/ImGuizmo.git
-[submodule "DYEngine/extern/SDL_sound/SDL_sound"]
-	path = DYEngine/extern/SDL_sound/SDL_sound
-	url = git@github.com:ta-david-yu/SDL_sound.git
-[submodule "DYEngine/extern/FAudio/FAudio"]
-	path = DYEngine/extern/FAudio/FAudio
-	url = git@github.com:ta-david-yu/FAudio.git
 [submodule "DYEngine/extern/raudio/raudio"]
 	path = DYEngine/extern/raudio/raudio
 	url = git@github.com:ta-david-yu/raudio.git
