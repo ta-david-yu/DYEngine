@@ -27,15 +27,14 @@ I did some reorganizations to the SDL2 folders so whether you use MinGW or MSVC 
 - **stb_image**
 - **Dear ImGui**
 - **ImGuizmo**
-- **FAudio**
-- **SDL_sound**
+- **raudio**
 ### DYEditor
 - **entt**: use as the main object model in DYEngine. I might implement my own ECS framework if time allows it.
 - **tomlplusplus**: most of the custom text-based files in DYEditor will be stored as toml (i.e. scene/level files, asset meta files).
 ### DYEditor Code Generator
 - **fmt**: for easier and more efficient source code generation process. Will replace it with c++ std::format library once it's widely supported by different compilers. 
 ### Pending (to include/included but not used)
-- **OpenAL-Soft**: audio system alternative. Need to do more research.
+- **OpenAL-Soft**: Alternative for 3D audio. Need more research.
 
 ## Showcase
 The project is still in a very early stage, but I am constantly working on it. 
