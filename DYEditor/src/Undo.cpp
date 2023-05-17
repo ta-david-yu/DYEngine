@@ -7,6 +7,7 @@
 #include "Serialization/SerializedObjectFactory.h"
 #include "Type/BuiltInTypeRegister.h"
 #include "Util/EntityUtil.h"
+#include "Components/NameComponent.h"
 #include "ImGui/ImGuiUtil.h"
 
 #include <memory>
@@ -175,7 +176,7 @@ namespace DYE::DYEditor
 		pushNewOperation(std::move(operation));
 	}
 
-	Entity Undo::DuplicateEntityRecursively(World &world, Entity rootEntityToDuplicate)
+	Entity Undo::DuplicateEntityRecursively(World &world, Entity rootEntityToDuplicate, std::string const &newEntityName)
 	{
 		auto tryGetRootEntityGUID = rootEntityToDuplicate.TryGetGUID();
 		DYE_ASSERT_LOG_WARN(tryGetRootEntityGUID.has_value(), "We can't duplicate an entity without GUID.");
@@ -295,6 +296,21 @@ namespace DYE::DYEditor
 			Entity newEntity = newEntityAndAllChildren[i];
 			Undo::RegisterEntityCreation(world, newEntity, worldArrayIndexToInsertNewEntity + i);
 		}
+
+		// Change the name of the new root entity with the given new name.
+		auto serializedNameComponentBefore = SerializedObjectFactory::CreateSerializedComponentOfType(
+			newRootEntity,
+			NameComponentName,
+			TypeRegistry::GetComponentTypeDescriptor_NameComponent());
+
+		newRootEntity.GetComponent<NameComponent>().Name = newEntityName;
+
+		auto serializedNameComponentAfter = SerializedObjectFactory::CreateSerializedComponentOfType(
+			newRootEntity,
+			NameComponentName,
+			TypeRegistry::GetComponentTypeDescriptor_NameComponent());
+
+		Undo::RegisterComponentModification(newRootEntity, serializedNameComponentBefore, serializedNameComponentAfter);
 
 		// Set the operation description based on the result.
 		if (!isAlreadyInGroupOperationBeforeThisFunctionCall)

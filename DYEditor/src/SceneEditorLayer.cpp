@@ -306,6 +306,25 @@ namespace DYE::DYEditor
 			// Editor Shortcuts.
 			switch (keyDownEvent.GetKeyCode())
 			{
+				case KeyCode::D:
+				{
+					if (control)
+					{
+						// Ctrl + D: Duplicate Entity
+						auto tryGetSelectedEntity = activeScene.World.TryGetEntityWithGUID(m_CurrentlySelectedEntityGUID);
+						if (tryGetSelectedEntity.has_value())
+						{
+							Entity selectedEntity = tryGetSelectedEntity.value();
+							std::string name = selectedEntity.TryGetName().value();
+							auto newEntity = Undo::DuplicateEntityRecursively(activeScene.World, selectedEntity, name + " - Copy");
+							m_CurrentlySelectedEntityGUID = newEntity.TryGetGUID().value();
+							
+							m_IsActiveSceneDirty = true;
+						}
+					}
+					break;
+				}
+
 				case KeyCode::Q:
 				{
 					if (isUsingGizmo)
@@ -345,7 +364,17 @@ namespace DYE::DYEditor
 
 				case KeyCode::N:
 				{
-					if (control)
+					if (shift && control)
+					{
+						// Shift + Ctrl + N: 'New Entity'
+						auto newEntity = activeScene.World.CreateEntity("Entity");
+						m_CurrentlySelectedEntityGUID = newEntity.TryGetGUID().value();
+						int const newEntityIndexInWorld = activeScene.World.GetNumberOfEntities() - 1;
+						Undo::RegisterEntityCreation(activeScene.World, newEntity, newEntityIndexInWorld);
+
+						m_IsActiveSceneDirty = true;
+					}
+					else if (control)
 					{
 						// Ctrl + N: 'New Scene'
 						m_CurrentSceneFilePath.clear();
@@ -442,6 +471,19 @@ namespace DYE::DYEditor
 						m_SceneViewContext.IsGizmoLocalSpace = !m_SceneViewContext.IsGizmoLocalSpace;
 					}
 
+					break;
+				}
+
+				case KeyCode::Delete:
+				{
+					// Delete: Delete Entity
+					auto tryGetSelectedEntity = activeScene.World.TryGetEntityWithGUID(m_CurrentlySelectedEntityGUID);
+					if (tryGetSelectedEntity.has_value())
+					{
+						Entity selectedEntity = tryGetSelectedEntity.value();
+						Undo::DeleteEntityRecursively(selectedEntity);
+						m_IsActiveSceneDirty = true;
+					}
 					break;
 				}
 			}
@@ -1146,7 +1188,7 @@ namespace DYE::DYEditor
 						}
 						if (ImGui::Selectable("Duplicate"))
 						{
-							auto newEntity = Undo::DuplicateEntityRecursively(scene.World, entity);
+							auto newEntity = Undo::DuplicateEntityRecursively(scene.World, entity, name + " - Copy");
 							*pCurrentSelectedEntityGUID = newEntity.TryGetGUID().value();
 
 							// Open the entity tree node because we want to let the user see the newly created child entity.
