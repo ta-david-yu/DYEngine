@@ -1,6 +1,6 @@
 #include "Audio/AudioSource.h"
 
-#include "Audio/AudioSystem.h"
+#include "Audio/AudioManager.h"
 #include "Util/Macro.h"
 
 #include <raudio.h>
@@ -27,7 +27,7 @@ namespace DYE
 			{
 				m_pNativeAudioDataBuffer = DYE_MALLOC(sizeof(Music));
 				*((Music *) m_pNativeAudioDataBuffer) = LoadMusicStream(m_AudioClip->GetPath().string().c_str());
-				AudioSystem::registerStreamingAudioSource(this);
+				AudioManager::registerStreamingAudioSource(this);
 				break;
 			}
 		}
@@ -51,7 +51,7 @@ namespace DYE
 			}
 			case AudioLoadType::Streaming:
 			{
-				AudioSystem::unregisterStreamingAudioSource(this);
+				AudioManager::unregisterStreamingAudioSource(this);
 				UnloadMusicStream(*(Music*) m_pNativeAudioDataBuffer);
 				break;
 			}
@@ -78,7 +78,7 @@ namespace DYE
 				}
 				case AudioLoadType::Streaming:
 				{
-					AudioSystem::unregisterStreamingAudioSource(this);
+					AudioManager::unregisterStreamingAudioSource(this);
 					UnloadMusicStream(*(Music*) m_pNativeAudioDataBuffer);
 					break;
 				}
@@ -107,7 +107,7 @@ namespace DYE
 			{
 				m_pNativeAudioDataBuffer = DYE_MALLOC(sizeof(Music));
 				*((Music*) m_pNativeAudioDataBuffer) = LoadMusicStream(audioClip->GetPath().string().c_str());
-				AudioSystem::registerStreamingAudioSource(this);
+				AudioManager::registerStreamingAudioSource(this);
 				break;
 			}
 		}

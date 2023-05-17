@@ -24,7 +24,7 @@
 #include "Undo/Undo.h"
 #include "Undo/UndoOperationBase.h"
 #include "Math/Math.h"
-#include "Audio/AudioSystem.h"
+#include "Audio/AudioManager.h"
 #include "SceneViewEntitySelection.h"
 
 #include "Components/NameComponent.h"
@@ -102,12 +102,12 @@ namespace DYE::DYEditor
 		EditorWindowManager::RegisterEditorWindow(
 			RegisterEditorWindowParameters
 				{
-					.Name = "Audio System",
+					.Name = "Audio Manager",
 					.isConfigOpenByDefault = false
 				},
 			[](char const *name, bool *pIsOpen, ImGuiViewport const *pMainViewportHint)
 			{
-				AudioSystem::DrawAudioSystemImGui(pIsOpen);
+				AudioManager::DrawAudioManagerImGui(pIsOpen);
 			}
 		);
 

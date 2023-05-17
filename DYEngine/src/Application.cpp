@@ -3,7 +3,7 @@
 #include "Util/Macro.h"
 #include "Util/Logger.h"
 #include "Input/InputManager.h"
-#include "Audio/AudioSystem.h"
+#include "Audio/AudioManager.h"
 #include "Screen.h"
 #include "Graphics/ContextBase.h"
 #include "Graphics/RenderCommand.h"
@@ -58,7 +58,7 @@ namespace DYE
 		Time::InitSingleton(fixedFramePerSecond);
 		Screen::InitSingleton();
 		InputManager::InitSingleton();
-		AudioSystem::Init();
+		AudioManager::Init();
 
         // Create window and context
         DYE_LOG("Init Renderer");
@@ -97,7 +97,7 @@ namespace DYE
     Application::~Application()
     {
         m_EventSystem->Unregister(this);
-		AudioSystem::Close();
+		AudioManager::Close();
         SDL_Quit();
     }
 
@@ -141,7 +141,7 @@ namespace DYE
             }
 
 			// Update AudioStreams
-			AudioSystem::UpdateRegisteredAudioStreams();
+			AudioManager::UpdateRegisteredAudioStreams();
 
             // Game logic render
 			// Normally you would populate render data to the render pipeline in this phase

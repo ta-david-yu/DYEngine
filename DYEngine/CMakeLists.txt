@@ -56,7 +56,7 @@ set(SOURCE_FILES
         src/Framebuffer.cpp
         src/FileSystem.cpp
         src/GUID.cpp src/AudioClip.cpp
-        src/AudioSystem.cpp src/AudioSource.cpp)
+        src/AudioManager.cpp src/AudioSource.cpp)
 set(HEADER_FILES
         include/Core/Application.h
         include/Graphics/WindowBase.h
@@ -123,7 +123,7 @@ set(HEADER_FILES
         include/Core/GUID.h
         include/ImGui/ImGuiUtil_Internal.h
         include/Audio/AudioClip.h
-        include/Audio/AudioSystem.h include/Audio/AudioSource.h)
+        include/Audio/AudioManager.h include/Audio/AudioSource.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")

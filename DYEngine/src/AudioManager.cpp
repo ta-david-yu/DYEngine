@@ -1,4 +1,4 @@
-#include "Audio/AudioSystem.h"
+#include "Audio/AudioManager.h"
 
 #include "Audio/AudioSource.h"
 #include "Audio/AudioClip.h"
@@ -19,17 +19,17 @@ namespace DYE
 
 	static AudioStreamManagerData s_Data;
 
-	void AudioSystem::Init()
+	void AudioManager::Init()
 	{
 		InitAudioDevice();
 	}
 
-	void AudioSystem::Close()
+	void AudioManager::Close()
 	{
 		CloseAudioDevice();
 	}
 
-	void AudioSystem::UpdateRegisteredAudioStreams()
+	void AudioManager::UpdateRegisteredAudioStreams()
 	{
 		for (AudioSource *pSource : s_Data.RegisteredSources)
 		{
@@ -51,7 +51,7 @@ namespace DYE
 		}
 	}
 
-	void AudioSystem::DrawAudioSystemImGui(bool *pIsOpen)
+	void AudioManager::DrawAudioManagerImGui(bool *pIsOpen)
 	{
 		// Set a default size for the window in case it has never been opened before.
 		const ImGuiViewport *main_viewport = ImGui::GetMainViewport();
@@ -59,7 +59,7 @@ namespace DYE
 								ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
 
-		if (!ImGui::Begin("Audio System", pIsOpen))
+		if (!ImGui::Begin("Audio Manager", pIsOpen))
 		{
 			ImGui::End();
 			return;
@@ -108,7 +108,7 @@ namespace DYE
 		ImGui::End();
 	}
 
-	void AudioSystem::registerStreamingAudioSource(AudioSource *pSource)
+	void AudioManager::registerStreamingAudioSource(AudioSource *pSource)
 	{
 		DYE_ASSERT(pSource->GetClip()->GetLoadType() == AudioLoadType::Streaming);
 
@@ -127,7 +127,7 @@ namespace DYE
 		s_Data.RegisteredSources.push_back(pSource);
 	}
 
-	void AudioSystem::unregisterStreamingAudioSource(AudioSource *pSource)
+	void AudioManager::unregisterStreamingAudioSource(AudioSource *pSource)
 	{
 		DYE_ASSERT(pSource->GetClip()->GetLoadType() == AudioLoadType::Streaming);
 

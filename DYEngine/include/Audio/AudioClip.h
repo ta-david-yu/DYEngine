@@ -5,7 +5,7 @@
 
 namespace DYE
 {
-	class AudioSystem;
+	class AudioManager;
 
 	enum class AudioLoadType
 	{
@@ -20,7 +20,7 @@ namespace DYE
 
 	class AudioClip
 	{
-		friend AudioSystem;
+		friend AudioManager;
 	public:
 
 		static std::shared_ptr<AudioClip> Create(std::filesystem::path const& path, AudioClipProperties properties);
