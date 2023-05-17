@@ -104,6 +104,17 @@ namespace DYE
 		return TryGetWindowFromID(id);
 	}
 
+	std::optional<WindowID> WindowManager::TryGetMouseFocusedWindowID()
+	{
+		WindowID windowID = WindowBase::GetMouseFocusedWindowID();
+		if (windowID == 0)
+		{
+			return {};
+		}
+
+		return windowID;
+	}
+
 	bool WindowManager::HasWindowWithID(WindowID id)
 	{
 		return std::any_of(s_Windows.begin(), s_Windows.end(), [id](auto const& windowPair) { return windowPair.first == id; });
