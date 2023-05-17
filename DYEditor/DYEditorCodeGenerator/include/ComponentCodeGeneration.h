@@ -13,7 +13,7 @@ struct ComponentDescriptor
 };
 
 char const *ComponentTypeRegistrationCallSourceStart =
-	R"(		TypeRegistry::RegisterComponentType<${COMPONENT_FULL_TYPE}>
+R"(		TypeRegistry::RegisterComponentType<${COMPONENT_FULL_TYPE}>
 			(
 				"${COMPONENT_NAME}",
 				ComponentTypeDescriptor
@@ -21,36 +21,56 @@ char const *ComponentTypeRegistrationCallSourceStart =
 )";
 
 char const* SerializeLambdaSourceStart =
-	R"(						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
+R"(						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
 						{
-							auto const& component = entity.GetComponent<${COMPONENT_FULL_TYPE}>();
+)";
+
+char const* SerializeGetComponent =
+R"(							auto const& component = entity.GetComponent<${COMPONENT_FULL_TYPE}>();
+)";
+char const* SerializeGetEmptyComponent =
+R"(
 )";
 
 char const* SerializeLambdaSourceEnd =
-	R"(							return SerializationResult {};
+R"(							return SerializationResult {};
 						},
 )";
 
 char const* DeserializeLambdaSourceStart =
-	R"(						.Deserialize = [](SerializedComponent& serializedComponent, DYE::DYEditor::Entity& entity)
+R"(						.Deserialize = [](SerializedComponent& serializedComponent, DYE::DYEditor::Entity& entity)
 						{
-							auto& component = entity.AddOrGetComponent<${COMPONENT_FULL_TYPE}>();
+)";
+
+char const* DeserializeAddOrGetComponent =
+R"(							auto& component = entity.AddOrGetComponent<${COMPONENT_FULL_TYPE}>();
+)";
+char const* DeserializeAddOrGetEmptyComponent =
+R"(							entity.AddOrGetComponent<${COMPONENT_FULL_TYPE}>();
 )";
 
 char const* DeserializeLambdaSourceEnd =
-	R"(							return DeserializationResult {};
+R"(							return DeserializationResult {};
 						},
 )";
 
 char const* DrawInspectorLambdaSourceStart =
-	R"(						.DrawInspector = [](DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
+R"(						.DrawInspector = [](DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
 						{
 							bool changed = false;
-							auto& component = entity.GetComponent<${COMPONENT_FULL_TYPE}>();
+)";
+
+char const* DrawInspectorGetComponent =
+R"(							auto& component = entity.GetComponent<${COMPONENT_FULL_TYPE}>();
+)";
+char const* DrawInspectorGetEmptyComponent =
+R"(							ImGui::Indent();
+							ImGui::TextUnformatted("The component doesn't have any properties (i.e. DYE_PROPERTY).");
+							ImGui::Unindent();
 )";
 
 char const* ComponentTypeRegistrationCallSourceEnd =
-	R"(							return changed;
+R"(							return changed;
 						}
 					}
 			);
@@ -65,18 +85,21 @@ std::string ComponentDescriptorToTypeRegistrationCallSource(ComponentDescriptor 
 	std::string result = "\t\t// Component located in " + descriptor.LocatedHeaderFile + "\n";
 	result.append(ComponentTypeRegistrationCallSourceStart);
 	result.append(SerializeLambdaSourceStart);
+	result.append(!descriptor.Properties.empty()? SerializeGetComponent : SerializeGetEmptyComponent);
 	for (auto const& propertyDescriptor : descriptor.Properties)
 	{
 		result.append(PropertyDescriptorToSerializeCallSource(descriptor.FullType, propertyDescriptor));
 	}
 	result.append(SerializeLambdaSourceEnd);
 	result.append(DeserializeLambdaSourceStart);
+	result.append(!descriptor.Properties.empty()? DeserializeAddOrGetComponent : DeserializeAddOrGetEmptyComponent);
 	for (auto const& propertyDescriptor : descriptor.Properties)
 	{
 		result.append(PropertyDescriptorToDeserializeCallSource(descriptor.FullType, propertyDescriptor));
 	}
 	result.append(DeserializeLambdaSourceEnd);
 	result.append(DrawInspectorLambdaSourceStart);
+	result.append(!descriptor.Properties.empty()? DrawInspectorGetComponent : DrawInspectorGetEmptyComponent);
 	for (auto const& propertyDescriptor : descriptor.Properties)
 	{
 		result.append(PropertyDescriptorToImGuiUtilControlCallSource(descriptor.FullType, propertyDescriptor));

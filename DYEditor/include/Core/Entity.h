@@ -68,7 +68,7 @@ namespace DYE::DYEditor
 		{
 			if (this->HasComponent<T>())
 			{
-				return GetComponent<T>();
+				return;
 			}
 			m_pWorld->m_Registry.emplace<T>(m_EntityIdentifier);
 		}
