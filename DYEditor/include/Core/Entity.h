@@ -14,6 +14,10 @@
 
 namespace DYE::DYEditor
 {
+	template<typename T>
+	/// A concept that checks if the given type doesn't have any member.
+	concept IsEmptyStruct = std::is_empty_v<T>;
+
 	/// We want to have a light-weight wrapper around the underlying implementation.
 	/// The wrapper Entity class should be trivially-copyable.
 	class Entity
@@ -40,6 +44,14 @@ namespace DYE::DYEditor
 			return m_pWorld->m_Registry.emplace<T>(m_EntityIdentifier, std::forward<Args>(args)...);
 		}
 
+		/// AddComponent for empty component (i.e. struct with no members)
+		template<typename T> requires IsEmptyStruct<T>
+		void AddComponent()
+		{
+			DYE_ASSERT(!this->HasComponent<T>() && "Entity::PushSerializedComponent: Entity already has component of the given type.");
+			m_pWorld->m_Registry.emplace<T>(m_EntityIdentifier);
+		}
+
 		template<typename T, typename... Args>
 		T& AddOrGetComponent(Args&&...args)
 		{
@@ -48,6 +60,17 @@ namespace DYE::DYEditor
 				return GetComponent<T>();
 			}
 			return m_pWorld->m_Registry.emplace<T>(m_EntityIdentifier, std::forward<Args>(args)...);
+		}
+
+		/// AddOrGetComponent for empty component (i.e. struct with no members)
+		template<typename T> requires IsEmptyStruct<T>
+		void AddOrGetComponent()
+		{
+			if (this->HasComponent<T>())
+			{
+				return GetComponent<T>();
+			}
+			m_pWorld->m_Registry.emplace<T>(m_EntityIdentifier);
 		}
 
 		/// \return the number of removed components. 0 if the entity doesn't own the given component.

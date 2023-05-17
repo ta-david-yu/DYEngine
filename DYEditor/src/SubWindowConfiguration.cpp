@@ -19,7 +19,7 @@ namespace DYE::DYEditor
 	{
 		if (s_Data.IsSetup)
 		{
-			DYE_LOG("Runtime Config has already been setup! You cannot setup again before it is cleared.");
+			DYE_LOG("Runtime Config SubWindows has already been setup! You cannot setup again before it is cleared.");
 			return;
 		}
 

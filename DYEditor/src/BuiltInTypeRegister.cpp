@@ -8,6 +8,7 @@
 #include "ImGui/ImGuiUtil.h"
 #include "ImGui/ImGuiUtil_Internal.h"
 #include "FileSystem/FileSystem.h"
+#include "Core/RuntimeState.h"
 
 // All the built-in component & system types are in here.
 #include "Core/Components.h"
@@ -382,10 +383,132 @@ namespace DYE::DYEditor
 				}
 			}
 
-			// Draw a preview of the texture
+			// Draw a preview of the texture.
 			ImGuiUtil::DrawTexture2DPreviewWithLabel("Texture Preview", component.Texture);
 
 			return isPathChanged || changed;
+		}
+
+		SerializationResult AudioSource2DComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
+		{
+			auto const &component = entity.GetComponent<AudioSource2DComponent>();
+
+			std::string loadTypeString;
+			switch (component.LoadType)
+			{
+				case AudioLoadType::DecompressOnLoad:
+					loadTypeString = "DecompressOnLoad";
+					break;
+				case AudioLoadType::Streaming:
+					loadTypeString = "Streaming";
+					break;
+			}
+
+			serializedComponent.SetPrimitiveTypePropertyValue<DYE::String>("LoadType", loadTypeString);
+			serializedComponent.SetPrimitiveTypePropertyValue("Volume", component.Source.GetVolume());
+			serializedComponent.SetPrimitiveTypePropertyValue("ClipAssetPath", component.ClipAssetPath);
+
+			return {};
+		}
+
+		DeserializationResult AudioSource2DComponent_Deserialize(SerializedComponent &serializedComponent,
+																  DYE::DYEditor::Entity &entity)
+		{
+			auto &component = entity.AddOrGetComponent<AudioSource2DComponent>();
+
+			AudioLoadType loadType = AudioLoadType::DecompressOnLoad;
+
+			auto const& loadTypeString = serializedComponent.GetPrimitiveTypePropertyValueOr<DYE::String>("LoadType", "DecompressOnLoad");
+			if (loadTypeString == "DecompressOnLoad")
+			{
+				component.LoadType = AudioLoadType::DecompressOnLoad;
+			}
+			else if (loadTypeString == "Streaming")
+			{
+				component.LoadType = AudioLoadType::Streaming;
+			}
+
+			component.Source.SetVolume(serializedComponent.GetPrimitiveTypePropertyValueOr<DYE::Float>("Volume", 0));
+			component.ClipAssetPath = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::AssetPath>("ClipAssetPath");
+
+			auto path = component.ClipAssetPath;
+			if (FileSystem::FileExists(path))
+			{
+				component.Source.SetClip(AudioClip::Create(path, { .LoadType = component.LoadType }));
+			}
+
+			return {};
+		}
+
+		bool AudioSource2DComponent_DrawInspector(DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
+		{
+			auto &component = entity.GetComponent<AudioSource2DComponent>();
+
+			bool changed = false;
+
+			float volume = component.Source.GetVolume();
+			if (ImGuiUtil::DrawFloatSliderControl("Volume", volume, 0, 1))
+			{
+				component.Source.SetVolume(volume);
+				changed = true;
+			}
+			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
+			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
+			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+
+			std::int32_t loadTypeIndex = (std::int32_t) component.LoadType;
+			bool const loadTypeChanged = ImGuiUtil::DrawDropdownControl("Load Type", loadTypeIndex, { "DecompressOnLoad", "Streaming" });
+			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
+			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
+			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+			if (loadTypeChanged)
+			{
+				component.LoadType = (AudioLoadType) loadTypeIndex;
+			}
+
+			bool const isPathChanged = ImGuiUtil::DrawAssetPathStringControl("Clip Asset Path", component.ClipAssetPath, {".wav", ".mp3", ".ogg", ".mod", ".flac"});
+			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
+			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
+			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+
+			bool const needReloadClip = loadTypeChanged || isPathChanged;
+			if (needReloadClip)
+			{
+				if (FileSystem::FileExists(component.ClipAssetPath))
+				{
+					component.Source.SetClip(AudioClip::Create(component.ClipAssetPath, { .LoadType = component.LoadType }));
+				}
+				else
+				{
+					component.Source.SetClip(nullptr);
+				}
+			}
+
+			// TODO: Draw a audio player.
+			// 	like that for texture: ImGuiUtil::DrawTexture2DPreviewWithLabel("Texture Preview", component.Texture);
+
+			// In Play Mode we want to draw a helper audio player.
+			if (RuntimeState::IsPlaying())
+			{
+				ImGui::Separator();
+				if (ImGui::TreeNode("Play Mode Audio Source Debugger"))
+				{
+					ImGui::Separator();
+					if (ImGui::Button("Play"))
+					{
+						entity.AddComponent<StartAudioSourceComponent>();
+					}
+					ImGui::SameLine();
+					if (ImGui::Button("Stop"))
+					{
+						entity.AddComponent<StopAudioSourceComponent>();
+					}
+
+					ImGui::TreePop();
+				}
+			}
+
+			return loadTypeChanged || isPathChanged || changed;
 		}
 	}
 
@@ -481,14 +604,25 @@ namespace DYE::DYEditor
 		(
 			"Sprite Renderer",
 			ComponentTypeDescriptor
-				{
-					.Add = BuiltInFunctions::SpriteRendererComponent_Add,
+			{
+				.Add = BuiltInFunctions::SpriteRendererComponent_Add,
 
-					.Serialize = BuiltInFunctions::SpriteRendererComponent_Serialize,
-					.Deserialize = BuiltInFunctions::SpriteRendererComponent_Deserialize,
-					.DrawInspector = BuiltInFunctions::SpriteRendererComponent_DrawInspector,
-					.DrawHeader = DefaultDrawComponentHeaderWithIsEnabled<SpriteRendererComponent>
-				}
+				.Serialize = BuiltInFunctions::SpriteRendererComponent_Serialize,
+				.Deserialize = BuiltInFunctions::SpriteRendererComponent_Deserialize,
+				.DrawInspector = BuiltInFunctions::SpriteRendererComponent_DrawInspector,
+				.DrawHeader = DefaultDrawComponentHeaderWithIsEnabled<SpriteRendererComponent>
+			}
+		);
+
+		TypeRegistry::RegisterComponentType<AudioSource2DComponent>
+		(
+			"Audio Source 2D",
+			ComponentTypeDescriptor
+			{
+				.Serialize = BuiltInFunctions::AudioSource2DComponent_Serialize,
+				.Deserialize = BuiltInFunctions::AudioSource2DComponent_Deserialize,
+				.DrawInspector = BuiltInFunctions::AudioSource2DComponent_DrawInspector
+			}
 		);
 
 		static Render2DSpriteSystem _Render2DSpriteSystem;
@@ -499,6 +633,9 @@ namespace DYE::DYEditor
 
 		static ExecuteLoadSceneCommandSystem _ExecuteLoadSceneCommandSystem;
 		TypeRegistry::RegisterSystem(ExecuteLoadSceneCommandSystem::TypeName, &_ExecuteLoadSceneCommandSystem);
+
+		static AudioSystem _AudioSystem;
+		TypeRegistry::RegisterSystem(AudioSystem::TypeName, &_AudioSystem);
 	}
 
 	ComponentTypeDescriptor TypeRegistry::GetComponentTypeDescriptor_NameComponent()

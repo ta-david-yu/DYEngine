@@ -544,6 +544,43 @@ namespace DYE::ImGuiUtil
 		return isValueChanged;
 	}
 
+	bool DrawFloatSliderControl(const std::string& label, float & value, float minValue, float maxValue)
+	{
+		s_Context.Reset();
+
+		bool isValueChanged = false;
+
+		ImGuiIO &io = ImGui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+
+		ImGui::PushID(label.c_str());
+
+		ImGui::Columns(2);
+		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text(label.c_str());
+		ImGui::NextColumn();
+
+		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
+
+		// Drag float
+		{
+			isValueChanged |= ImGui::SliderFloat("##FloatSlider", &value, minValue, maxValue);
+			s_Context.UpdateLastControlState();
+			ImGui::PopItemWidth();
+			ImGui::SameLine();
+		}
+
+		ImGui::PopStyleVar();
+
+		ImGui::Columns(1);
+
+		ImGui::PopID();
+
+		return isValueChanged;
+	}
+
 	bool DrawColor4Control(const std::string &label, glm::vec4 &value)
 	{
 		s_Context.Reset();

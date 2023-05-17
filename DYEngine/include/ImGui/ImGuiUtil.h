@@ -51,6 +51,7 @@ namespace DYE::ImGuiUtil
 	bool DrawFloatControl(const std::string& label, float& value, float resetValue = 0.0f);
 	bool DrawIntControl(const std::string& label, int32_t & value, int32_t resultValue = 0);
 	bool DrawIntSliderControl(const std::string& label, int32_t & value, int32_t minValue, int32_t maxValue);
+	bool DrawFloatSliderControl(const std::string& label, float & value, float minValue, float maxValue);
 	bool DrawColor4Control(const std::string& label, glm::vec4& value);
 	bool DrawTextControl(std::string const& label, std::string & text);
 	bool DrawCharControl(std::string const& label, char& character);

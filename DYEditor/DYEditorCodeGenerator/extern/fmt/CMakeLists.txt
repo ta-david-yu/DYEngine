@@ -1,6 +1,8 @@
 # Having an extra folder level so we could hold all the settings call here instead of flooding the main engine CMakeLists.
 set(LIBRARY_NAME fmt)
 
+message(STATUS "[${LIBRARY_NAME}]")
+
 add_subdirectory(fmt)
 
 # Putting compile definitions after add_subdirectory so we could target the built target.
