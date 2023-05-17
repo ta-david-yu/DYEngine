@@ -1,6 +1,7 @@
 set(LIBRARY_NAME raudio)
 
 set(RAUDIO_HEADER_FILES
+        "Macro.h"
         "raudio/src/raudio.h")
 
 set(RAUDIO_SOURCE_FILES

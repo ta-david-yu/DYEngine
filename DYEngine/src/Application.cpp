@@ -1,9 +1,11 @@
 #include "Core/Application.h"
+
 #include "Util/Macro.h"
 #include "Util/Logger.h"
+#include "Input/InputManager.h"
+#include "Audio/AudioSystem.h"
 #include "Screen.h"
 #include "Graphics/ContextBase.h"
-#include "Input/InputManager.h"
 #include "Graphics/RenderCommand.h"
 #include "Graphics/RenderPipelineManager.h"
 #include "Graphics/RenderPipeline2D.h"
@@ -17,7 +19,7 @@ namespace DYE
     Application::Application(WindowProperties mainWindowProperties, int fixedFramePerSecond)
     {
         SDL_Init(0);
-        SDL_InitSubSystem(SDL_INIT_AUDIO);
+        //SDL_InitSubSystem(SDL_INIT_AUDIO);
         SDL_InitSubSystem(SDL_INIT_VIDEO);			// This would implicitly init events subsystem
 		SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER);	// This would implicitly init joystick subsystem
 		//SDL_InitSubSystem(SDL_INIT_JOYSTICK);
@@ -56,6 +58,7 @@ namespace DYE
 		Time::InitSingleton(fixedFramePerSecond);
 		Screen::InitSingleton();
 		InputManager::InitSingleton();
+		AudioSystem::Init();
 
         // Create window and context
         DYE_LOG("Init Renderer");
@@ -94,6 +97,7 @@ namespace DYE
     Application::~Application()
     {
         m_EventSystem->Unregister(this);
+		AudioSystem::Close();
         SDL_Quit();
     }
 
@@ -135,6 +139,9 @@ namespace DYE
             {
                 layer->OnUpdate();
             }
+
+			// Update AudioStreams
+			AudioSystem::UpdateRegisteredAudioStreams();
 
             // Game logic render
 			// Normally you would populate render data to the render pipeline in this phase

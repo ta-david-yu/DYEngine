@@ -55,7 +55,8 @@ set(SOURCE_FILES
         src/EasingFunctions.cpp
         src/Framebuffer.cpp
         src/FileSystem.cpp
-        src/GUID.cpp)
+        src/GUID.cpp src/AudioClip.cpp
+        src/AudioSystem.cpp)
 set(HEADER_FILES
         include/Core/Application.h
         include/Graphics/WindowBase.h
@@ -120,7 +121,9 @@ set(HEADER_FILES
         include/Graphics/Framebuffer.h
         include/FileSystem/FileSystem.h
         include/Core/GUID.h
-        include/ImGui/ImGuiUtil_Internal.h)
+        include/ImGui/ImGuiUtil_Internal.h
+        include/Audio/AudioClip.h
+        include/Audio/AudioSystem.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")
