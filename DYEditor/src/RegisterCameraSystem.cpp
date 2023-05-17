@@ -36,11 +36,7 @@ namespace DYE::DYEditor
 				continue;
 			}
 
-			Camera cameraToRegister;
-			cameraToRegister.Position = transform.Position;
-			cameraToRegister.Rotation = transform.Rotation;
-			cameraToRegister.Properties = camera.Properties;
-
+			Camera cameraToRegister = camera.CreateCameraWithTransform(transform);
 			RenderPipelineManager::RegisterCameraForNextRender(cameraToRegister);
 
 			m_NumberOfRegisteredCamerasLastFrame++;
