@@ -29,6 +29,10 @@ namespace DYE
 			{
 				m_pNativeAudioDataBuffer = DYE_MALLOC(sizeof(Music));
 				*((Music *) m_pNativeAudioDataBuffer) = LoadMusicStream(m_AudioClip->GetPath().string().c_str());
+
+				// Copy loop property.
+				((Music *) m_pNativeAudioDataBuffer)->looping = ((Music*) other.m_pNativeAudioDataBuffer)->looping;
+
 				AudioManager::registerStreamingAudioSource(this);
 				break;
 			}

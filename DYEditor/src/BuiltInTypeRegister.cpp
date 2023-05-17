@@ -393,6 +393,7 @@ namespace DYE::DYEditor
 		{
 			auto const &component = entity.GetComponent<AudioSource2DComponent>();
 
+			serializedComponent.SetPrimitiveTypePropertyValue("Volume", component.Source.GetVolume());
 			std::string loadTypeString;
 			switch (component.LoadType)
 			{
@@ -405,7 +406,7 @@ namespace DYE::DYEditor
 			}
 
 			serializedComponent.SetPrimitiveTypePropertyValue<DYE::String>("LoadType", loadTypeString);
-			serializedComponent.SetPrimitiveTypePropertyValue("Volume", component.Source.GetVolume());
+			serializedComponent.SetPrimitiveTypePropertyValue<DYE::Bool>("IsStreamLooping", component.Source.IsStreamLooping());
 			serializedComponent.SetPrimitiveTypePropertyValue("ClipAssetPath", component.ClipAssetPath);
 
 			return {};
@@ -416,7 +417,7 @@ namespace DYE::DYEditor
 		{
 			auto &component = entity.AddOrGetComponent<AudioSource2DComponent>();
 
-			AudioLoadType loadType = AudioLoadType::DecompressOnLoad;
+			component.Source.SetVolume(serializedComponent.GetPrimitiveTypePropertyValueOr<DYE::Float>("Volume", 0));
 
 			auto const& loadTypeString = serializedComponent.GetPrimitiveTypePropertyValueOr<DYE::String>("LoadType", "DecompressOnLoad");
 			if (loadTypeString == "DecompressOnLoad")
@@ -427,8 +428,14 @@ namespace DYE::DYEditor
 			{
 				component.LoadType = AudioLoadType::Streaming;
 			}
+			else
+			{
+				component.LoadType = AudioLoadType::DecompressOnLoad;
+			}
 
-			component.Source.SetVolume(serializedComponent.GetPrimitiveTypePropertyValueOr<DYE::Float>("Volume", 0));
+			bool const isLooping = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Bool>("IsStreamLooping");
+			component.Source.SetStreamLooping(isLooping);
+
 			component.ClipAssetPath = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::AssetPath>("ClipAssetPath");
 
 			auto path = component.ClipAssetPath;
@@ -456,7 +463,7 @@ namespace DYE::DYEditor
 			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
 			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
 
-			std::int32_t loadTypeIndex = (std::int32_t) component.LoadType;
+			auto loadTypeIndex = (std::int32_t) component.LoadType;
 			bool const loadTypeChanged = ImGuiUtil::DrawDropdownControl("Load Type", loadTypeIndex, { "DecompressOnLoad", "Streaming" });
 			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
 			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
@@ -464,6 +471,18 @@ namespace DYE::DYEditor
 			if (loadTypeChanged)
 			{
 				component.LoadType = (AudioLoadType) loadTypeIndex;
+			}
+
+			if (component.LoadType == AudioLoadType::Streaming)
+			{
+				bool isLooping = component.Source.IsStreamLooping();
+				if (ImGuiUtil::DrawBoolControl("Is Stream Looping", isLooping))
+				{
+					component.Source.SetStreamLooping(isLooping);
+				}
+				drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
+				drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
+				drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
 			}
 
 			bool const isPathChanged = ImGuiUtil::DrawAssetPathStringControl("Clip Asset Path", component.ClipAssetPath, {".wav", ".mp3", ".ogg", ".mod", ".flac"});
