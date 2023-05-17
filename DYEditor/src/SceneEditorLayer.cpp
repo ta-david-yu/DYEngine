@@ -2067,7 +2067,7 @@ namespace DYE::DYEditor
 			// Save a copy of the active scene as a serialized scene.
 			m_SerializedSceneCacheWhenEnterPlayMode = SerializedObjectFactory::CreateSerializedScene(scene);
 
-			// Initialize load systems.
+			// Initialize load systems (BeforeEnterPlayMode).
 			scene.ForEachSystemDescriptor
 			(
 				[&scene](SystemDescriptor &systemDescriptor, ExecutionPhase phase)
@@ -2077,6 +2077,22 @@ namespace DYE::DYEditor
 						InitializeLoadParameters
 						{
 							.LoadType = InitializeLoadType::BeforeEnterPlayMode
+						});
+				}
+			);
+
+			// Initialize load systems.
+			// We do this again because entering play mode also means we are loading the editor active scene.
+			// Therefore, we want to trigger InitializeLoad with AfterLoadScene LoadType.
+			scene.ForEachSystemDescriptor
+			(
+				[&scene](SystemDescriptor &systemDescriptor, ExecutionPhase phase)
+				{
+					systemDescriptor.Instance->InitializeLoad(
+						scene.World,
+						InitializeLoadParameters
+						{
+							.LoadType = InitializeLoadType::AfterLoadScene
 						});
 				}
 			);
