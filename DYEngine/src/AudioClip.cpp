@@ -1,8 +1,7 @@
 #include "Audio/AudioClip.h"
 
-#include "Audio/AudioSystem.h"
+#include "Util/Macro.h"
 
-#include <cstdlib>
 #include <raudio.h>
 
 namespace DYE
@@ -10,25 +9,25 @@ namespace DYE
 	std::shared_ptr<AudioClip> AudioClip::Create(const std::filesystem::path &path, AudioClipProperties properties)
 	{
 		std::shared_ptr<AudioClip> audioClip = std::make_shared<AudioClip>();
-		audioClip->m_Path = path;
-		audioClip->m_Properties = properties;
 
-		switch (audioClip->m_Properties.LoadType)
+		switch (properties.LoadType)
 		{
 			case AudioLoadType::DecompressOnLoad:
 			{
-				audioClip->m_pNativeAudioClip = std::malloc(sizeof(Sound));
-				*((Sound*) audioClip->m_pNativeAudioClip) = LoadSound(path.string().c_str());
+				audioClip->m_pNativeWaveData = DYE_MALLOC(sizeof(Wave));
+				*((Wave*) audioClip->m_pNativeWaveData) = LoadWave(path.string().c_str());
 				break;
 			}
 			case AudioLoadType::Streaming:
 			{
-				audioClip->m_pNativeAudioClip = std::malloc(sizeof(Music));
-				*((Music*) audioClip->m_pNativeAudioClip) = LoadMusicStream(path.string().c_str());
-				AudioSystem::registerAudioClip(audioClip.get());
+				// We don't preload wave data if the load type is streaming.
+				audioClip->m_pNativeWaveData = nullptr;
 				break;
 			}
 		}
+
+		audioClip->m_Properties = properties;
+		audioClip->m_Path = path;
 
 		return std::move(audioClip);
 	}
@@ -39,102 +38,15 @@ namespace DYE
 		{
 			case AudioLoadType::DecompressOnLoad:
 			{
-				UnloadSound(*((Sound*) m_pNativeAudioClip));
+				UnloadWave(*((Wave*) m_pNativeWaveData));
 				break;
 			}
 			case AudioLoadType::Streaming:
 			{
-				AudioSystem::unregisterAudioClip(this);
-				UnloadMusicStream(*((Music*) m_pNativeAudioClip));
 				break;
 			}
 		}
-		std::free(m_pNativeAudioClip);
-	}
-
-	void AudioClip::Play()
-	{
-		switch (m_Properties.LoadType)
-		{
-			case AudioLoadType::DecompressOnLoad:
-			{
-				Sound &sound = *((Sound*) m_pNativeAudioClip);
-				PlaySound(sound);
-				break;
-			}
-			case AudioLoadType::Streaming:
-			{
-				Music &music = *((Music*) m_pNativeAudioClip);
-				PlayMusicStream(music);
-				break;
-			}
-		}
-	}
-
-	void AudioClip::Stop()
-	{
-		switch (m_Properties.LoadType)
-		{
-			case AudioLoadType::DecompressOnLoad:
-			{
-				Sound &sound = *((Sound*) m_pNativeAudioClip);
-				StopSound(sound);
-				break;
-			}
-			case AudioLoadType::Streaming:
-			{
-				Music &music = *((Music*) m_pNativeAudioClip);
-				StopMusicStream(music);
-				break;
-			}
-		}
-	}
-
-	void AudioClip::Pause()
-	{
-		switch (m_Properties.LoadType)
-		{
-			case AudioLoadType::DecompressOnLoad:
-			{
-				Sound &sound = *((Sound*) m_pNativeAudioClip);
-			}
-			case AudioLoadType::Streaming:
-			{
-				Music &music = *((Music*) m_pNativeAudioClip);
-			}
-		}
-	}
-
-	bool AudioClip::IsPlaying() const
-	{
-		switch (m_Properties.LoadType)
-		{
-			case AudioLoadType::DecompressOnLoad:
-			{
-				Sound &sound = *((Sound*) m_pNativeAudioClip);
-				return IsSoundPlaying(sound);
-			}
-			case AudioLoadType::Streaming:
-			{
-				Music &music = *((Music*) m_pNativeAudioClip);
-				return IsMusicStreamPlaying(music);
-			}
-		}
-	}
-
-	bool AudioClip::IsStreamLooping() const
-	{
-		return m_Properties.LoadType == AudioLoadType::Streaming && ((Music*) m_pNativeAudioClip)->looping;
-	}
-
-	void AudioClip::SetStreamLooping(bool looping)
-	{
-		if (m_Properties.LoadType != AudioLoadType::Streaming)
-		{
-			return;
-		}
-
-		((Music*) m_pNativeAudioClip)->looping = looping;
+		DYE_FREE(m_pNativeWaveData);
 	}
 
 	float AudioClip::GetLength() const
@@ -143,31 +55,16 @@ namespace DYE
 		{
 			case AudioLoadType::DecompressOnLoad:
 			{
-				Sound &sound = *((Sound*) m_pNativeAudioClip);
-				return (float) sound.frameCount / sound.stream.sampleRate; // Taken from GetMusicTimeLength.
+				Wave &wave = *(Wave*) m_pNativeWaveData;
+				return (float) wave.frameCount / wave.sampleRate;
 			}
 			case AudioLoadType::Streaming:
 			{
-				return GetMusicTimeLength(*((Music*) m_pNativeAudioClip));
+				Music music = LoadMusicStream(m_Path.string().c_str());
+				float length = GetMusicTimeLength(music);
+				UnloadMusicStream(music);
+				return length;
 			}
 		}
-	}
-
-	float AudioClip::GetStreamPlayedTime() const
-	{
-		if (m_Properties.LoadType != AudioLoadType::Streaming)
-		{
-			return 0;
-		}
-		return GetMusicTimePlayed(*((Music*) m_pNativeAudioClip));
-	}
-
-	void AudioClip::SetStreamTime(float timeInSecond)
-	{
-		if (m_Properties.LoadType != AudioLoadType::Streaming)
-		{
-			return;
-		}
-		SeekMusicStream(*((Music*) m_pNativeAudioClip), timeInSecond);
 	}
 }

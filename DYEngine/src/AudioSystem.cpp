@@ -1,5 +1,6 @@
 #include "Audio/AudioSystem.h"
 
+#include "Audio/AudioSource.h"
 #include "Audio/AudioClip.h"
 #include "Util/Macro.h"
 #include "Util/Logger.h"
@@ -13,7 +14,7 @@ namespace DYE
 {
 	struct AudioStreamManagerData
 	{
-		std::vector<AudioClip*> RegisteredClips;
+		std::vector<AudioSource*> RegisteredSources;
 	};
 
 	static AudioStreamManagerData s_Data;
@@ -30,22 +31,22 @@ namespace DYE
 
 	void AudioSystem::UpdateRegisteredAudioStreams()
 	{
-		for (AudioClip *pClip : s_Data.RegisteredClips)
+		for (AudioSource *pSource : s_Data.RegisteredSources)
 		{
-			if (!pClip->IsPlaying())
+			if (!pSource->IsPlaying())
 			{
 				continue;
 			}
 
-			if (pClip->GetLoadType() != AudioLoadType::Streaming)
+			if (pSource->GetClip()->GetLoadType() != AudioLoadType::Streaming)
 			{
-				DYE_LOG("AudioClip '%s' is not loaded as a streaming audio but is registered to AudioStreamManager."
+				DYE_LOG("AudioSource's Clip '%s' is not loaded as a streaming audio but is registered to AudioStreamManager."
 						"This should probably never happen but did for some reasons :P",
-						pClip->GetPath().string().c_str());
+						pSource->GetClip()->GetPath().string().c_str());
 				continue;
 			}
 
-			Music music = *((Music*) pClip->m_pNativeAudioClip);
+			Music music = *((Music*) pSource->GetNativeAudioDataBuffer());
 			UpdateMusicStream(music);
 		}
 	}
@@ -65,9 +66,9 @@ namespace DYE
 		}
 
 		const float windowWidth = 175;
-		for (int i = 0; i < s_Data.RegisteredClips.size(); ++i)
+		for (int i = 0; i < s_Data.RegisteredSources.size(); ++i)
 		{
-			AudioClip &audioClip = *s_Data.RegisteredClips[i];
+			AudioSource &audioSource = *s_Data.RegisteredSources[i];
 
 			auto const originalControlLabelWidth = ImGuiUtil::Settings::ControlLabelWidth;
 			ImGuiUtil::Settings::ControlLabelWidth = 100;
@@ -77,25 +78,25 @@ namespace DYE
 			sprintf(id, "AudioStream%d", i);
 			ImGui::BeginChild(id, ImVec2(0, 120), true, ImGuiWindowFlags_HorizontalScrollbar);
 
-			ImGuiUtil::DrawReadOnlyTextWithLabel("Path", audioClip.GetPath().string().c_str());
-			ImGuiUtil::DrawReadOnlyTextWithLabel("Length (sec)", std::to_string(audioClip.GetLength()));
+			ImGuiUtil::DrawReadOnlyTextWithLabel("Path", audioSource.GetClip()->GetPath().string().c_str());
+			ImGuiUtil::DrawReadOnlyTextWithLabel("Length (sec)", std::to_string(audioSource.GetClip()->GetLength()));
 
-			bool isLooping = audioClip.IsStreamLooping();
+			bool isLooping = audioSource.IsStreamLooping();
 			if (ImGuiUtil::DrawBoolControl("Is Looping", isLooping))
 			{
-				audioClip.SetStreamLooping(isLooping);
+				audioSource.SetStreamLooping(isLooping);
 			}
 
 			ImGui::Separator();
-			bool const isPlaying = audioClip.IsPlaying();
+			bool const isPlaying = audioSource.IsPlaying();
 			ImGuiUtil::DrawReadOnlyTextWithLabel("Is Playing", isPlaying? "True" : "False");
 
 			if (isPlaying)
 			{
-				float playTime = audioClip.GetStreamPlayedTime();
-				if (ImGui::SliderFloat("##ProgressBar", &playTime, 0, audioClip.GetLength()))
+				float playTime = audioSource.GetStreamTime();
+				if (ImGui::SliderFloat("##ProgressBar", &playTime, 0, audioSource.GetClip()->GetLength()))
 				{
-					audioClip.SetStreamTime(playTime);
+					audioSource.SetStreamTime(playTime);
 				}
 			}
 
@@ -107,32 +108,32 @@ namespace DYE
 		ImGui::End();
 	}
 
-	void AudioSystem::registerAudioClip(AudioClip *pAudioClip)
+	void AudioSystem::registerStreamingAudioSource(AudioSource *pSource)
 	{
-		DYE_ASSERT(pAudioClip->GetLoadType() == AudioLoadType::Streaming);
+		DYE_ASSERT(pSource->GetClip()->GetLoadType() == AudioLoadType::Streaming);
 
-		auto findItr = std::find_if(s_Data.RegisteredClips.begin(), s_Data.RegisteredClips.end(),
-					 [pAudioClip](AudioClip* pClipElement)
-					 {
-						return pClipElement == pAudioClip;
-					 });
+		auto findItr = std::find_if(s_Data.RegisteredSources.begin(), s_Data.RegisteredSources.end(),
+									[pSource](AudioSource* pSourceElement)
+					 				{
+										return pSourceElement == pSource;
+					 				});
 
-		if (findItr != s_Data.RegisteredClips.end())
+		if (findItr != s_Data.RegisteredSources.end())
 		{
-			DYE_LOG("AudioClip '%s' has already been registered. Skip it!", pAudioClip->GetPath().string().c_str());
+			DYE_LOG("AudioSource with the clip '%s' has already been registered. Skip it!", pSource->GetClip()->GetPath().string().c_str());
 			return;
 		}
 
-		s_Data.RegisteredClips.push_back(pAudioClip);
+		s_Data.RegisteredSources.push_back(pSource);
 	}
 
-	void AudioSystem::unregisterAudioClip(AudioClip *pAudioClip)
+	void AudioSystem::unregisterStreamingAudioSource(AudioSource *pSource)
 	{
-		DYE_ASSERT(pAudioClip->GetLoadType() == AudioLoadType::Streaming);
+		DYE_ASSERT(pSource->GetClip()->GetLoadType() == AudioLoadType::Streaming);
 
-		std::erase_if(s_Data.RegisteredClips, [pAudioClip](AudioClip *pClipElement)
+		std::erase_if(s_Data.RegisteredSources, [pSource](AudioSource* pSourceElement)
 		{
-			return pClipElement == pAudioClip;
+			return pSourceElement == pSource;
 		});
 	}
 }

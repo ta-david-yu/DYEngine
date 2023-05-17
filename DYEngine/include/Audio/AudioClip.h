@@ -29,21 +29,16 @@ namespace DYE
 		AudioClip() = default;
 		~AudioClip();
 
-		void Play();
-		void Stop();
-		void Pause();
-		bool IsPlaying() const;
-		bool IsStreamLooping() const;
-		void SetStreamLooping(bool looping);
 		float GetLength() const;
-		float GetStreamPlayedTime() const;
-		void SetStreamTime(float timeInSecond);
-
 		AudioLoadType GetLoadType() const { return m_Properties.LoadType; }
 		auto GetPath() const -> std::filesystem::path { return m_Path; }
 
+		// Return null if the load type is Streaming.
+		void *GetNativeWaveDataPointer() const { return m_pNativeWaveData; }
+
 	private:
-		void* m_pNativeAudioClip;
+		// This is only valid when the load type is DecompressOnLoad.
+		void* m_pNativeWaveData = nullptr;
 		AudioClipProperties m_Properties;
 		std::filesystem::path m_Path {};
 	};

@@ -5,6 +5,7 @@
 #include <utility>
 #include <cstdio>
 #include <cassert>
+#include <cstdlib>
 
 #ifdef DYE_DEBUG
     #define DYE_ENABLE_ASSERTS
@@ -38,3 +39,7 @@
 #endif
 
 #define DYE_ASSERT_RELEASE(condition) SDL_assert_release((condition))
+
+#define DYE_MALLOC(size) std::malloc(size)
+#define DYE_CALLOC(num, size) std::calloc(num, size)
+#define DYE_FREE(ptr) std::free(ptr)
