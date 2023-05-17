@@ -13,6 +13,8 @@ namespace DYE
 
 		static void UpdateRegisteredAudioStreams();
 
+		static void DrawAudioSystemImGui(bool *pIsOpen = nullptr);
+
 	private:
 		static void registerAudioClip(AudioClip *pAudioClip);
 		static void unregisterAudioClip(AudioClip *pAudioClip);

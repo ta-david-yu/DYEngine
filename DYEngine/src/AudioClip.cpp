@@ -105,7 +105,7 @@ namespace DYE
 		}
 	}
 
-	bool AudioClip::IsPlaying()
+	bool AudioClip::IsPlaying() const
 	{
 		switch (m_Properties.LoadType)
 		{
@@ -122,7 +122,7 @@ namespace DYE
 		}
 	}
 
-	bool AudioClip::IsStreamLooping()
+	bool AudioClip::IsStreamLooping() const
 	{
 		return m_Properties.LoadType == AudioLoadType::Streaming && ((Music*) m_pNativeAudioClip)->looping;
 	}
@@ -135,5 +135,39 @@ namespace DYE
 		}
 
 		((Music*) m_pNativeAudioClip)->looping = looping;
+	}
+
+	float AudioClip::GetLength() const
+	{
+		switch (m_Properties.LoadType)
+		{
+			case AudioLoadType::DecompressOnLoad:
+			{
+				Sound &sound = *((Sound*) m_pNativeAudioClip);
+				return (float) sound.frameCount / sound.stream.sampleRate; // Taken from GetMusicTimeLength.
+			}
+			case AudioLoadType::Streaming:
+			{
+				return GetMusicTimeLength(*((Music*) m_pNativeAudioClip));
+			}
+		}
+	}
+
+	float AudioClip::GetStreamPlayedTime() const
+	{
+		if (m_Properties.LoadType != AudioLoadType::Streaming)
+		{
+			return 0;
+		}
+		return GetMusicTimePlayed(*((Music*) m_pNativeAudioClip));
+	}
+
+	void AudioClip::SetStreamTime(float timeInSecond)
+	{
+		if (m_Properties.LoadType != AudioLoadType::Streaming)
+		{
+			return;
+		}
+		SeekMusicStream(*((Music*) m_pNativeAudioClip), timeInSecond);
 	}
 }

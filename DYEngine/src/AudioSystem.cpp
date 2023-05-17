@@ -3,6 +3,7 @@
 #include "Audio/AudioClip.h"
 #include "Util/Macro.h"
 #include "Util/Logger.h"
+#include "ImGui/ImGuiUtil.h"
 
 #include <vector>
 #include <algorithm>
@@ -47,6 +48,63 @@ namespace DYE
 			Music music = *((Music*) pClip->m_pNativeAudioClip);
 			UpdateMusicStream(music);
 		}
+	}
+
+	void AudioSystem::DrawAudioSystemImGui(bool *pIsOpen)
+	{
+		// Set a default size for the window in case it has never been opened before.
+		const ImGuiViewport *main_viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20),
+								ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
+
+		if (!ImGui::Begin("Audio System", pIsOpen))
+		{
+			ImGui::End();
+			return;
+		}
+
+		const float windowWidth = 175;
+		for (int i = 0; i < s_Data.RegisteredClips.size(); ++i)
+		{
+			AudioClip &audioClip = *s_Data.RegisteredClips[i];
+
+			auto const originalControlLabelWidth = ImGuiUtil::Settings::ControlLabelWidth;
+			ImGuiUtil::Settings::ControlLabelWidth = 100;
+
+			ImGui::BeginGroup();
+			char id[32] = "";
+			sprintf(id, "AudioStream%d", i);
+			ImGui::BeginChild(id, ImVec2(0, 120), true, ImGuiWindowFlags_HorizontalScrollbar);
+
+			ImGuiUtil::DrawReadOnlyTextWithLabel("Path", audioClip.GetPath().string().c_str());
+			ImGuiUtil::DrawReadOnlyTextWithLabel("Length (sec)", std::to_string(audioClip.GetLength()));
+
+			bool isLooping = audioClip.IsStreamLooping();
+			if (ImGuiUtil::DrawBoolControl("Is Looping", isLooping))
+			{
+				audioClip.SetStreamLooping(isLooping);
+			}
+
+			ImGui::Separator();
+			bool const isPlaying = audioClip.IsPlaying();
+			ImGuiUtil::DrawReadOnlyTextWithLabel("Is Playing", isPlaying? "True" : "False");
+
+			if (isPlaying)
+			{
+				float playTime = audioClip.GetStreamPlayedTime();
+				if (ImGui::SliderFloat("##ProgressBar", &playTime, 0, audioClip.GetLength()))
+				{
+					audioClip.SetStreamTime(playTime);
+				}
+			}
+
+			ImGui::EndChild();
+			ImGui::EndGroup();
+
+			ImGuiUtil::Settings::ControlLabelWidth = originalControlLabelWidth;
+		}
+		ImGui::End();
 	}
 
 	void AudioSystem::registerAudioClip(AudioClip *pAudioClip)

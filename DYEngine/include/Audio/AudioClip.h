@@ -32,9 +32,12 @@ namespace DYE
 		void Play();
 		void Stop();
 		void Pause();
-		bool IsPlaying();
-		bool IsStreamLooping();
+		bool IsPlaying() const;
+		bool IsStreamLooping() const;
 		void SetStreamLooping(bool looping);
+		float GetLength() const;
+		float GetStreamPlayedTime() const;
+		void SetStreamTime(float timeInSecond);
 
 		AudioLoadType GetLoadType() const { return m_Properties.LoadType; }
 		auto GetPath() const -> std::filesystem::path { return m_Path; }
