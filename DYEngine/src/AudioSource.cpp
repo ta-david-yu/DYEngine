@@ -7,8 +7,10 @@
 
 namespace DYE
 {
-	AudioSource::AudioSource(const AudioSource &other) : m_Volume(other.m_Volume), m_AudioClip(other.m_AudioClip)
+	AudioSource::AudioSource(const AudioSource &other) : m_Volume(other.m_Volume)
 	{
+		m_AudioClip = other.m_AudioClip;
+
 		if (!m_AudioClip)
 		{
 			return;
@@ -35,6 +37,33 @@ namespace DYE
 		refreshNativeAudioDataVolume();
 	}
 
+	AudioSource::AudioSource(AudioSource &&other) noexcept
+	{
+		m_Volume = other.m_Volume;
+		m_AudioClip = std::move(other.m_AudioClip);
+
+		m_pNativeAudioDataBuffer = other.m_pNativeAudioDataBuffer;
+		other.m_pNativeAudioDataBuffer = nullptr;
+
+		if (!m_AudioClip)
+		{
+			return;
+		}
+
+		switch (m_AudioClip->GetLoadType())
+		{
+			case AudioLoadType::DecompressOnLoad:
+			{
+				break;
+			}
+			case AudioLoadType::Streaming:
+			{
+				AudioManager::registerStreamingAudioSource(this);
+				break;
+			}
+		}
+	}
+
 	AudioSource::~AudioSource()
 	{
 		if (!m_AudioClip)
@@ -46,18 +75,27 @@ namespace DYE
 		{
 			case AudioLoadType::DecompressOnLoad:
 			{
-				UnloadSound(*(Sound*) m_pNativeAudioDataBuffer);
+				if (m_pNativeAudioDataBuffer != nullptr)
+				{
+					UnloadSound(*(Sound *) m_pNativeAudioDataBuffer);
+				}
 				break;
 			}
 			case AudioLoadType::Streaming:
 			{
 				AudioManager::unregisterStreamingAudioSource(this);
-				UnloadMusicStream(*(Music*) m_pNativeAudioDataBuffer);
+				if (m_pNativeAudioDataBuffer != nullptr)
+				{
+					UnloadMusicStream(*(Music *) m_pNativeAudioDataBuffer);
+				}
 				break;
 			}
 		}
 
-		DYE_FREE(m_pNativeAudioDataBuffer);
+		if (m_pNativeAudioDataBuffer != nullptr)
+		{
+			DYE_FREE(m_pNativeAudioDataBuffer);
+		}
 	}
 
 	void AudioSource::SetClip(std::shared_ptr<AudioClip> audioClip)

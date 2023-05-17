@@ -31,7 +31,8 @@ namespace DYE
 
 	void AudioManager::UpdateRegisteredAudioStreams()
 	{
-		for (AudioSource *pSource : s_Data.RegisteredSources)
+		std::vector<AudioSource*> &registeredSources = s_Data.RegisteredSources;
+		for (AudioSource *pSource : registeredSources)
 		{
 			if (!pSource->IsPlaying())
 			{
@@ -132,9 +133,19 @@ namespace DYE
 	{
 		DYE_ASSERT(pSource->GetClip()->GetLoadType() == AudioLoadType::Streaming);
 
-		std::erase_if(s_Data.RegisteredSources, [pSource](AudioSource* pSourceElement)
+		std::vector<AudioSource*> &registeredSources = s_Data.RegisteredSources;
+		for (int i = 0; i < registeredSources.size(); i++)
 		{
-			return pSourceElement == pSource;
-		});
+			if (registeredSources[i] == pSource)
+			{
+				registeredSources.erase(registeredSources.begin() + i);
+				break;
+			}
+		}
+//
+//		std::erase_if(s_Data.RegisteredSources, [pSource](AudioSource* pSourceElement)
+//		{
+//			return pSourceElement == pSource;
+//		});
 	}
 }

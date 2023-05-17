@@ -11,6 +11,7 @@ namespace DYE
 	public:
 		AudioSource() = default;
 		AudioSource(AudioSource const& other);
+		AudioSource(AudioSource &&other) noexcept;
 		~AudioSource();
 
 		void SetClip(std::shared_ptr<AudioClip> audioClip);
