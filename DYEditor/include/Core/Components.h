@@ -8,6 +8,7 @@
 #include "Components/CameraComponent.h"
 #include "Components/SpriteRendererComponent.h"
 #include "Components/AudioSource2DComponent.h"
+#include "Components/PlayAudioSourceOnInitializeComponent.h"
 
 // Include all built-in command components here...
 #include "Components/Command/LoadSceneComponent.h"

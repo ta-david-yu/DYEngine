@@ -3,6 +3,7 @@
 #include "Components/AudioSource2DComponent.h"
 #include "Components/Command/StartAudioSourceComponent.h"
 #include "Components/Command/StopAudioSourceComponent.h"
+#include "Components/PlayAudioSourceOnInitializeComponent.h"
 #include "Core/Entity.h"
 
 namespace DYE::DYEditor
@@ -33,6 +34,16 @@ namespace DYE::DYEditor
 				auto wrappedEntity = world.WrapIdentifierIntoEntity(entity);
 				wrappedEntity.RemoveComponent<StopAudioSourceComponent>();
 			}
+		}
+	}
+
+	void PlayAudioSourceOnInitializeSystem::Execute(World &world, DYE::DYEditor::ExecuteParameters params)
+	{
+		auto view = world.GetView<AudioSource2DComponent, PlayAudioSourceOnInitializeComponent>();
+		for (auto entity: view)
+		{
+			auto wrappedEntity = world.WrapIdentifierIntoEntity(entity);
+			wrappedEntity.AddComponent<StartAudioSourceComponent>();
 		}
 	}
 }

@@ -23,6 +23,21 @@ namespace DYE::DYEditor
 {
 	namespace BuiltInFunctions
 	{
+		template<typename T>
+		SerializationResult
+		SerializeEmptyComponent(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
+		{
+			return {};
+		}
+
+		template<typename T>
+		DeserializationResult
+		DeserializeEmptyComponent(SerializedComponent &serializedComponent, DYE::DYEditor::Entity &entity)
+		{
+			entity.AddComponent<T>();
+			return {};
+		}
+
 		SerializationResult
 		IDComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
 		{
@@ -529,6 +544,14 @@ namespace DYE::DYEditor
 
 			return loadTypeChanged || isPathChanged || changed;
 		}
+
+		bool PlayAudioSourceOnInitializeComponent_DrawInspector(DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
+		{
+			ImGui::Indent();
+			ImGui::TextUnformatted("The AudioSource attached to this entity will be played the first frame after the scene is loaded.");
+			ImGui::Unindent();
+			return false;
+		}
 	}
 
 	static ComponentTypeDescriptor s_NameComponentTypeDescriptor;
@@ -644,6 +667,17 @@ namespace DYE::DYEditor
 			}
 		);
 
+		TypeRegistry::RegisterComponentType<PlayAudioSourceOnInitializeComponent>
+		(
+			"Play Audio Source On Initialize",
+			ComponentTypeDescriptor
+			{
+				.Serialize = BuiltInFunctions::SerializeEmptyComponent<PlayAudioSourceOnInitializeComponent>,
+				.Deserialize = BuiltInFunctions::DeserializeEmptyComponent<PlayAudioSourceOnInitializeComponent>,
+				.DrawInspector = BuiltInFunctions::PlayAudioSourceOnInitializeComponent_DrawInspector
+			}
+		);
+
 		static Render2DSpriteSystem _Render2DSpriteSystem;
 		TypeRegistry::RegisterSystem(Render2DSpriteSystem::TypeName, &_Render2DSpriteSystem);
 
@@ -655,6 +689,9 @@ namespace DYE::DYEditor
 
 		static AudioSystem _AudioSystem;
 		TypeRegistry::RegisterSystem(AudioSystem::TypeName, &_AudioSystem);
+
+		static PlayAudioSourceOnInitializeSystem _PlayAudioSourceOnInitializeSystem;
+		TypeRegistry::RegisterSystem(PlayAudioSourceOnInitializeSystem::TypeName, &_PlayAudioSourceOnInitializeSystem);
 	}
 
 	ComponentTypeDescriptor TypeRegistry::GetComponentTypeDescriptor_NameComponent()

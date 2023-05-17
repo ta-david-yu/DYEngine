@@ -88,7 +88,7 @@ set(HEADER_FILES
         include/Components/AudioSource2DComponent.h
         include/Components/Command/StartAudioSourceComponent.h
         include/Components/Command/StopAudioSourceComponent.h
-        include/Systems/AudioSystem.h)
+        include/Systems/AudioSystem.h include/Components/PlayAudioSourceOnInitializeComponent.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")
