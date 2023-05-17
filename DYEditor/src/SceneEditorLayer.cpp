@@ -311,6 +311,11 @@ namespace DYE::DYEditor
 					if (control)
 					{
 						// Ctrl + D: Duplicate Entity
+						if (!m_IsSceneHierarchyWindowFocused)
+						{
+							break;
+						}
+
 						auto tryGetSelectedEntity = activeScene.World.TryGetEntityWithGUID(m_CurrentlySelectedEntityGUID);
 						if (tryGetSelectedEntity.has_value())
 						{
@@ -477,6 +482,11 @@ namespace DYE::DYEditor
 				case KeyCode::Delete:
 				{
 					// Delete: Delete Entity
+					if (!m_IsSceneHierarchyWindowFocused)
+					{
+						break;
+					}
+
 					auto tryGetSelectedEntity = activeScene.World.TryGetEntityWithGUID(m_CurrentlySelectedEntityGUID);
 					if (tryGetSelectedEntity.has_value())
 					{
@@ -596,7 +606,9 @@ namespace DYE::DYEditor
 		// Scene Hierarchy
 		ImGui::SetNextWindowBgAlpha(0.35f);
 		ImGuiWindowFlags const hierarchyWindowFlags = m_IsActiveSceneDirty? ImGuiWindowFlags_UnsavedDocument : ImGuiWindowFlags_None;
-		if (ImGui::Begin(k_SceneHierarchyWindowId, nullptr, hierarchyWindowFlags))
+		bool const isSceneHierarchyDrawn = ImGui::Begin(k_SceneHierarchyWindowId, nullptr, hierarchyWindowFlags);
+		m_IsSceneHierarchyWindowFocused = ImGui::IsWindowFocused();
+		if (isSceneHierarchyDrawn)
 		{
 			bool const isHierarchyChanged = drawSceneEntityHierarchyPanel(activeScene, &m_CurrentlySelectedEntityGUID);
 			m_IsActiveSceneDirty |= isHierarchyChanged;
