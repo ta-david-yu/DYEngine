@@ -690,7 +690,7 @@ namespace DYE::DYEditor
 		{
 			if (ImGui::BeginMenu("File"))
 			{
-				if (ImGui::MenuItem("New Scene", nullptr, false, !RuntimeState::IsPlaying()))
+				if (ImGui::MenuItem("New Scene", "Ctrl+N", false, !RuntimeState::IsPlaying()))
 				{
 					currentScenePathContext.clear();
 					currentScene.Clear();
@@ -701,7 +701,7 @@ namespace DYE::DYEditor
 					*pIsSceneDirty = false;
 				}
 
-				if (ImGui::MenuItem("Open Scene", nullptr, false, !RuntimeState::IsPlaying()))
+				if (ImGui::MenuItem("Open Scene", "Ctrl+O", false, !RuntimeState::IsPlaying()))
 				{
 					// We store a flag here and delay opening the popup
 					// because MenuItem is Selectable and Selectable by default calls CloseCurrentPopup().
