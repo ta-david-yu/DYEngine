@@ -16,12 +16,22 @@ namespace DYE
 			{
 				audioClip->m_pNativeWaveData = DYE_MALLOC(sizeof(Wave));
 				*((Wave*) audioClip->m_pNativeWaveData) = LoadWave(path.string().c_str());
+
+				Wave &wave = *(Wave*) audioClip->m_pNativeWaveData;
+				audioClip->m_Length = (float) wave.frameCount / wave.sampleRate;
+
 				break;
 			}
 			case AudioLoadType::Streaming:
 			{
 				// We don't preload wave data if the load type is streaming.
 				audioClip->m_pNativeWaveData = nullptr;
+
+				// In order to get the length, we need to load the stream.
+				Music music = LoadMusicStream(audioClip->m_Path.string().c_str());
+				audioClip->m_Length = GetMusicTimeLength(music);
+				UnloadMusicStream(music);
+
 				break;
 			}
 		}
@@ -51,20 +61,6 @@ namespace DYE
 
 	float AudioClip::GetLength() const
 	{
-		switch (m_Properties.LoadType)
-		{
-			case AudioLoadType::DecompressOnLoad:
-			{
-				Wave &wave = *(Wave*) m_pNativeWaveData;
-				return (float) wave.frameCount / wave.sampleRate;
-			}
-			case AudioLoadType::Streaming:
-			{
-				Music music = LoadMusicStream(m_Path.string().c_str());
-				float length = GetMusicTimeLength(music);
-				UnloadMusicStream(music);
-				return length;
-			}
-		}
+		return m_Length;
 	}
 }

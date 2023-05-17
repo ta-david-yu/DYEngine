@@ -185,6 +185,28 @@ namespace DYE
 		}
 	}
 
+	void AudioSource::Resume()
+	{
+		if (!m_AudioClip)
+		{
+			return;
+		}
+
+		switch (m_AudioClip->GetLoadType())
+		{
+			case AudioLoadType::DecompressOnLoad:
+			{
+				Sound &sound = *((Sound*) m_pNativeAudioDataBuffer);
+				ResumeSound(sound);
+			}
+			case AudioLoadType::Streaming:
+			{
+				Music &music = *((Music*) m_pNativeAudioDataBuffer);
+				ResumeMusicStream(music);
+			}
+		}
+	}
+
 	bool AudioSource::IsPlaying() const
 	{
 		if (!m_AudioClip)

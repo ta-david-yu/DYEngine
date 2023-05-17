@@ -82,7 +82,7 @@ set(HEADER_FILES
         include/SceneViewEntitySelection.h
         include/Configuration/SubWindowConfiguration.h
         include/Components/Command/LoadSceneComponent.h
-        include/Systems/ExecuteLoadSceneCommandSystem.h)
+        include/Systems/ExecuteLoadSceneCommandSystem.h include/Components/AudioSource2DComponent.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")

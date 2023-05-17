@@ -19,6 +19,7 @@ namespace DYE
 		void Play();
 		void Stop();
 		void Pause();
+		void Resume();
 		bool IsPlaying() const;
 		bool IsStreamLooping() const;
 		void SetStreamLooping(bool looping);

@@ -9,7 +9,7 @@ namespace DYE
 
 	enum class AudioLoadType
 	{
-		DecompressOnLoad,
+		DecompressOnLoad = 0,
 		Streaming
 	};
 
@@ -39,6 +39,7 @@ namespace DYE
 	private:
 		// This is only valid when the load type is DecompressOnLoad.
 		void* m_pNativeWaveData = nullptr;
+		float m_Length = 0;
 		AudioClipProperties m_Properties;
 		std::filesystem::path m_Path {};
 	};
