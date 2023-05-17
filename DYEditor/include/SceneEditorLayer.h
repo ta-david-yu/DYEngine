@@ -111,5 +111,8 @@ namespace DYE::DYEditor
 		static bool drawEntityInspector(EntityInspectorContext &context, std::vector<std::pair<std::string, ComponentTypeDescriptor>> componentNamesAndDescriptors);
 		static void drawOpenSceneDialogWindow(Scene &currentScene, std::filesystem::path &currentScenePathContext,
 											  bool *pIsSceneDirty, bool &openLoadDialog, bool &openSaveDialog);
+
+		/// This function assumes the given scene is empty.
+		static void initializeNewSceneWithDefaultEntityAndSystems(Scene &newScene);
 	};
 }

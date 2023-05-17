@@ -27,11 +27,8 @@
 #include "Audio/AudioManager.h"
 #include "SceneViewEntitySelection.h"
 
-#include "Components/NameComponent.h"
-#include "Components/HierarchyComponents.h"
-#include "Components/TransformComponent.h"
-#include "Components/CameraComponent.h"
-#include "Systems/RegisterCameraSystem.h"
+#include "Core/Components.h"
+#include "Core/Systems.h"
 
 #include <filesystem>
 #include <unordered_set>
@@ -385,10 +382,7 @@ namespace DYE::DYEditor
 						m_CurrentSceneFilePath.clear();
 						activeScene.Clear();
 
-						auto cameraEntity = activeScene.World.CreateEntity("Camera");
-						cameraEntity.AddComponent<TransformComponent>().Position = {0, 0, 10};
-						cameraEntity.AddComponent<CameraComponent>();
-						activeScene.TryAddSystemByName(RegisterCameraSystem::TypeName);
+						initializeNewSceneWithDefaultEntityAndSystems(activeScene);
 
 						Undo::ClearAll();
 						m_IsActiveSceneDirty = false;
@@ -701,10 +695,7 @@ namespace DYE::DYEditor
 					currentScenePathContext.clear();
 					currentScene.Clear();
 
-					auto cameraEntity = currentScene.World.CreateEntity("Camera");
-					cameraEntity.AddComponent<TransformComponent>().Position = {0, 0, 10};
-					cameraEntity.AddComponent<CameraComponent>();
-					currentScene.TryAddSystemByName(RegisterCameraSystem::TypeName);
+					initializeNewSceneWithDefaultEntityAndSystems(currentScene);
 
 					Undo::ClearAll();
 					*pIsSceneDirty = false;
@@ -2263,5 +2254,17 @@ namespace DYE::DYEditor
 			scene.Clear();
 			SerializedObjectFactory::ApplySerializedSceneToEmptyScene(m_SerializedSceneCacheWhenEnterPlayMode, scene);
 		}
+	}
+
+	void SceneEditorLayer::initializeNewSceneWithDefaultEntityAndSystems(Scene &newScene)
+	{
+		auto cameraEntity = newScene.World.CreateEntity("Camera");
+		cameraEntity.AddComponent<TransformComponent>().Position = {0, 0, 10};
+		cameraEntity.AddComponent<CameraComponent>();
+
+		newScene.TryAddSystemByName(RegisterCameraSystem::TypeName);
+		newScene.TryAddSystemByName(Render2DSpriteSystem::TypeName);
+		newScene.TryAddSystemByName(AudioSystem::TypeName);
+		newScene.TryAddSystemByName(PlayAudioSourceOnInitializeSystem::TypeName);
 	}
 }
