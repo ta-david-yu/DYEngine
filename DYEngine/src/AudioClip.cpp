@@ -14,7 +14,7 @@ namespace DYE
 
 		audioClip->m_Properties = properties;
 		audioClip->m_Path = path;
-		
+
 		switch (properties.LoadType)
 		{
 			case AudioLoadType::DecompressOnLoad:

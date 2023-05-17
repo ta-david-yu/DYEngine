@@ -35,7 +35,8 @@ set(SOURCE_FILES
         src/SceneViewEntitySelection.cpp
         src/SerializedArray.cpp
         src/SubWindowConfiguration.cpp
-        src/ExecuteLoadSceneCommandSystem.cpp)
+        src/ExecuteLoadSceneCommandSystem.cpp
+        src/AudioSystem.cpp)
 set(HEADER_FILES
         include/SceneEditorLayer.h
         include/SceneRuntimeLayer.h
@@ -67,7 +68,8 @@ set(HEADER_FILES
         include/Core/Systems.h
         include/Systems/Render2DSpriteSystem.h
         include/Systems/RegisterCameraSystem.h
-        include/Configuration/ProjectConfig.h src/ProjectConfig.cpp
+        include/Configuration/ProjectConfig.h
+        src/ProjectConfig.cpp
         include/ImGui/EditorWindowManager.h
         include/Core/RuntimeSceneManagement.h
         include/Components/IDComponent.h
@@ -82,7 +84,11 @@ set(HEADER_FILES
         include/SceneViewEntitySelection.h
         include/Configuration/SubWindowConfiguration.h
         include/Components/Command/LoadSceneComponent.h
-        include/Systems/ExecuteLoadSceneCommandSystem.h include/Components/AudioSource2DComponent.h)
+        include/Systems/ExecuteLoadSceneCommandSystem.h
+        include/Components/AudioSource2DComponent.h
+        include/Components/Command/StartAudioSourceComponent.h
+        include/Components/Command/StopAudioSourceComponent.h
+        include/Systems/AudioSystem.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")
