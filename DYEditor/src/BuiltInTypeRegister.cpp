@@ -491,7 +491,7 @@ namespace DYE::DYEditor
 			if (RuntimeState::IsPlaying())
 			{
 				ImGui::Separator();
-				if (ImGui::TreeNode("Play Mode Audio Source Debugger"))
+				if (ImGui::TreeNodeEx("Play Mode Audio Source Debugger", ImGuiTreeNodeFlags_DefaultOpen))
 				{
 					ImGui::Separator();
 					if (ImGui::Button("Play"))

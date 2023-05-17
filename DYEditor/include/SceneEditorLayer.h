@@ -79,6 +79,8 @@ namespace DYE::DYEditor
 
 		DYE::GUID m_CurrentlySelectedEntityGUID;
 		std::filesystem::path m_CurrentSceneFilePath;
+		bool m_OpenLoadSceneFilePopup = false;
+		bool m_OpenSaveSceneFilePopup = false;
 
 		Camera m_SceneViewCamera;
 		std::shared_ptr<Framebuffer> m_SceneViewCameraTargetFramebuffer;
@@ -96,12 +98,16 @@ namespace DYE::DYEditor
 		EntityInspectorContext m_InspectorContext;
 
 		static void setEditorWindowDefaultLayout(ImGuiID dockSpaceId);
-		static void drawEditorWindowMenuBar(Scene &currentScene, std::filesystem::path &currentScenePathContext, bool *pIsSceneDirty);
+		static void drawEditorWindowMenuBar(Scene &currentScene, std::filesystem::path &currentScenePathContext,
+											bool *pIsSceneDirty, bool &openLoadSceneFilePathPopup,
+											bool &openSaveSceneFilePathPopup);
 		static bool drawSceneView(Camera &sceneViewCamera, Framebuffer &entityIDFramebuffer, Entity selectedEntity, SceneViewContext &context);
 		static bool drawSceneEntityHierarchyPanel(Scene &scene, DYE::GUID *pCurrentSelectedEntityGUID);
 		static bool drawSceneSystemPanel(Scene& scene);
 		template<typename Func> requires std::predicate<Func, std::string const&, SystemBase const*>
 		static bool drawSceneSystemList(Scene &scene, std::vector<SystemDescriptor> &systemDescriptors, Func addSystemFilterPredicate);
 		static bool drawEntityInspector(EntityInspectorContext &context, std::vector<std::pair<std::string, ComponentTypeDescriptor>> componentNamesAndDescriptors);
+		static void drawOpenSceneDialogWindow(Scene &currentScene, std::filesystem::path &currentScenePathContext,
+											  bool *pIsSceneDirty, bool &openLoadDialog, bool &openSaveDialog);
 	};
 }

@@ -301,6 +301,8 @@ namespace DYE::DYEditor
 			bool const shift = INPUT.GetKey(KeyCode::LeftShift) || INPUT.GetKey(KeyCode::RightShift);
 			bool const isUsingGizmo = ImGuizmo::IsUsing();
 
+			Scene &activeScene = RuntimeSceneManagement::GetActiveMainScene();
+
 			// Editor Shortcuts.
 			switch (keyDownEvent.GetKeyCode())
 			{
@@ -341,6 +343,35 @@ namespace DYE::DYEditor
 					break;
 				}
 
+				case KeyCode::N:
+				{
+					if (control)
+					{
+						// Ctrl + N: 'New Scene'
+						m_CurrentSceneFilePath.clear();
+						activeScene.Clear();
+
+						auto cameraEntity = activeScene.World.CreateEntity("Camera");
+						cameraEntity.AddComponent<TransformComponent>().Position = {0, 0, 10};
+						cameraEntity.AddComponent<CameraComponent>();
+						activeScene.TryAddSystemByName(RegisterCameraSystem::TypeName);
+
+						Undo::ClearAll();
+						m_IsActiveSceneDirty = false;
+					}
+					break;
+				}
+
+				case KeyCode::O:
+				{
+					if (control)
+					{
+						// Ctrl + O: 'Load Scene'
+						m_OpenLoadSceneFilePopup = true;
+					}
+					break;
+				}
+
 				case KeyCode::P:
 				{
 					if (control)
@@ -352,9 +383,25 @@ namespace DYE::DYEditor
 
 				case KeyCode::S:
 				{
-					if (control)
+					if (shift && control)
 					{
-						// TODO: save scene
+						// Shift + Ctrl + S: 'Save Scene as...'
+						m_OpenSaveSceneFilePopup = true;
+					}
+					else if (control)
+					{
+						// Ctrl + S
+						if (m_CurrentSceneFilePath.empty())
+						{
+							// If the context filepath is empty, it's the same as 'Save Scene as...'.
+							m_OpenSaveSceneFilePopup = true;
+						}
+						else
+						{
+							auto serializedScene = SerializedObjectFactory::CreateSerializedScene(activeScene);
+							SerializedObjectFactory::SaveSerializedSceneToFile(serializedScene, m_CurrentSceneFilePath);
+							m_IsActiveSceneDirty = false;
+						}
 					}
 					break;
 				}
@@ -447,7 +494,7 @@ namespace DYE::DYEditor
 		ImGui::Begin(mainEditorName, nullptr, mainEditorWindowFlags);
 		ImGui::PopStyleVar();
 
-		drawEditorWindowMenuBar(activeScene, m_CurrentSceneFilePath, &m_IsActiveSceneDirty);
+		drawEditorWindowMenuBar(activeScene, m_CurrentSceneFilePath, &m_IsActiveSceneDirty, m_OpenLoadSceneFilePopup, m_OpenSaveSceneFilePopup);
 
 		ImGuiIO& io = ImGui::GetIO();
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
@@ -545,6 +592,9 @@ namespace DYE::DYEditor
 			m_IsActiveSceneDirty |= isEntityChanged;
 		}
 		ImGui::End();
+
+		// Scene Load/Save Dialog.
+		drawOpenSceneDialogWindow(activeScene, m_CurrentSceneFilePath, &m_IsActiveSceneDirty, m_OpenLoadSceneFilePopup, m_OpenSaveSceneFilePopup);
 	}
 
 	void SceneEditorLayer::setEditorWindowDefaultLayout(ImGuiID dockSpaceId)
@@ -579,12 +629,12 @@ namespace DYE::DYEditor
 		ImGui::DockBuilderFinish(dockSpaceId);
 	}
 
-	void SceneEditorLayer::drawEditorWindowMenuBar(Scene &currentScene, std::filesystem::path &currentScenePathContext,
-												   bool *pIsSceneDirty)
+	void SceneEditorLayer::drawEditorWindowMenuBar(Scene &currentScene,
+												   std::filesystem::path &currentScenePathContext,
+												   bool *pIsSceneDirty,
+												   bool &openLoadSceneFilePathPopup,
+												   bool &openSaveSceneFilePathPopup)
 	{
-		bool openLoadSceneFilePathPopup = false;
-		bool openSaveSceneFilePathPopup = false;
-
 		char const* loadScenePopupId = "Select a scene file (*.tscene)";
 		char const* saveScenePopupId = "Save scene file as... ";
 
@@ -708,52 +758,6 @@ namespace DYE::DYEditor
 				ImGui::EndMenu();
 			}
 			ImGui::EndMenuBar();
-		}
-
-		static std::filesystem::path sceneFilePath = "";
-
-		// Draw open/load scene file path popup.
-		if (openLoadSceneFilePathPopup)
-		{
-			ImGuiUtil::OpenFilePathPopup(loadScenePopupId, "assets", currentScenePathContext, {".tscene" });
-		}
-
-		ImGuiUtil::FilePathPopupResult loadFilePathResult = ImGuiUtil::DrawFilePathPopup(loadScenePopupId, sceneFilePath, ImGuiUtil::FilePathPopupParameters
-			{
-				.IsSaveFilePanel = false
-			});
-		if (loadFilePathResult == ImGuiUtil::FilePathPopupResult::Confirm)
-		{
-			currentScene.Clear();
-			std::optional<SerializedScene> serializedScene = SerializedObjectFactory::TryLoadSerializedSceneFromFile(sceneFilePath);
-			if (serializedScene.has_value())
-			{
-				SerializedObjectFactory::ApplySerializedSceneToEmptyScene(serializedScene.value(), currentScene);
-				currentScenePathContext = sceneFilePath;
-			}
-			Undo::ClearAll();
-			*pIsSceneDirty = false;
-		}
-
-		// Draw save scene file path popup.
-		if (openSaveSceneFilePathPopup)
-		{
-			ImGuiUtil::OpenFilePathPopup(saveScenePopupId, "assets", currentScenePathContext, {".tscene"});
-		}
-		ImGuiUtil::FilePathPopupResult saveFilePathResult = ImGuiUtil::DrawFilePathPopup(saveScenePopupId, sceneFilePath, ImGuiUtil::FilePathPopupParameters
-			{
-				.IsSaveFilePanel = true,
-				.SaveFileExtension = ".tscene",
-				.ShowOverwritePopupOnConfirmSave = true,
-			});
-
-		if (saveFilePathResult == ImGuiUtil::FilePathPopupResult::Confirm)
-		{
-			currentScene.Name = sceneFilePath.filename().stem().string();
-			auto serializedScene = SerializedObjectFactory::CreateSerializedScene(currentScene);
-			SerializedObjectFactory::SaveSerializedSceneToFile(serializedScene, sceneFilePath);
-			currentScenePathContext = sceneFilePath;
-			*pIsSceneDirty = false;
 		}
 	}
 
@@ -1661,6 +1665,7 @@ namespace DYE::DYEditor
 			ImGui::Checkbox("##IsEnabled", &isSystemEnabled);
 			if (isSystemEnabled != systemDescriptor.IsEnabled)
 			{
+				changed = true;
 				Undo::SetSystemIsEnabled(scene, systemDescriptor, i, isSystemEnabled);
 			}
 
@@ -1999,6 +2004,64 @@ namespace DYE::DYEditor
 		}
 
 		return isEntityChangedThisFrame;
+	}
+
+	void
+	SceneEditorLayer::drawOpenSceneDialogWindow(Scene &currentScene,
+												std::filesystem::path &currentScenePathContext,
+												bool *pIsSceneDirty,
+												bool &openLoadDialog,
+												bool &openSaveDialog)
+	{
+		static std::filesystem::path sceneFilePath = "";
+
+		char const* loadScenePopupId = "Select a scene file (*.tscene)";
+		char const* saveScenePopupId = "Save scene file as... ";
+
+		// Draw open/load scene file path popup.
+		if (openLoadDialog)
+		{
+			openLoadDialog = false;
+			ImGuiUtil::OpenFilePathPopup(loadScenePopupId, "assets", currentScenePathContext, {".tscene" });
+		}
+		ImGuiUtil::FilePathPopupResult loadFilePathResult = ImGuiUtil::DrawFilePathPopup(loadScenePopupId, sceneFilePath, ImGuiUtil::FilePathPopupParameters
+			{
+				.IsSaveFilePanel = false
+			});
+		if (loadFilePathResult == ImGuiUtil::FilePathPopupResult::Confirm)
+		{
+			currentScene.Clear();
+			std::optional<SerializedScene> serializedScene = SerializedObjectFactory::TryLoadSerializedSceneFromFile(sceneFilePath);
+			if (serializedScene.has_value())
+			{
+				SerializedObjectFactory::ApplySerializedSceneToEmptyScene(serializedScene.value(), currentScene);
+				currentScenePathContext = sceneFilePath;
+			}
+			Undo::ClearAll();
+			*pIsSceneDirty = false;
+		}
+
+		// Draw save scene file path popup.
+		if (openSaveDialog)
+		{
+			openSaveDialog = false;
+			ImGuiUtil::OpenFilePathPopup(saveScenePopupId, "assets", currentScenePathContext, {".tscene"});
+		}
+		ImGuiUtil::FilePathPopupResult saveFilePathResult = ImGuiUtil::DrawFilePathPopup(saveScenePopupId, sceneFilePath, ImGuiUtil::FilePathPopupParameters
+			{
+				.IsSaveFilePanel = true,
+				.SaveFileExtension = ".tscene",
+				.ShowOverwritePopupOnConfirmSave = true,
+			});
+
+		if (saveFilePathResult == ImGuiUtil::FilePathPopupResult::Confirm)
+		{
+			currentScene.Name = sceneFilePath.filename().stem().string();
+			auto serializedScene = SerializedObjectFactory::CreateSerializedScene(currentScene);
+			SerializedObjectFactory::SaveSerializedSceneToFile(serializedScene, sceneFilePath);
+			currentScenePathContext = sceneFilePath;
+			*pIsSceneDirty = false;
+		}
 	}
 
 	void SceneEditorLayer::OnEndOfFrame()
