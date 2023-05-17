@@ -316,9 +316,9 @@ namespace DYE::DYEditor
 						{
 							Entity selectedEntity = tryGetSelectedEntity.value();
 							std::string name = selectedEntity.TryGetName().value();
-							auto newEntity = Undo::DuplicateEntityRecursively(activeScene.World, selectedEntity, name + " - Copy");
+							auto newEntity = Undo::DuplicateEntityRecursively(activeScene.World, selectedEntity, name + "(D)");
 							m_CurrentlySelectedEntityGUID = newEntity.TryGetGUID().value();
-							
+
 							m_IsActiveSceneDirty = true;
 						}
 					}
@@ -1188,7 +1188,7 @@ namespace DYE::DYEditor
 						}
 						if (ImGui::Selectable("Duplicate"))
 						{
-							auto newEntity = Undo::DuplicateEntityRecursively(scene.World, entity, name + " - Copy");
+							auto newEntity = Undo::DuplicateEntityRecursively(scene.World, entity, name + "(D)");
 							*pCurrentSelectedEntityGUID = newEntity.TryGetGUID().value();
 
 							// Open the entity tree node because we want to let the user see the newly created child entity.

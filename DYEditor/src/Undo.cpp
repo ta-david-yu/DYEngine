@@ -1029,25 +1029,28 @@ namespace DYE::DYEditor
 				ImGuiSelectableFlags const flags = ImGuiSelectableFlags_SpanAllColumns;
 				if (ImGui::Selectable(operation.GetDescription(), false, flags, ImVec2(0, minRowHeight)) && !isLatestOperation)
 				{
+					int &latestOperationIndex = s_Data.LatestOperationIndex;
+					std::vector<std::unique_ptr<UndoOperationBase>> &operations = s_Data.Operations;
+
 					// If operation selectable clicked && it's not the latest operation,
 					// We want to do a sequence of redo or undo.
-					if (i > s_Data.LatestOperationIndex)
+					if (i > latestOperationIndex)
 					{
 						// Redo until latest operation index equals to i.
-						for (int opIndex = s_Data.LatestOperationIndex + 1; opIndex <= i; opIndex++)
+						for (int opIndex = latestOperationIndex + 1; opIndex <= i; opIndex++)
 						{
-							s_Data.Operations[opIndex]->Redo();
+							operations[opIndex]->Redo();
 						}
-						s_Data.LatestOperationIndex = i;
+						latestOperationIndex = i;
 					}
-					else if (i < s_Data.LatestOperationIndex)
+					else if (i < latestOperationIndex)
 					{
 						// Undo until latest operation index equals to i + 1.
-						for (int opIndex = s_Data.LatestOperationIndex; opIndex >= i + 1; opIndex--)
+						for (int opIndex = latestOperationIndex; opIndex >= i + 1; opIndex--)
 						{
-							s_Data.Operations[opIndex]->Undo();
+							operations[opIndex]->Undo();
 						}
-						s_Data.LatestOperationIndex = i;
+						latestOperationIndex = i;
 					}
 				}
 				if (ImGui::IsItemHovered() && operation.HasTooltip())
