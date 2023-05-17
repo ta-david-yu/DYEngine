@@ -94,6 +94,7 @@ namespace DYE
 			if (isPlaying)
 			{
 				float playTime = audioSource.GetStreamTime();
+				float const fullLength = audioSource.GetClip()->GetLength();
 				if (ImGui::SliderFloat("##ProgressBar", &playTime, 0, audioSource.GetClip()->GetLength()))
 				{
 					audioSource.SetStreamTime(playTime);

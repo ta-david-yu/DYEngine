@@ -8,8 +8,13 @@ namespace DYE
 {
 	std::shared_ptr<AudioClip> AudioClip::Create(const std::filesystem::path &path, AudioClipProperties properties)
 	{
+		DYE_LOG("<< Start creating clip from \"%s\" -", path.string().c_str());
+
 		std::shared_ptr<AudioClip> audioClip = std::make_shared<AudioClip>();
 
+		audioClip->m_Properties = properties;
+		audioClip->m_Path = path;
+		
 		switch (properties.LoadType)
 		{
 			case AudioLoadType::DecompressOnLoad:
@@ -30,14 +35,19 @@ namespace DYE
 				// In order to get the length, we need to load the stream.
 				Music music = LoadMusicStream(audioClip->m_Path.string().c_str());
 				audioClip->m_Length = GetMusicTimeLength(music);
-				UnloadMusicStream(music);
 
+				DYE_LOG("Length: %f", audioClip->m_Length);
+				DYE_LOG("FrameCount: %d", music.frameCount);
+				DYE_LOG("SampleRate: %d", music.stream.sampleRate);
+
+
+				UnloadMusicStream(music);
 				break;
 			}
 		}
 
-		audioClip->m_Properties = properties;
-		audioClip->m_Path = path;
+		printf("\n");
+		DYE_LOG("- End create clip \"%s\" >>", path.string().c_str());
 
 		return std::move(audioClip);
 	}
@@ -61,6 +71,7 @@ namespace DYE
 
 	float AudioClip::GetLength() const
 	{
+
 		return m_Length;
 	}
 }

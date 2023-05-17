@@ -431,9 +431,10 @@ namespace DYE::DYEditor
 			component.Source.SetVolume(serializedComponent.GetPrimitiveTypePropertyValueOr<DYE::Float>("Volume", 0));
 			component.ClipAssetPath = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::AssetPath>("ClipAssetPath");
 
-			if (FileSystem::FileExists(component.ClipAssetPath))
+			auto path = component.ClipAssetPath;
+			if (FileSystem::FileExists(path))
 			{
-				component.Source.SetClip(AudioClip::Create(component.ClipAssetPath, { .LoadType = component.LoadType }));
+				component.Source.SetClip(AudioClip::Create(path, { .LoadType = component.LoadType }));
 			}
 
 			return {};
@@ -495,12 +496,12 @@ namespace DYE::DYEditor
 					ImGui::Separator();
 					if (ImGui::Button("Play"))
 					{
-						component.Source.Play();
+						entity.AddComponent<StartAudioSourceComponent>();
 					}
 					ImGui::SameLine();
 					if (ImGui::Button("Stop"))
 					{
-						component.Source.Stop();
+						entity.AddComponent<StopAudioSourceComponent>();
 					}
 
 					ImGui::TreePop();
@@ -632,6 +633,9 @@ namespace DYE::DYEditor
 
 		static ExecuteLoadSceneCommandSystem _ExecuteLoadSceneCommandSystem;
 		TypeRegistry::RegisterSystem(ExecuteLoadSceneCommandSystem::TypeName, &_ExecuteLoadSceneCommandSystem);
+
+		static AudioSystem _AudioSystem;
+		TypeRegistry::RegisterSystem(AudioSystem::TypeName, &_AudioSystem);
 	}
 
 	ComponentTypeDescriptor TypeRegistry::GetComponentTypeDescriptor_NameComponent()

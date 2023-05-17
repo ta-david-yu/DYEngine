@@ -11,3 +11,5 @@
 
 // Include all built-in command components here...
 #include "Components/Command/LoadSceneComponent.h"
+#include "Components/Command/StartAudioSourceComponent.h"
+#include "Components/Command/StopAudioSourceComponent.h"
