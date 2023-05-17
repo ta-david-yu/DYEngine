@@ -7,10 +7,8 @@
 
 namespace DYE
 {
-	AudioSource::AudioSource(const AudioSource &other)
+	AudioSource::AudioSource(const AudioSource &other) : m_Volume(other.m_Volume), m_AudioClip(other.m_AudioClip)
 	{
-		m_AudioClip = other.m_AudioClip;
-
 		if (!m_AudioClip)
 		{
 			return;
@@ -33,6 +31,8 @@ namespace DYE
 				break;
 			}
 		}
+
+		refreshNativeAudioDataVolume();
 	}
 
 	AudioSource::~AudioSource()
@@ -111,6 +111,8 @@ namespace DYE
 				break;
 			}
 		}
+
+		refreshNativeAudioDataVolume();
 	}
 
 	void AudioSource::Play()
@@ -258,5 +260,35 @@ namespace DYE
 		}
 
 		SeekMusicStream(*((Music*) m_pNativeAudioDataBuffer), timeInSecond);
+	}
+
+	void AudioSource::SetVolume(float volume)
+	{
+		m_Volume = volume;
+		refreshNativeAudioDataVolume();
+	}
+
+	void AudioSource::refreshNativeAudioDataVolume()
+	{
+		if (!m_AudioClip)
+		{
+			return;
+		}
+
+		switch (m_AudioClip->GetLoadType())
+		{
+			case AudioLoadType::DecompressOnLoad:
+			{
+				Sound &sound = *((Sound*) m_pNativeAudioDataBuffer);
+				SetSoundVolume(sound, m_Volume);
+				break;
+			}
+			case AudioLoadType::Streaming:
+			{
+				Music &music = *((Music*) m_pNativeAudioDataBuffer);
+				SetMusicVolume(music, m_Volume);
+				break;
+			}
+		}
 	}
 }

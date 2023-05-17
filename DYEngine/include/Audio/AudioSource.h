@@ -24,11 +24,17 @@ namespace DYE
 		void SetStreamLooping(bool looping);
 		float GetStreamTime() const;
 		void SetStreamTime(float timeInSecond);
+		inline float GetVolume() const { return m_Volume; }
+		void SetVolume(float volume);
 
 		inline void *GetNativeAudioDataBuffer() const { return m_pNativeAudioDataBuffer; }
 
 	private:
+		void refreshNativeAudioDataVolume();
+
+	private:
 		void *m_pNativeAudioDataBuffer = nullptr;
+		float m_Volume = 1;
 		std::shared_ptr<AudioClip> m_AudioClip;
 	};
 }
