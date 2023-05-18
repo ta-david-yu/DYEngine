@@ -548,7 +548,7 @@ namespace DYE::DYEditor
 		bool PlayAudioSourceOnInitializeComponent_DrawInspector(DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
 		{
 			ImGui::Indent();
-			ImGui::TextUnformatted("The AudioSource attached to this entity will be played the first frame after the scene is loaded.");
+			ImGui::TextWrapped("The AudioSource attached to this entity will be played the first frame after the scene is loaded.");
 			ImGui::Unindent();
 			return false;
 		}
