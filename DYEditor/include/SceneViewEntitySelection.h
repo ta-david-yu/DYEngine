@@ -16,10 +16,12 @@ namespace DYE::DYEditor
 {
 	struct SceneViewEntitySelection
 	{
+		static void ReceiveEntityGeometrySubmission(bool value);
 		static void InitializeEntityIDShader();
 		static void RegisterEntityGeometry(EntityInstanceID entityInstanceId,
 										   const std::shared_ptr<VertexArray> &geometryVAO,
 										   glm::mat4 objToWorldMatrix);
 		static void RenderEntityIDFramebufferWithCamera(Framebuffer &framebuffer, Camera camera);
+		static void ClearEntityGeometries();
 	};
 }

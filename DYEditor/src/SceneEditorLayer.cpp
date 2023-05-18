@@ -268,6 +268,8 @@ namespace DYE::DYEditor
 			// We don't need to invert y because the Y direction in screen coordinate (i.e. mouse delta) is opposite to 2d world coordinate.
 			m_SceneViewCamera.Position += glm::vec3 {-panMove.x, panMove.y, 0};
 		}
+
+		SceneViewEntitySelection::ReceiveEntityGeometrySubmission(m_IsSceneViewDrawn);
 	}
 
 	void SceneEditorLayer::OnEvent(Event &event)
@@ -508,6 +510,9 @@ namespace DYE::DYEditor
 			// Directly render entity id framebuffer for entity mouse selection.
 			SceneViewEntitySelection::RenderEntityIDFramebufferWithCamera(*m_SceneViewEntityIDFramebuffer, m_SceneViewCamera);
 		}
+
+		// Clear entity geometries.
+		SceneViewEntitySelection::ClearEntityGeometries();
 	}
 
 	void SceneEditorLayer::OnImGui()

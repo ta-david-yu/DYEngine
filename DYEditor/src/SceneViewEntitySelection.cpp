@@ -22,6 +22,7 @@ namespace DYE::DYEditor
 	{
 		std::shared_ptr<Material> EntityIDMaterial;
 		std::vector<SceneViewEntitySelectionSubmission> Submissions;
+		bool ReceiveSubmission = true;
 	};
 
 	static SceneViewEntitySelectionData s_Data;
@@ -34,10 +35,20 @@ namespace DYE::DYEditor
 		s_Data.EntityIDMaterial = Material::CreateFromShader("Material_EntityID", entityIDShader);
 	}
 
+	void SceneViewEntitySelection::ReceiveEntityGeometrySubmission(bool value)
+	{
+		s_Data.ReceiveSubmission = value;
+	}
+
 	void SceneViewEntitySelection::RegisterEntityGeometry(EntityInstanceID entityInstanceId,
 														  const std::shared_ptr<VertexArray> &geometryVAO,
 														  glm::mat4 objToWorldMatrix)
 	{
+		if (!s_Data.ReceiveSubmission)
+		{
+			return;
+		}
+
 		s_Data.Submissions.emplace_back
 		(
 			SceneViewEntitySelectionSubmission
@@ -90,7 +101,10 @@ namespace DYE::DYEditor
 		}
 
 		framebuffer.Unbind();
+	}
 
+	void SceneViewEntitySelection::ClearEntityGeometries()
+	{
 		s_Data.Submissions.clear();
 	}
 }
