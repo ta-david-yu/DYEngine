@@ -4,4 +4,5 @@
 #include "Systems/RegisterCameraSystem.h"
 #include "Systems/Render2DSpriteSystem.h"
 #include "Systems/ExecuteLoadSceneCommandSystem.h"
-#include "Systems/AudioSystem.h"
+#include "Systems/AudioSystems.h"
+#include "Systems/WindowSystems.h"

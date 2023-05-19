@@ -36,7 +36,7 @@ set(SOURCE_FILES
         src/SerializedArray.cpp
         src/SubWindowConfiguration.cpp
         src/ExecuteLoadSceneCommandSystem.cpp
-        src/AudioSystem.cpp)
+        src/AudioSystems.cpp src/WindowSystems.cpp)
 set(HEADER_FILES
         include/SceneEditorLayer.h
         include/SceneRuntimeLayer.h
@@ -88,7 +88,7 @@ set(HEADER_FILES
         include/Components/AudioSource2DComponent.h
         include/Components/Command/StartAudioSourceComponent.h
         include/Components/Command/StopAudioSourceComponent.h
-        include/Systems/AudioSystem.h include/Components/PlayAudioSourceOnInitializeComponent.h)
+        include/Systems/AudioSystems.h include/Components/PlayAudioSourceOnInitializeComponent.h include/Components/WindowComponents.h include/Systems/WindowSystems.h include/Components/Command/WindowCommandComponents.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")

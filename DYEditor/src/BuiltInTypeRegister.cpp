@@ -552,6 +552,114 @@ namespace DYE::DYEditor
 			ImGui::Unindent();
 			return false;
 		}
+
+		bool WindowHandleComponent_DrawInspector(DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
+		{
+			auto &component = entity.GetComponent<WindowHandleComponent>();
+
+			ImGui::BeginDisabled(true);
+
+			ImGuiUtil::DrawBoolControl("Is Open", component.IsCreated);
+			if (component.IsCreated)
+			{
+				WindowBase* pWindow = component.TryGetWindow();
+				DYE_ASSERT(pWindow != nullptr);
+
+				ImGui::BeginGroup();
+				ImGui::BeginChild("Selected Window Info", ImVec2(0, -ImGui::GetFrameHeightWithSpacing()), false, ImGuiWindowFlags_HorizontalScrollbar); // Leave room for 1 line below us
+
+				ImGui::Separator();
+				ImGuiUtil::DrawReadOnlyTextWithLabel("ID", std::to_string(component.ID));
+				ImGuiUtil::DrawReadOnlyTextWithLabel("Index", std::to_string(component.Index));
+				ImGuiUtil::DrawReadOnlyTextWithLabel("Title", pWindow->GetTitle());
+
+				switch (pWindow->GetFullScreenMode())
+				{
+					case FullScreenMode::Window:
+						ImGuiUtil::DrawReadOnlyTextWithLabel("Mode", "Window");
+						break;
+					case FullScreenMode::FullScreen:
+						ImGuiUtil::DrawReadOnlyTextWithLabel("Mode", "FullScreen");
+						break;
+					case FullScreenMode::FullScreenWithDesktopResolution:
+						ImGuiUtil::DrawReadOnlyTextWithLabel("Mode", "FullScreenWithDesktopResolution");
+						break;
+				}
+
+				auto const position = pWindow->GetPosition();
+				ImGuiUtil::DrawReadOnlyTextWithLabel("Position", "(" + std::to_string(position.x) + ", " + std::to_string(position.y) + ")");
+				auto const size = pWindow->GetSize();
+				ImGuiUtil::DrawReadOnlyTextWithLabel("Size", "(" + std::to_string(size.x) + ", " + std::to_string(size.y) + ")");
+
+				ImGui::EndChild();
+				ImGui::EndGroup();
+			}
+
+			ImGui::EndDisabled();
+
+			return false;
+		}
+
+		SerializationResult
+		CreateWindowOnInitializeComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
+		{
+			auto const &component = entity.GetComponent<CreateWindowOnInitializeComponent>();
+			serializedComponent.SetPrimitiveTypePropertyValue("HasInitialPosition", component.HasInitialPosition);
+			serializedComponent.SetPrimitiveTypePropertyValue("InitialPosition", component.InitialPosition);
+			serializedComponent.SetPrimitiveTypePropertyValue("InitialWidth", component.InitialWidth);
+			serializedComponent.SetPrimitiveTypePropertyValue("InitialHeight", component.InitialHeight);
+			serializedComponent.SetPrimitiveTypePropertyValue("Title", component.Title);
+			return {};
+		}
+
+		DeserializationResult CreateWindowOnInitializeComponent_Deserialize(SerializedComponent &serializedComponent,
+																  DYE::DYEditor::Entity &entity)
+		{
+			auto &component = entity.AddOrGetComponent<CreateWindowOnInitializeComponent>();
+			component.HasInitialPosition = serializedComponent.GetPrimitiveTypePropertyValueOr<DYE::Bool>("HasInitialPosition", false);
+			component.InitialPosition = serializedComponent.GetPrimitiveTypePropertyValueOr<DYE::Vector2>("InitialPosition", {0, 0});
+			component.InitialWidth = serializedComponent.GetPrimitiveTypePropertyValueOr<DYE::Int32>("InitialWidth", 1600);
+			component.InitialHeight = serializedComponent.GetPrimitiveTypePropertyValueOr<DYE::Int32>("InitialHeight", 900);
+			component.Title = serializedComponent.GetPrimitiveTypePropertyValueOr<DYE::String>("Title", "New Window");
+			return {};
+		}
+
+		bool CreateWindowOnInitializeComponent_DrawInspector(DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
+		{
+			auto &component = entity.GetComponent<CreateWindowOnInitializeComponent>();
+
+			bool changed = false;
+
+			changed |= ImGuiUtil::DrawTextControl("Title", component.Title);
+			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
+			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
+			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+
+			changed |= ImGuiUtil::DrawIntSliderControl("Initial Width", component.InitialWidth, 1, 7680);
+			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
+			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
+			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+
+			changed |= ImGuiUtil::DrawIntSliderControl("Initial Height", component.InitialHeight, 1, 4320);
+			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
+			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
+			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+
+			changed |= ImGuiUtil::DrawBoolControl("Has Initial Position", component.HasInitialPosition);
+			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
+			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
+			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+
+			if (component.HasInitialPosition)
+			{
+				changed |= ImGuiUtil::DrawVector2Control("Initial Position", component.InitialPosition);
+				drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
+				drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
+				drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+			}
+
+			return changed;
+		}
 	}
 
 	static ComponentTypeDescriptor s_NameComponentTypeDescriptor;
@@ -678,6 +786,28 @@ namespace DYE::DYEditor
 			}
 		);
 
+		TypeRegistry::RegisterComponentType<WindowHandleComponent>
+		(
+			"Window Handle",
+			ComponentTypeDescriptor
+			{
+				.Serialize = BuiltInFunctions::SerializeEmptyComponent<WindowHandleComponent>,
+				.Deserialize = BuiltInFunctions::DeserializeEmptyComponent<WindowHandleComponent>,
+				.DrawInspector = BuiltInFunctions::WindowHandleComponent_DrawInspector
+			}
+		);
+
+		TypeRegistry::RegisterComponentType<CreateWindowOnInitializeComponent>
+		(
+			"Create Window On Initialize",
+			ComponentTypeDescriptor
+			{
+				.Serialize = BuiltInFunctions::CreateWindowOnInitializeComponent_Serialize,
+				.Deserialize = BuiltInFunctions::CreateWindowOnInitializeComponent_Deserialize,
+				.DrawInspector = BuiltInFunctions::CreateWindowOnInitializeComponent_DrawInspector
+			}
+		);
+
 		static Render2DSpriteSystem _Render2DSpriteSystem;
 		TypeRegistry::RegisterSystem(Render2DSpriteSystem::TypeName, &_Render2DSpriteSystem);
 
@@ -689,9 +819,15 @@ namespace DYE::DYEditor
 
 		static AudioSystem _AudioSystem;
 		TypeRegistry::RegisterSystem(AudioSystem::TypeName, &_AudioSystem);
-
 		static PlayAudioSourceOnInitializeSystem _PlayAudioSourceOnInitializeSystem;
 		TypeRegistry::RegisterSystem(PlayAudioSourceOnInitializeSystem::TypeName, &_PlayAudioSourceOnInitializeSystem);
+
+		static ModifyWindowSystem _SetWindowPropertiesSystem;
+		TypeRegistry::RegisterSystem(ModifyWindowSystem::TypeName, &_SetWindowPropertiesSystem);
+		static CreateWindowOnInitializeSystem _CreateWindowOnInitializeSystem;
+		TypeRegistry::RegisterSystem(CreateWindowOnInitializeSystem::TypeName, &_CreateWindowOnInitializeSystem);
+		static CloseWindowOnTearDownSystem _CloseWindowOnTearDownSystem;
+		TypeRegistry::RegisterSystem(CloseWindowOnTearDownSystem::TypeName, &_CloseWindowOnTearDownSystem);
 	}
 
 	ComponentTypeDescriptor TypeRegistry::GetComponentTypeDescriptor_NameComponent()

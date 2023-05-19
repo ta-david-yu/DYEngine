@@ -2271,5 +2271,8 @@ namespace DYE::DYEditor
 		newScene.TryAddSystemByName(Render2DSpriteSystem::TypeName);
 		newScene.TryAddSystemByName(AudioSystem::TypeName);
 		newScene.TryAddSystemByName(PlayAudioSourceOnInitializeSystem::TypeName);
+		newScene.TryAddSystemByName(CreateWindowOnInitializeSystem::TypeName);
+		newScene.TryAddSystemByName(ModifyWindowSystem::TypeName);
+		newScene.TryAddSystemByName(CloseWindowOnTearDownSystem::TypeName);
 	}
 }
