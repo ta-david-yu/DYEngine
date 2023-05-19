@@ -21,4 +21,16 @@ namespace DYE::DYEditor
 	{
 		std::string Title;
 	};
+
+	struct CreateWindowComponent
+	{
+		bool SetPosition = false;
+
+		DYE::Int32 Width = 1600;
+		DYE::Int32 Height = 900;
+		DYE::Vector2 Position = {0, 0};
+		std::string Title = "New Window";
+	};
+
+	struct CloseWindowComponent {};
 }

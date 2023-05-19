@@ -560,42 +560,70 @@ namespace DYE::DYEditor
 			ImGui::BeginDisabled(true);
 
 			ImGuiUtil::DrawBoolControl("Is Open", component.IsCreated);
-			if (component.IsCreated)
+			if (!component.IsCreated)
 			{
-				WindowBase* pWindow = component.TryGetWindow();
-				DYE_ASSERT(pWindow != nullptr);
-
-				ImGui::BeginGroup();
-				ImGui::BeginChild("Selected Window Info", ImVec2(0, -ImGui::GetFrameHeightWithSpacing()), false, ImGuiWindowFlags_HorizontalScrollbar); // Leave room for 1 line below us
-
-				ImGui::Separator();
-				ImGuiUtil::DrawReadOnlyTextWithLabel("ID", std::to_string(component.ID));
-				ImGuiUtil::DrawReadOnlyTextWithLabel("Index", std::to_string(component.Index));
-				ImGuiUtil::DrawReadOnlyTextWithLabel("Title", pWindow->GetTitle());
-
-				switch (pWindow->GetFullScreenMode())
-				{
-					case FullScreenMode::Window:
-						ImGuiUtil::DrawReadOnlyTextWithLabel("Mode", "Window");
-						break;
-					case FullScreenMode::FullScreen:
-						ImGuiUtil::DrawReadOnlyTextWithLabel("Mode", "FullScreen");
-						break;
-					case FullScreenMode::FullScreenWithDesktopResolution:
-						ImGuiUtil::DrawReadOnlyTextWithLabel("Mode", "FullScreenWithDesktopResolution");
-						break;
-				}
-
-				auto const position = pWindow->GetPosition();
-				ImGuiUtil::DrawReadOnlyTextWithLabel("Position", "(" + std::to_string(position.x) + ", " + std::to_string(position.y) + ")");
-				auto const size = pWindow->GetSize();
-				ImGuiUtil::DrawReadOnlyTextWithLabel("Size", "(" + std::to_string(size.x) + ", " + std::to_string(size.y) + ")");
-
-				ImGui::EndChild();
-				ImGui::EndGroup();
+				ImGui::EndDisabled();
+				return false;
 			}
 
+			WindowBase* pWindow = component.TryGetWindow();
+			DYE_ASSERT(pWindow != nullptr);
+
+			ImGui::Separator();
+			ImGuiUtil::DrawReadOnlyTextWithLabel("ID", std::to_string(component.ID));
+			ImGuiUtil::DrawReadOnlyTextWithLabel("Index", std::to_string(component.Index));
+			ImGuiUtil::DrawReadOnlyTextWithLabel("Title", pWindow->GetTitle());
+
+			switch (pWindow->GetFullScreenMode())
+			{
+				case FullScreenMode::Window:
+					ImGuiUtil::DrawReadOnlyTextWithLabel("Mode", "Window");
+					break;
+				case FullScreenMode::FullScreen:
+					ImGuiUtil::DrawReadOnlyTextWithLabel("Mode", "FullScreen");
+					break;
+				case FullScreenMode::FullScreenWithDesktopResolution:
+					ImGuiUtil::DrawReadOnlyTextWithLabel("Mode", "FullScreenWithDesktopResolution");
+					break;
+			}
+
+			auto const position = pWindow->GetPosition();
+			ImGuiUtil::DrawReadOnlyTextWithLabel("Position", "(" + std::to_string(position.x) + ", " + std::to_string(position.y) + ")");
+			auto const size = pWindow->GetSize();
+			ImGuiUtil::DrawReadOnlyTextWithLabel("Size", "(" + std::to_string(size.x) + ", " + std::to_string(size.y) + ")");
+
 			ImGui::EndDisabled();
+
+			// If the window handle assigned with a window, we want to draw a helper window debugger.
+			if (pWindow != nullptr)
+			{
+				ImGui::Separator();
+				if (ImGui::TreeNodeEx("Window Debugger", ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					ImGui::Separator();
+					if (ImGui::Button("Minimize"))
+					{
+						pWindow->Minimize();
+					}
+					ImGui::SameLine();
+					if (ImGui::Button("Restore"))
+					{
+						pWindow->Restore();
+					}
+					ImGui::SameLine();
+					if (ImGui::Button("Raise"))
+					{
+						pWindow->Raise();
+					}
+					ImGui::SameLine();
+					if (ImGui::Button("Center"))
+					{
+						pWindow->CenterWindow();
+					}
+
+					ImGui::TreePop();
+				}
+			}
 
 			return false;
 		}

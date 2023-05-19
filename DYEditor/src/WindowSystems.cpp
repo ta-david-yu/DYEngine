@@ -38,6 +38,66 @@ namespace DYE::DYEditor
 
 	void ModifyWindowSystem::Execute(World &world, DYE::DYEditor::ExecuteParameters params)
 	{
+		// Close window.
+		{
+			auto group = world.GetGroup<CloseWindowComponent>(Get<WindowHandleComponent>);
+			for (auto entity : group)
+			{
+				auto &windowHandle = group.get<WindowHandleComponent>(entity);
+				if (windowHandle.IsCreated)
+				{
+					// Close window.
+					WindowManager::CloseWindow(windowHandle.ID);
+
+					windowHandle.IsCreated = false;
+				}
+
+				auto wrappedEntity = world.WrapIdentifierIntoEntity(entity);
+				wrappedEntity.RemoveComponent<CloseWindowComponent>();
+			}
+		}
+
+		// Create window.
+		{
+			auto group = world.GetGroup<CreateWindowComponent>(Get<WindowHandleComponent>);
+			for (auto entity: group)
+			{
+				auto wrappedEntity = world.WrapIdentifierIntoEntity(entity);
+
+				auto &windowHandle = group.get<WindowHandleComponent>(entity);
+				if (windowHandle.IsCreated)
+				{
+					DYE_LOG("The window handle entity '%s' has already been assigned a window, "
+							"cannot create a new one with it.", wrappedEntity.TryGetName().value().c_str());
+					wrappedEntity.RemoveComponent<CreateWindowComponent>();
+					continue;
+				}
+
+				// Create window.
+				auto createWindow = group.get<CreateWindowComponent>(entity);
+
+				WindowProperties properties
+					(
+						createWindow.Title,
+						createWindow.Width,
+						createWindow.Height,
+						false    // FIXME: to let the user set isUserResizable as well
+					);
+				WindowBase *pNewWindow = WindowManager::CreateWindow(properties);
+				if (createWindow.SetPosition)
+				{
+					pNewWindow->SetPosition(createWindow.Position);
+				}
+
+				// Assign WindowHandle with the newly created window info.
+				windowHandle.IsCreated = true;
+				windowHandle.ID = pNewWindow->GetWindowID();
+				windowHandle.Index = WindowManager::TryGetWindowIndexFromID(windowHandle.ID).value();
+
+				wrappedEntity.RemoveComponent<CreateWindowComponent>();
+			}
+		}
+
 		// Set window position.
 		{
 			auto group = world.GetGroup<SetWindowPositionComponent>(Get<WindowHandleComponent>);
@@ -103,6 +163,8 @@ namespace DYE::DYEditor
 			{
 				// Close window that was created.
 				WindowManager::CloseWindow(windowHandle.ID);
+
+				windowHandle.IsCreated = false;
 			}
 		}
 	}
