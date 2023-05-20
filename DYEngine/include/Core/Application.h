@@ -44,10 +44,10 @@ namespace DYE
         void Handle(Event& event) override;
 		void Shutdown();
 
-		void PushLayer(std::shared_ptr<LayerBase> &layer);
-		void PopLayer(std::shared_ptr<LayerBase> &layer);
-		void PushOverlay(std::shared_ptr<LayerBase> &overlay);
-		void PopOverlay(std::shared_ptr<LayerBase> &overlay);
+		void PushLayer(const std::shared_ptr<LayerBase> &layer);
+		void PopLayer(const std::shared_ptr<LayerBase> &layer);
+		void PushOverlay(const std::shared_ptr<LayerBase> &overlay);
+		void PopOverlay(const std::shared_ptr<LayerBase> &overlay);
 		ImGuiLayer& GetImGuiLayer() { return *m_ImGuiLayer; }
 
     protected:
