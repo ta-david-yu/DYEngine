@@ -88,7 +88,11 @@ set(HEADER_FILES
         include/Components/AudioSource2DComponent.h
         include/Components/Command/StartAudioSourceComponent.h
         include/Components/Command/StopAudioSourceComponent.h
-        include/Systems/AudioSystems.h include/Components/PlayAudioSourceOnInitializeComponent.h include/Components/WindowComponents.h include/Systems/WindowSystems.h include/Components/Command/WindowCommandComponents.h)
+        include/Systems/AudioSystems.h
+        include/Components/PlayAudioSourceOnInitializeComponent.h
+        include/Components/WindowComponents.h
+        include/Systems/WindowSystems.h
+        include/Components/Command/WindowCommandComponents.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")
