@@ -310,7 +310,7 @@ namespace DYE::DYEditor
 					if (control)
 					{
 						// Ctrl + D: Duplicate Entity
-						if (!m_IsSceneHierarchyWindowFocused)
+						if (!m_IsSceneHierarchyWindowFocused && !m_IsSceneViewWindowFocused)
 						{
 							break;
 						}

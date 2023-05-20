@@ -20,6 +20,8 @@ namespace DYE::Math
 		glm::vec2 HitNormal {0.0f, 0.0f};
 	};
 
+	bool CircleCircleIntersect(glm::vec2 aCenter, float aRadius, glm::vec2 bCenter, float bRadius);
+
 	bool AABBAABBIntersect2D(AABB const& a, AABB const& b);
 	bool AABBAABBIntersect(AABB const& a, AABB const& b);
 
