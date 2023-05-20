@@ -72,6 +72,9 @@ namespace DYE
 		Numpad9 = SDL_KeyCode::SDLK_KP_9,
 		Numpad0 = SDL_KeyCode::SDLK_KP_0,
 
+		NumpadPlus = SDL_KeyCode::SDLK_KP_PLUS,
+		NumpadMinus = SDL_KeyCode::SDLK_KP_MINUS,
+
 		LeftControl = SDL_KeyCode::SDLK_LCTRL,
 		LeftShift = SDL_KeyCode::SDLK_LSHIFT,
 		LeftAlt = SDL_KeyCode::SDLK_LALT,
