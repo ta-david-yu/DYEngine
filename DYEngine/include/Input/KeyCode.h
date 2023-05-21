@@ -72,6 +72,17 @@ namespace DYE
 		Numpad9 = SDL_KeyCode::SDLK_KP_9,
 		Numpad0 = SDL_KeyCode::SDLK_KP_0,
 
+		Num1 = SDL_KeyCode::SDLK_1,
+		Num2 = SDL_KeyCode::SDLK_2,
+		Num3 = SDL_KeyCode::SDLK_3,
+		Num4 = SDL_KeyCode::SDLK_4,
+		Num5 = SDL_KeyCode::SDLK_5,
+		Num6 = SDL_KeyCode::SDLK_6,
+		Num7 = SDL_KeyCode::SDLK_7,
+		Num8 = SDL_KeyCode::SDLK_8,
+		Num9 = SDL_KeyCode::SDLK_9,
+		Num0 = SDL_KeyCode::SDLK_0,
+
 		NumpadPlus = SDL_KeyCode::SDLK_KP_PLUS,
 		NumpadMinus = SDL_KeyCode::SDLK_KP_MINUS,
 
