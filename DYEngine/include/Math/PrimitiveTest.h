@@ -21,6 +21,7 @@ namespace DYE::Math
 	};
 
 	bool CircleCircleIntersect(glm::vec2 aCenter, float aRadius, glm::vec2 bCenter, float bRadius);
+	bool IsCircleInsideCircle(glm::vec2 aCenter, float aRadius, glm::vec2 bCenter, float bRadius);
 
 	bool AABBAABBIntersect2D(AABB const& a, AABB const& b);
 	bool AABBAABBIntersect(AABB const& a, AABB const& b);

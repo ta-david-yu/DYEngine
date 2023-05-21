@@ -14,6 +14,20 @@ namespace DYE::Math
 		return centerSqrDistance <= sqrInRangeDistance;
 	}
 
+	bool IsCircleInsideCircle(glm::vec2 aCenter, float aRadius, glm::vec2 bCenter, float bRadius)
+	{
+		if (aRadius > bRadius)
+		{
+			// A circle cannot be inside a smaller circle than itself.
+			return false;
+		}
+
+		float distance = glm::distance(aCenter, bCenter);
+		float edgeDistance = distance + aRadius;
+
+		return edgeDistance <= bRadius;
+	}
+
 	bool AABBAABBIntersect2D(AABB const& a, AABB const& b)
 	{
 		// Two AABBs only overlap if they overlap on all axes.
