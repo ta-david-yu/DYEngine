@@ -11,9 +11,9 @@ DYEngine is divided into 2 sub-project modules:
 ### Not really a guide, just how I normally use this engine. Most of the following tools come with CLion as bundles
 - **IDE**: CLion (CMake 3.17+)
 - **Tested Compilers**: 
-  - GNU 11.2.0
+  - GNU 11.2.0 (MinGW)
   - MSVC 19.34.31937.0
-  - Clang 15.0.1
+  - Clang 15.0.1 (MSVC compatible)
 
 Right now I am using CLion to configure & build the project.
 In order to support multiple compilers, I had to include two versions of SDL2: MinGW & MSVC versions, which I downloaded from [SDL2 repository](https://github.com/libsdl-org/SDL/releases).  
