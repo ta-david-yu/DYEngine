@@ -24,9 +24,13 @@ namespace DYE
         /// \return m_DeltaTicks / 1000.0
         double DeltaTime() const { return m_DeltaTicks / 1000.0; }
 
+		float DeltaTimeF() const { return m_DeltaTicks / 1000.0f; }
+
         /// A fixed delta time in second for Physics Simulation, const value
         /// \return 1 / m_Fps
         double FixedDeltaTime() const { return 1.0 / m_FixedFramePerSecond; }
+
+		float FixedDeltaTimeF() const { return 1.0f / m_FixedFramePerSecond; }
 
         uint32_t FixedFramePerSecond() const { return m_FixedFramePerSecond; }
 

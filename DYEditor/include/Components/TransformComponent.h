@@ -20,6 +20,9 @@ namespace DYE::DYEditor
 
 			return modelMatrix;
 		}
+
+		glm::vec3 GetRight() const { return Rotation * glm::vec3(1, 0, 0); }
+		glm::vec3 GetForward() const { return Rotation * glm::vec3(0, 1, 0); }
 	};
 
 	namespace Internal

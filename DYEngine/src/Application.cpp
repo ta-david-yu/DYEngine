@@ -252,7 +252,7 @@ namespace DYE
 
     }
 
-	void Application::PushLayer(std::shared_ptr<LayerBase> &layer)
+	void Application::PushLayer(std::shared_ptr<LayerBase> const&layer)
 	{
 		m_LayerOperations.push_back(
 			ApplicationLayerOperation
@@ -262,7 +262,7 @@ namespace DYE
 				});
 	}
 
-	void Application::PopLayer(std::shared_ptr<LayerBase> &layer)
+	void Application::PopLayer(const std::shared_ptr<LayerBase> &layer)
 	{
 		m_LayerOperations.push_back(
 			ApplicationLayerOperation
@@ -272,7 +272,7 @@ namespace DYE
 				});
 	}
 
-	void Application::PushOverlay(std::shared_ptr<LayerBase> &overlay)
+	void Application::PushOverlay(const std::shared_ptr<LayerBase> &overlay)
 	{
 		m_LayerOperations.push_back(
 			ApplicationLayerOperation
@@ -282,7 +282,7 @@ namespace DYE
 				});
 	}
 
-	void Application::PopOverlay(std::shared_ptr<LayerBase> &overlay)
+	void Application::PopOverlay(const std::shared_ptr<LayerBase> &overlay)
 	{
 		m_LayerOperations.push_back(
 			ApplicationLayerOperation
