@@ -37,24 +37,22 @@ I did some reorganizations to the SDL2 folders so whether you use MinGW or MSVC 
 - **OpenAL-Soft**: Alternative for 3D audio. Need more research.
 
 ## Showcase
-The project is still in a very early stage, but I am constantly working on it. 
-I've also made a small tech demo with DYEngine, which you could check it out here - [DYE-Tech-Demo](https://github.com/ta-david-yu/DYE-Tech-Demo).   
-Here is a short gameplay video of it - [DYE Tech Demo - Gameplay Youtube Video](https://youtu.be/0tD2ZouCuN4).  
-**Warning**: the code was made within 1 week (I was crunching on it for the goal of showcasing it at our end-of-semester showcase party), so it is very dirty/unorganized. 
+The project is still in a very early stage, but I am constantly working on it.  
+Here are some videos that might help you get the "feel" of DYEngine:
+  
+**DYEngine & Editor Feature Highlights 2023**  
+[![Watch the video](https://img.youtube.com/vi/ZrwCcynemSA/default.jpg)](https://youtu.be/ZrwCcynemSA)  
 
-Here are some other WIP screenshots/footage:
+**Main Battle Turtle**  
+I made the game with two of my friends (Anton Sagel & Trey Ramm) during 2023 CGL Turtle Game Jam.
+It's a really good opportunity to test out the game engine.  
+[![Watch the video](https://img.youtube.com/vi/CldpJoQgW-Q/default.jpg)](https://youtu.be/CldpJoQgW-Q)  
 
-**DYEditor (WIP)**  
 
-https://user-images.githubusercontent.com/8101387/233865629-02971b03-32ef-4d06-b084-c146d34cc808.mp4
-
-**Multi-window System**  
-
-https://user-images.githubusercontent.com/8101387/211428433-88de9dfb-1df6-47c5-b2f2-73d366730937.mp4
-
-**Collision detection & Debug drawing**  
-
-https://user-images.githubusercontent.com/8101387/211428722-d59a1727-b169-4b57-84ad-aef03e2e87a4.mp4
+**DYE Tech Demo**  
+I've also made a small tech demo with DYEngine, which you could check it out here - [DYE-Tech-Demo](https://github.com/ta-david-yu/DYE-Tech-Demo).  
+**Warning**: the code was made within 1 week (I was crunching on it for the goal of showcasing it at our end-of-semester showcase party), so it is very dirty/unorganized.  
+[![Watch the video](https://img.youtube.com/vi/0tD2ZouCuN4/default.jpg)](https://youtu.be/0tD2ZouCuN4)  
 
 ## Resources
 It wouldn't have been possible to implement this project without the help of the internet!  
