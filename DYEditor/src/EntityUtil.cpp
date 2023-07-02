@@ -120,7 +120,7 @@ namespace DYE::DYEditor::EntityUtil
 			}
 		}
 
-		return std::move(result);
+		return result;
 	}
 
 	std::vector<Entity> GetAllChildrenPreorder(Entity root)
@@ -165,6 +165,6 @@ namespace DYE::DYEditor::EntityUtil
 			}
 		}
 
-		return std::move(result);
+		return result;
 	}
 }
