@@ -3,6 +3,7 @@
 #include "Util/Macro.h"
 
 #include <string>
+#include <cstdint>
 #include <glad/glad.h>
 
 namespace DYE
