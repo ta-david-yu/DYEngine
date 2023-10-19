@@ -1,7 +1,7 @@
-cmake_policy(SET CMP0048 NEW)
+cmake_minimum_required(VERSION 3.17)
 project(DYEngineRoot)
 
-cmake_minimum_required(VERSION 3.17)
+cmake_policy(SET CMP0048 NEW)
 
 # Cmake Flags
 set(CMAKE_CXX_STANDARD 20)

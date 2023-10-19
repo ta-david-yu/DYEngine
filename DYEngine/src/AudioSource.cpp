@@ -269,6 +269,8 @@ namespace DYE
 				return IsMusicStreamPlaying(music);
 			}
 		}
+
+		return false;
 	}
 
 	bool AudioSource::IsStreamLooping() const
