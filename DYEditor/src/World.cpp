@@ -27,6 +27,10 @@ namespace DYE::DYEditor
 		entity.AddComponent<IDComponent>().ID = guid;
 		entity.AddComponent<NameComponent>(name);
 
+#ifdef DYE_EDITOR
+		entity.AddComponent<EntityEditorOnlyMetadata>();
+#endif
+
 		m_EntityHandles.push_back(EntityHandle { .Identifier = entity.m_EntityIdentifier });
 		m_GUIDToEntityIdentifierMap.insert({guid, entity.m_EntityIdentifier});
 
@@ -40,6 +44,10 @@ namespace DYE::DYEditor
 		entity.AddComponent<IDComponent>().ID = guid;
 		entity.AddComponent<NameComponent>(name);
 
+#ifdef DYE_EDITOR
+		entity.AddComponent<EntityEditorOnlyMetadata>();
+#endif
+
 		m_EntityHandles.insert(m_EntityHandles.begin() + index, EntityHandle { .Identifier = entity.m_EntityIdentifier });
 		m_GUIDToEntityIdentifierMap.insert({guid, entity.m_EntityIdentifier});
 
@@ -51,6 +59,10 @@ namespace DYE::DYEditor
 		auto entity = Entity(*this, m_Registry.create());
 		entity.AddComponent<IDComponent>().ID = guid;
 		entity.AddComponent<NameComponent>(name);
+
+#ifdef DYE_EDITOR
+		entity.AddComponent<EntityEditorOnlyMetadata>();
+#endif
 
 		m_EntityHandles.push_back(EntityHandle { .Identifier = entity.m_EntityIdentifier });
 		m_GUIDToEntityIdentifierMap.insert({guid, entity.m_EntityIdentifier});
