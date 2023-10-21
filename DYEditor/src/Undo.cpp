@@ -844,6 +844,7 @@ namespace DYE::DYEditor
 		auto operation = std::make_unique<ComponentAdditionOperation>();
 		operation->pWorld = &entity.GetWorld();
 		operation->EntityGUID = entity.GetComponent<IDComponent>().ID;
+		operation->ComponentTypeName = componentTypeName;
 		operation->TypeDescriptor = typeDescriptor;
 
 		sprintf(&operation->Description[0], "Add %s to Entity '%s' (GUID: %s)",
@@ -853,6 +854,18 @@ namespace DYE::DYEditor
 
 		operation->TypeDescriptor.Add(entity);
 
+#ifdef DYE_EDITOR
+		auto tryGetEntityMetadata = entity.TryGetComponent<EntityEditorOnlyMetadata>();
+		if (tryGetEntityMetadata.has_value())
+		{
+			// Insert the component at the end of the serialized component list.
+
+			auto &serializedComponentNamesInOrder = tryGetEntityMetadata.value().get().SuccessfullySerializedComponentNames;
+			operation->ComponentAdditionIndex = serializedComponentNamesInOrder.size();
+			serializedComponentNamesInOrder.push_back(componentTypeName);
+		}
+#endif
+
 		pushNewOperation(std::move(operation));
 	}
 
@@ -861,6 +874,7 @@ namespace DYE::DYEditor
 		auto operation = std::make_unique<ComponentRemovalOperation>();
 		operation->pWorld = &entity.GetWorld();
 		operation->EntityGUID = entity.GetComponent<IDComponent>().ID;
+		operation->ComponentTypeName = componentTypeName;
 		operation->TypeDescriptor = typeDescriptor;
 		operation->SerializedComponentBeforeRemoval = SerializedObjectFactory::CreateSerializedComponentOfType(entity, componentTypeName, typeDescriptor);
 
@@ -870,6 +884,24 @@ namespace DYE::DYEditor
 				operation->EntityGUID.ToString().c_str());
 
 		operation->TypeDescriptor.Remove(entity);
+
+#ifdef DYE_EDITOR
+		auto tryGetEntityMetadata = entity.TryGetComponent<EntityEditorOnlyMetadata>();
+		if (tryGetEntityMetadata.has_value())
+		{
+			auto &serializedComponentNamesInOrder = tryGetEntityMetadata.value().get().SuccessfullySerializedComponentNames;
+			for (int i = 0; i < serializedComponentNamesInOrder.size(); i++)
+			{
+				std::string &typeName = serializedComponentNamesInOrder[i];
+				if (typeName == componentTypeName)
+				{
+					operation->ComponentOrderInListBeforeRemoval = i;
+					serializedComponentNamesInOrder.erase(serializedComponentNamesInOrder.cbegin() + i);
+					break;
+				}
+			}
+		}
+#endif
 
 		pushNewOperation(std::move(operation));
 	}

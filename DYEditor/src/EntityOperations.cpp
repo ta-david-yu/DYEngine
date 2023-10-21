@@ -98,6 +98,20 @@ namespace DYE::DYEditor
 		DYE_ASSERT_LOG_WARN(tryGetEntity.has_value(), "Try to undo a component addition operation but couldn't find the entity (GUID: %s).", EntityGUID.ToString().c_str());
 
 		TypeDescriptor.Remove(tryGetEntity.value());
+
+#ifdef DYE_EDITOR
+		auto tryGetEntityMetadata = tryGetEntity.value().TryGetComponent<EntityEditorOnlyMetadata>();
+		if (tryGetEntityMetadata.has_value())
+		{
+			auto &serializedComponentNamesInOrder = tryGetEntityMetadata.value().get().SuccessfullySerializedComponentNames;
+
+			DYE_ASSERT_LOG_WARN(serializedComponentNamesInOrder[ComponentAdditionIndex] == ComponentTypeName,
+								"The component name ('%s') located at index '%d' is not the same as the name ('%s') stored in the undo operation.",
+								serializedComponentNamesInOrder[ComponentAdditionIndex].c_str(), ComponentAdditionIndex, ComponentTypeName.c_str());
+
+			serializedComponentNamesInOrder.erase(serializedComponentNamesInOrder.cbegin() + ComponentAdditionIndex);
+		}
+#endif
 	}
 
 	void ComponentAdditionOperation::Redo()
@@ -106,6 +120,15 @@ namespace DYE::DYEditor
 		DYE_ASSERT_LOG_WARN(tryGetEntity.has_value(), "Try to redo a component addition operation but couldn't find the entity (GUID: %s).", EntityGUID.ToString().c_str());
 
 		TypeDescriptor.Add(tryGetEntity.value());
+
+#ifdef DYE_EDITOR
+		auto tryGetEntityMetadata = tryGetEntity.value().TryGetComponent<EntityEditorOnlyMetadata>();
+		if (tryGetEntityMetadata.has_value())
+		{
+			auto &serializedComponentNamesInOrder = tryGetEntityMetadata.value().get().SuccessfullySerializedComponentNames;
+			serializedComponentNamesInOrder.push_back(ComponentTypeName);
+		}
+#endif
 	}
 
 	// ComponentRemovalOperation
@@ -116,6 +139,16 @@ namespace DYE::DYEditor
 		DYE_ASSERT_LOG_WARN(tryGetEntity.has_value(), "Try to undo a component removal operation but couldn't find the entity (GUID: %s).", EntityGUID.ToString().c_str());
 
 		TypeDescriptor.Deserialize(SerializedComponentBeforeRemoval, tryGetEntity.value());
+
+#ifdef DYE_EDITOR
+		auto tryGetEntityMetadata = tryGetEntity.value().TryGetComponent<EntityEditorOnlyMetadata>();
+		if (tryGetEntityMetadata.has_value())
+		{
+			auto &serializedComponentNamesInOrder = tryGetEntityMetadata.value().get().SuccessfullySerializedComponentNames;
+			serializedComponentNamesInOrder.insert(serializedComponentNamesInOrder.cbegin() + ComponentOrderInListBeforeRemoval, ComponentTypeName);
+		}
+#endif
+
 	}
 
 	void ComponentRemovalOperation::Redo()
@@ -124,5 +157,19 @@ namespace DYE::DYEditor
 		DYE_ASSERT_LOG_WARN(tryGetEntity.has_value(), "Try to redo a component removal operation but couldn't find the entity (GUID: %s).", EntityGUID.ToString().c_str());
 
 		TypeDescriptor.Remove(tryGetEntity.value());
+
+#ifdef DYE_EDITOR
+		auto tryGetEntityMetadata = tryGetEntity.value().TryGetComponent<EntityEditorOnlyMetadata>();
+		if (tryGetEntityMetadata.has_value())
+		{
+			auto &serializedComponentNamesInOrder = tryGetEntityMetadata.value().get().SuccessfullySerializedComponentNames;
+
+			DYE_ASSERT_LOG_WARN(serializedComponentNamesInOrder[ComponentOrderInListBeforeRemoval] == ComponentTypeName,
+								"The component name ('%s') located at index '%d' is not the same as the name ('%s') stored in the undo operation.",
+								serializedComponentNamesInOrder[ComponentOrderInListBeforeRemoval].c_str(), ComponentOrderInListBeforeRemoval, ComponentTypeName.c_str());
+
+			serializedComponentNamesInOrder.erase(serializedComponentNamesInOrder.cbegin() + ComponentOrderInListBeforeRemoval);
+		}
+#endif
 	}
 }

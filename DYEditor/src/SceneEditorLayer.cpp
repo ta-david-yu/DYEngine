@@ -1802,18 +1802,21 @@ namespace DYE::DYEditor
 		bool isEntityChangedThisFrame = false;
 
 		ImVec2 const addComponentButtonSize = ImVec2 {120, 0};
-		float const scrollBarWidth = ImGui::GetCurrentWindow()->ScrollbarY? ImGui::GetWindowScrollbarRect(ImGui::GetCurrentWindow(), ImGuiAxis_Y).GetWidth() : 0;
+		float const scrollBarWidth = ImGui::GetCurrentWindow()->ScrollbarY ? ImGui::GetWindowScrollbarRect(
+			ImGui::GetCurrentWindow(), ImGuiAxis_Y).GetWidth() : 0;
 
 		// Draw entity's NameComponent as a InputField on the top.
-		auto& nameComponent = entity.AddOrGetComponent<NameComponent>();
-		ImGui::PushItemWidth(ImGui::GetWindowWidth() - scrollBarWidth - addComponentButtonSize.x - ImGui::GetFontSize());
+		auto &nameComponent = entity.AddOrGetComponent<NameComponent>();
+		ImGui::PushItemWidth(
+			ImGui::GetWindowWidth() - scrollBarWidth - addComponentButtonSize.x - ImGui::GetFontSize());
 		{
 			bool const changedThisFrame = ImGui::InputText("##EntityNameComponent", &nameComponent.Name);
 			if (ImGui::IsItemActivated())
 			{
 				context.IsModifyingEntityProperty = true;
 				context.SerializedComponentBeforeModification =
-					SerializedObjectFactory::CreateSerializedComponentOfType(entity, NameComponentName, TypeRegistry::GetComponentTypeDescriptor_NameComponent());
+					SerializedObjectFactory::CreateSerializedComponentOfType(entity, NameComponentName,
+																			 TypeRegistry::GetComponentTypeDescriptor_NameComponent());
 			}
 
 			if (ImGui::IsItemDeactivated())
@@ -1823,8 +1826,10 @@ namespace DYE::DYEditor
 			if (ImGui::IsItemDeactivatedAfterEdit())
 			{
 				auto serializedNameComponentAfterModification =
-					SerializedObjectFactory::CreateSerializedComponentOfType(entity, NameComponentName, TypeRegistry::GetComponentTypeDescriptor_NameComponent());
-				Undo::RegisterComponentModification(entity, context.SerializedComponentBeforeModification, serializedNameComponentAfterModification);
+					SerializedObjectFactory::CreateSerializedComponentOfType(entity, NameComponentName,
+																			 TypeRegistry::GetComponentTypeDescriptor_NameComponent());
+				Undo::RegisterComponentModification(entity, context.SerializedComponentBeforeModification,
+													serializedNameComponentAfterModification);
 			}
 
 			isEntityChangedThisFrame |= changedThisFrame;
@@ -1832,7 +1837,7 @@ namespace DYE::DYEditor
 		ImGui::PopItemWidth();
 
 		// Draw a 'Add Component' button at the top of the inspector, and align it to the right side of the window.
-		char const* addComponentPopupId = "Add Component Menu Popup";
+		char const *addComponentPopupId = "Add Component Menu Popup";
 		float const availableWidthForAddButton = ImGui::GetWindowWidth() - scrollBarWidth;
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(availableWidthForAddButton - addComponentButtonSize.x);
@@ -1854,7 +1859,7 @@ namespace DYE::DYEditor
 		{
 			if (ImGui::BeginListBox("##Add Component List Box"))
 			{
-				for (auto const& [typeName, typeDescriptor] : componentNamesAndDescriptors)
+				for (auto const &[typeName, typeDescriptor]: componentNamesAndDescriptors)
 				{
 					if (mode == InspectorMode::Normal && !typeDescriptor.ShouldBeIncludedInNormalAddComponentList)
 					{
@@ -1880,184 +1885,261 @@ namespace DYE::DYEditor
 			ImGui::EndPopup();
 		}
 
-		// Draw all components that the entity has.
-		for (auto& [typeName, typeDescriptor] : componentNamesAndDescriptors)
+		// Draw rest of the registered component types that the entity has.
+
+		std::unordered_set<std::string> drawnComponentTypeNames;
+
+#ifdef DYE_EDITOR
+		// In editor build, we want to be able to draw components in custom order first if the metadata is provided.
+
+		auto tryGetEntityMetadata = entity.TryGetComponent<EntityEditorOnlyMetadata>();
+		DYE_ASSERT_LOG_WARN(tryGetEntityMetadata.has_value(), "In editor build, an entity should always have 'EntityEditorOnlyMetadata' component.");
+
+		EntityEditorOnlyMetadata& entityEditorOnlyMetadata = tryGetEntityMetadata.value();
+
+		auto &successfullyDeserializedComponentNames = entityEditorOnlyMetadata.SuccessfullySerializedComponentNames;
+		drawnComponentTypeNames.reserve(successfullyDeserializedComponentNames.size());
+
+		for (auto &typeName : successfullyDeserializedComponentNames)
 		{
-			if (mode == InspectorMode::Normal && !typeDescriptor.ShouldDrawInNormalInspector)
-			{
-				continue;
-			}
+			auto tryGetTypeDescriptor = TypeRegistry::TryGetComponentTypeDescriptor(typeName);
+			DYE_ASSERT_LOG_WARN(tryGetTypeDescriptor.has_value(),
+								"The component '%s' was successfully deserialized but the type descriptor cannot be found in the TypeRegistry anymore.",
+								typeName.c_str());
 
-			DYE_ASSERT_LOG_WARN(typeDescriptor.Has != nullptr, "Missing 'Has' function for component '%s'.", typeName.c_str());
-			if (!typeDescriptor.Has(entity))
-			{
-				continue;
-			}
+			drawnComponentTypeNames.emplace(typeName);
 
-			bool isHeaderVisible = true;
-			bool showComponentInspector = true;
-
-			ImGui::PushID(typeName.c_str());
-			if (typeDescriptor.DrawHeader == nullptr)
-			{
-				ImGuiTreeNodeFlags const flags = ImGuiTreeNodeFlags_DefaultOpen;
-				showComponentInspector = ImGui::CollapsingHeader("##Header", &isHeaderVisible, flags);
-
-				// Spacing ahead of the component name.
-				float const spacing = ImGui::GetFrameHeight();
-				ImGui::SameLine(); ImGui::ItemSize(ImVec2(spacing, 0));
-
-				// The name of the component.
-				ImGui::SameLine();
-				ImGui::TextUnformatted(typeName.c_str());
-
-			}
-			else
-			{
-				// Use custom header drawer if provided.
-				DrawComponentHeaderContext drawHeaderContext;
-				showComponentInspector = typeDescriptor.DrawHeader(drawHeaderContext, entity, isHeaderVisible, typeName);
-				if (drawHeaderContext.IsModificationActivated)
-				{
-					context.IsModifyingEntityProperty = true;
-					context.SerializedComponentBeforeModification =
-						SerializedObjectFactory::CreateSerializedComponentOfType(entity, typeName, typeDescriptor);
-				}
-
-				if (drawHeaderContext.IsModificationDeactivated)
-				{
-					context.IsModifyingEntityProperty = false;
-				}
-				if (drawHeaderContext.IsModificationDeactivatedAfterEdit)
-				{
-					auto serializedComponentAfterModification = SerializedObjectFactory::CreateSerializedComponentOfType(entity, typeName, typeDescriptor);
-					Undo::RegisterComponentModification(entity, context.SerializedComponentBeforeModification, serializedComponentAfterModification);
-				}
-
-				isEntityChangedThisFrame |= drawHeaderContext.ComponentChanged;
-			}
-			ImGui::PopID();
-
-			bool const isRemoved = !isHeaderVisible;
+			bool isRemoved = false;
+			isEntityChangedThisFrame |= drawComponentInEntityInspector(context, typeName, tryGetTypeDescriptor.value(), &isRemoved);
 			if (isRemoved)
 			{
-				// Remove the component
-				Undo::RemoveComponent(entity, typeName, typeDescriptor);
-				isEntityChangedThisFrame = true;
+				// Early out if a component is removed, to avoid panic for-loop.
+				return isEntityChangedThisFrame;
+			}
+		}
+#endif
+
+		// We draw rest of the components that aren't tracked by the entity metadata.
+		for (auto &[typeName, typeDescriptor]: componentNamesAndDescriptors)
+		{
+			if (drawnComponentTypeNames.contains(typeName))
+			{
+				// The component inspector of the given type has already been drawn.
+				// Skip it.
 				continue;
 			}
 
-			if (!showComponentInspector)
+			bool isRemoved = false;
+			isEntityChangedThisFrame |= drawComponentInEntityInspector(context, typeName, typeDescriptor, &isRemoved);
+			if (isRemoved)
 			{
-				continue;
+				// Early out if a component is removed, to avoid panic for-loop.
+				return isEntityChangedThisFrame;
 			}
-
-			if (typeDescriptor.DrawInspector == nullptr)
-			{
-				ImGui::TextDisabled("(?)");
-				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
-				{
-					ImGui::BeginTooltip();
-					ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-					ImGui::TextWrapped("Missing 'DrawInspector' function for component '%s'. "
-									   "It's likely that the DrawInspectorFunction is not assigned when TypeRegistry::RegisterComponentType is called.", typeName.c_str());
-					ImGui::PopTextWrapPos();
-					ImGui::EndTooltip();
-				}
-			}
-			else
-			{
-				ImGui::PushID(typeName.c_str());
-				DrawComponentInspectorContext drawComponentInspectorContext;
-				isEntityChangedThisFrame |= typeDescriptor.DrawInspector(drawComponentInspectorContext, entity);
-
-				if (drawComponentInspectorContext.IsModificationActivated)
-				{
-					context.IsModifyingEntityProperty = true;
-					context.SerializedComponentBeforeModification =
-						SerializedObjectFactory::CreateSerializedComponentOfType(entity, typeName, typeDescriptor);
-				}
-
-				if (drawComponentInspectorContext.IsModificationDeactivated)
-				{
-					context.IsModifyingEntityProperty = false;
-				}
-				if (drawComponentInspectorContext.IsModificationDeactivatedAfterEdit)
-				{
-					auto serializedComponentAfterModification = SerializedObjectFactory::CreateSerializedComponentOfType(entity, typeName, typeDescriptor);
-					Undo::RegisterComponentModification(entity, context.SerializedComponentBeforeModification, serializedComponentAfterModification);
-				}
-
-				ImGui::PopID();
-			}
-
-			ImGui::Spacing();
 		}
 
-		// Finally, if the entity has EntityDeserializationResult, we want to draw the deserialization report in the inspector.
-		// (i.e. Unrecognized components etc)
-		if (entity.HasComponent<EntityDeserializationResult>())
+		auto tryGetDeserializationResult = entity.TryGetComponent<EntityDeserializationResult>();
+		bool wasEntitySuccessfullyDeserialized = !tryGetDeserializationResult.has_value() || tryGetDeserializationResult.value().get().Success;
+		if (wasEntitySuccessfullyDeserialized)
 		{
-			EntityDeserializationResult &deserializationResult = entity.GetComponent<EntityDeserializationResult>();
+			return isEntityChangedThisFrame;
+		}
 
-			ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(1.000f, 0.000f, 0.000f, 0.310f));
-			bool const showUnrecognizedSystems = ImGui::CollapsingHeader("Unrecognized Components");
-			ImGui::PopStyleColor();
-			if (showUnrecognizedSystems)
+		// Finally, if the entity has EntityDeserializationResult && result.Success is false,
+		// we want to draw the deserialization report in the inspector (i.e. Unrecognized components...etc).
+
+		EntityDeserializationResult &deserializationResult = tryGetDeserializationResult.value();
+
+		ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(1.000f, 0.000f, 0.000f, 0.310f));
+		bool const showUnrecognizedSystems = ImGui::CollapsingHeader("Unrecognized Components");
+		ImGui::PopStyleColor();
+
+		if (showUnrecognizedSystems)
+		{
+			if (ImGui::BeginTable("Unrecognized Component Table", 1, ImGuiTableFlags_RowBg))
 			{
-				if (ImGui::BeginTable("Unrecognized Component Table", 1, ImGuiTableFlags_RowBg))
+				int indexToRemove = -1;
+				for (int i = 0; i < deserializationResult.UnrecognizedComponentTypeNames.size(); ++i)
 				{
-					int indexToRemove = -1;
-					for (int i = 0; i < deserializationResult.UnrecognizedComponentTypeNames.size(); ++i)
+					auto const &typeName = deserializationResult.UnrecognizedComponentTypeNames[i];
+
+					ImGui::TableNextRow();
+					ImGui::TableSetColumnIndex(0);
+					ImGui::PushID(typeName.c_str());
+
+					char label[128];
+					sprintf(label, "Component '%s' is unknown in the TypeRegistry.", typeName.c_str());
+					ImGui::Bullet();
+					ImGui::Selectable(label, false);
+
+					char const *popupId = "Unknown component popup";
+					if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
 					{
-						auto const &typeName = deserializationResult.UnrecognizedComponentTypeNames[i];
-
-						ImGui::TableNextRow();
-						ImGui::TableSetColumnIndex(0);
-						ImGui::PushID(typeName.c_str());
-
-						char label[128];
-						sprintf(label, "Component '%s' is unknown in the TypeRegistry.", typeName.c_str());
-						ImGui::Bullet();
-						ImGui::Selectable(label, false);
-
-						char const *popupId = "Unknown component popup";
-						if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
-						{
-							ImGui::OpenPopup(popupId);
-						}
-
-						if (ImGui::BeginPopup(popupId))
-						{
-							if (ImGui::Selectable("Copy Name"))
-							{
-								ImGui::SetClipboardText(typeName.c_str());
-							}
-							if (ImGui::Selectable("Delete"))
-							{
-								indexToRemove = i;
-							}
-							ImGui::EndPopup();
-						}
-						ImGui::PopID();
+						ImGui::OpenPopup(popupId);
 					}
 
-					if (indexToRemove != -1)
+					if (ImGui::BeginPopup(popupId))
 					{
-						deserializationResult.UnrecognizedComponentTypeNames.erase(deserializationResult.UnrecognizedComponentTypeNames.begin() + indexToRemove);
-						deserializationResult.UnrecognizedSerializedComponents.erase(deserializationResult.UnrecognizedSerializedComponents.begin() + indexToRemove);
+						if (ImGui::Selectable("Copy Name"))
+						{
+							ImGui::SetClipboardText(typeName.c_str());
+						}
+						if (ImGui::Selectable("Delete"))
+						{
+							indexToRemove = i;
+						}
+						ImGui::EndPopup();
 					}
-
-					ImGui::EndTable();
+					ImGui::PopID();
 				}
+
+				if (indexToRemove != -1)
+				{
+					deserializationResult.UnrecognizedComponentTypeNames.erase(
+						deserializationResult.UnrecognizedComponentTypeNames.begin() + indexToRemove);
+					deserializationResult.UnrecognizedSerializedComponents.erase(
+						deserializationResult.UnrecognizedSerializedComponents.begin() + indexToRemove);
+				}
+
+				ImGui::EndTable();
 			}
 		}
 
 		return isEntityChangedThisFrame;
 	}
 
-	void
-	SceneEditorLayer::drawOpenSceneDialogWindow(Scene &currentScene,
+	bool SceneEditorLayer::drawComponentInEntityInspector(EntityInspectorContext &context,
+														  std::string typeName,
+														  ComponentTypeDescriptor typeDescriptor,
+														  bool *pIsRemoved)
+	{
+		bool isEntityChangedThisFrame = false;
+
+		Entity &entity = context.Entity;
+		InspectorMode &mode = context.Mode;
+
+		if (mode == InspectorMode::Normal && !typeDescriptor.ShouldDrawInNormalInspector)
+		{
+			return isEntityChangedThisFrame;
+		}
+
+		DYE_ASSERT_LOG_WARN(typeDescriptor.Has != nullptr, "Missing 'Has' function for component '%s'.", typeName.c_str());
+		if (!typeDescriptor.Has(entity))
+		{
+			return isEntityChangedThisFrame;
+		}
+
+		bool isHeaderVisible = true;
+		bool showComponentInspector = true;
+
+		ImGui::PushID(typeName.c_str());
+		if (typeDescriptor.DrawHeader == nullptr)
+		{
+			ImGuiTreeNodeFlags const flags = ImGuiTreeNodeFlags_DefaultOpen;
+			showComponentInspector = ImGui::CollapsingHeader("##Header", &isHeaderVisible, flags);
+
+			// Spacing ahead of the component name.
+			float const spacing = ImGui::GetFrameHeight();
+			ImGui::SameLine();
+			ImGui::ItemSize(ImVec2(spacing, 0));
+
+			// The name of the component.
+			ImGui::SameLine();
+			ImGui::TextUnformatted(typeName.c_str());
+
+		}
+		else
+		{
+			// Use custom header drawer if provided.
+			DrawComponentHeaderContext drawHeaderContext;
+			showComponentInspector = typeDescriptor.DrawHeader(drawHeaderContext, entity, isHeaderVisible,
+															   typeName);
+			if (drawHeaderContext.IsModificationActivated)
+			{
+				context.IsModifyingEntityProperty = true;
+				context.SerializedComponentBeforeModification =
+					SerializedObjectFactory::CreateSerializedComponentOfType(entity, typeName, typeDescriptor);
+			}
+
+			if (drawHeaderContext.IsModificationDeactivated)
+			{
+				context.IsModifyingEntityProperty = false;
+			}
+			if (drawHeaderContext.IsModificationDeactivatedAfterEdit)
+			{
+				auto serializedComponentAfterModification = SerializedObjectFactory::CreateSerializedComponentOfType(
+					entity, typeName, typeDescriptor);
+				Undo::RegisterComponentModification(entity, context.SerializedComponentBeforeModification,
+													serializedComponentAfterModification);
+			}
+
+			isEntityChangedThisFrame |= drawHeaderContext.ComponentChanged;
+		}
+		ImGui::PopID();
+
+		bool const isRemoved = !isHeaderVisible;
+		if (isRemoved)
+		{
+			// Remove the component
+			Undo::RemoveComponent(entity, typeName, typeDescriptor);
+			*pIsRemoved = true;
+
+			isEntityChangedThisFrame = true;
+			return isEntityChangedThisFrame;
+		}
+
+		if (!showComponentInspector)
+		{
+			return isEntityChangedThisFrame;
+		}
+
+		if (typeDescriptor.DrawInspector == nullptr)
+		{
+			ImGui::TextDisabled("(?)");
+			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
+			{
+				ImGui::BeginTooltip();
+				ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+				ImGui::TextWrapped("Missing 'DrawInspector' function for component '%s'. "
+								   "It's likely that the DrawInspectorFunction is not assigned when TypeRegistry::RegisterComponentType is called.",
+								   typeName.c_str());
+				ImGui::PopTextWrapPos();
+				ImGui::EndTooltip();
+			}
+		}
+		else
+		{
+			ImGui::PushID(typeName.c_str());
+			DrawComponentInspectorContext drawComponentInspectorContext;
+			isEntityChangedThisFrame |= typeDescriptor.DrawInspector(drawComponentInspectorContext, entity);
+
+			if (drawComponentInspectorContext.IsModificationActivated)
+			{
+				context.IsModifyingEntityProperty = true;
+				context.SerializedComponentBeforeModification =
+					SerializedObjectFactory::CreateSerializedComponentOfType(entity, typeName, typeDescriptor);
+			}
+
+			if (drawComponentInspectorContext.IsModificationDeactivated)
+			{
+				context.IsModifyingEntityProperty = false;
+			}
+			if (drawComponentInspectorContext.IsModificationDeactivatedAfterEdit)
+			{
+				auto serializedComponentAfterModification = SerializedObjectFactory::CreateSerializedComponentOfType(
+					entity, typeName, typeDescriptor);
+				Undo::RegisterComponentModification(entity, context.SerializedComponentBeforeModification,
+													serializedComponentAfterModification);
+			}
+
+			ImGui::PopID();
+		}
+
+		ImGui::Spacing();
+		return isEntityChangedThisFrame;
+	}
+
+	void SceneEditorLayer::drawOpenSceneDialogWindow(Scene &currentScene,
 												std::filesystem::path &currentScenePathContext,
 												bool *pIsSceneDirty,
 												bool &openLoadDialog,

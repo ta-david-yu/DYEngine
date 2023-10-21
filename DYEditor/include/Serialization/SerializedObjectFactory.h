@@ -15,6 +15,15 @@ namespace DYE::DYEditor
 	class Scene;
 	struct ComponentTypeDescriptor;
 
+	/// To store extra information/metadata about the entity in editor build.
+	struct EntityEditorOnlyMetadata
+	{
+		/// We use this to draw the components in custom order.
+		/// Beware that the list is not always up-to-date, if you want to get a list of components of an entity,
+		/// it's better to iterate through the type descriptors list using 'Has' function in the TypeRegister.
+		std::vector<std::string> SuccessfullySerializedComponentNames {};
+	};
+
 	struct EntityDeserializationResult
 	{
 		std::vector<std::string> UnrecognizedComponentTypeNames {};
