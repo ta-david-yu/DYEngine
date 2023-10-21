@@ -4,10 +4,10 @@
 
 namespace DYE::DYEditor
 {
-	const std::string NameComponentName = "Name";
-	const std::string TransformComponentName = "Transform";
-	const std::string ParentComponentName = "Parent";
-	const std::string ChildrenComponentName = "Children";
+	char const *const NameComponentName = "Name";
+	char const *const TransformComponentName = "Transform";
+	char const *const ParentComponentName = "Parent";
+	char const *const ChildrenComponentName = "Children";
 
 	void RegisterBuiltInTypes();
 }

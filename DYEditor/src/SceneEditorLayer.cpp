@@ -1960,7 +1960,7 @@ namespace DYE::DYEditor
 					ImGui::BeginTooltip();
 					ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
 					ImGui::TextWrapped("Missing 'DrawInspector' function for component '%s'. "
-									   "It's likely that the DrawInspectorFunction is not assigned when TypeRegistry::registerComponentType is called.", typeName.c_str());
+									   "It's likely that the DrawInspectorFunction is not assigned when TypeRegistry::RegisterComponentType is called.", typeName.c_str());
 					ImGui::PopTextWrapPos();
 					ImGui::EndTooltip();
 				}
