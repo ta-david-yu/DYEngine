@@ -64,7 +64,7 @@ set(HEADER_FILES
         include/Components/SpriteRendererComponent.h
         include/Components/CameraComponent.h
         include/Components/NameComponent.h
-        include/Components/TransformComponent.h
+        include/Components/LocalTransformComponent.h
         include/Core/Systems.h
         include/Systems/Render2DSpriteSystem.h
         include/Systems/RegisterCameraSystem.h

@@ -323,21 +323,27 @@ namespace DYE::DYEditor
 
 	bool World::IsEmpty() const
 	{
-		return !m_Registry.storage<entt::entity>()->in_use();
+		return m_Registry.empty();
+		// TODO: Update syntax to EnTT 3.12.2
+		//return m_Registry.storage<EntityIdentifier>()->in_use() == 0u;
 	}
 
 	void World::Reserve(std::size_t capacity)
 	{
 		m_EntityHandles.reserve(capacity);
 		m_GUIDToEntityIdentifierMap.reserve(capacity);
-		m_Registry.storage<entt::entity>().reserve(capacity);
+		m_Registry.reserve(capacity);
+		// TODO: Update syntax to EnTT 3.12.2
+		//m_Registry.storage<EntityIdentifier>().reserve(capacity);
 	}
 
 	void World::Clear()
 	{
 		m_EntityHandles.clear();
 		m_GUIDToEntityIdentifierMap.clear();
-		m_Registry.clear<>();
+		// TODO: figure out why sometimes this registry.clear() can trigger assert error,
+		//		 this only happens in EnTT 3.12.2.
+		m_Registry.clear();
 	}
 
 	Entity World::createUntrackedEntity()
