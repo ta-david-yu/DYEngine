@@ -14,19 +14,16 @@ namespace DYE::DYEditor
 
 	void RegisterCameraSystem::InitializeLoad(DYEditor::World &world, DYE::DYEditor::InitializeLoadParameters)
 	{
-		auto& registry = DYEditor::GetWorldUnderlyingRegistry(world);
-
 		// Call this on initialize load to perform initialization step on the group.
-		auto group = registry.group<CameraComponent>(entt::get<TransformComponent>);
+		auto group = world.GetRegistry().group<CameraComponent>(Get<TransformComponent>);
 	}
 
 	void RegisterCameraSystem::Execute(DYEditor::World &world, DYE::DYEditor::ExecuteParameters params)
 	{
 		m_NumberOfRegisteredCamerasLastFrame = 0;
-		auto& registry = DYEditor::GetWorldUnderlyingRegistry(world);
 
 		// We use group here because we know RegisterCameraSystem is the main critical path for CameraComponent.
-		auto group = registry.group<CameraComponent>(entt::get<TransformComponent>);
+		auto group = world.GetRegistry().group<CameraComponent>(entt::get<TransformComponent>);
 		for (auto entity : group)
 		{
 			auto [camera, transform] = group.get<CameraComponent, TransformComponent>(entity);

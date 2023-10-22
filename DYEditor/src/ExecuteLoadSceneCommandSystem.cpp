@@ -10,7 +10,7 @@ namespace DYE::DYEditor
 {
 	void ExecuteLoadSceneCommandSystem::Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params)
 	{
-		auto view = world.GetView<LoadSceneComponent>();
+		auto view = world.GetRegistry().view<LoadSceneComponent>();
 
 		for (auto rawEntity : view)
 		{

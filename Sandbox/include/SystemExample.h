@@ -100,3 +100,10 @@ private:
 	std::filesystem::path m_ScenePath = "";
 };
 
+DYE_SYSTEM("Get View Test ImGui System", GetViewTestImGuiSystem)
+struct GetViewTestImGuiSystem final : public DYE::DYEditor::SystemBase
+{
+	inline DYE::DYEditor::ExecutionPhase GetPhase() const override { return DYE::DYEditor::ExecutionPhase::ImGui; }
+	void Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params) final;
+};
+

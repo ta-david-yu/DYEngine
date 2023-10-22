@@ -364,6 +364,10 @@ namespace DYE::DYEditor
 		static PressButtonToLoadSceneImGuiSystem _PressButtonToLoadSceneImGuiSystem;
 		TypeRegistry::RegisterSystem("Runtime Load Scene ImGui System", &_PressButtonToLoadSceneImGuiSystem);
 
+		// System located in include/SystemExample.h
+		static GetViewTestImGuiSystem _GetViewTestImGuiSystem;
+		TypeRegistry::RegisterSystem("Get View Test ImGui System", &_GetViewTestImGuiSystem);
+
 	}
 
 	class UserTypeRegister_Generated

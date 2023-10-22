@@ -77,34 +77,12 @@ namespace DYE::DYEditor
 			}
 		}
 
-		template<typename Type, typename... Types, typename... ExcludeTypes>
-		auto GetView(Exclude_t<ExcludeTypes...> excludes = {})
-		{
-			return m_Registry.view<Type, Types..., ExcludeTypes...>(excludes);
-		}
-
-		template<typename Type, typename... Types, typename... ExcludeTypes>
-		auto GetView(Exclude_t<ExcludeTypes...> excludes = {}) const
-		{
-			return m_Registry.view<Type, Types..., ExcludeTypes...>(excludes);
-		}
-
-		template<typename... OwnedTypes, typename... GetTypes, typename... ExcludeTypes>
-		auto GetGroup(Get_t<GetTypes...> gets = {}, Exclude_t<ExcludeTypes...> excludes = {})
-		{
-			return m_Registry.group<OwnedTypes...>(gets, excludes);
-		}
-
-		template<typename... OwnedTypes, typename... GetTypes, typename... ExcludeTypes>
-		auto GetGroup(Get_t<GetTypes...> gets = {}, Exclude_t<ExcludeTypes...> excludes = {}) const
-		{
-			return m_Registry.group<OwnedTypes...>(gets, excludes);
-		}
-
 		bool IsEmpty() const;
-		void Reserve(std::size_t size);
+		void Reserve(std::size_t capacity);
 		void Clear();
 		std::size_t GetNumberOfEntities() const { return m_EntityHandles.size(); }
+
+		entt::registry &GetRegistry() { return m_Registry; };
 
 	private:
 		/// Create an empty entity that is not tracked by the internal Entity Handle array & GUID map.

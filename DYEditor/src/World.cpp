@@ -323,14 +323,14 @@ namespace DYE::DYEditor
 
 	bool World::IsEmpty() const
 	{
-		return m_Registry.empty();
+		return !m_Registry.storage<entt::entity>()->in_use();
 	}
 
-	void World::Reserve(std::size_t size)
+	void World::Reserve(std::size_t capacity)
 	{
-		m_EntityHandles.reserve(size);
-		m_GUIDToEntityIdentifierMap.reserve(size);
-		m_Registry.reserve(size);
+		m_EntityHandles.reserve(capacity);
+		m_GUIDToEntityIdentifierMap.reserve(capacity);
+		m_Registry.storage<entt::entity>().reserve(capacity);
 	}
 
 	void World::Clear()

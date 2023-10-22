@@ -8,17 +8,20 @@ namespace DYE::DYEditor
 	using TypeList = entt::type_list<Type...>;
 
 	template<typename... Type>
-	using Exclude_t = TypeList<Type...>;
+	using Exclude_t = entt::exclude_t<Type...>;
 
 	template<typename... Type>
 	inline constexpr Exclude_t<Type...> Exclude{};
 
 	template<typename... Type>
-	using Get_t = TypeList<Type...>;
+	using Get_t = entt::get_t<Type...>;
 
 	template<typename... Type>
 	inline constexpr Get_t<Type...> Get{};
 
+	// The following view wrappers are abandoned for now.
+
+	/*
 	template<typename, typename, typename = void>
 	class WorldView;
 
@@ -27,14 +30,14 @@ namespace DYE::DYEditor
 	{
 	};
 
-/*
+
 	template<typename, typename, typename, typename = void>
 	class WorldView;
 
-	template<typename Entity, typename... Component, typename... Exclude>
-	class WorldView<Entity, GetType<Component...>, ExcludeType<Exclude...>>
+	template<typename Entity, typename... Components, typename... Excludes>
+	class WorldView<Entity, Get_t<Components...>, Exclude_t<Excludes...>> : protected entt::basic_view<Entity, entt::get_t < Components...>, entt::exclude_t<Excludes...>>
 	{
 	public:
-		entt::basic_view <Entity, GetType<Component...>, ExcludeType<Exclude...>> View;
+		entt::basic_view <Entity, Get_t<Components...>, Exclude_t<Excludes...>> View;
 	};*/
 }
