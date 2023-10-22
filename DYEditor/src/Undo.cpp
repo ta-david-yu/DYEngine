@@ -856,14 +856,14 @@ namespace DYE::DYEditor
 
 #ifdef DYE_EDITOR
 		auto tryGetEntityMetadata = entity.TryGetComponent<EntityEditorOnlyMetadata>();
-		if (tryGetEntityMetadata.has_value())
-		{
-			// Insert the component at the end of the serialized component list.
+		DYE_ASSERT_LOG_WARN(tryGetEntityMetadata.has_value(),
+							"In editor build, an entity should always have 'EntityEditorOnlyMetadata' component.");
 
-			auto &serializedComponentNamesInOrder = tryGetEntityMetadata.value().get().SuccessfullySerializedComponentNames;
-			operation->ComponentAdditionIndex = serializedComponentNamesInOrder.size();
-			serializedComponentNamesInOrder.push_back(componentTypeName);
-		}
+		// Insert the component at the end of the serialized component list.
+
+		auto &serializedComponentNamesInOrder = tryGetEntityMetadata.value().get().SuccessfullySerializedComponentNames;
+		operation->ComponentAdditionIndex = serializedComponentNamesInOrder.size();
+		serializedComponentNamesInOrder.push_back(componentTypeName);
 #endif
 
 		pushNewOperation(std::move(operation));
@@ -876,7 +876,9 @@ namespace DYE::DYEditor
 		operation->EntityGUID = entity.GetComponent<IDComponent>().ID;
 		operation->ComponentTypeName = componentTypeName;
 		operation->TypeDescriptor = typeDescriptor;
-		operation->SerializedComponentBeforeRemoval = SerializedObjectFactory::CreateSerializedComponentOfType(entity, componentTypeName, typeDescriptor);
+		operation->SerializedComponentBeforeRemoval = SerializedObjectFactory::CreateSerializedComponentOfType(entity,
+																											   componentTypeName,
+																											   typeDescriptor);
 
 		sprintf(&operation->Description[0], "Remove %s from Entity '%s' (GUID: %s)",
 				componentTypeName.c_str(),
@@ -887,18 +889,17 @@ namespace DYE::DYEditor
 
 #ifdef DYE_EDITOR
 		auto tryGetEntityMetadata = entity.TryGetComponent<EntityEditorOnlyMetadata>();
-		if (tryGetEntityMetadata.has_value())
+		DYE_ASSERT_LOG_WARN(tryGetEntityMetadata.has_value(),
+							"In editor build, an entity should always have 'EntityEditorOnlyMetadata' component.");
+		auto &serializedComponentNamesInOrder = tryGetEntityMetadata.value().get().SuccessfullySerializedComponentNames;
+		for (int i = 0; i < serializedComponentNamesInOrder.size(); i++)
 		{
-			auto &serializedComponentNamesInOrder = tryGetEntityMetadata.value().get().SuccessfullySerializedComponentNames;
-			for (int i = 0; i < serializedComponentNamesInOrder.size(); i++)
+			std::string &typeName = serializedComponentNamesInOrder[i];
+			if (typeName == componentTypeName)
 			{
-				std::string &typeName = serializedComponentNamesInOrder[i];
-				if (typeName == componentTypeName)
-				{
-					operation->ComponentOrderInListBeforeRemoval = i;
-					serializedComponentNamesInOrder.erase(serializedComponentNamesInOrder.cbegin() + i);
-					break;
-				}
+				operation->ComponentOrderInListBeforeRemoval = i;
+				serializedComponentNamesInOrder.erase(serializedComponentNamesInOrder.cbegin() + i);
+				break;
 			}
 		}
 #endif
