@@ -1001,6 +1001,8 @@ namespace DYE::DYEditor
 			context.IsTransformManipulatedByGizmo = true;
 		}
 
+		// Apply the transform changes back to the select entity transform.
+		// Since we store rotation as quaternion, we need to convert it from euler angles to quaternion first.
 		glm::vec3 eulerRotation = glm::eulerAngles(transform.Rotation);
 		if (Math::DecomposeTransform(transformMatrix, transform.Position, eulerRotation, transform.Scale))
 		{
