@@ -2048,7 +2048,6 @@ namespace DYE::DYEditor
 			// The name of the component.
 			ImGui::SameLine();
 			ImGui::TextUnformatted(typeName.c_str());
-
 		}
 		else
 		{

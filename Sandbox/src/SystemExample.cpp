@@ -6,6 +6,7 @@
 #include "Core/Time.h"
 #include "Math/Math.h"
 
+#include "Graphics/DebugDraw.h"
 #include "TestComponents.h"
 #include "Core/Components.h"
 #include "Components/NameComponent.h"
@@ -112,7 +113,11 @@ void PressButtonToLoadSceneImGuiSystem::Execute(DYE::DYEditor::World &world, DYE
 
 void GetViewTestImGuiSystem::Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params)
 {
-	auto viewWithExclude = world.GetRegistry().view<DYE::DYEditor::NameComponent, DYE::DYEditor::SpriteRendererComponent>(DYE::DYEditor::Exclude_t<PrintMessageOnTeardown>());
+	auto viewWithExclude = world.GetRegistry().view<
+	    DYE::DYEditor::NameComponent,
+		DYE::DYEditor::LocalTransformComponent,
+		DYE::DYEditor::SpriteRendererComponent>
+		(DYE::DYEditor::Exclude_t<PrintMessageOnTeardown>());
 
 	if (ImGui::Begin("Get View Test Window"))
 	{
@@ -120,7 +125,9 @@ void GetViewTestImGuiSystem::Execute(DYE::DYEditor::World &world, DYE::DYEditor:
 		for (auto entity : viewWithExclude)
 		{
 			auto& nameComponent = viewWithExclude.get<DYE::DYEditor::NameComponent>(entity);
+			auto& localTransformComponent = viewWithExclude.get<DYE::DYEditor::LocalTransformComponent>(entity);
 			DYE::ImGuiUtil::DrawReadOnlyTextWithLabel("Name", nameComponent.Name);
+			DYE::DebugDraw::Sphere(localTransformComponent.Position, 0.5f, DYE::Color::White);
 			count++;
 		}
 		DYE::ImGuiUtil::DrawIntControl("Count", count);

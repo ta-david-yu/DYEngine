@@ -216,7 +216,7 @@ namespace DYE::DYEditor
 			return {};
 		}
 
-		bool TransformComponent_DrawInspector(DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
+		bool LocalTransformComponent_DrawInspector(DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
 		{
 			auto &transformComponent = entity.GetComponent<LocalTransformComponent>();
 
@@ -760,7 +760,7 @@ namespace DYE::DYEditor
 				{
 					.Serialize = BuiltInFunctions::LocalTransformComponent_Serialize,
 					.Deserialize = BuiltInFunctions::LocalTransformComponent_Deserialize,
-					.DrawInspector = BuiltInFunctions::TransformComponent_DrawInspector
+					.DrawInspector = BuiltInFunctions::LocalTransformComponent_DrawInspector
 				}
 		);
 
