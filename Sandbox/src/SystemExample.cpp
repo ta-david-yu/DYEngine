@@ -51,7 +51,7 @@ void ImGuiSystem1::Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecutePa
 
 void RotateHasAngularVelocitySystem::Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params)
 {
-	auto view = world.GetRegistry().view<HasAngularVelocity, DYE::DYEditor::TransformComponent>();
+	auto view = world.GetRegistry().view<HasAngularVelocity, DYE::DYEditor::LocalTransformComponent>();
 
 	for (auto&& [entity, hasAngularVelocity, transform] : view.each())
 	{
@@ -90,7 +90,7 @@ void PrintMessageOnTeardownSystem::Execute(DYE::DYEditor::World &world, DYE::DYE
 
 	for (auto&& [entity, name, message] : view.each())
 	{
-		printf("%s: %s\n", name.Name.c_str(), message.Message.c_str());
+		DYE_LOG("%s: %s\n", name.Name.c_str(), message.Message.c_str());
 	}
 }
 
