@@ -406,9 +406,4 @@ namespace DYE::DYEditor
 		// Remove the entity from the actual world registry.
 		m_Registry.destroy(identifier);
 	}
-
-	entt::registry& GetWorldUnderlyingRegistry(World &world)
-	{
-		return world.m_Registry;
-	}
 }

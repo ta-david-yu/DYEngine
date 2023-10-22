@@ -30,6 +30,6 @@ namespace DYE::DYEditor
 		}
 
 		// Destroy all load scene command entities.
-		GetWorldUnderlyingRegistry(world).destroy(view.begin(), view.end());
+		world.GetRegistry().destroy(view.begin(), view.end());
 	}
 }

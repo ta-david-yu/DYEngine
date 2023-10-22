@@ -26,7 +26,6 @@ namespace DYE::DYEditor
 		friend class EntityDeletionOperation;
 		friend class EntityMoveOperation;
 
-		friend entt::registry& GetWorldUnderlyingRegistry(World& world);
 	public:
 		World();
 		~World() = default;
@@ -118,6 +117,4 @@ namespace DYE::DYEditor
 
 		entt::registry m_Registry;
 	};
-
-	entt::registry& GetWorldUnderlyingRegistry(World& world);
 }
