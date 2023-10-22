@@ -5,7 +5,7 @@
 namespace DYE::DYEditor
 {
 	char const *const NameComponentName = "Name";
-	char const *const TransformComponentName = "Transform";
+	char const *const LocalTransformComponentName = "LocalTransform";
 	char const *const ParentComponentName = "Parent";
 	char const *const ChildrenComponentName = "Children";
 

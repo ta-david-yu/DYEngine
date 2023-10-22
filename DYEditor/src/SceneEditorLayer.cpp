@@ -157,7 +157,7 @@ namespace DYE::DYEditor
 			// Failed to load the default scene, therefore we create an untitled new scene.
 			// Add a camera entity & camera system by default if the active scene is untitled and empty.
 			auto cameraEntity = RuntimeSceneManagement::GetActiveMainScene().World.CreateEntity("Camera");
-			cameraEntity.AddComponent<TransformComponent>().Position = {0, 0, 10};
+			cameraEntity.AddComponent<LocalTransformComponent>().Position = {0, 0, 10};
 			cameraEntity.AddComponent<CameraComponent>();
 			RuntimeSceneManagement::GetActiveMainScene().TryAddSystemByName(RegisterCameraSystem::TypeName);
 		}
@@ -911,7 +911,7 @@ namespace DYE::DYEditor
 			return changed;
 		}
 
-		auto tryGetEntityTransform = selectedEntity.TryGetComponent<TransformComponent>();
+		auto tryGetEntityTransform = selectedEntity.TryGetComponent<LocalTransformComponent>();
 		if (!tryGetEntityTransform.has_value())
 		{
 			// If the entity doesn't have a transform, we don't need to draw the gizmo.
@@ -924,7 +924,7 @@ namespace DYE::DYEditor
 			return changed;
 		}
 
-		TransformComponent &transform = tryGetEntityTransform.value().get();
+		LocalTransformComponent &transform = tryGetEntityTransform.value().get();
 
 		// End manipulating gizmo if the gizmo was not being used anymore.
 		// Make an undo operation!
@@ -934,7 +934,7 @@ namespace DYE::DYEditor
 			auto serializedModifiedTransform = SerializedObjectFactory::CreateSerializedComponentOfType
 				(
 					selectedEntity,
-					TransformComponentName,
+					LocalTransformComponentName,
 					TypeRegistry::GetComponentTypeDescriptor_TransformComponent()
 				);
 
@@ -994,7 +994,7 @@ namespace DYE::DYEditor
 			context.SerializedTransform = SerializedObjectFactory::CreateSerializedComponentOfType
 				(
 					selectedEntity,
-					TransformComponentName,
+					LocalTransformComponentName,
 					TypeRegistry::GetComponentTypeDescriptor_TransformComponent()
 				);
 
@@ -2348,7 +2348,7 @@ namespace DYE::DYEditor
 	void SceneEditorLayer::initializeNewSceneWithDefaultEntityAndSystems(Scene &newScene)
 	{
 		auto cameraEntity = newScene.World.CreateEntity("Camera");
-		cameraEntity.AddComponent<TransformComponent>().Position = {0, 0, 10};
+		cameraEntity.AddComponent<LocalTransformComponent>().Position = {0, 0, 10};
 		cameraEntity.AddComponent<CameraComponent>();
 
 		newScene.TryAddSystemByName(RegisterCameraSystem::TypeName);

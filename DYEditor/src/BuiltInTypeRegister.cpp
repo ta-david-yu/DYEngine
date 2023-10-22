@@ -195,9 +195,9 @@ namespace DYE::DYEditor
 		}
 
 		SerializationResult
-		TransformComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
+		LocalTransformComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
 		{
-			auto const &transformComponent = entity.GetComponent<TransformComponent>();
+			auto const &transformComponent = entity.GetComponent<LocalTransformComponent>();
 			serializedComponent.SetPrimitiveTypePropertyValue("Position", transformComponent.Position);
 			serializedComponent.SetPrimitiveTypePropertyValue("Scale", transformComponent.Scale);
 			serializedComponent.SetPrimitiveTypePropertyValue("Rotation", transformComponent.Rotation);
@@ -206,9 +206,9 @@ namespace DYE::DYEditor
 		}
 
 		DeserializationResult
-		TransformComponent_Deserialize(SerializedComponent &serializedComponent, DYE::DYEditor::Entity &entity)
+		LocalTransformComponent_Deserialize(SerializedComponent &serializedComponent, DYE::DYEditor::Entity &entity)
 		{
-			auto &transformComponent = entity.AddOrGetComponent<TransformComponent>();
+			auto &transformComponent = entity.AddOrGetComponent<LocalTransformComponent>();
 			transformComponent.Position = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Vector3>("Position");
 			transformComponent.Scale = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Vector3>("Scale");
 			transformComponent.Rotation = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Quaternion>("Rotation");
@@ -218,7 +218,7 @@ namespace DYE::DYEditor
 
 		bool TransformComponent_DrawInspector(DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
 		{
-			auto &transformComponent = entity.GetComponent<TransformComponent>();
+			auto &transformComponent = entity.GetComponent<LocalTransformComponent>();
 
 			bool changed = ImGuiUtil::DrawVector3Control("Position", transformComponent.Position);
 			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
@@ -253,7 +253,7 @@ namespace DYE::DYEditor
 			// The component only makes sense with a transform component.
 			// TODO: Move this somewhere else (maybe a list of required components in TypeDescriptor?)
 			//		Right now these additional entities aren't tracked by undo/redo system.
-			entity.AddOrGetComponent<TransformComponent>();
+			entity.AddOrGetComponent<LocalTransformComponent>();
 		}
 
 		SerializationResult
@@ -337,7 +337,7 @@ namespace DYE::DYEditor
 			// The component only makes sense with a transform component.
 			// TODO: Move this somewhere else (maybe a list of required components in TypeDescriptor?)
 			//		Right now these additional entities aren't tracked by undo/redo system.
-			entity.AddOrGetComponent<TransformComponent>();
+			entity.AddOrGetComponent<LocalTransformComponent>();
 		}
 
 		SerializationResult
@@ -693,7 +693,7 @@ namespace DYE::DYEditor
 	static ComponentTypeDescriptor s_NameComponentTypeDescriptor;
 	static ComponentTypeDescriptor s_ParentComponentTypeDescriptor;
 	static ComponentTypeDescriptor s_ChildrenComponentTypeDescriptor;
-	static ComponentTypeDescriptor s_TransformComponentTypeDescriptor;
+	static ComponentTypeDescriptor s_LocalTransformComponentTypeDescriptor;
 
 	void RegisterBuiltInTypes()
 	{
@@ -753,15 +753,15 @@ namespace DYE::DYEditor
 			}
 		);
 
-		s_TransformComponentTypeDescriptor = TypeRegistry::RegisterComponentType<TransformComponent>
+		s_LocalTransformComponentTypeDescriptor = TypeRegistry::RegisterComponentType<LocalTransformComponent>
 		(
-			TransformComponentName,
+			LocalTransformComponentName,
 			ComponentTypeDescriptor
-			{
-				.Serialize = BuiltInFunctions::TransformComponent_Serialize,
-				.Deserialize = BuiltInFunctions::TransformComponent_Deserialize,
-				.DrawInspector = BuiltInFunctions::TransformComponent_DrawInspector
-			}
+				{
+					.Serialize = BuiltInFunctions::LocalTransformComponent_Serialize,
+					.Deserialize = BuiltInFunctions::LocalTransformComponent_Deserialize,
+					.DrawInspector = BuiltInFunctions::TransformComponent_DrawInspector
+				}
 		);
 
 		TypeRegistry::RegisterComponentType<CameraComponent>
@@ -865,7 +865,7 @@ namespace DYE::DYEditor
 
 	ComponentTypeDescriptor TypeRegistry::GetComponentTypeDescriptor_TransformComponent()
 	{
-		return s_TransformComponentTypeDescriptor;
+		return s_LocalTransformComponentTypeDescriptor;
 	}
 
 	ComponentTypeDescriptor TypeRegistry::GetComponentTypeDescriptor_ParentComponent()
