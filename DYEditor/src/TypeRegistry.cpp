@@ -41,7 +41,7 @@ namespace DYE::DYEditor
 		auto [iterator, insertionSuccess] = s_SystemRegistry.emplace(systemTypeName, systemInstance);
 		if (!insertionSuccess)
 		{
-			DYE_LOG("A system with the name of %s has already been registered. Skip the registration with the same name.", systemTypeName.c_str());
+			DYE_LOG("A system with the name of '%s' has already been registered. Skip the registration with the same name.", systemTypeName.c_str());
 			return;
 		}
 

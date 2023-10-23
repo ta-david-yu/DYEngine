@@ -170,9 +170,9 @@ int main(int argc, char* argv[])
 	std::printf("Registered systems: \n");
 	for (auto const& systemDescriptor : systemDescriptors)
 	{
-		std::printf("\tname = %s, typeName = %s\n",
-					systemDescriptor.CustomName.c_str(),
-					systemDescriptor.FullType.c_str());
+		std::printf("\ttypeName = %s, name = %s\n",
+					systemDescriptor.FullType.c_str(),
+					systemDescriptor.CustomName.c_str());
 
 		// Insert component type registration calls.
 		generatedSourceCodeStream << SystemDescriptorToTypeRegistrationCallSource(systemDescriptor);
@@ -220,15 +220,20 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 	std::regex const dyeComponentKeywordPattern(
 		R"lit(^\s*DYE_COMPONENT\(\s*([[:alnum:]_]+(?:\s*::\s*[[:alnum:]_]+)*)(?:,\s*"([[:alpha:]][\w\s]*?)")?\s*\)\s*$)lit"
 	);
+
 	std::regex const dyeSystemKeywordPattern(
-		R"lit(^\s*DYE_SYSTEM\(\s*"([[:alpha:]][\w\s]*?)",\s*([[:alnum:]_]+(::[[:alnum:]_]+)*)\)\s*$)lit"
+		// Old
+		// DYE_SYSTEM("name", type)
+		//R"lit(^\s*DYE_SYSTEM\(\s*"([[:alpha:]][\w\s]*?)",\s*([[:alnum:]_]+(::[[:alnum:]_]+)*)\)\s*$)lit"
+
+		R"lit(^\s*DYE_SYSTEM\(\s*([[:alnum:]_]+(?:\s*::\s*[[:alnum:]_]+)*)(?:,\s*"([[:alpha:]][\w\s]*?)")?\s*\)\s*$)lit"
 	);
 #else
 	std::regex const dyeComponentKeywordPattern(
 		R"lit(^\s*DYE_COMPONENT\(\s*([a-zA-Z0-9_]+(?:\s*::\s*[a-zA-Z0-9_]+)*)(?:,\s*"([a-zA-Z][\w\s]*?)")?\s*\)\s*$)lit"
 	);
 	std::regex const dyeSystemKeywordPattern(
-		R"lit(^\s*DYE_SYSTEM\(\s*"([a-zA-Z][\w\s]*?)",\s*([a-zA-Z0-9_]+[::[a-zA-Z0-9_]+]*)\)\s*$)lit"
+		R"lit(^\s*DYE_SYSTEM\(\s*([a-zA-Z0-9_]+(?:\s*::\s*[a-zA-Z0-9_]+)*)(?:,\s*"([a-zA-Z][\w\s]*?)")?\s*\)\s*$)lit"
 	);
 #endif
 	std::smatch match;
@@ -323,8 +328,6 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 			std::string const& componentFullTypeName = match[1].str();
 			std::string const& componentDisplayName = match[2].str();
 
-			printf("'%s' Match Count: %zu\n", line.c_str(), match.size());
-
 			bool hasOptionalDisplayName = !componentDisplayName.empty();
 			if (hasOptionalDisplayName)
 			{
@@ -362,13 +365,13 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 				isInComponentScope = false;
 			}
 
-			std::string const& systemName = match[1].str();
-			std::string const& systemType = match[2].str();
+			std::string const& systemType = match[1].str();
+			std::string const& systemName = match[2].str();
 
 			currentSystemScopeDescriptor = SystemDescriptor{
 				.LocatedHeaderFile = relativeFilePath.string(),
+				.FullType = systemType,
 				.CustomName = systemName,
-				.FullType = systemType
 			};
 
 			result.SystemDescriptors.emplace_back(currentSystemScopeDescriptor);

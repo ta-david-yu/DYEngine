@@ -11,10 +11,11 @@
 /// DYE_SYSTEM("Foo", SystemFoo) \n
 /// struct SystemFoo final : public SystemBase { //... } \n\n
 /// Notice that the class should always be derived from SystemBase class.
-/// \param systemName the string name that will be used to identify the system in DYEditor.
+///
 /// \param systemType the system type. You should include namespace(s) as if the type is being accessed in global scope.
+/// \param systemName the string name that will be used to identify the system in DYEditor.
 /// \param optionalParameters ...to define tooltip etc
-#define DYE_SYSTEM(systemName, systemType, ...)
+#define DYE_SYSTEM(systemType, systemName, ...)
 
 namespace DYE::DYEditor
 {

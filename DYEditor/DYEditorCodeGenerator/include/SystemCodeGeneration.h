@@ -5,8 +5,8 @@
 struct SystemDescriptor
 {
 	std::string LocatedHeaderFile;
-	std::string CustomName;
 	std::string FullType;
+	std::string CustomName;
 };
 
 char const *SystemRegistrationCallSource =
