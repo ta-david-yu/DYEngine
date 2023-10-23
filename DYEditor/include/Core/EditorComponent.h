@@ -24,9 +24,12 @@
 // 	DYE_COMPONENT(FooComponent, "Foo")
 // 	struct FooComponent { }
 
-// TODO: a bunch of additional component helper macros
-
-/// Similar to FormerlySerializedAsAttribute in Unity. String literals.
+/// Similar to FormerlySerializedAsAttribute in Unity. String literals.\n\n
+///
+/// Usage Example:\n
+/// DYE_COMPONENT(DYE::DYEditor::NameComponent, "Name") \n
+/// DYE_FORMERLY_KNOWN_AS("Name") \n
+/// struct NameComponent { } \n\n
 #define DYE_FORMERLY_KNOWN_AS(componentTypeNames...)
 
 /// The class/struct type which has been marked with DYE_COMPONENT and immediately followed by this macro will keep track of a list of additional components
@@ -35,6 +38,7 @@
 ///
 /// Usage Example:\n
 /// DYE_COMPONENT(DYE::DYEditor::MeshRenderer, "MeshRenderer") \n
+/// DYE_ADD_COMPONENT_HINT(DYE::DYEditor::LocalTransform, DYE::DYEditor::MeshFilter) \n
 /// struct MeshRenderer { } \n\n
 ///
 /// As the syntax merely hints/suggests the accompany component types,
