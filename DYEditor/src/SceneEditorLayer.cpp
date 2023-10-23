@@ -1874,12 +1874,20 @@ namespace DYE::DYEditor
 						continue;
 					}
 
-					if (ImGui::Selectable(typeName.c_str()))
+					bool const hasExplicitDisplayName = typeDescriptor.GetDisplayName != nullptr;
+					char const *displayName = hasExplicitDisplayName ? typeDescriptor.GetDisplayName() : typeName.c_str();
+
+					if (ImGui::Selectable(displayName))
 					{
 						// Add the component.
 						Undo::AddComponent(entity, typeName, typeDescriptor);
 						isEntityChangedThisFrame = true;
 						ImGui::CloseCurrentPopup();
+					}
+
+					if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+					{
+						ImGui::SetTooltip(typeName.c_str());
 					}
 				}
 				ImGui::EndListBox();
@@ -1982,7 +1990,7 @@ namespace DYE::DYEditor
 
 					if (ImGui::BeginPopup(popupId))
 					{
-						if (ImGui::Selectable("Copy Name"))
+						if (ImGui::Selectable("Copy Type Name"))
 						{
 							ImGui::SetClipboardText(typeName.c_str());
 						}
