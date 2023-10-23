@@ -49,7 +49,19 @@ namespace DYE::DYEditor
 		drawHeaderContext.IsModificationDeactivatedAfterEdit |= ImGui::IsItemDeactivatedAfterEdit();
 
 		ImGui::SameLine();
-		ImGui::TextUnformatted(headerLabel.c_str());
+
+		if (!drawHeaderContext.IsInDebugMode)
+		{
+			ImGui::TextUnformatted(headerLabel.c_str());
+			if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+			{
+				ImGui::SetTooltip(drawHeaderContext.DrawnComponentTypeName);
+			}
+		}
+		else
+		{
+			ImGui::Text("%s (%s)", headerLabel.c_str(), drawHeaderContext.DrawnComponentTypeName);
+		}
 
 		return showInspector;
 	}

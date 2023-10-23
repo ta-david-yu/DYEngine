@@ -934,7 +934,7 @@ namespace DYE::DYEditor
 			auto serializedModifiedTransform = SerializedObjectFactory::CreateSerializedComponentOfType
 				(
 					selectedEntity,
-					LocalTransformComponentName,
+					LocalTransformComponentTypeName,
 					TypeRegistry::GetComponentTypeDescriptor_TransformComponent()
 				);
 
@@ -994,7 +994,7 @@ namespace DYE::DYEditor
 			context.SerializedTransform = SerializedObjectFactory::CreateSerializedComponentOfType
 				(
 					selectedEntity,
-					LocalTransformComponentName,
+					LocalTransformComponentTypeName,
 					TypeRegistry::GetComponentTypeDescriptor_TransformComponent()
 				);
 
@@ -1817,7 +1817,7 @@ namespace DYE::DYEditor
 			{
 				context.IsModifyingEntityProperty = true;
 				context.SerializedComponentBeforeModification =
-					SerializedObjectFactory::CreateSerializedComponentOfType(entity, NameComponentName,
+					SerializedObjectFactory::CreateSerializedComponentOfType(entity, NameComponentTypeName,
 																			 TypeRegistry::GetComponentTypeDescriptor_NameComponent());
 			}
 
@@ -1828,7 +1828,7 @@ namespace DYE::DYEditor
 			if (ImGui::IsItemDeactivatedAfterEdit())
 			{
 				auto serializedNameComponentAfterModification =
-					SerializedObjectFactory::CreateSerializedComponentOfType(entity, NameComponentName,
+					SerializedObjectFactory::CreateSerializedComponentOfType(entity, NameComponentTypeName,
 																			 TypeRegistry::GetComponentTypeDescriptor_NameComponent());
 				Undo::RegisterComponentModification(entity, context.SerializedComponentBeforeModification,
 													serializedNameComponentAfterModification);
@@ -2020,6 +2020,9 @@ namespace DYE::DYEditor
 		Entity &entity = context.Entity;
 		InspectorMode &mode = context.Mode;
 
+		bool const hasExplicitDisplayName = typeDescriptor.GetDisplayName != nullptr;
+		char const *displayName = hasExplicitDisplayName? typeDescriptor.GetDisplayName() : typeName.c_str();
+
 		if (mode == InspectorMode::Normal && !typeDescriptor.ShouldDrawInNormalInspector)
 		{
 			return isEntityChangedThisFrame;
@@ -2035,7 +2038,9 @@ namespace DYE::DYEditor
 		bool showComponentInspector = true;
 
 		ImGui::PushID(typeName.c_str());
-		if (typeDescriptor.DrawHeader == nullptr)
+
+		bool const useDefaultHeader = typeDescriptor.DrawHeader == nullptr;
+		if (useDefaultHeader)
 		{
 			ImGuiTreeNodeFlags const flags = ImGuiTreeNodeFlags_DefaultOpen;
 			showComponentInspector = ImGui::CollapsingHeader("##Header", &isHeaderVisible, flags);
@@ -2045,16 +2050,32 @@ namespace DYE::DYEditor
 			ImGui::SameLine();
 			ImGui::ItemSize(ImVec2(spacing, 0));
 
-			// The name of the component.
+			// The display name of the component.
 			ImGui::SameLine();
-			ImGui::TextUnformatted(typeName.c_str());
+
+			if (mode == InspectorMode::Normal)
+			{
+				ImGui::TextUnformatted(displayName);
+				if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+				{
+					ImGui::SetTooltip(typeName.c_str());
+				}
+			}
+			else
+			{
+				ImGui::Text("%s (%s)", displayName, typeName.c_str());
+			}
 		}
 		else
 		{
 			// Use custom header drawer if provided.
-			DrawComponentHeaderContext drawHeaderContext;
-			showComponentInspector = typeDescriptor.DrawHeader(drawHeaderContext, entity, isHeaderVisible,
-															   typeName);
+			DrawComponentHeaderContext drawHeaderContext
+			{
+				.DrawnComponentTypeName = typeName.c_str(),
+				.IsInDebugMode = (mode == InspectorMode::Debug),
+			};
+
+			showComponentInspector = typeDescriptor.DrawHeader(drawHeaderContext, entity, isHeaderVisible, displayName);
 			if (drawHeaderContext.IsModificationActivated)
 			{
 				context.IsModifyingEntityProperty = true;
@@ -2094,7 +2115,8 @@ namespace DYE::DYEditor
 			return isEntityChangedThisFrame;
 		}
 
-		if (typeDescriptor.DrawInspector == nullptr)
+		bool const hasDrawInspectorFunction = typeDescriptor.DrawInspector != nullptr;
+		if (!hasDrawInspectorFunction)
 		{
 			ImGui::TextDisabled("(?)");
 			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))

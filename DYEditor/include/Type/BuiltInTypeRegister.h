@@ -2,12 +2,14 @@
 
 #include <string>
 
+#include "Util/Macro.h"
+
 namespace DYE::DYEditor
 {
-	char const *const NameComponentName = "Name";
-	char const *const LocalTransformComponentName = "LocalTransform";
-	char const *const ParentComponentName = "Parent";
-	char const *const ChildrenComponentName = "Children";
+	char const *const NameComponentTypeName = NAME_OF(DYE::DYEditor::NameComponent);
+	char const *const LocalTransformComponentTypeName = NAME_OF(DYE::DYEditor::LocalTransform);
+	char const *const ParentComponentTypeName = NAME_OF(DYE::DYEditor::Parent);
+	char const *const ChildrenComponentTypeName = NAME_OF(DYE::DYEditor::Children);
 
 	void RegisterBuiltInTypes();
 }
