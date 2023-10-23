@@ -2,6 +2,9 @@
 
 #include "Core/EditorProperty.h"
 
+/// A class/struct marked with this macro will be identified by DYEditor code generator. DYEditor code generator will
+/// then generate code that registers the marked class/struct into TypeRegistry as a component.\n\n
+///
 /// Usage Example:
 /// 	DYE_COMPONENT(FooComponent, "Foo")
 /// 	struct FooComponent { }
