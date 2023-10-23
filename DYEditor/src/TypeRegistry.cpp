@@ -143,6 +143,6 @@ namespace DYE::DYEditor
 			return;
 		}
 
-		DYE_LOG("Register component type (name = %s)", componentTypeName.c_str());
+		DYE_LOG("Register component type (typeName = %s)", componentTypeName.c_str());
 	}
 }

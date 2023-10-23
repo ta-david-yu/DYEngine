@@ -7,6 +7,7 @@
 //------------------------------------------------------------------------------
 #include "Type/UserTypeRegister.h"
 
+#include "Util/Macro.h"
 #include "Type/TypeRegistry.h"
 #include "Serialization/SerializedObjectFactory.h"
 #include "ImGui/ImGuiUtil.h"
@@ -35,7 +36,7 @@ namespace DYE::DYEditor
 		// Component located in include/TestComponents.h
 		TypeRegistry::RegisterComponentType<TestNamespace::TestComponentA>
 			(
-				"TestA",
+				NAME_OF(TestNamespace::TestComponentA),
 				ComponentTypeDescriptor
 					{
 						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
@@ -62,14 +63,15 @@ namespace DYE::DYEditor
 							changed |= ImGuiUtil::DrawIntControl("IntegerValue", component.IntegerValue); updateContextAfterDrawControlCall(drawInspectorContext);
 							ImGui::BeginDisabled(true); ImGuiUtil::DrawReadOnlyTextWithLabel("intCannotBeSerialized", "Variable of unsupported type 'int'"); ImGui::EndDisabled();
 							return changed;
-						}
+						},
+						.GetDisplayName = []() { return "TestA"; },
 					}
 			);
 
 		// Component located in include/TestComponents.h
 		TypeRegistry::RegisterComponentType<TestNamespace::Subnamespace::SubtestComponentA>
 			(
-				"SubTestA",
+				NAME_OF(TestNamespace::Subnamespace::SubtestComponentA),
 				ComponentTypeDescriptor
 					{
 						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
@@ -90,14 +92,15 @@ namespace DYE::DYEditor
 							auto& component = entity.GetComponent<TestNamespace::Subnamespace::SubtestComponentA>();
 							changed |= ImGuiUtil::DrawIntControl("IntegerValue", component.IntegerValue); updateContextAfterDrawControlCall(drawInspectorContext);
 							return changed;
-						}
+						},
+						.GetDisplayName = []() { return "TestNamespace::Subnamespace::SubtestComponentA"; },
 					}
 			);
 
 		// Component located in include/TestComponents.h
 		TypeRegistry::RegisterComponentType<TestComponentB>
 			(
-				"TestB",
+				NAME_OF(TestComponentB),
 				ComponentTypeDescriptor
 					{
 						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
@@ -129,14 +132,15 @@ namespace DYE::DYEditor
 							changed |= ImGuiUtil::DrawVector3Control("Position", component.Position); updateContextAfterDrawControlCall(drawInspectorContext);
 							changed |= ImGuiUtil::DrawVector4Control("vec4", component.vec4); updateContextAfterDrawControlCall(drawInspectorContext);
 							return changed;
-						}
+						},
+						.GetDisplayName = []() { return "TestComponentB"; },
 					}
 			);
 
 		// Component located in include/TestComponents.h
 		TypeRegistry::RegisterComponentType<ComponentWithAllPrimitiveProperties>
 			(
-				"ComponentWithAllPrimitiveProperties",
+				NAME_OF(ComponentWithAllPrimitiveProperties),
 				ComponentTypeDescriptor
 					{
 						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
@@ -194,14 +198,15 @@ namespace DYE::DYEditor
 								updateContextAfterDrawControlCall(drawInspectorContext);
 							}
 							return changed;
-						}
+						},
+						.GetDisplayName = []() { return "ComponentWithAllPrimitiveProperties"; },
 					}
 			);
 
 		// Component located in include/TestComponents.h
 		TypeRegistry::RegisterComponentType<HasAngularVelocity>
 			(
-				"HasAngularVelocity",
+				NAME_OF(HasAngularVelocity),
 				ComponentTypeDescriptor
 					{
 						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
@@ -222,14 +227,15 @@ namespace DYE::DYEditor
 							auto& component = entity.GetComponent<HasAngularVelocity>();
 							changed |= ImGuiUtil::DrawFloatControl("AngleDegreePerSecond", component.AngleDegreePerSecond); updateContextAfterDrawControlCall(drawInspectorContext);
 							return changed;
-						}
+						},
+						.GetDisplayName = []() { return "HasAngularVelocity"; },
 					}
 			);
 
 		// Component located in include/TestComponents.h
 		TypeRegistry::RegisterComponentType<CreateEntity>
 			(
-				"CreateEntity",
+				NAME_OF(CreateEntity),
 				ComponentTypeDescriptor
 					{
 						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
@@ -253,14 +259,15 @@ namespace DYE::DYEditor
 							changed |= ImGuiUtil::DrawTextControl("EntityNamePrefix", component.EntityNamePrefix); updateContextAfterDrawControlCall(drawInspectorContext);
 							changed |= ImGuiUtil::DrawIntControl("NumberOfEntitiesToCreate", component.NumberOfEntitiesToCreate); updateContextAfterDrawControlCall(drawInspectorContext);
 							return changed;
-						}
+						},
+						.GetDisplayName = []() { return "CreateEntity"; },
 					}
 			);
 
 		// Component located in include/TestComponents.h
 		TypeRegistry::RegisterComponentType<PrintMessageOnTeardown>
 			(
-				"PrintMessageOnTeardown",
+				NAME_OF(PrintMessageOnTeardown),
 				ComponentTypeDescriptor
 					{
 						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
@@ -281,14 +288,15 @@ namespace DYE::DYEditor
 							auto& component = entity.GetComponent<PrintMessageOnTeardown>();
 							changed |= ImGuiUtil::DrawTextControl("Message", component.Message); updateContextAfterDrawControlCall(drawInspectorContext);
 							return changed;
-						}
+						},
+						.GetDisplayName = []() { return "PrintMessageOnTeardown"; },
 					}
 			);
 
 		// Component located in include/AnotherTestComponents.h
 		TypeRegistry::RegisterComponentType<TestComponentC>
 			(
-				"TestC",
+				NAME_OF(TestComponentC),
 				ComponentTypeDescriptor
 					{
 						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
@@ -316,7 +324,8 @@ namespace DYE::DYEditor
 							changed |= ImGuiUtil::DrawTextControl("TestName", component.TestName); updateContextAfterDrawControlCall(drawInspectorContext);
 							changed |= ImGuiUtil::DrawCharControl("TestChar", component.TestChar); updateContextAfterDrawControlCall(drawInspectorContext);
 							return changed;
-						}
+						},
+						.GetDisplayName = []() { return "TestC"; },
 					}
 			);
 

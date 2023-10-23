@@ -3,7 +3,7 @@
 #include "Core/EditorCore.h"
 #include "Math/Color.h"
 
-DYE_COMPONENT("TestC", TestComponentC)
+DYE_COMPONENT(TestComponentC, "TestC")
 struct TestComponentC
 {
 	DYE_PROPERTY()

@@ -2,27 +2,14 @@
 
 #include "Core/EditorProperty.h"
 
-/// A class/struct marked with this macro will be identified by DYEditor code generator. DYEditor code generator will
-/// then generate code that registers the marked class/struct into TypeRegistry as a component.\n\n
+/// Usage Example:
+/// 	DYE_COMPONENT(FooComponent, "Foo")
+/// 	struct FooComponent { }
 ///
-/// Usage Example:\n
-/// DYE_COMPONENT("Foo", FooComponent) \n
-/// struct FooComponent { }
+/// \param componentType the same as before, but will also be used as the id (key) to the component type descriptor.
+/// \param optionalDisplayName if specified, whenever the component type is to be referred to in an user interface, optionalDisplayName will be shown instead. This should be a string literal.
 ///
-/// \param componentName the string name that will be used to identify the component type in DYEditor.
-/// \param componentType the component type. You should include namespace(s) as if the type is being accessed in global scope.
-/// \param optionalParameters ...to define custom draw function, tooltip etc
-#define DYE_COMPONENT(componentName, componentType, ...)
-
-// TODO: redesign DYE_COMPONENT syntax
-//
-// DYE_COMPONENT(componentType, optionalDisplayName, ...)
-// \param componentType the same as before, but will also be used as the id (key) to the component type descriptor.
-// \param optionalDisplayName if specified, whenever the component type is to be referred to in an user interface, optionalDisplayName will be shown instead. This should be a string literal.
-//
-// Example:
-// 	DYE_COMPONENT(FooComponent, "Foo")
-// 	struct FooComponent { }
+#define DYE_COMPONENT(componentType, optionalDisplayName...)
 
 /// Similar to FormerlySerializedAsAttribute in Unity. String literals.\n\n
 ///
