@@ -33,6 +33,7 @@ namespace DYE::DYEditor
 	{
 		// Insert user type registration here...
 
+
 		// Component located in include/TestComponents.h
 		TypeRegistry::RegisterComponentType<TestNamespace::TestComponentA>
 			(
@@ -231,6 +232,7 @@ namespace DYE::DYEditor
 						.GetDisplayName = []() { return "HasAngularVelocity"; },
 					}
 			);
+		TypeRegistry::RegisterFormerlyKnownTypeName("HasAngularVelocity_OldName", NAME_OF(HasAngularVelocity));
 
 		// Component located in include/TestComponents.h
 		TypeRegistry::RegisterComponentType<CreateEntity>
@@ -263,6 +265,8 @@ namespace DYE::DYEditor
 						.GetDisplayName = []() { return "CreateEntity"; },
 					}
 			);
+		TypeRegistry::RegisterFormerlyKnownTypeName("Createee", NAME_OF(CreateEntity));
+		TypeRegistry::RegisterFormerlyKnownTypeName("CreateeeHA", NAME_OF(CreateEntity));
 
 		// Component located in include/TestComponents.h
 		TypeRegistry::RegisterComponentType<PrintMessageOnTeardown>
@@ -292,6 +296,7 @@ namespace DYE::DYEditor
 						.GetDisplayName = []() { return "PrintMessageOnTeardown"; },
 					}
 			);
+		TypeRegistry::RegisterFormerlyKnownTypeName("PrintMessageOnTeardown2", NAME_OF(PrintMessageOnTeardown));
 
 		// Component located in include/AnotherTestComponents.h
 		TypeRegistry::RegisterComponentType<TestComponentC>
@@ -336,10 +341,12 @@ namespace DYE::DYEditor
 		// System located in include/SystemExample.h
 		static UpdateSystemB _UpdateSystemB;
 		TypeRegistry::RegisterSystem("Update System B", &_UpdateSystemB);
+		TypeRegistry::RegisterFormerlyKnownTypeName("Update System B Old Name", "Update System B");
 
 		// System located in include/SystemExample.h
 		static FixedUpdateSystem1 _FixedUpdateSystem1;
 		TypeRegistry::RegisterSystem("Fixed Update System 1", &_FixedUpdateSystem1);
+		TypeRegistry::RegisterFormerlyKnownTypeName("Fixed Update System 1 Old Name", "Fixed Update System 1");
 
 		// System located in include/SystemExample.h
 		static FixedUpdateSystem2 _FixedUpdateSystem2;
@@ -372,7 +379,6 @@ namespace DYE::DYEditor
 		// System located in include/SystemExample.h
 		static GetViewTestImGuiSystem _GetViewTestImGuiSystem;
 		TypeRegistry::RegisterSystem("Get View Test ImGui System", &_GetViewTestImGuiSystem);
-
 	}
 
 	class UserTypeRegister_Generated

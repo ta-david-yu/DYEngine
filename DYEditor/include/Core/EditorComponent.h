@@ -14,14 +14,6 @@
 ///
 #define DYE_COMPONENT(componentType, optionalDisplayName...)
 
-/// Similar to FormerlySerializedAsAttribute in Unity. String literals.\n\n
-///
-/// Usage Example:\n
-/// DYE_COMPONENT(DYE::DYEditor::NameComponent, "Name") \n
-/// DYE_FORMERLY_KNOWN_AS("Name") \n
-/// struct NameComponent { } \n\n
-#define DYE_FORMERLY_KNOWN_AS(componentTypeNames...)
-
 /// The class/struct type which has been marked with DYE_COMPONENT and immediately followed by this macro will keep track of a list of additional components
 /// which should be used together on the same entity, in order for it to take effect.
 /// For instance, to be rendered by the render system, an entity with a renderer component should also have a transform component.\n\n

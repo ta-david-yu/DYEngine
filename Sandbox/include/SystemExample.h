@@ -18,6 +18,7 @@ private:
 };
 
 DYE_SYSTEM(UpdateSystemB, "Update System B")
+DYE_FORMERLY_KNOWN_AS("Update System B Old Name")
 struct UpdateSystemB final : public DYE::DYEditor::SystemBase
 {
 	inline DYE::DYEditor::ExecutionPhase GetPhase() const override { return DYE::DYEditor::ExecutionPhase::Update; }
@@ -33,6 +34,7 @@ private:
 };
 
 DYE_SYSTEM(FixedUpdateSystem1, "Fixed Update System 1")
+DYE_FORMERLY_KNOWN_AS("Fixed Update System 1 Old Name")
 struct FixedUpdateSystem1 final : public DYE::DYEditor::SystemBase
 {
 	inline DYE::DYEditor::ExecutionPhase GetPhase() const override { return DYE::DYEditor::ExecutionPhase::FixedUpdate; }

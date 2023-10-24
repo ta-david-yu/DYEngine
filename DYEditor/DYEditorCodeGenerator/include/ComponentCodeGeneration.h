@@ -11,6 +11,7 @@ struct ComponentDescriptor
 	bool HasOptionalDisplayName;
 	std::string OptionalDisplayName;
 	std::vector<PropertyDescriptor> Properties;
+	std::vector<std::string> FormerlyKnownNames;
 };
 
 char const *ComponentTypeRegistrationCallSourceStart =
@@ -76,7 +77,10 @@ R"(							return changed;
 						.GetDisplayName = []() { return "${COMPONENT_DISPLAY_NAME}"; },
 					}
 			);
+)";
 
+char const* FormerlyKnownComponentTypeNameRegistrationCallSource =
+R"(		TypeRegistry::RegisterFormerlyKnownTypeName("${FORMERLY_KNOWN_TYPE_NAME}", NAME_OF(${COMPONENT_FULL_TYPE}));
 )";
 
 std::string ComponentDescriptorToTypeRegistrationCallSource(ComponentDescriptor const& descriptor)
@@ -84,29 +88,47 @@ std::string ComponentDescriptorToTypeRegistrationCallSource(ComponentDescriptor 
 	auto const& componentDisplayName = descriptor.HasOptionalDisplayName? descriptor.OptionalDisplayName : descriptor.FullType;
 	auto const& componentFullType = descriptor.FullType;
 
-	std::string result = "\t\t// Component located in " + descriptor.LocatedHeaderFile + "\n";
+	std::string result = "\n\t\t// Component located in " + descriptor.LocatedHeaderFile + "\n";
 	result.append(ComponentTypeRegistrationCallSourceStart);
-	result.append(SerializeLambdaSourceStart);
-	result.append(!descriptor.Properties.empty()? SerializeGetComponent : SerializeGetEmptyComponent);
-	for (auto const& propertyDescriptor : descriptor.Properties)
 	{
-		result.append(PropertyDescriptorToSerializeCallSource(descriptor.FullType, propertyDescriptor));
-	}
-	result.append(SerializeLambdaSourceEnd);
-	result.append(DeserializeLambdaSourceStart);
-	result.append(!descriptor.Properties.empty()? DeserializeAddOrGetComponent : DeserializeAddOrGetEmptyComponent);
-	for (auto const& propertyDescriptor : descriptor.Properties)
-	{
-		result.append(PropertyDescriptorToDeserializeCallSource(descriptor.FullType, propertyDescriptor));
-	}
-	result.append(DeserializeLambdaSourceEnd);
-	result.append(DrawInspectorLambdaSourceStart);
-	result.append(!descriptor.Properties.empty()? DrawInspectorGetComponent : DrawInspectorGetEmptyComponent);
-	for (auto const& propertyDescriptor : descriptor.Properties)
-	{
-		result.append(PropertyDescriptorToImGuiUtilControlCallSource(descriptor.FullType, propertyDescriptor));
+		result.append(SerializeLambdaSourceStart);
+		{
+			result.append(!descriptor.Properties.empty() ? SerializeGetComponent : SerializeGetEmptyComponent);
+			for (auto const &propertyDescriptor: descriptor.Properties)
+			{
+				result.append(PropertyDescriptorToSerializeCallSource(descriptor.FullType, propertyDescriptor));
+			}
+		}
+		result.append(SerializeLambdaSourceEnd);
+
+		result.append(DeserializeLambdaSourceStart);
+		{
+			result.append(
+				!descriptor.Properties.empty() ? DeserializeAddOrGetComponent : DeserializeAddOrGetEmptyComponent);
+			for (auto const &propertyDescriptor: descriptor.Properties)
+			{
+				result.append(PropertyDescriptorToDeserializeCallSource(descriptor.FullType, propertyDescriptor));
+			}
+		}
+		result.append(DeserializeLambdaSourceEnd);
+
+		result.append(DrawInspectorLambdaSourceStart);
+		{
+			result.append(!descriptor.Properties.empty() ? DrawInspectorGetComponent : DrawInspectorGetEmptyComponent);
+			for (auto const &propertyDescriptor: descriptor.Properties)
+			{
+				result.append(PropertyDescriptorToImGuiUtilControlCallSource(descriptor.FullType, propertyDescriptor));
+			}
+		}
 	}
 	result.append(ComponentTypeRegistrationCallSourceEnd);
+
+	for (std::string const &formerlyKnownName : descriptor.FormerlyKnownNames)
+	{
+		std::regex const formerlyKnownNameKeywordPattern(R"(\$\{FORMERLY_KNOWN_TYPE_NAME\})");
+		auto const &registerFormerlyKnownNameCall = std::regex_replace(FormerlyKnownComponentTypeNameRegistrationCallSource, formerlyKnownNameKeywordPattern, formerlyKnownName);
+		result.append(registerFormerlyKnownNameCall);
+	}
 
 	std::regex const componentDisplayNameKeywordPattern(R"(\$\{COMPONENT_DISPLAY_NAME\})");
 	std::regex const componentFullTypeKeywordPattern(R"(\$\{COMPONENT_FULL_TYPE\})");

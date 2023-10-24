@@ -151,16 +151,18 @@ int main(int argc, char* argv[])
 	{
 		if (componentDescriptor.HasOptionalDisplayName)
 		{
-			std::printf("\ttypeName = %s, numberOfProperties = %zu, optionalDisplayName = %s\n",
+			std::printf("\ttypeName = %s, numberOfProperties = %zu, optionalDisplayName = %s, formerlyKnowNamesCount = %zu\n",
 						componentDescriptor.FullType.c_str(),
 						componentDescriptor.Properties.size(),
-						componentDescriptor.OptionalDisplayName.c_str());
+						componentDescriptor.OptionalDisplayName.c_str(),
+						componentDescriptor.FormerlyKnownNames.size());
 		}
 		else
 		{
-			std::printf("\ttypename = %s, numberOfProperties = %zu\n",
+			std::printf("\ttypename = %s, numberOfProperties = %zu, formerlyKnowNamesCount = %zu\n",
 						componentDescriptor.FullType.c_str(),
-						componentDescriptor.Properties.size());
+						componentDescriptor.Properties.size(),
+						componentDescriptor.FormerlyKnownNames.size());
 		}
 
 		// Insert component type registration calls.
@@ -170,9 +172,10 @@ int main(int argc, char* argv[])
 	std::printf("Registered systems: \n");
 	for (auto const& systemDescriptor : systemDescriptors)
 	{
-		std::printf("\ttypeName = %s, name = %s\n",
+		std::printf("\ttypeName = %s, name = %s, formerlyKnowNamesCount = %zu\n",
 					systemDescriptor.FullType.c_str(),
-					systemDescriptor.CustomName.c_str());
+					systemDescriptor.CustomName.c_str(),
+					systemDescriptor.FormerlyKnownNames.size());
 
 		// Insert component type registration calls.
 		generatedSourceCodeStream << SystemDescriptorToTypeRegistrationCallSource(systemDescriptor);
@@ -218,25 +221,33 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 	);
 #if defined(_MSC_VER)
 	std::regex const dyeComponentKeywordPattern(
-		R"lit(^\s*DYE_COMPONENT\(\s*([[:alnum:]_]+(?:\s*::\s*[[:alnum:]_]+)*)(?:,\s*"([[:alpha:]][\w\s]*?)")?\s*\)\s*$)lit"
+		R"lit(^\s*DYE_COMPONENT\(\s*([[:alnum:]_]+(?:\s*::\s*[[:alnum:]_]+)*)(?:\s*,\s*"([[:alpha:]][\w\s]*?)")?\s*\)\s*$)lit"
 	);
 
 	std::regex const dyeSystemKeywordPattern(
-		R"lit(^\s*DYE_SYSTEM\(\s*([[:alnum:]_]+(?:\s*::\s*[[:alnum:]_]+)*)(?:,\s*"([[:alpha:]][\w\s]*?)")?\s*\)\s*$)lit"
+		R"lit(^\s*DYE_SYSTEM\(\s*([[:alnum:]_]+(?:\s*::\s*[[:alnum:]_]+)*)(?:\s*,\s*"([[:alpha:]][\w\s]*?)")?\s*\)\s*$)lit"
 	);
 #else
 	std::regex const dyeComponentKeywordPattern(
-		R"lit(^\s*DYE_COMPONENT\(\s*([a-zA-Z0-9_]+(?:\s*::\s*[a-zA-Z0-9_]+)*)(?:,\s*"([a-zA-Z][\w\s]*?)")?\s*\)\s*$)lit"
+		R"lit(^\s*DYE_COMPONENT\(\s*([a-zA-Z0-9_]+(?:\s*::\s*[a-zA-Z0-9_]+)*)(?:\s*,\s*"([a-zA-Z][\w\s]*?)")?\s*\)\s*$)lit"
 	);
 	std::regex const dyeSystemKeywordPattern(
-		R"lit(^\s*DYE_SYSTEM\(\s*([a-zA-Z0-9_]+(?:\s*::\s*[a-zA-Z0-9_]+)*)(?:,\s*"([a-zA-Z][\w\s]*?)")?\s*\)\s*$)lit"
+		R"lit(^\s*DYE_SYSTEM\(\s*([a-zA-Z0-9_]+(?:\s*::\s*[a-zA-Z0-9_]+)*)(?:\s*,\s*"([a-zA-Z][\w\s]*?)")?\s*\)\s*$)lit"
 	);
 #endif
+
+	std::regex const dyeFormerlyKnownAsKeywordPattern(
+		R"lit(\s*DYE_FORMERLY_KNOWN_AS\(\s*"([^"]+?)"\s*\)\s*$)lit"
+	);
+
 	std::smatch match;
 
 	std::string line;
+
 	bool isInComponentScope = false;
 	bool nextLineShouldBeVariableDeclaration = false;
+
+	bool isInSystemScope = false;
 
 	ComponentDescriptor currentComponentScopeDescriptor;
 	SystemDescriptor currentSystemScopeDescriptor;
@@ -321,6 +332,13 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 				isInComponentScope = false;
 			}
 
+			if (isInSystemScope)
+			{
+				// We were in another DYE_SYSTEM body, flush the descriptor into the result.
+				result.SystemDescriptors.emplace_back(currentSystemScopeDescriptor);
+				isInSystemScope = false;
+			}
+
 			std::string const& componentFullTypeName = match[1].str();
 			std::string const& componentDisplayName = match[2].str();
 
@@ -361,6 +379,13 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 				isInComponentScope = false;
 			}
 
+			if (isInSystemScope)
+			{
+				// We were in another DYE_SYSTEM body, flush the descriptor into the result.
+				result.SystemDescriptors.emplace_back(currentSystemScopeDescriptor);
+				isInSystemScope = false;
+			}
+
 			std::string const& systemType = match[1].str();
 			std::string const& systemName = match[2].str();
 
@@ -370,21 +395,42 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 				.CustomName = systemName,
 			};
 
-			result.SystemDescriptors.emplace_back(currentSystemScopeDescriptor);
+			isInSystemScope = true;
 
 			continue;
 		}
 
-
 		if (isInComponentScope)
 		{
+			// DYE_PROPERTY
 			// We are inside a DYEComponent body, search for DYE_PROPERTY keyword.
 			bool const isDYEPropertyKeyword = std::regex_match(line, match, dyePropertyKeywordPattern);
-			if (!isDYEPropertyKeyword)
+			if (isDYEPropertyKeyword)
 			{
+				nextLineShouldBeVariableDeclaration = true;
 				continue;
 			}
-			nextLineShouldBeVariableDeclaration = true;
+
+			// DYE_FORMERLY_KNOWN_AS
+			bool const isDYEFormerlyKnownAsKeyword = std::regex_match(line, match, dyeFormerlyKnownAsKeywordPattern);
+			if (isDYEFormerlyKnownAsKeyword)
+			{
+				std::string const& formerlyKnownTypeName = match[1];
+				currentComponentScopeDescriptor.FormerlyKnownNames.push_back(formerlyKnownTypeName);
+				continue;
+			}
+		}
+
+		if (isInSystemScope)
+		{
+			// DYE_FORMERLY_KNOWN_AS
+			bool const isDYEFormerlyKnownAsKeyword = std::regex_match(line, match, dyeFormerlyKnownAsKeywordPattern);
+			if (isDYEFormerlyKnownAsKeyword)
+			{
+				std::string const& formerlyKnownTypeName = match[1];
+				currentSystemScopeDescriptor.FormerlyKnownNames.push_back(formerlyKnownTypeName);
+				continue;
+			}
 		}
 	}
 
@@ -394,6 +440,13 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 		// We were in another DYEComponent body, flush the descriptor into the result.
 		result.ComponentDescriptors.emplace_back(currentComponentScopeDescriptor);
 		isInComponentScope = false;
+	}
+
+	if (isInSystemScope)
+	{
+		// We were in another DYE_SYSTEM body, flush the descriptor into the result.
+		result.SystemDescriptors.emplace_back(currentSystemScopeDescriptor);
+		isInSystemScope = false;
 	}
 
 	return result;
