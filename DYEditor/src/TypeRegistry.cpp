@@ -81,8 +81,8 @@ namespace DYE::DYEditor
 		}
 
 		auto formerlyKnownNamePairItr = s_FormerlyKnownTypeNames.find(componentTypeName);
-		bool hasFormerlyKnownName = formerlyKnownNamePairItr != s_FormerlyKnownTypeNames.end();
-		if (hasFormerlyKnownName)
+		bool isInputFormerlyKnownName = formerlyKnownNamePairItr != s_FormerlyKnownTypeNames.end();
+		if (isInputFormerlyKnownName)
 		{
 			std::string const &currentFullTypeName = formerlyKnownNamePairItr->second;
 			componentTypePairItr = s_ComponentTypeRegistry.find(currentFullTypeName);
@@ -100,34 +100,38 @@ namespace DYE::DYEditor
 		return result;
 	}
 
-	SystemBase* TypeRegistry::TryGetSystemInstance(const std::string &systemName)
+	TypeRegistry::TryGetSystemInstanceResult TypeRegistry::TryGetSystemInstance(const std::string &systemName)
 	{
-		if (s_SystemRegistry.contains(systemName))
-		{
-			return s_SystemRegistry.at(systemName);
-		}
+		TryGetSystemInstanceResult result;
 
 		auto systemPairItr = s_SystemRegistry.find(systemName);
 		bool hasMatchedSystem = systemPairItr != s_SystemRegistry.end();
 		if (hasMatchedSystem)
 		{
-			return systemPairItr->second;
+			result.Success = true;
+			result.pInstance = systemPairItr->second;
+			result.FullTypeName = systemName.c_str();
+			return result;
 		}
 
 		auto formerlyKnownNamePairItr = s_FormerlyKnownTypeNames.find(systemName);
-		bool hasFormerlyKnownName = formerlyKnownNamePairItr != s_FormerlyKnownTypeNames.end();
-		if (hasFormerlyKnownName)
+		bool isInputFormerlyKnownName = formerlyKnownNamePairItr != s_FormerlyKnownTypeNames.end();
+		if (isInputFormerlyKnownName)
 		{
-			std::string const &formerlyKnownName = formerlyKnownNamePairItr->second;
-			systemPairItr = s_SystemRegistry.find(formerlyKnownName);
+			std::string const &currentFullTypeName = formerlyKnownNamePairItr->second;
+			systemPairItr = s_SystemRegistry.find(currentFullTypeName);
 			hasMatchedSystem = systemPairItr != s_SystemRegistry.end();
 			if (hasMatchedSystem)
 			{
-				return systemPairItr->second;
+				result.Success = true;
+				result.pInstance = systemPairItr->second;
+				result.FullTypeName = currentFullTypeName.c_str();
+				return result;
 			}
 		}
 
-		return nullptr;
+		result.Success = false;
+		return result;
 	}
 
 	void TypeRegistry::RegisterFormerlyKnownTypeName(const std::string &formerlyKnownName, const std::string &currentTypeName)

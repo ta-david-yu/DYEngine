@@ -72,9 +72,11 @@ namespace DYE::DYEditor
 					.IsEnabled = serializedSystemHandle.GetIsEnabledOr(true)
 				};
 
-			SystemBase* pSystemInstance = TypeRegistry::TryGetSystemInstance(getTypeNameResult.value());
-			if (pSystemInstance != nullptr)
+			auto tryGetSystemInstance = TypeRegistry::TryGetSystemInstance(getTypeNameResult.value());
+			if (tryGetSystemInstance.Success)
 			{
+				SystemBase* pSystemInstance = tryGetSystemInstance.pInstance;
+				systemDescriptor.Name = tryGetSystemInstance.FullTypeName;
 				systemDescriptor.Instance = pSystemInstance;
 
 				auto const phase = pSystemInstance->GetPhase();

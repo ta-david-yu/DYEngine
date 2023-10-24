@@ -128,8 +128,15 @@ namespace DYE::DYEditor
 		static ComponentTypeDescriptor GetComponentTypeDescriptor_ParentComponent();
 		static ComponentTypeDescriptor GetComponentTypeDescriptor_ChildrenComponent();
 
-		/// \return a pointer to the system instance, else nullptr.
-		static SystemBase* TryGetSystemInstance(std::string const& systemName);
+		struct TryGetSystemInstanceResult
+		{
+			bool Success = false;
+			SystemBase* pInstance = nullptr;
+
+			/// The given system name could be a formerly known name, this field will be the current real type name if Success is true.
+			char const* FullTypeName = nullptr;
+		};
+		static TryGetSystemInstanceResult TryGetSystemInstance(std::string const& systemName);
 
 		static void RegisterFormerlyKnownTypeName(std::string const &formerlyKnownName, std::string const &currentTypeName);
 

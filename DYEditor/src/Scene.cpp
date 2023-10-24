@@ -50,15 +50,17 @@ namespace DYE::DYEditor
 	SystemDescriptor Scene::TryAddSystemByName(const std::string &systemName)
 	{
 		SystemDescriptor systemDescriptor =
-			{
-				.Name = systemName,
-				.Group = NoSystemGroupID,
-				.IsEnabled = true
-			};
-
-		SystemBase* pSystemInstance = TypeRegistry::TryGetSystemInstance(systemName);
-		if (pSystemInstance != nullptr)
 		{
+			.Name = systemName,
+			.Group = NoSystemGroupID,
+			.IsEnabled = true
+		};
+
+		auto tryGetSystemInstance = TypeRegistry::TryGetSystemInstance(systemName);
+		if (tryGetSystemInstance.Success)
+		{
+			SystemBase* pSystemInstance = tryGetSystemInstance.pInstance;
+			systemDescriptor.Name = tryGetSystemInstance.FullTypeName;
 			systemDescriptor.Instance = pSystemInstance;
 
 			auto const phase = pSystemInstance->GetPhase();
