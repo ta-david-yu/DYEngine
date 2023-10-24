@@ -66,29 +66,38 @@ namespace DYE::DYEditor
 		return s_SystemNamesAndPointersCache;
 	}
 
-	std::optional<ComponentTypeDescriptor> TypeRegistry::TryGetComponentTypeDescriptor(std::string const& componentTypeName)
+	TypeRegistry::TryGetComponentTypeDescriptorResult TypeRegistry::TryGetComponentTypeDescriptor(std::string const& componentTypeName)
 	{
+		TryGetComponentTypeDescriptorResult result;
+
 		auto componentTypePairItr = s_ComponentTypeRegistry.find(componentTypeName);
 		bool hasMatchedComponentType = componentTypePairItr != s_ComponentTypeRegistry.end();
 		if (hasMatchedComponentType)
 		{
-			return componentTypePairItr->second;
+			result.Success = true;
+			result.Descriptor = componentTypePairItr->second;
+			result.FullTypeName = componentTypeName.c_str();
+			return result;
 		}
 
 		auto formerlyKnownNamePairItr = s_FormerlyKnownTypeNames.find(componentTypeName);
 		bool hasFormerlyKnownName = formerlyKnownNamePairItr != s_FormerlyKnownTypeNames.end();
 		if (hasFormerlyKnownName)
 		{
-			std::string const &formerlyKnownName = formerlyKnownNamePairItr->second;
-			componentTypePairItr = s_ComponentTypeRegistry.find(formerlyKnownName);
+			std::string const &currentFullTypeName = formerlyKnownNamePairItr->second;
+			componentTypePairItr = s_ComponentTypeRegistry.find(currentFullTypeName);
 			hasMatchedComponentType = componentTypePairItr != s_ComponentTypeRegistry.end();
 			if (hasMatchedComponentType)
 			{
-				return componentTypePairItr->second;
+				result.Success = true;
+				result.Descriptor = componentTypePairItr->second;
+				result.FullTypeName = currentFullTypeName.c_str();
+				return result;
 			}
 		}
 
-		return {};
+		result.Success = false;
+		return result;
 	}
 
 	SystemBase* TypeRegistry::TryGetSystemInstance(const std::string &systemName)

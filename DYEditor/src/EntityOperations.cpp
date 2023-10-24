@@ -105,7 +105,7 @@ namespace DYE::DYEditor
 		auto tryGetEntityMetadata = tryGetEntity.value().TryGetComponent<EntityEditorOnlyMetadata>();
 		DYE_ASSERT_LOG_WARN(tryGetEntityMetadata.has_value(),
 							"In editor build, an entity should always have 'EntityEditorOnlyMetadata' component.");
-		auto &serializedComponentNamesInOrder = tryGetEntityMetadata.value().get().SuccessfullySerializedComponentNames;
+		auto &serializedComponentNamesInOrder = tryGetEntityMetadata.value().get().SuccessfullyDeserializedComponentNames;
 
 		DYE_ASSERT_LOG_WARN(serializedComponentNamesInOrder[ComponentAdditionIndex] == ComponentTypeName,
 							"The component name ('%s') located at index '%d' is not the same as the name ('%s') stored in the undo operation.",
@@ -129,7 +129,7 @@ namespace DYE::DYEditor
 		auto tryGetEntityMetadata = tryGetEntity.value().TryGetComponent<EntityEditorOnlyMetadata>();
 		DYE_ASSERT_LOG_WARN(tryGetEntityMetadata.has_value(),
 							"In editor build, an entity should always have 'EntityEditorOnlyMetadata' component.");
-		auto &serializedComponentNamesInOrder = tryGetEntityMetadata.value().get().SuccessfullySerializedComponentNames;
+		auto &serializedComponentNamesInOrder = tryGetEntityMetadata.value().get().SuccessfullyDeserializedComponentNames;
 		serializedComponentNamesInOrder.push_back(ComponentTypeName);
 #endif
 	}
@@ -149,7 +149,7 @@ namespace DYE::DYEditor
 		auto tryGetEntityMetadata = tryGetEntity.value().TryGetComponent<EntityEditorOnlyMetadata>();
 		DYE_ASSERT_LOG_WARN(tryGetEntityMetadata.has_value(),
 							"In editor build, an entity should always have 'EntityEditorOnlyMetadata' component.");
-		auto &serializedComponentNamesInOrder = tryGetEntityMetadata.value().get().SuccessfullySerializedComponentNames;
+		auto &serializedComponentNamesInOrder = tryGetEntityMetadata.value().get().SuccessfullyDeserializedComponentNames;
 		serializedComponentNamesInOrder.insert(serializedComponentNamesInOrder.cbegin() + ComponentOrderInListBeforeRemoval, ComponentTypeName);
 #endif
 	}
@@ -169,7 +169,7 @@ namespace DYE::DYEditor
 		DYE_ASSERT_LOG_WARN(tryGetEntityMetadata.has_value(),
 							"In editor build, an entity should always have 'EntityEditorOnlyMetadata' component.");
 
-		auto &serializedComponentNamesInOrder = tryGetEntityMetadata.value().get().SuccessfullySerializedComponentNames;
+		auto &serializedComponentNamesInOrder = tryGetEntityMetadata.value().get().SuccessfullyDeserializedComponentNames;
 
 		DYE_ASSERT_LOG_WARN(serializedComponentNamesInOrder[ComponentOrderInListBeforeRemoval] == ComponentTypeName,
 							"The component name ('%s') located at index '%d' is not the same as the name ('%s') stored in the undo operation.",

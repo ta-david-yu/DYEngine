@@ -831,10 +831,11 @@ namespace DYE::DYEditor
 				operation->EntityGUID.ToString().c_str());
 
 		auto tryGetComponentTypeDescriptor = TypeRegistry::TryGetComponentTypeDescriptor(componentTypeName);
-		DYE_ASSERT_LOG_WARN(tryGetComponentTypeDescriptor.has_value(),
-							"Try to create a component modification operation but doesn't recognize the component type '%s'.", componentTypeName.c_str());
+		DYE_ASSERT_LOG_WARN(tryGetComponentTypeDescriptor.Success,
+							"Try to create a component modification operation but doesn't recognize the component type '%s'.",
+							componentTypeName.c_str());
 
-		operation->TypeDescriptor = tryGetComponentTypeDescriptor.value();
+		operation->TypeDescriptor = tryGetComponentTypeDescriptor.Descriptor;
 
 		pushNewOperation(std::move(operation));
 	}
@@ -861,7 +862,7 @@ namespace DYE::DYEditor
 
 		// Insert the component at the end of the serialized component list.
 
-		auto &serializedComponentNamesInOrder = tryGetEntityMetadata.value().get().SuccessfullySerializedComponentNames;
+		auto &serializedComponentNamesInOrder = tryGetEntityMetadata.value().get().SuccessfullyDeserializedComponentNames;
 		operation->ComponentAdditionIndex = serializedComponentNamesInOrder.size();
 		serializedComponentNamesInOrder.push_back(componentTypeName);
 #endif
@@ -891,7 +892,7 @@ namespace DYE::DYEditor
 		auto tryGetEntityMetadata = entity.TryGetComponent<EntityEditorOnlyMetadata>();
 		DYE_ASSERT_LOG_WARN(tryGetEntityMetadata.has_value(),
 							"In editor build, an entity should always have 'EntityEditorOnlyMetadata' component.");
-		auto &serializedComponentNamesInOrder = tryGetEntityMetadata.value().get().SuccessfullySerializedComponentNames;
+		auto &serializedComponentNamesInOrder = tryGetEntityMetadata.value().get().SuccessfullyDeserializedComponentNames;
 		for (int i = 0; i < serializedComponentNamesInOrder.size(); i++)
 		{
 			std::string &typeName = serializedComponentNamesInOrder[i];

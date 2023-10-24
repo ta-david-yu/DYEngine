@@ -140,24 +140,25 @@ namespace DYE::DYEditor
 				continue;
 			}
 
-			auto& typeName = getTypeNameResult.value();
-			auto getComponentTypeFunctionsResult = TypeRegistry::TryGetComponentTypeDescriptor(typeName);
-			if (!getComponentTypeFunctionsResult.has_value())
+			auto& serializedTypeName = getTypeNameResult.value();
+			auto getComponentTypeFunctionsResult = TypeRegistry::TryGetComponentTypeDescriptor(serializedTypeName);
+			if (!getComponentTypeFunctionsResult.Success)
 			{
 				// Cannot find the given component type and its related functions,
 				// add the component name to the unrecognized component list.
-				DYE_LOG("Entity has an unrecognized component of type '%s'.", typeName.c_str());
+				DYE_LOG("Entity has an unrecognized component of type '%s'.", serializedTypeName.c_str());
 				result.Success = false;
-				result.UnrecognizedComponentTypeNames.push_back(typeName);
+				result.UnrecognizedComponentTypeNames.push_back(serializedTypeName);
 				result.UnrecognizedSerializedComponents.push_back(serializedComponentHandle.CloneAsNonHandle());
 				continue;
 			}
 
-			auto& componentTypeFunctions = getComponentTypeFunctionsResult.value();
+			char const *realFullTypeName = getComponentTypeFunctionsResult.FullTypeName;
+			auto& componentTypeFunctions = getComponentTypeFunctionsResult.Descriptor;
 			if (componentTypeFunctions.Deserialize == nullptr)
 			{
 				// The component type doesn't have a corresponding 'Deserialize' function.
-				DYE_LOG("Component of type '%s' will not be deserialized because its Deserialize function is not provided.", typeName.c_str());
+				DYE_LOG("Component of type '%s' will not be deserialized because its Deserialize function is not provided.", realFullTypeName);
 				continue;
 			}
 
@@ -179,13 +180,13 @@ namespace DYE::DYEditor
 #ifdef DYE_EDITOR
 			if (deserializeComponentResult.Success)
 			{
-				successfullyDeserializedComponentNames.push_back(typeName);
+				successfullyDeserializedComponentNames.push_back(realFullTypeName);
 			}
 #endif
 		}
 
 #ifdef DYE_EDITOR
-		entity.AddComponent<EntityEditorOnlyMetadata>().SuccessfullySerializedComponentNames = std::move(successfullyDeserializedComponentNames);
+		entity.AddComponent<EntityEditorOnlyMetadata>().SuccessfullyDeserializedComponentNames = std::move(successfullyDeserializedComponentNames);
 #endif
 
 		return std::move(result);
@@ -247,30 +248,32 @@ namespace DYE::DYEditor
 				DYE_ASSERT_LOG_WARN(tryGetEntityMetadata.has_value(),
 									"In editor build, an entity should always have 'EntityEditorOnlyMetadata' component.");
 
-				auto &successfullyDeserializedComponentNames = tryGetEntityMetadata.value().get().SuccessfullySerializedComponentNames;
+				auto &successfullyDeserializedComponentNames = tryGetEntityMetadata.value().get().SuccessfullyDeserializedComponentNames;
 				serializedComponentTypeNames.reserve(successfullyDeserializedComponentNames.size());
 
-				for (auto &typeName : successfullyDeserializedComponentNames)
+				for (auto &deserializedTypeName : successfullyDeserializedComponentNames)
 				{
-					auto tryGetTypeDescriptor = TypeRegistry::TryGetComponentTypeDescriptor(typeName);
-					DYE_ASSERT_LOG_WARN(tryGetTypeDescriptor.has_value(),
+					auto tryGetTypeDescriptor = TypeRegistry::TryGetComponentTypeDescriptor(deserializedTypeName);
+					DYE_ASSERT_LOG_WARN(tryGetTypeDescriptor.Success,
 										"The component '%s' was successfully deserialized according to the metadata, but the type descriptor cannot be found in the TypeRegistry anymore.",
-										typeName.c_str());
+										deserializedTypeName.c_str());
 
-					auto typeDescriptor = tryGetTypeDescriptor.value();
+					char const *realFullTypeName = tryGetTypeDescriptor.FullTypeName;
+
+					auto typeDescriptor = tryGetTypeDescriptor.Descriptor;
 					if (!typeDescriptor.Has(entity))
 					{
-						DYE_LOG("The component '%s' is listed in the deserialized component names list, but the entity instance doesn't has the component.",
-								typeName.c_str());
+						DYE_LOG("The component '%s' is listed in the deserialized component names list, but the entity instance doesn't has the component (or component formerly known as the name).",
+								deserializedTypeName.c_str());
 						continue;
 					}
 
-					SerializedComponent serializedComponent = serializedEntity.AddOrGetComponentHandleOfType(typeName);
-					serializedComponentTypeNames.emplace(typeName);
+					SerializedComponent serializedComponent = serializedEntity.AddOrGetComponentHandleOfType(realFullTypeName);
+					serializedComponentTypeNames.emplace(realFullTypeName);
 
 					DYE_ASSERT_LOG_WARN(typeDescriptor.Serialize != nullptr,
 										"The component '%s' doesn't have a 'Serialize' function.",
-										typeName.c_str());
+										deserializedTypeName.c_str());
 
 					SerializationResult const result = typeDescriptor.Serialize(entity, serializedComponent);
 				}
@@ -329,30 +332,32 @@ namespace DYE::DYEditor
 		DYE_ASSERT_LOG_WARN(tryGetEntityMetadata.has_value(),
 							"In editor build, an entity should always have 'EntityEditorOnlyMetadata' component.");
 
-		auto &successfullyDeserializedComponentNames = tryGetEntityMetadata.value().get().SuccessfullySerializedComponentNames;
+		auto &successfullyDeserializedComponentNames = tryGetEntityMetadata.value().get().SuccessfullyDeserializedComponentNames;
 		serializedComponentTypeNames.reserve(successfullyDeserializedComponentNames.size());
 
-		for (auto &typeName : successfullyDeserializedComponentNames)
+		for (auto &deserializedTypeName : successfullyDeserializedComponentNames)
 		{
-			auto tryGetTypeDescriptor = TypeRegistry::TryGetComponentTypeDescriptor(typeName);
-			DYE_ASSERT_LOG_WARN(tryGetTypeDescriptor.has_value(),
+			auto tryGetTypeDescriptor = TypeRegistry::TryGetComponentTypeDescriptor(deserializedTypeName);
+			DYE_ASSERT_LOG_WARN(tryGetTypeDescriptor.Success,
 								"The component '%s' was successfully deserialized according to the metadata, but the type descriptor cannot be found in the TypeRegistry anymore.",
-								typeName.c_str());
+								deserializedTypeName.c_str());
 
-			auto typeDescriptor = tryGetTypeDescriptor.value();
+			char const *realFullTypeName = tryGetTypeDescriptor.FullTypeName;
+
+			auto typeDescriptor = tryGetTypeDescriptor.Descriptor;
 			if (!typeDescriptor.Has(entity))
 			{
-				DYE_LOG("The component '%s' is listed in the deserialized component names list according to the metadata, but the entity instance doesn't has the component.",
-						typeName.c_str());
+				DYE_LOG("The component '%s' is listed in the deserialized component names list according to the metadata, but the entity instance doesn't has the component (or component formerly known as the name).",
+						deserializedTypeName.c_str());
 				continue;
 			}
 
-			SerializedComponent serializedComponent = serializedEntity.AddOrGetComponentHandleOfType(typeName);
-			serializedComponentTypeNames.emplace(typeName);
+			SerializedComponent serializedComponent = serializedEntity.AddOrGetComponentHandleOfType(realFullTypeName);
+			serializedComponentTypeNames.emplace(realFullTypeName);
 
 			DYE_ASSERT_LOG_WARN(typeDescriptor.Serialize != nullptr,
 								"The component '%s' doesn't have a 'Serialize' function.",
-								typeName.c_str());
+								deserializedTypeName.c_str());
 
 			SerializationResult const result = typeDescriptor.Serialize(entity, serializedComponent);
 		}

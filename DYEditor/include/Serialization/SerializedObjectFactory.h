@@ -21,7 +21,7 @@ namespace DYE::DYEditor
 		/// We use this to draw the components in custom order.
 		/// Beware that the list is not always up-to-date, if you want to get a list of components of an entity,
 		/// it's better to iterate through the type descriptors list using 'Has' function in the TypeRegister.
-		std::vector<std::string> SuccessfullySerializedComponentNames {};
+		std::vector<std::string> SuccessfullyDeserializedComponentNames {};
 	};
 
 	struct EntityDeserializationResult

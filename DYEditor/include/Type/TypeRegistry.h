@@ -112,7 +112,15 @@ namespace DYE::DYEditor
 		/// The function is expensive, the user should cache the result instead of calling the function regularly.
 		static std::vector<std::pair<std::string, SystemBase*>> GetSystemNamesAndInstances();
 
-		static std::optional<ComponentTypeDescriptor> TryGetComponentTypeDescriptor(std::string const& componentTypeName);
+		struct TryGetComponentTypeDescriptorResult
+		{
+			bool Success = false;
+			ComponentTypeDescriptor Descriptor;
+
+			/// The given component type name could be a formerly known name, this field will be the current real type name if Success is true.
+			char const* FullTypeName = nullptr;
+		};
+		static TryGetComponentTypeDescriptorResult TryGetComponentTypeDescriptor(std::string const& componentTypeName);
 
 		/// Specialized functions to get certain built-in component Type Descriptor. Implemented inside BuiltInTypeRegister.cpp.
 		static ComponentTypeDescriptor GetComponentTypeDescriptor_NameComponent();

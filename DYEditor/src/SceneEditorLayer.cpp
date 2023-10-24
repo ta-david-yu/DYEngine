@@ -1907,20 +1907,22 @@ namespace DYE::DYEditor
 
 		EntityEditorOnlyMetadata& entityEditorOnlyMetadata = tryGetEntityMetadata.value();
 
-		auto &successfullyDeserializedComponentNames = entityEditorOnlyMetadata.SuccessfullySerializedComponentNames;
+		auto &successfullyDeserializedComponentNames = entityEditorOnlyMetadata.SuccessfullyDeserializedComponentNames;
 		drawnComponentTypeNames.reserve(successfullyDeserializedComponentNames.size());
 
-		for (auto &typeName : successfullyDeserializedComponentNames)
+		for (auto &deserializedTypeName : successfullyDeserializedComponentNames)
 		{
-			auto tryGetTypeDescriptor = TypeRegistry::TryGetComponentTypeDescriptor(typeName);
-			DYE_ASSERT_LOG_WARN(tryGetTypeDescriptor.has_value(),
+			auto tryGetTypeDescriptor = TypeRegistry::TryGetComponentTypeDescriptor(deserializedTypeName);
+			DYE_ASSERT_LOG_WARN(tryGetTypeDescriptor.Success,
 								"The component '%s' was successfully deserialized but the type descriptor cannot be found in the TypeRegistry anymore.",
-								typeName.c_str());
+								deserializedTypeName.c_str());
 
-			drawnComponentTypeNames.emplace(typeName);
+			char const *realFullTypeName = tryGetTypeDescriptor.FullTypeName;
+
+			drawnComponentTypeNames.emplace(realFullTypeName);
 
 			bool isRemoved = false;
-			isEntityChangedThisFrame |= drawComponentInEntityInspector(context, typeName, tryGetTypeDescriptor.value(), &isRemoved);
+			isEntityChangedThisFrame |= drawComponentInEntityInspector(context, realFullTypeName, tryGetTypeDescriptor.Descriptor, &isRemoved);
 			if (isRemoved)
 			{
 				// Early out if a component is removed, to avoid panic for-loop.
