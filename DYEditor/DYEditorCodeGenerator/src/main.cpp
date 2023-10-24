@@ -222,10 +222,6 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 	);
 
 	std::regex const dyeSystemKeywordPattern(
-		// Old
-		// DYE_SYSTEM("name", type)
-		//R"lit(^\s*DYE_SYSTEM\(\s*"([[:alpha:]][\w\s]*?)",\s*([[:alnum:]_]+(::[[:alnum:]_]+)*)\)\s*$)lit"
-
 		R"lit(^\s*DYE_SYSTEM\(\s*([[:alnum:]_]+(?:\s*::\s*[[:alnum:]_]+)*)(?:,\s*"([[:alpha:]][\w\s]*?)")?\s*\)\s*$)lit"
 	);
 #else
