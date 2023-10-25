@@ -92,7 +92,8 @@ set(HEADER_FILES
         include/Components/PlayAudioSourceOnInitializeComponent.h
         include/Components/WindowComponents.h
         include/Systems/WindowSystems.h
-        include/Components/Command/WindowCommandComponents.h)
+        include/Components/Command/WindowCommandComponents.h
+        include/Core/EntityTypes.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")
