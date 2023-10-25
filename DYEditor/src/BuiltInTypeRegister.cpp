@@ -163,6 +163,7 @@ namespace DYE::DYEditor
 		{
 			auto &childrenComponent = entity.AddOrGetComponent<ChildrenComponent>();
 			childrenComponent.m_ChildrenGUIDs.clear();
+			childrenComponent.m_ChildrenEntityIdentifiersCache.clear();
 
 			auto tryGetSerializedArray = serializedComponent.TryGetArrayProperty("Children");
 			if (!tryGetSerializedArray.has_value())
@@ -201,9 +202,9 @@ namespace DYE::DYEditor
 			};
 			bool const isGUIDsArrayChanged = ImGuiUtil::Internal::ArrayControl("Children", childrenGUIDs, lambda).Draw();
 
-			// TODO: We want to improve this in the future, we only want to update the cache index, not the whole vector array.
 			if (isGUIDsArrayChanged)
 			{
+				// TODO: We want to improve this in the future, we only want to update the cache index, not the whole vector array.
 				childrenComponent.RefreshChildrenEntityIdentifierCache(entity.GetWorld());
 			}
 

@@ -87,40 +87,59 @@ namespace DYE::DYEditor
 		DYE_ASSERT_LOG_WARN(index < m_ChildrenGUIDs.size(), "Try to set the child guid at index '%zu', but the index is out of bounds.", index);
 		m_ChildrenGUIDs[index] = guid;
 
-		// TODO: invalidate or update cached identifier.
+		m_ChildrenEntityIdentifiersCache[index] = entt::null;
 	}
 
 	void ChildrenComponent::InsertChildGUIDAt(std::size_t index, GUID guid)
 	{
 		m_ChildrenGUIDs.insert(m_ChildrenGUIDs.begin() + index, guid);
 
-		// TODO: invalidate or update cached identifier.
+		m_ChildrenEntityIdentifiersCache.insert(m_ChildrenEntityIdentifiersCache.begin() + index, (EntityIdentifier) entt::null);
 	}
 
 	void ChildrenComponent::PushBackWithGUID(GUID guid)
 	{
 		m_ChildrenGUIDs.push_back(guid);
 
-		// TODO: invalidate or update cached identifier.
+		m_ChildrenEntityIdentifiersCache.push_back(entt::null);
 	}
 
 	void ChildrenComponent::RemoveChildWithGUID(GUID guid)
 	{
-		std::erase(m_ChildrenGUIDs, guid);
-
-		// TODO: invalidate or update cached identifier.
+		for (int i = m_ChildrenGUIDs.size() - 1; i >= 0; i--)
+		{
+			if (m_ChildrenGUIDs[i] == guid)
+			{
+				m_ChildrenGUIDs.erase(m_ChildrenGUIDs.begin() + i);
+				m_ChildrenEntityIdentifiersCache.erase(m_ChildrenEntityIdentifiersCache.begin() + i);
+			}
+		}
 	}
 
 	void ChildrenComponent::PopBack()
 	{
 		m_ChildrenGUIDs.pop_back();
-
-		// TODO: invalidate or update cached identifier.
+		m_ChildrenEntityIdentifiersCache.pop_back();
 	}
 
 	void ChildrenComponent::RefreshChildrenEntityIdentifierCache(World &world)
 	{
-		// TODO: update cached identifiers.
+		m_ChildrenEntityIdentifiersCache.resize(m_ChildrenGUIDs.size());
+
+		for (auto i = 0; i < m_ChildrenGUIDs.size(); i++)
+		{
+			auto guid = m_ChildrenGUIDs[i];
+
+			auto tryGetEntity = world.TryGetEntityWithGUID(guid);
+			if (!tryGetEntity.has_value())
+			{
+				DYE_LOG("ChildrenComponent::RefreshChildrenEntityIdentifierCache: Child (GUID=%s) at index %d doesn't have a matching entity in the world.", guid.ToString().c_str(), i);
+				m_ChildrenEntityIdentifiersCache[i] = entt::null;
+				continue;
+			}
+
+			m_ChildrenEntityIdentifiersCache[i] = tryGetEntity.value().GetIdentifier();
+		}
 	}
 
 }
