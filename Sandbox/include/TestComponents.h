@@ -110,6 +110,7 @@ struct ComponentWithAllPrimitiveProperties
 
 DYE_COMPONENT(HasAngularVelocity)
 DYE_FORMERLY_KNOWN_AS("HasAngularVelocity_OldName")
+DYE_USE_WITH_COMPONENT_HINT(ComponentWithAllPrimitiveProperties)
 struct HasAngularVelocity
 {
 	DYE_PROPERTY()
@@ -119,6 +120,8 @@ struct HasAngularVelocity
 DYE_COMPONENT(CreateEntity)
 DYE_FORMERLY_KNOWN_AS("Createee")
 DYE_FORMERLY_KNOWN_AS("CreateeeHA")
+DYE_USE_WITH_COMPONENT_HINT(HasAngularVelocity)
+DYE_USE_WITH_COMPONENT_HINT(ComponentWithAllPrimitiveProperties)
 struct CreateEntity
 {
 	DYE_PROPERTY()

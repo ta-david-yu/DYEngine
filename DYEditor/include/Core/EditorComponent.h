@@ -14,18 +14,19 @@
 ///
 #define DYE_COMPONENT(componentType, optionalDisplayName...)
 
-/// The class/struct type which has been marked with DYE_COMPONENT and immediately followed by this macro will keep track of a list of additional components
+/// The class/struct type which has been marked with DYE_COMPONENT and immediately followed by this macro will keep track of an additional component
 /// which should be used together on the same entity, in order for it to take effect.
 /// For instance, to be rendered by the render system, an entity with a renderer component should also have a transform component.\n\n
 ///
 /// Usage Example:\n
 /// DYE_COMPONENT(DYE::DYEditor::MeshRenderer, "MeshRenderer") \n
-/// DYE_ADD_COMPONENT_HINT(DYE::DYEditor::LocalTransform, DYE::DYEditor::MeshFilter) \n
+/// DYE_USE_WITH_COMPONENT_HINT(DYE::DYEditor::LocalTransform) \n
+/// DYE_USE_WITH_COMPONENT_HINT(DYE::DYEditor::MeshFilter) \n
 /// struct MeshRenderer { } \n\n
 ///
 /// As the syntax merely hints/suggests the accompany component types,
 /// the engine does not guarantee the hinted component types will always be added the same entity which has the current DYE_COMPONENT component type.
 ///
-/// \param componentTypes... the list of component types that should be used along with the current DYE_COMPONENT component.
+/// \param componentType the component type that should be used along with the current DYE_COMPONENT component.
 ///
-#define DYE_ADD_COMPONENT_HINT(componentTypes...)
+#define DYE_USE_WITH_COMPONENT_HINT(componentType)

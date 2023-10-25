@@ -151,18 +151,20 @@ int main(int argc, char* argv[])
 	{
 		if (componentDescriptor.HasOptionalDisplayName)
 		{
-			std::printf("\ttypeName = %s, numberOfProperties = %zu, optionalDisplayName = %s, formerlyKnowNamesCount = %zu\n",
+			std::printf("\ttypeName = %s, numberOfProperties = %zu, optionalDisplayName = %s, formerlyKnowNamesCount = %zu, hintCount = %zu\n",
 						componentDescriptor.FullType.c_str(),
 						componentDescriptor.Properties.size(),
 						componentDescriptor.OptionalDisplayName.c_str(),
-						componentDescriptor.FormerlyKnownNames.size());
+						componentDescriptor.FormerlyKnownNames.size(),
+						componentDescriptor.UseWithComponentTypeHints.size());
 		}
 		else
 		{
-			std::printf("\ttypename = %s, numberOfProperties = %zu, formerlyKnowNamesCount = %zu\n",
+			std::printf("\ttypename = %s, numberOfProperties = %zu, formerlyKnowNamesCount = %zu, hintCount = %zu\n",
 						componentDescriptor.FullType.c_str(),
 						componentDescriptor.Properties.size(),
-						componentDescriptor.FormerlyKnownNames.size());
+						componentDescriptor.FormerlyKnownNames.size(),
+						componentDescriptor.UseWithComponentTypeHints.size());
 		}
 
 		// Insert component type registration calls.
@@ -219,13 +221,19 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 	std::regex const variableDeclarationPattern(
 		R"((?:(?:[a-zA-Z_][a-zA-Z0-9_]*)+::)*([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:const\s+)?([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:=\s*([^;]*))?;)"
 	);
+	std::regex const dyeFormerlyKnownAsKeywordPattern(
+		R"lit(\s*DYE_FORMERLY_KNOWN_AS\(\s*"([^"]+?)"\s*\)\s*$)lit"
+	);
+
 #if defined(_MSC_VER)
 	std::regex const dyeComponentKeywordPattern(
 		R"lit(^\s*DYE_COMPONENT\(\s*([[:alnum:]_]+(?:\s*::\s*[[:alnum:]_]+)*)(?:\s*,\s*"([[:alpha:]][\w\s]*?)")?\s*\)\s*$)lit"
 	);
-
 	std::regex const dyeSystemKeywordPattern(
 		R"lit(^\s*DYE_SYSTEM\(\s*([[:alnum:]_]+(?:\s*::\s*[[:alnum:]_]+)*)(?:\s*,\s*"([[:alpha:]][\w\s]*?)")?\s*\)\s*$)lit"
+	);
+	std::regex  const dyeUseWithComponentKeywordPattern(
+		R"lit(\s*DYE_USE_WITH_COMPONENT_HINT\(\s*([[:alnum:]_]+(?:\s*::\s*[[:alnum:]_]+)*)\)\s*$)lit"
 	);
 #else
 	std::regex const dyeComponentKeywordPattern(
@@ -234,11 +242,10 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 	std::regex const dyeSystemKeywordPattern(
 		R"lit(^\s*DYE_SYSTEM\(\s*([a-zA-Z0-9_]+(?:\s*::\s*[a-zA-Z0-9_]+)*)(?:\s*,\s*"([a-zA-Z][\w\s]*?)")?\s*\)\s*$)lit"
 	);
-#endif
-
-	std::regex const dyeFormerlyKnownAsKeywordPattern(
-		R"lit(\s*DYE_FORMERLY_KNOWN_AS\(\s*"([^"]+?)"\s*\)\s*$)lit"
+	std::regex const dyeUseWithComponentKeywordPattern(
+		R"lit(\s*DYE_USE_WITH_COMPONENT_HINT\(\s*([a-zA-Z0-9_]+(?:\s*::\s*[a-zA-Z0-9_]+)*)\)\s*$)lit"
 	);
+#endif
 
 	std::smatch match;
 
@@ -417,6 +424,15 @@ ParseResult parseHeaderFile(std::filesystem::path const& sourceDirectory, std::f
 			{
 				std::string const& formerlyKnownTypeName = match[1];
 				currentComponentScopeDescriptor.FormerlyKnownNames.push_back(formerlyKnownTypeName);
+				continue;
+			}
+
+			// DYE_USE_WITH_COMPONENT_HINT
+			bool const isDYEUseWithComponentHintKeyword = std::regex_match(line, match, dyeUseWithComponentKeywordPattern);
+			if (isDYEUseWithComponentHintKeyword)
+			{
+				std::string const& useWithComponentTypeName = match[1];
+				currentComponentScopeDescriptor.UseWithComponentTypeHints.push_back(useWithComponentTypeName);
 				continue;
 			}
 		}

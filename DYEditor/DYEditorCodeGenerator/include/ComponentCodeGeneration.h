@@ -12,6 +12,7 @@ struct ComponentDescriptor
 	std::string OptionalDisplayName;
 	std::vector<PropertyDescriptor> Properties;
 	std::vector<std::string> FormerlyKnownNames;
+	std::vector<std::string> UseWithComponentTypeHints;
 };
 
 char const *ComponentTypeRegistrationCallSourceStart =

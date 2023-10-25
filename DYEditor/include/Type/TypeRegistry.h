@@ -144,8 +144,10 @@ namespace DYE::DYEditor
 		static void registerComponentType(std::string const &componentTypeName, ComponentTypeDescriptor componentDescriptor);
 
 	private:
-		// TODO: maybe we could use array or vector instead?
+		/// full type name -> pointer to type descriptor
 		inline static std::map<std::string, ComponentTypeDescriptor> s_ComponentTypeRegistry;
+
+		/// user defined -> pointer to system base
 		inline static std::map<std::string, SystemBase*> s_SystemRegistry;
 
 		static std::vector<std::pair<std::string, ComponentTypeDescriptor>> s_ComponentNamesAndDescriptorsCache;
