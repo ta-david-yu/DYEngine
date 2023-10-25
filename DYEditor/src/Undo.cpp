@@ -237,7 +237,7 @@ namespace DYE::DYEditor
 				// We need to reassign child's ParentComponent & parent's ChildrenComponent with the new GUIDs.
 				HierarchyLevel &level = hierarchyLevels.top();
 
-				newEntity.GetComponent<ParentComponent>().ParentGUID = level.NewParentGUID;
+				newEntity.GetComponent<ParentComponent>().SetParentGUID(level.NewParentGUID);
 
 				std::size_t const numberOfChildren = level.pChildrenComponent->ChildrenGUIDs.size();
 				level.pChildrenComponent->ChildrenGUIDs[numberOfChildren - level.NumberOfChildrenLeft] = newGUID;
@@ -358,10 +358,10 @@ namespace DYE::DYEditor
 		auto tryGetOldParent = entity.TryGetComponent<ParentComponent>();
 		if (tryGetOldParent.has_value())
 		{
-			auto tryGetOldParentEntity = entity.GetWorld().TryGetEntityWithGUID(tryGetOldParent.value().get().ParentGUID);
+			auto tryGetOldParentEntity = entity.GetWorld().TryGetEntityWithGUID(tryGetOldParent.value().get().GetParentGUID());
 			DYE_ASSERT_LOG_WARN(tryGetOldParentEntity.has_value(),
 								"The entity has a parent component already but the old GUID '%s' wasn't referencing to a valid entity.",
-								tryGetOldParent.value().get().ParentGUID.ToString().c_str());
+								tryGetOldParent.value().get().GetParentGUID().ToString().c_str());
 
 			Entity oldParent = tryGetOldParentEntity.value();
 
@@ -604,10 +604,10 @@ namespace DYE::DYEditor
 		auto tryGetOldParent = entity.TryGetComponent<ParentComponent>();
 		if (tryGetOldParent.has_value())
 		{
-			auto tryGetOldParentEntity = entity.GetWorld().TryGetEntityWithGUID(tryGetOldParent.value().get().ParentGUID);
+			auto tryGetOldParentEntity = entity.GetWorld().TryGetEntityWithGUID(tryGetOldParent.value().get().GetParentGUID());
 			DYE_ASSERT_LOG_WARN(tryGetOldParentEntity.has_value(),
 								"The entity has a parent component already but the old GUID '%s' wasn't referencing to a valid entity.",
-								tryGetOldParent.value().get().ParentGUID.ToString().c_str());
+								tryGetOldParent.value().get().GetParentGUID().ToString().c_str());
 
 			Entity oldParent = tryGetOldParentEntity.value();
 
@@ -669,7 +669,8 @@ namespace DYE::DYEditor
 			auto serializedParentComponentBeforeModification =
 				SerializedObjectFactory::CreateSerializedComponentOfType(entity, ParentComponentTypeName,
 																		 TypeRegistry::GetComponentTypeDescriptor_ParentComponent());
-			pParentComponent->ParentGUID = parentGUID;
+			pParentComponent->SetParent(newParent.GetIdentifier(), parentGUID);
+
 			auto serializedParentComponentAfterModification =
 				SerializedObjectFactory::CreateSerializedComponentOfType(entity, ParentComponentTypeName,
 																		 TypeRegistry::GetComponentTypeDescriptor_ParentComponent());
@@ -770,10 +771,10 @@ namespace DYE::DYEditor
 		if (tryGetOldParent.has_value())
 		{
 			auto tryGetOldParentEntity = entity.GetWorld().TryGetEntityWithGUID(
-				tryGetOldParent.value().get().ParentGUID);
+				tryGetOldParent.value().get().GetParentGUID());
 			DYE_ASSERT_LOG_WARN(tryGetOldParentEntity.has_value(),
 								"The entity has a parent component already but the old GUID '%s' wasn't referencing to a valid entity.",
-								tryGetOldParent.value().get().ParentGUID.ToString().c_str());
+								tryGetOldParent.value().get().GetParentGUID().ToString().c_str());
 
 			Entity oldParent = tryGetOldParentEntity.value();
 

@@ -108,7 +108,7 @@ namespace DYE::DYEditor
 		SerializationResult
 		ParentComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
 		{
-			serializedComponent.SetPrimitiveTypePropertyValue("ParentGUID", entity.GetComponent<ParentComponent>().ParentGUID);
+			serializedComponent.SetPrimitiveTypePropertyValue("ParentGUID", entity.GetComponent<ParentComponent>().GetParentGUID());
 
 			return {};
 		}
@@ -117,7 +117,9 @@ namespace DYE::DYEditor
 		ParentComponent_Deserialize(SerializedComponent &serializedComponent, DYE::DYEditor::Entity &entity)
 		{
 			auto &parentComponent = entity.AddOrGetComponent<ParentComponent>();
-			parentComponent.ParentGUID = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::GUID>("ParentGUID");
+
+			GUID deserializedParentGUID = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::GUID>("ParentGUID");
+			parentComponent.SetParentGUID(deserializedParentGUID);
 
 			return {};
 		}
@@ -126,7 +128,13 @@ namespace DYE::DYEditor
 		{
 			auto &parentComponent = entity.GetComponent<ParentComponent>();
 
-			bool const changed = ImGuiUtil::DrawGUIDControl("ParentGUID", parentComponent.ParentGUID);
+			GUID parentGUID = parentComponent.GetParentGUID();
+			bool const changed = ImGuiUtil::DrawGUIDControl("ParentGUID", parentGUID);
+			if (changed)
+			{
+				parentComponent.TrySetParentGUIDIfFoundInWorld(parentGUID, entity.GetWorld());
+			}
+
 			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
 			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
 			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();

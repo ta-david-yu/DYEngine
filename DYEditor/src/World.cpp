@@ -102,11 +102,11 @@ namespace DYE::DYEditor
 			m_GUIDToEntityIdentifierMap.erase(guid);
 
 			// If the entity has a parent, we need to remove its GUID from the parent's children list.
-			auto tryGetParent = entityToDestroy.TryGetComponent<ParentComponent>();
-			if (tryGetParent.has_value())
+			auto tryGetParentComponent = entityToDestroy.TryGetComponent<ParentComponent>();
+			if (tryGetParentComponent.has_value())
 			{
-				auto &parent = tryGetParent.value().get();
-				auto parentEntity = TryGetEntityWithGUID(parent.ParentGUID);
+				auto &parentComponent = tryGetParentComponent.value().get();
+				auto parentEntity = TryGetEntityWithGUID(parentComponent.GetParentGUID());
 				auto &parentChildrenComponent = parentEntity->GetComponent<ChildrenComponent>();
 				std::erase(parentChildrenComponent.ChildrenGUIDs, guid);
 			}
@@ -151,11 +151,11 @@ namespace DYE::DYEditor
 		auto const indexInHandleArray = tryGetIndex.value();
 
 		// If the entity has a parent, we need to remove its GUID from the parent's children list.
-		auto tryGetParent = entityToDestroy.TryGetComponent<ParentComponent>();
-		if (tryGetParent.has_value())
+		auto tryGetParentComponent = entityToDestroy.TryGetComponent<ParentComponent>();
+		if (tryGetParentComponent.has_value())
 		{
-			auto &parent = tryGetParent.value().get();
-			auto parentEntity = TryGetEntityWithGUID(parent.ParentGUID);
+			auto &parentComponent = tryGetParentComponent.value().get();
+			auto parentEntity = TryGetEntityWithGUID(parentComponent.GetParentGUID());
 			auto &parentChildrenComponent = parentEntity->GetComponent<ChildrenComponent>();
 			std::erase(parentChildrenComponent.ChildrenGUIDs, entityGUID);
 		}
@@ -227,7 +227,7 @@ namespace DYE::DYEditor
 				// We need to reassign child's ParentComponent & parent's ChildrenComponent with the new GUIDs.
 				HierarchyLevel &level = hierarchyLevels.top();
 
-				newEntity.GetComponent<ParentComponent>().ParentGUID = level.NewParentGUID;
+				newEntity.GetComponent<ParentComponent>().SetParentGUID(level.NewParentGUID);
 
 				std::size_t const numberOfChildren = level.pChildrenComponent->ChildrenGUIDs.size();
 				level.pChildrenComponent->ChildrenGUIDs[numberOfChildren - level.NumberOfChildrenLeft] = newGUID;

@@ -21,7 +21,7 @@ namespace DYE::DYEditor::EntityUtil
 			return false;
 		}
 
-		return potentialChild.GetComponent<ParentComponent>().ParentGUID == potentialParent.GetComponent<IDComponent>().ID;
+		return potentialChild.GetComponent<ParentComponent>().GetParentGUID() == potentialParent.GetComponent<IDComponent>().ID;
 	}
 
 	bool IsChildOf(Entity potentialChild, Entity potentialParent)

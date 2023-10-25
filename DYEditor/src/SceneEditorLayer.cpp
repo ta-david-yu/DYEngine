@@ -1116,7 +1116,7 @@ namespace DYE::DYEditor
 				auto tryGetChildrenComponent = entity.TryGetComponent<ChildrenComponent>();
 
 				auto tryGetParent = entity.TryGetComponent<ParentComponent>();
-				auto parentGUID = tryGetParent.has_value()? tryGetParent.value().get().ParentGUID : (DYE::GUID) 0;
+				auto parentGUID = tryGetParent.has_value() ? tryGetParent.value().get().GetParentGUID() : (DYE::GUID) 0;
 
 				std::size_t childrenCount = tryGetChildrenComponent.has_value()? tryGetChildrenComponent.value().get().ChildrenGUIDs.size() : 0;
 
