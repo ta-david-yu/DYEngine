@@ -6,9 +6,11 @@
 #include "Serialization/SerializedObjectFactory.h"
 #include "Math/Color.h"
 #include "ImGui/ImGuiUtil.h"
+#include "ImGui/EditorImGuiUtil.h"
 #include "ImGui/ImGuiUtil_Internal.h"
 #include "FileSystem/FileSystem.h"
 #include "Core/RuntimeState.h"
+#include "Undo/Undo.h"
 
 // All the built-in component & system types are in here.
 #include "Core/Components.h"
@@ -249,11 +251,6 @@ namespace DYE::DYEditor
 		void CameraComponent_Add(Entity& entity)
 		{
 			entity.AddComponent<CameraComponent>();
-
-			// The component only makes sense with a transform component.
-			// TODO: Move this somewhere else (maybe a list of required components in TypeDescriptor?)
-			//		Right now these additional entities aren't tracked by undo/redo system.
-			entity.AddOrGetComponent<LocalTransformComponent>();
 		}
 
 		SerializationResult
@@ -322,10 +319,26 @@ namespace DYE::DYEditor
 		{
 			auto &cameraComponent = entity.GetComponent<CameraComponent>();
 
-			bool const changed = ImGuiUtil::DrawCameraPropertiesControl("Camera Properties", cameraComponent.Properties);
+			bool changed = ImGuiUtil::DrawCameraPropertiesControl("Camera Properties", cameraComponent.Properties);
 			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
 			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
 			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+
+			bool isMissingComponentWarningFixed = ImGuiUtil::DrawTryFixWarningButtonAndInfo
+			(
+				!entity.HasComponent<LocalTransformComponent>(),
+				"Missing LocalTransform component",
+				[entity]()
+				{
+					Undo::AddComponent(entity, LocalTransformComponentTypeName,
+									   TypeRegistry::GetComponentTypeDescriptor_LocalTransformComponent());
+				}
+			);
+			if (isMissingComponentWarningFixed)
+			{
+				changed = true;
+				drawInspectorContext.ShouldEarlyOutIfInIteratorLoop = true;
+			}
 
 			return changed;
 		}
@@ -333,11 +346,6 @@ namespace DYE::DYEditor
 		void SpriteRendererComponent_Add(DYEditor::Entity& entity)
 		{
 			entity.AddComponent<SpriteRendererComponent>();
-
-			// The component only makes sense with a transform component.
-			// TODO: Move this somewhere else (maybe a list of required components in TypeDescriptor?)
-			//		Right now these additional entities aren't tracked by undo/redo system.
-			entity.AddOrGetComponent<LocalTransformComponent>();
 		}
 
 		SerializationResult
@@ -376,7 +384,7 @@ namespace DYE::DYEditor
 		{
 			auto &component = entity.GetComponent<SpriteRendererComponent>();
 
-			bool const changed = ImGuiUtil::DrawColor4Control("Color", component.Color);
+			bool changed = ImGuiUtil::DrawColor4Control("Color", component.Color);
 			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
 			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
 			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
@@ -400,6 +408,22 @@ namespace DYE::DYEditor
 
 			// Draw a preview of the texture.
 			ImGuiUtil::DrawTexture2DPreviewWithLabel("Texture Preview", component.Texture);
+
+			bool isMissingComponentWarningFixed = ImGuiUtil::DrawTryFixWarningButtonAndInfo
+			(
+				!entity.HasComponent<LocalTransformComponent>(),
+				"Missing LocalTransform component",
+				[entity]()
+				{
+					Undo::AddComponent(entity, LocalTransformComponentTypeName,
+									   TypeRegistry::GetComponentTypeDescriptor_LocalTransformComponent());
+				}
+			);
+			if (isMissingComponentWarningFixed)
+			{
+				changed = true;
+				drawInspectorContext.ShouldEarlyOutIfInIteratorLoop = true;
+			}
 
 			return isPathChanged || changed;
 		}
@@ -878,7 +902,7 @@ namespace DYE::DYEditor
 		return s_NameComponentTypeDescriptor;
 	}
 
-	ComponentTypeDescriptor TypeRegistry::GetComponentTypeDescriptor_TransformComponent()
+	ComponentTypeDescriptor TypeRegistry::GetComponentTypeDescriptor_LocalTransformComponent()
 	{
 		return s_LocalTransformComponentTypeDescriptor;
 	}

@@ -33,7 +33,6 @@ namespace DYE::DYEditor
 	{
 		{ instance.IsEnabled } -> std::same_as<bool&>;
 	};
-
 	template<typename T>
 	bool DefaultDrawComponentHeaderWithIsEnabled(DrawComponentHeaderContext &drawHeaderContext, DYE::DYEditor::Entity &entity, bool &isHeaderVisible, std::string const &headerLabel)
 	{

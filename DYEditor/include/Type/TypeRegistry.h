@@ -21,6 +21,7 @@ namespace DYE::DYEditor
 		bool IsModificationActivated = false;
 		bool IsModificationDeactivated = false;
 		bool IsModificationDeactivatedAfterEdit = false;
+		bool ShouldEarlyOutIfInIteratorLoop = false;
 	};
 
 	struct SerializationResult
@@ -124,7 +125,7 @@ namespace DYE::DYEditor
 
 		/// Specialized functions to get certain built-in component Type Descriptor. Implemented inside BuiltInTypeRegister.cpp.
 		static ComponentTypeDescriptor GetComponentTypeDescriptor_NameComponent();
-		static ComponentTypeDescriptor GetComponentTypeDescriptor_TransformComponent();
+		static ComponentTypeDescriptor GetComponentTypeDescriptor_LocalTransformComponent();
 		static ComponentTypeDescriptor GetComponentTypeDescriptor_ParentComponent();
 		static ComponentTypeDescriptor GetComponentTypeDescriptor_ChildrenComponent();
 
@@ -144,17 +145,20 @@ namespace DYE::DYEditor
 		static void registerComponentType(std::string const &componentTypeName, ComponentTypeDescriptor componentDescriptor);
 
 	private:
-		/// full type name -> pointer to type descriptor
+		/// Full type name -> Pointer to type descriptor
 		inline static std::map<std::string, ComponentTypeDescriptor> s_ComponentTypeRegistry;
 
-		/// user defined -> pointer to system base
+		/// User defined -> Pointer to system base
 		inline static std::map<std::string, SystemBase*> s_SystemRegistry;
+
+		/// Formerly known type name -> Current type name \n
+		/// We use this for both component type names & system type names.
+		inline static std::unordered_map<std::string, std::string> s_FormerlyKnownTypeNames;
+
+		/// Full type name -> A list of component type names to be used with
+		inline static std::unordered_map<std::string, std::vector<std::string>> s_UseWithComponentHintsMap;
 
 		static std::vector<std::pair<std::string, ComponentTypeDescriptor>> s_ComponentNamesAndDescriptorsCache;
 		static std::vector<std::pair<std::string, SystemBase*>> s_SystemNamesAndPointersCache;
-
-		/// Formerly Known Type Name -> Current Type Name. \n
-		/// We use this for both component type names & system type names.
-		inline static std::unordered_map<std::string, std::string> s_FormerlyKnownTypeNames;
 	};
 }

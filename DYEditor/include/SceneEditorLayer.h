@@ -46,6 +46,8 @@ namespace DYE::DYEditor
 	struct EntityInspectorContext
 	{
 		bool IsModifyingEntityProperty = false;
+		/// During an operation, it might potentially modify the component list during iteration. You can set this variable to true to indicate that.
+		bool ShouldEarlyOutIfInIteratorLoop = false;
 		InspectorMode Mode = InspectorMode::Normal;
 		DYE::DYEditor::Entity Entity;
 		SerializedComponent SerializedComponentBeforeModification = SerializedObjectFactory::CreateEmptySerializedComponent();

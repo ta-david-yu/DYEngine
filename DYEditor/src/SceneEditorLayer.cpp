@@ -640,6 +640,7 @@ namespace DYE::DYEditor
 			}
 
 			auto tryGetSelectedEntity = activeScene.World.TryGetEntityWithGUID(m_CurrentlySelectedEntityGUID);
+			m_InspectorContext.ShouldEarlyOutIfInIteratorLoop = false; // We always want to reset this value from the last frame.
 			m_InspectorContext.Entity = tryGetSelectedEntity.has_value()? tryGetSelectedEntity.value() : Entity::Null();
 			bool const isEntityChanged = drawEntityInspector(m_InspectorContext, TypeRegistry::GetComponentTypesNamesAndDescriptors());
 			m_IsActiveSceneDirty |= isEntityChanged;
@@ -935,7 +936,7 @@ namespace DYE::DYEditor
 				(
 					selectedEntity,
 					LocalTransformComponentTypeName,
-					TypeRegistry::GetComponentTypeDescriptor_TransformComponent()
+					TypeRegistry::GetComponentTypeDescriptor_LocalTransformComponent()
 				);
 
 			Undo::RegisterComponentModification(selectedEntity, context.SerializedTransform, serializedModifiedTransform);
@@ -995,7 +996,7 @@ namespace DYE::DYEditor
 				(
 					selectedEntity,
 					LocalTransformComponentTypeName,
-					TypeRegistry::GetComponentTypeDescriptor_TransformComponent()
+					TypeRegistry::GetComponentTypeDescriptor_LocalTransformComponent()
 				);
 
 			context.IsTransformManipulatedByGizmo = true;
@@ -1910,8 +1911,9 @@ namespace DYE::DYEditor
 		auto &successfullyDeserializedComponentNames = entityEditorOnlyMetadata.SuccessfullyDeserializedComponentNames;
 		drawnComponentTypeNames.reserve(successfullyDeserializedComponentNames.size());
 
-		for (auto &deserializedTypeName : successfullyDeserializedComponentNames)
+		for (auto i = 0; i < successfullyDeserializedComponentNames.size(); i++)
 		{
+			auto &deserializedTypeName = successfullyDeserializedComponentNames[i];
 			auto tryGetTypeDescriptor = TypeRegistry::TryGetComponentTypeDescriptor(deserializedTypeName);
 			DYE_ASSERT_LOG_WARN(tryGetTypeDescriptor.Success,
 								"The component '%s' was successfully deserialized but the type descriptor cannot be found in the TypeRegistry anymore.",
@@ -1923,6 +1925,12 @@ namespace DYE::DYEditor
 
 			bool isRemoved = false;
 			isEntityChangedThisFrame |= drawComponentInEntityInspector(context, realFullTypeName, tryGetTypeDescriptor.Descriptor, &isRemoved);
+
+			if (context.ShouldEarlyOutIfInIteratorLoop)
+			{
+				return isEntityChangedThisFrame;
+			}
+
 			if (isRemoved)
 			{
 				// Early out if a component is removed, to avoid panic for-loop.
@@ -1932,8 +1940,9 @@ namespace DYE::DYEditor
 #endif
 
 		// We draw rest of the components that aren't tracked by the entity metadata.
-		for (auto &[typeName, typeDescriptor]: componentNamesAndDescriptors)
+		for (auto i = 0; i < componentNamesAndDescriptors.size(); i++)
 		{
+			auto &[typeName, typeDescriptor] = componentNamesAndDescriptors[i];
 			if (drawnComponentTypeNames.contains(typeName))
 			{
 				// The component inspector of the given type has already been drawn.
@@ -1943,6 +1952,12 @@ namespace DYE::DYEditor
 
 			bool isRemoved = false;
 			isEntityChangedThisFrame |= drawComponentInEntityInspector(context, typeName, typeDescriptor, &isRemoved);
+
+			if (context.ShouldEarlyOutIfInIteratorLoop)
+			{
+				return isEntityChangedThisFrame;
+			}
+
 			if (isRemoved)
 			{
 				// Early out if a component is removed, to avoid panic for-loop.
@@ -2142,9 +2157,11 @@ namespace DYE::DYEditor
 		}
 		else
 		{
-			ImGui::PushID(typeName.c_str());
 			DrawComponentInspectorContext drawComponentInspectorContext;
+
+			ImGui::PushID(typeName.c_str());
 			isEntityChangedThisFrame |= typeDescriptor.DrawInspector(drawComponentInspectorContext, entity);
+			ImGui::PopID();
 
 			if (drawComponentInspectorContext.IsModificationActivated)
 			{
@@ -2165,7 +2182,7 @@ namespace DYE::DYEditor
 													serializedComponentAfterModification);
 			}
 
-			ImGui::PopID();
+			context.ShouldEarlyOutIfInIteratorLoop = drawComponentInspectorContext.ShouldEarlyOutIfInIteratorLoop;
 		}
 
 		ImGui::Spacing();
