@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/EntityTypes.h"
 #include "Core/WorldView.h"
 #include "Core/GUID.h"
 
@@ -7,13 +8,9 @@
 #include <vector>
 #include <unordered_map>
 #include <concepts>
-#include <entt/entt.hpp>
 
 namespace DYE::DYEditor
 {
-	using EntityIdentifier = entt::entity;
-	using EntityInstanceID = std::uint32_t;
-
 	class Entity;
 	class World
 	{
