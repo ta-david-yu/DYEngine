@@ -6,6 +6,7 @@
 #include <optional>
 #include <vector>
 #include <unordered_map>
+#include <concepts>
 #include <entt/entt.hpp>
 
 namespace DYE::DYEditor
@@ -56,6 +57,7 @@ namespace DYE::DYEditor
 		Entity GetEntityAtIndex(std::size_t index);
 
 		template<typename Func>
+		requires std::invocable<Func, DYE::DYEditor::Entity> || std::invocable<Func, DYE::DYEditor::Entity&>
 		void ForEachEntity(Func function)
 		{
 			for (auto& entityHandle : m_EntityHandles)
@@ -66,6 +68,7 @@ namespace DYE::DYEditor
 		}
 
 		template<typename Func>
+		requires std::invocable<Func, DYE::DYEditor::Entity, std::size_t> || std::invocable<Func, DYE::DYEditor::Entity&, std::size_t>
 		void ForEachEntityAndIndex(Func function)
 		{
 			for (std::size_t i = 0; i < m_EntityHandles.size(); i++)
