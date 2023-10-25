@@ -1560,7 +1560,7 @@ namespace DYE::DYEditor
 		ImGui::Separator();
 		if (!scene.UnrecognizedSystems.empty())
 		{
-			ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(1.000f, 0.000f, 0.000f, 0.310f));
+			ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(1.000f, 0.000f, 0.000f, 1));
 			bool const showUnrecognizedSystems = ImGui::CollapsingHeader("Unrecognized Systems");
 			ImGui::PopStyleColor();
 			if (showUnrecognizedSystems)
@@ -1977,7 +1977,7 @@ namespace DYE::DYEditor
 
 		EntityDeserializationResult &deserializationResult = tryGetDeserializationResult.value();
 
-		ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(1.000f, 0.000f, 0.000f, 0.310f));
+		ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(1.000f, 0.000f, 0.000f, 1));
 		bool const showUnrecognizedSystems = ImGui::CollapsingHeader("Unrecognized Components");
 		ImGui::PopStyleColor();
 

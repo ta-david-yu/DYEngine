@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ImGui/ImGuiUtil.h"
+#include "Math/Color.h"
 
 #include <string>
 #include <filesystem>
@@ -34,17 +35,15 @@ namespace DYE::ImGuiUtil
 
 		ImGui::PushID(infoText);
 
-		ImGui::Separator();
-
-		if (ImGui::Button("Fix"))
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.000f, 0.000f, 0.000f, 1));
+		if (ImGui::Button("Fix", ImVec2(50, 0)))
 		{
 			fixFunction();
 			isExecuted = true;
 		}
+		ImGui::PopStyleColor();
 		ImGui::SameLine();
-		ImGui::TextWrapped(infoText);
-
-		ImGui::Separator();
+		ImGui::TextUnformatted(infoText);
 
 		ImGui::PopID();
 

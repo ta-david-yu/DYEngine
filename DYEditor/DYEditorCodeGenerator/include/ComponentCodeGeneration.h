@@ -72,6 +72,28 @@ R"(							ImGui::Indent();
 							ImGui::Unindent();
 )";
 
+char const* DrawMissingComponentWarning =
+R"(
+							bool isMissingComponentWarningFixed_${USE_WITH_COMPONENT_FULL_TYPE_AS_VARIABLE_NAME} = ImGuiUtil::DrawTryFixWarningButtonAndInfo
+							(
+								!entity.HasComponent<${USE_WITH_COMPONENT_FULL_TYPE}>(),
+								"Missing ${USE_WITH_COMPONENT_FULL_TYPE}",
+								[entity]()
+								{
+									Undo::AddComponent
+									(
+										entity, NAME_OF(${USE_WITH_COMPONENT_FULL_TYPE}),
+									   	TypeRegistry::TryGetComponentTypeDescriptor("${USE_WITH_COMPONENT_FULL_TYPE}").Descriptor
+									);
+								}
+							);
+							if (isMissingComponentWarningFixed_${USE_WITH_COMPONENT_FULL_TYPE_AS_VARIABLE_NAME})
+							{
+								changed = true;
+								drawInspectorContext.ShouldEarlyOutIfInIteratorLoop = true;
+							}
+)";
+
 char const* ComponentTypeRegistrationCallSourceEnd =
 R"(							return changed;
 						},
@@ -86,8 +108,8 @@ R"(		TypeRegistry::RegisterFormerlyKnownTypeName("${FORMERLY_KNOWN_TYPE_NAME}", 
 
 std::string ComponentDescriptorToTypeRegistrationCallSource(ComponentDescriptor const& descriptor)
 {
-	auto const& componentDisplayName = descriptor.HasOptionalDisplayName? descriptor.OptionalDisplayName : descriptor.FullType;
-	auto const& componentFullType = descriptor.FullType;
+	std::string const& componentDisplayName = descriptor.HasOptionalDisplayName? descriptor.OptionalDisplayName : descriptor.FullType;
+	std::string const& componentFullTypeName = descriptor.FullType;
 
 	std::string result = "\n\t\t// Component located in " + descriptor.LocatedHeaderFile + "\n";
 	result.append(ComponentTypeRegistrationCallSourceStart);
@@ -104,8 +126,7 @@ std::string ComponentDescriptorToTypeRegistrationCallSource(ComponentDescriptor 
 
 		result.append(DeserializeLambdaSourceStart);
 		{
-			result.append(
-				!descriptor.Properties.empty() ? DeserializeAddOrGetComponent : DeserializeAddOrGetEmptyComponent);
+			result.append(!descriptor.Properties.empty() ? DeserializeAddOrGetComponent : DeserializeAddOrGetEmptyComponent);
 			for (auto const &propertyDescriptor: descriptor.Properties)
 			{
 				result.append(PropertyDescriptorToDeserializeCallSource(descriptor.FullType, propertyDescriptor));
@@ -119,6 +140,23 @@ std::string ComponentDescriptorToTypeRegistrationCallSource(ComponentDescriptor 
 			for (auto const &propertyDescriptor: descriptor.Properties)
 			{
 				result.append(PropertyDescriptorToImGuiUtilControlCallSource(descriptor.FullType, propertyDescriptor));
+			}
+
+			// Append source to draw missing component warning if there are use-with-component hints.
+			for (auto const &useWithComponentTypeName : descriptor.UseWithComponentTypeHints)
+			{
+				// If we want to use the full type name in a variable name, we need to remove '::' in the name,
+				// therefore we replace all '::' with '__'.
+				std::string const& useWithComponentTypeNameWithReplacedNamespaceSymbol = std::regex_replace(useWithComponentTypeName, std::regex("::"), "__");
+
+				std::regex const useWithComponentTypeNameKeywordPattern(R"(\$\{USE_WITH_COMPONENT_FULL_TYPE\})");
+				std::regex const useWithComponentTypeNameWithReplacedNamespaceSymbolKeywordPattern(R"(\$\{USE_WITH_COMPONENT_FULL_TYPE_AS_VARIABLE_NAME\})");
+
+				std::string drawMissingComponentWarningSource = DrawMissingComponentWarning;
+				drawMissingComponentWarningSource = std::regex_replace(drawMissingComponentWarningSource, useWithComponentTypeNameKeywordPattern, useWithComponentTypeName);
+				drawMissingComponentWarningSource = std::regex_replace(drawMissingComponentWarningSource, useWithComponentTypeNameWithReplacedNamespaceSymbolKeywordPattern, useWithComponentTypeNameWithReplacedNamespaceSymbol);
+
+				result.append(drawMissingComponentWarningSource);
 			}
 		}
 	}
@@ -135,7 +173,7 @@ std::string ComponentDescriptorToTypeRegistrationCallSource(ComponentDescriptor 
 	std::regex const componentFullTypeKeywordPattern(R"(\$\{COMPONENT_FULL_TYPE\})");
 
 	result = std::regex_replace(result, componentDisplayNameKeywordPattern, componentDisplayName);
-	result = std::regex_replace(result, componentFullTypeKeywordPattern, componentFullType);
+	result = std::regex_replace(result, componentFullTypeKeywordPattern, componentFullTypeName);
 
 	return result;
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/EditorCore.h"
-
+#include "Core/Components.h"
 
 namespace TestNamespace
 {
@@ -121,7 +121,7 @@ DYE_COMPONENT(CreateEntity)
 DYE_FORMERLY_KNOWN_AS("Createee")
 DYE_FORMERLY_KNOWN_AS("CreateeeHA")
 DYE_USE_WITH_COMPONENT_HINT(HasAngularVelocity)
-DYE_USE_WITH_COMPONENT_HINT(ComponentWithAllPrimitiveProperties)
+DYE_USE_WITH_COMPONENT_HINT(DYE::DYEditor::LocalTransformComponent)
 struct CreateEntity
 {
 	DYE_PROPERTY()

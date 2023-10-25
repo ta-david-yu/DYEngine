@@ -11,6 +11,8 @@
 #include "Type/TypeRegistry.h"
 #include "Serialization/SerializedObjectFactory.h"
 #include "ImGui/ImGuiUtil.h"
+#include "ImGui/EditorImGuiUtil.h"
+#include "Undo/Undo.h"
 
 // Insert user headers here...
 #include "include/TestComponents.h"
@@ -227,6 +229,25 @@ namespace DYE::DYEditor
 							bool changed = false;
 							auto& component = entity.GetComponent<HasAngularVelocity>();
 							changed |= ImGuiUtil::DrawFloatControl("AngleDegreePerSecond", component.AngleDegreePerSecond); updateContextAfterDrawControlCall(drawInspectorContext);
+
+							bool isMissingComponentWarningFixed_ComponentWithAllPrimitiveProperties = ImGuiUtil::DrawTryFixWarningButtonAndInfo
+							(
+								!entity.HasComponent<ComponentWithAllPrimitiveProperties>(),
+								"Missing ComponentWithAllPrimitiveProperties",
+								[entity]()
+								{
+									Undo::AddComponent
+									(
+										entity, NAME_OF(ComponentWithAllPrimitiveProperties),
+									   	TypeRegistry::TryGetComponentTypeDescriptor("ComponentWithAllPrimitiveProperties").Descriptor
+									);
+								}
+							);
+							if (isMissingComponentWarningFixed_ComponentWithAllPrimitiveProperties)
+							{
+								changed = true;
+								drawInspectorContext.ShouldEarlyOutIfInIteratorLoop = true;
+							}
 							return changed;
 						},
 						.GetDisplayName = []() { return "HasAngularVelocity"; },
@@ -260,6 +281,44 @@ namespace DYE::DYEditor
 							auto& component = entity.GetComponent<CreateEntity>();
 							changed |= ImGuiUtil::DrawTextControl("EntityNamePrefix", component.EntityNamePrefix); updateContextAfterDrawControlCall(drawInspectorContext);
 							changed |= ImGuiUtil::DrawIntControl("NumberOfEntitiesToCreate", component.NumberOfEntitiesToCreate); updateContextAfterDrawControlCall(drawInspectorContext);
+
+							bool isMissingComponentWarningFixed_HasAngularVelocity = ImGuiUtil::DrawTryFixWarningButtonAndInfo
+							(
+								!entity.HasComponent<HasAngularVelocity>(),
+								"Missing HasAngularVelocity",
+								[entity]()
+								{
+									Undo::AddComponent
+									(
+										entity, NAME_OF(HasAngularVelocity),
+									   	TypeRegistry::TryGetComponentTypeDescriptor("HasAngularVelocity").Descriptor
+									);
+								}
+							);
+							if (isMissingComponentWarningFixed_HasAngularVelocity)
+							{
+								changed = true;
+								drawInspectorContext.ShouldEarlyOutIfInIteratorLoop = true;
+							}
+
+							bool isMissingComponentWarningFixed_DYE__DYEditor__LocalTransformComponent = ImGuiUtil::DrawTryFixWarningButtonAndInfo
+							(
+								!entity.HasComponent<DYE::DYEditor::LocalTransformComponent>(),
+								"Missing DYE::DYEditor::LocalTransformComponent",
+								[entity]()
+								{
+									Undo::AddComponent
+									(
+										entity, NAME_OF(DYE::DYEditor::LocalTransformComponent),
+									   	TypeRegistry::TryGetComponentTypeDescriptor("DYE::DYEditor::LocalTransformComponent").Descriptor
+									);
+								}
+							);
+							if (isMissingComponentWarningFixed_DYE__DYEditor__LocalTransformComponent)
+							{
+								changed = true;
+								drawInspectorContext.ShouldEarlyOutIfInIteratorLoop = true;
+							}
 							return changed;
 						},
 						.GetDisplayName = []() { return "CreateEntity"; },

@@ -27,6 +27,8 @@ R"(//---------------------------------------------------------------------------
 #include "Type/TypeRegistry.h"
 #include "Serialization/SerializedObjectFactory.h"
 #include "ImGui/ImGuiUtil.h"
+#include "ImGui/EditorImGuiUtil.h"
+#include "Undo/Undo.h"
 
 // Insert user headers here...
 )";
