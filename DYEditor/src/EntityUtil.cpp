@@ -68,7 +68,7 @@ namespace DYE::DYEditor::EntityUtil
 				continue;
 			}
 
-			auto &childrenGUIDs = tryGetChild.value().get().ChildrenGUIDs;
+			auto const &childrenGUIDs = tryGetChild.value().get().GetChildrenGUIDs();
 			for (int i = childrenGUIDs.size() - 1; i >= 0; i--)
 			{
 				auto childGUID = childrenGUIDs[i];
@@ -106,7 +106,7 @@ namespace DYE::DYEditor::EntityUtil
 				continue;
 			}
 
-			auto &childrenGUIDs = tryGetChild.value().get().ChildrenGUIDs;
+			auto const &childrenGUIDs = tryGetChild.value().get().GetChildrenGUIDs();
 			for (int i = childrenGUIDs.size() - 1; i >= 0; i--)
 			{
 				auto childGUID = childrenGUIDs[i];
@@ -151,7 +151,7 @@ namespace DYE::DYEditor::EntityUtil
 				continue;
 			}
 
-			auto &childrenGUIDs = tryGetChild.value().get().ChildrenGUIDs;
+			auto const &childrenGUIDs = tryGetChild.value().get().GetChildrenGUIDs();
 			for (int i = childrenGUIDs.size() - 1; i >= 0; i--)
 			{
 				auto childGUID = childrenGUIDs[i];

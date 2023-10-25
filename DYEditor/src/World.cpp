@@ -108,7 +108,7 @@ namespace DYE::DYEditor
 				auto &parentComponent = tryGetParentComponent.value().get();
 				auto parentEntity = TryGetEntityWithGUID(parentComponent.GetParentGUID());
 				auto &parentChildrenComponent = parentEntity->GetComponent<ChildrenComponent>();
-				std::erase(parentChildrenComponent.ChildrenGUIDs, guid);
+				parentChildrenComponent.RemoveChildWithGUID(guid);
 			}
 		}
 
@@ -157,7 +157,7 @@ namespace DYE::DYEditor
 			auto &parentComponent = tryGetParentComponent.value().get();
 			auto parentEntity = TryGetEntityWithGUID(parentComponent.GetParentGUID());
 			auto &parentChildrenComponent = parentEntity->GetComponent<ChildrenComponent>();
-			std::erase(parentChildrenComponent.ChildrenGUIDs, entityGUID);
+			parentChildrenComponent.RemoveChildWithGUID(entityGUID);
 		}
 
 		// Destroy the entity.
@@ -229,8 +229,8 @@ namespace DYE::DYEditor
 
 				newEntity.GetComponent<ParentComponent>().SetParentGUID(level.NewParentGUID);
 
-				std::size_t const numberOfChildren = level.pChildrenComponent->ChildrenGUIDs.size();
-				level.pChildrenComponent->ChildrenGUIDs[numberOfChildren - level.NumberOfChildrenLeft] = newGUID;
+				std::size_t const numberOfChildren = level.pChildrenComponent->GetChildrenCount();
+				level.pChildrenComponent->SetChildGUIDAt(numberOfChildren - level.NumberOfChildrenLeft, newGUID);
 
 				level.NumberOfChildrenLeft--;
 				if (level.NumberOfChildrenLeft == 0)
@@ -249,7 +249,7 @@ namespace DYE::DYEditor
 				continue;
 			}
 
-			auto &childrenGUIDs = tryGetChild.value().get().ChildrenGUIDs;
+			auto const &childrenGUIDs = tryGetChild.value().get().GetChildrenGUIDs();
 			hierarchyLevels.push
 			(
 				HierarchyLevel

@@ -23,7 +23,7 @@
 
 namespace DYE::DYEditor
 {
-	namespace BuiltInFunctions
+	namespace BuiltInComponentTypeFunctions
 	{
 		template<typename T>
 		SerializationResult
@@ -145,7 +145,7 @@ namespace DYE::DYEditor
 		SerializationResult
 		ChildrenComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
 		{
-			auto const &childrenGUIDs = entity.GetComponent<ChildrenComponent>().ChildrenGUIDs;
+			auto const &childrenGUIDs = entity.GetComponent<ChildrenComponent>().GetChildrenGUIDs();
 			SerializedArray serializedArray;
 
 			for (int i = 0; i < childrenGUIDs.size(); ++i)
@@ -162,7 +162,7 @@ namespace DYE::DYEditor
 		ChildrenComponent_Deserialize(SerializedComponent &serializedComponent, DYE::DYEditor::Entity &entity)
 		{
 			auto &childrenComponent = entity.AddOrGetComponent<ChildrenComponent>();
-			childrenComponent.ChildrenGUIDs.clear();
+			childrenComponent.m_ChildrenGUIDs.clear();
 
 			auto tryGetSerializedArray = serializedComponent.TryGetArrayProperty("Children");
 			if (!tryGetSerializedArray.has_value())
@@ -171,7 +171,7 @@ namespace DYE::DYEditor
 			}
 
 			auto &serializedArray = tryGetSerializedArray.value();
-			childrenComponent.ChildrenGUIDs.reserve(serializedArray.Size());
+			childrenComponent.m_ChildrenGUIDs.reserve(serializedArray.Size());
 			for (int i = 0; i < serializedArray.Size(); i++)
 			{
 				auto tryGetElement = serializedArray.TryGetElementAtIndex<GUID>(i);
@@ -179,8 +179,10 @@ namespace DYE::DYEditor
 				{
 					continue;
 				}
-				childrenComponent.ChildrenGUIDs.push_back(tryGetElement.value());
+				childrenComponent.m_ChildrenGUIDs.push_back(tryGetElement.value());
 			}
+
+			childrenComponent.RefreshChildrenEntityIdentifierCache(entity.GetWorld());
 
 			return {};
 		}
@@ -190,18 +192,26 @@ namespace DYE::DYEditor
 			auto &childrenComponent = entity.GetComponent<ChildrenComponent>();
 
 			bool changed = false;
-			auto &childrenGUIDs = childrenComponent.ChildrenGUIDs;
+			auto &childrenGUIDs = childrenComponent.m_ChildrenGUIDs;
 
 			ImGuiUtil::Internal::GUIDControlFunctionPointer lambda = [](char const* id, GUID &guid) -> bool
 			{
-				return ImGuiUtil::DrawGUIDControl(std::string(id), guid);
+				bool const isGUIDChanged = ImGuiUtil::DrawGUIDControl(std::string(id), guid);
+				return isGUIDChanged;
 			};
-			changed |= ImGuiUtil::Internal::ArrayControl("Children", childrenGUIDs, lambda).Draw();
+			bool const isGUIDsArrayChanged = ImGuiUtil::Internal::ArrayControl("Children", childrenGUIDs, lambda).Draw();
+
+			// TODO: We want to improve this in the future, we only want to update the cache index, not the whole vector array.
+			if (isGUIDsArrayChanged)
+			{
+				childrenComponent.RefreshChildrenEntityIdentifierCache(entity.GetWorld());
+			}
+
 			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
 			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
 			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
 
-			return changed;
+			return changed || isGUIDsArrayChanged;
 		}
 
 		SerializationResult
@@ -737,9 +747,9 @@ namespace DYE::DYEditor
 			{
 				.ShouldBeIncludedInNormalAddComponentList = false,
 				.ShouldDrawInNormalInspector = false,
-				.Serialize = BuiltInFunctions::IDComponent_Serialize,
-				.Deserialize = BuiltInFunctions::IDComponent_Deserialize,
-				.DrawInspector = BuiltInFunctions::IDComponent_DrawInspector,
+				.Serialize = BuiltInComponentTypeFunctions::IDComponent_Serialize,
+				.Deserialize = BuiltInComponentTypeFunctions::IDComponent_Deserialize,
+				.DrawInspector = BuiltInComponentTypeFunctions::IDComponent_DrawInspector,
 				.GetDisplayName = []() { return "ID"; },
 			}
 		);
@@ -752,11 +762,11 @@ namespace DYE::DYEditor
 			{
 				.ShouldBeIncludedInNormalAddComponentList = false,
 				.ShouldDrawInNormalInspector = false,
-				.Add = BuiltInFunctions::NameComponent_Add,
+				.Add = BuiltInComponentTypeFunctions::NameComponent_Add,
 
-				.Serialize = BuiltInFunctions::NameComponent_Serialize,
-				.Deserialize = BuiltInFunctions::NameComponent_Deserialize,
-				.DrawInspector = BuiltInFunctions::NameComponent_DrawInspector,
+				.Serialize = BuiltInComponentTypeFunctions::NameComponent_Serialize,
+				.Deserialize = BuiltInComponentTypeFunctions::NameComponent_Deserialize,
+				.DrawInspector = BuiltInComponentTypeFunctions::NameComponent_DrawInspector,
 				.GetDisplayName = []() { return "Name"; },
 			}
 		);
@@ -769,9 +779,9 @@ namespace DYE::DYEditor
 			{
 				.ShouldBeIncludedInNormalAddComponentList = false,
 				.ShouldDrawInNormalInspector = false,
-				.Serialize = BuiltInFunctions::ParentComponent_Serialize,
-				.Deserialize = BuiltInFunctions::ParentComponent_Deserialize,
-				.DrawInspector = BuiltInFunctions::ParentComponent_DrawInspector,
+				.Serialize = BuiltInComponentTypeFunctions::ParentComponent_Serialize,
+				.Deserialize = BuiltInComponentTypeFunctions::ParentComponent_Deserialize,
+				.DrawInspector = BuiltInComponentTypeFunctions::ParentComponent_DrawInspector,
 				.GetDisplayName = []() { return "Parent"; },
 			}
 		);
@@ -785,9 +795,9 @@ namespace DYE::DYEditor
 			{
 				.ShouldBeIncludedInNormalAddComponentList = false,
 				.ShouldDrawInNormalInspector = false,
-				.Serialize = BuiltInFunctions::ChildrenComponent_Serialize,
-				.Deserialize = BuiltInFunctions::ChildrenComponent_Deserialize,
-				.DrawInspector = BuiltInFunctions::ChildrenComponent_DrawInspector,
+				.Serialize = BuiltInComponentTypeFunctions::ChildrenComponent_Serialize,
+				.Deserialize = BuiltInComponentTypeFunctions::ChildrenComponent_Deserialize,
+				.DrawInspector = BuiltInComponentTypeFunctions::ChildrenComponent_DrawInspector,
 				.GetDisplayName = []() { return "Children"; },
 			}
 		);
@@ -798,9 +808,9 @@ namespace DYE::DYEditor
 			LocalTransformComponentTypeName,
 			ComponentTypeDescriptor
 				{
-					.Serialize = BuiltInFunctions::LocalTransformComponent_Serialize,
-					.Deserialize = BuiltInFunctions::LocalTransformComponent_Deserialize,
-					.DrawInspector = BuiltInFunctions::LocalTransformComponent_DrawInspector,
+					.Serialize = BuiltInComponentTypeFunctions::LocalTransformComponent_Serialize,
+					.Deserialize = BuiltInComponentTypeFunctions::LocalTransformComponent_Deserialize,
+					.DrawInspector = BuiltInComponentTypeFunctions::LocalTransformComponent_DrawInspector,
 					.GetDisplayName = []() { return "Local Transform"; },
 				}
 		);
@@ -810,11 +820,11 @@ namespace DYE::DYEditor
 			NAME_OF(DYE::DYEditor::CameraComponent),
 			ComponentTypeDescriptor
 			{
-				.Add = BuiltInFunctions::CameraComponent_Add,
+				.Add = BuiltInComponentTypeFunctions::CameraComponent_Add,
 
-				.Serialize = BuiltInFunctions::CameraComponent_Serialize,
-				.Deserialize = BuiltInFunctions::CameraComponent_Deserialize,
-				.DrawInspector = BuiltInFunctions::CameraComponent_DrawInspector,
+				.Serialize = BuiltInComponentTypeFunctions::CameraComponent_Serialize,
+				.Deserialize = BuiltInComponentTypeFunctions::CameraComponent_Deserialize,
+				.DrawInspector = BuiltInComponentTypeFunctions::CameraComponent_DrawInspector,
 				.DrawHeader = DefaultDrawComponentHeaderWithIsEnabled<CameraComponent>,
 				.GetDisplayName = []() { return "Camera"; },
 			}
@@ -825,11 +835,11 @@ namespace DYE::DYEditor
 			NAME_OF(DYE::DYEditor::SpriteRendererComponent),
 			ComponentTypeDescriptor
 			{
-				.Add = BuiltInFunctions::SpriteRendererComponent_Add,
+				.Add = BuiltInComponentTypeFunctions::SpriteRendererComponent_Add,
 
-				.Serialize = BuiltInFunctions::SpriteRendererComponent_Serialize,
-				.Deserialize = BuiltInFunctions::SpriteRendererComponent_Deserialize,
-				.DrawInspector = BuiltInFunctions::SpriteRendererComponent_DrawInspector,
+				.Serialize = BuiltInComponentTypeFunctions::SpriteRendererComponent_Serialize,
+				.Deserialize = BuiltInComponentTypeFunctions::SpriteRendererComponent_Deserialize,
+				.DrawInspector = BuiltInComponentTypeFunctions::SpriteRendererComponent_DrawInspector,
 				.DrawHeader = DefaultDrawComponentHeaderWithIsEnabled<SpriteRendererComponent>,
 				.GetDisplayName = []() { return "Sprite Renderer"; },
 			}
@@ -840,9 +850,9 @@ namespace DYE::DYEditor
 			NAME_OF(DYE::DYEditor::AudioSource2DComponent),
 			ComponentTypeDescriptor
 			{
-				.Serialize = BuiltInFunctions::AudioSource2DComponent_Serialize,
-				.Deserialize = BuiltInFunctions::AudioSource2DComponent_Deserialize,
-				.DrawInspector = BuiltInFunctions::AudioSource2DComponent_DrawInspector,
+				.Serialize = BuiltInComponentTypeFunctions::AudioSource2DComponent_Serialize,
+				.Deserialize = BuiltInComponentTypeFunctions::AudioSource2DComponent_Deserialize,
+				.DrawInspector = BuiltInComponentTypeFunctions::AudioSource2DComponent_DrawInspector,
 				.GetDisplayName = []() { return "Audio Source 2D"; },
 			}
 		);
@@ -852,9 +862,9 @@ namespace DYE::DYEditor
 			NAME_OF(DYE::DYEditor::PlayAudioSourceOnInitializeComponent),
 			ComponentTypeDescriptor
 			{
-				.Serialize = BuiltInFunctions::SerializeEmptyComponent<PlayAudioSourceOnInitializeComponent>,
-				.Deserialize = BuiltInFunctions::DeserializeEmptyComponent<PlayAudioSourceOnInitializeComponent>,
-				.DrawInspector = BuiltInFunctions::PlayAudioSourceOnInitializeComponent_DrawInspector,
+				.Serialize = BuiltInComponentTypeFunctions::SerializeEmptyComponent<PlayAudioSourceOnInitializeComponent>,
+				.Deserialize = BuiltInComponentTypeFunctions::DeserializeEmptyComponent<PlayAudioSourceOnInitializeComponent>,
+				.DrawInspector = BuiltInComponentTypeFunctions::PlayAudioSourceOnInitializeComponent_DrawInspector,
 				.GetDisplayName = []() { return "Play Audio Source On Initialize"; },
 			}
 		);
@@ -864,9 +874,9 @@ namespace DYE::DYEditor
 			NAME_OF(DYE::DYEditor::WindowHandleComponent),
 			ComponentTypeDescriptor
 			{
-				.Serialize = BuiltInFunctions::SerializeEmptyComponent<WindowHandleComponent>,
-				.Deserialize = BuiltInFunctions::DeserializeEmptyComponent<WindowHandleComponent>,
-				.DrawInspector = BuiltInFunctions::WindowHandleComponent_DrawInspector,
+				.Serialize = BuiltInComponentTypeFunctions::SerializeEmptyComponent<WindowHandleComponent>,
+				.Deserialize = BuiltInComponentTypeFunctions::DeserializeEmptyComponent<WindowHandleComponent>,
+				.DrawInspector = BuiltInComponentTypeFunctions::WindowHandleComponent_DrawInspector,
 				.GetDisplayName = []() { return "Window Handle"; },
 			}
 		);
@@ -876,9 +886,9 @@ namespace DYE::DYEditor
 			NAME_OF(DYE::DYEditor::CreateWindowOnInitializeComponent),
 			ComponentTypeDescriptor
 			{
-				.Serialize = BuiltInFunctions::CreateWindowOnInitializeComponent_Serialize,
-				.Deserialize = BuiltInFunctions::CreateWindowOnInitializeComponent_Deserialize,
-				.DrawInspector = BuiltInFunctions::CreateWindowOnInitializeComponent_DrawInspector,
+				.Serialize = BuiltInComponentTypeFunctions::CreateWindowOnInitializeComponent_Serialize,
+				.Deserialize = BuiltInComponentTypeFunctions::CreateWindowOnInitializeComponent_Deserialize,
+				.DrawInspector = BuiltInComponentTypeFunctions::CreateWindowOnInitializeComponent_DrawInspector,
 				.GetDisplayName = []() { return "Create Window On Initialize"; },
 			}
 		);

@@ -1771,6 +1771,8 @@ namespace DYE::ImGuiUtil
 														   ImGui::GetTextLineHeightWithSpacing()};
 					ImGui::ItemSize(previewWindowSize);
 					ImGui::SameLine();
+
+					// control id, element index in array, actual element
 					controlFunction(controlID, element);
 
 					ImGui::EndDragDropSource();

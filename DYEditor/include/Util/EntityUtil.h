@@ -37,10 +37,10 @@ namespace DYE::DYEditor::EntityUtil
 				continue;
 			}
 
-			auto &childrenGUIDs = tryGetChild.value().get().ChildrenGUIDs;
+			auto const &childrenGUIDs = tryGetChild.value().get().GetChildrenGUIDs();
 			for (int i = childrenGUIDs.size() - 1; i >= 0; i--)
 			{
-				auto childGUID = childrenGUIDs[i];
+				GUID childGUID = childrenGUIDs[i];
 				auto tryGetEntityWithGUID = root.GetWorld().TryGetEntityWithGUID(childGUID);
 				if (!tryGetEntityWithGUID.has_value())
 				{
@@ -82,10 +82,10 @@ namespace DYE::DYEditor::EntityUtil
 				continue;
 			}
 
-			auto &childrenGUIDs = tryGetChild.value().get().ChildrenGUIDs;
+			auto const &childrenGUIDs = tryGetChild.value().get().GetChildrenGUIDs();
 			for (int i = childrenGUIDs.size() - 1; i >= 0; i--)
 			{
-				auto childGUID = childrenGUIDs[i];
+				GUID childGUID = childrenGUIDs[i];
 				auto tryGetEntityWithGUID = root.GetWorld().TryGetEntityWithGUID(childGUID);
 				if (!tryGetEntityWithGUID.has_value())
 				{
@@ -127,10 +127,10 @@ namespace DYE::DYEditor::EntityUtil
 				continue;
 			}
 
-			auto &childrenGUIDs = tryGetChild.value().get().ChildrenGUIDs;
+			auto const &childrenGUIDs = tryGetChild.value().get().GetChildrenGUIDs();
 			for (int i = childrenGUIDs.size() - 1; i >= 0; i--)
 			{
-				auto childGUID = childrenGUIDs[i];
+				GUID childGUID = childrenGUIDs[i];
 				auto tryGetEntityWithGUID = root.GetWorld().TryGetEntityWithGUID(childGUID);
 				if (!tryGetEntityWithGUID.has_value())
 				{

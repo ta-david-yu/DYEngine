@@ -1118,7 +1118,7 @@ namespace DYE::DYEditor
 				auto tryGetParent = entity.TryGetComponent<ParentComponent>();
 				auto parentGUID = tryGetParent.has_value() ? tryGetParent.value().get().GetParentGUID() : (DYE::GUID) 0;
 
-				std::size_t childrenCount = tryGetChildrenComponent.has_value()? tryGetChildrenComponent.value().get().ChildrenGUIDs.size() : 0;
+				std::size_t childrenCount = tryGetChildrenComponent.has_value() ? tryGetChildrenComponent.value().get().GetChildrenCount() : 0;
 
 				HierarchyLevel *pLevel = levelStack.empty()? nullptr : &levelStack.back();
 				while

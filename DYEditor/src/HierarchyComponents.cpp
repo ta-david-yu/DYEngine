@@ -1,5 +1,6 @@
 #include "Components/HierarchyComponents.h"
 
+#include "Util/Macro.h"
 #include "Core/Entity.h"
 #include "Core/World.h"
 
@@ -70,4 +71,56 @@ namespace DYE::DYEditor
 
 		m_ParentEntityIdentifierCache = tryGetEntity.value().GetIdentifier();
 	}
+
+	std::optional<GUID> ChildrenComponent::TryGetChildGUIDAt(int index) const
+	{
+		if (index < m_ChildrenGUIDs.size())
+		{
+			return m_ChildrenGUIDs[index];
+		}
+
+		return {};
+	}
+
+	void ChildrenComponent::SetChildGUIDAt(std::size_t index, GUID guid)
+	{
+		DYE_ASSERT_LOG_WARN(index < m_ChildrenGUIDs.size(), "Try to set the child guid at index '%zu', but the index is out of bounds.", index);
+		m_ChildrenGUIDs[index] = guid;
+
+		// TODO: invalidate or update cached identifier.
+	}
+
+	void ChildrenComponent::InsertChildGUIDAt(std::size_t index, GUID guid)
+	{
+		m_ChildrenGUIDs.insert(m_ChildrenGUIDs.begin() + index, guid);
+
+		// TODO: invalidate or update cached identifier.
+	}
+
+	void ChildrenComponent::PushBackWithGUID(GUID guid)
+	{
+		m_ChildrenGUIDs.push_back(guid);
+
+		// TODO: invalidate or update cached identifier.
+	}
+
+	void ChildrenComponent::RemoveChildWithGUID(GUID guid)
+	{
+		std::erase(m_ChildrenGUIDs, guid);
+
+		// TODO: invalidate or update cached identifier.
+	}
+
+	void ChildrenComponent::PopBack()
+	{
+		m_ChildrenGUIDs.pop_back();
+
+		// TODO: invalidate or update cached identifier.
+	}
+
+	void ChildrenComponent::RefreshChildrenEntityIdentifierCache(World &world)
+	{
+		// TODO: update cached identifiers.
+	}
+
 }

@@ -21,6 +21,6 @@ namespace DYE::ImGuiUtil::Internal
 		ControlFunc ControlFunction;
 	};
 
-	using GUIDControlFunctionPointer = bool (*)(const char *,::DYE::GUID &);
+	using GUIDControlFunctionPointer = bool (*)(const char *, ::DYE::GUID &);
 	extern template struct ArrayControl<DYE::GUID, GUIDControlFunctionPointer>;
 }
