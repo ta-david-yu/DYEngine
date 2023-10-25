@@ -2,7 +2,7 @@
 
 #include "Graphics/Camera.h"
 
-#include "Components/TransformComponent.h"
+#include "Components/LocalTransformComponent.h"
 
 namespace DYE::DYEditor
 {
@@ -12,7 +12,7 @@ namespace DYE::DYEditor
 		CameraProperties Properties;
 
 		[[nodiscard]]
-		Camera CreateCameraWithTransform(TransformComponent const& transform) const
+		Camera CreateCameraWithTransform(LocalTransformComponent const& transform) const
 		{
 			Camera camera;
 			camera.Position = transform.Position;

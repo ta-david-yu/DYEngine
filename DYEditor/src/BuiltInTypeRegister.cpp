@@ -6,9 +6,11 @@
 #include "Serialization/SerializedObjectFactory.h"
 #include "Math/Color.h"
 #include "ImGui/ImGuiUtil.h"
+#include "ImGui/EditorImGuiUtil.h"
 #include "ImGui/ImGuiUtil_Internal.h"
 #include "FileSystem/FileSystem.h"
 #include "Core/RuntimeState.h"
+#include "Undo/Undo.h"
 
 // All the built-in component & system types are in here.
 #include "Core/Components.h"
@@ -195,9 +197,9 @@ namespace DYE::DYEditor
 		}
 
 		SerializationResult
-		TransformComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
+		LocalTransformComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
 		{
-			auto const &transformComponent = entity.GetComponent<TransformComponent>();
+			auto const &transformComponent = entity.GetComponent<LocalTransformComponent>();
 			serializedComponent.SetPrimitiveTypePropertyValue("Position", transformComponent.Position);
 			serializedComponent.SetPrimitiveTypePropertyValue("Scale", transformComponent.Scale);
 			serializedComponent.SetPrimitiveTypePropertyValue("Rotation", transformComponent.Rotation);
@@ -206,9 +208,9 @@ namespace DYE::DYEditor
 		}
 
 		DeserializationResult
-		TransformComponent_Deserialize(SerializedComponent &serializedComponent, DYE::DYEditor::Entity &entity)
+		LocalTransformComponent_Deserialize(SerializedComponent &serializedComponent, DYE::DYEditor::Entity &entity)
 		{
-			auto &transformComponent = entity.AddOrGetComponent<TransformComponent>();
+			auto &transformComponent = entity.AddOrGetComponent<LocalTransformComponent>();
 			transformComponent.Position = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Vector3>("Position");
 			transformComponent.Scale = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Vector3>("Scale");
 			transformComponent.Rotation = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::Quaternion>("Rotation");
@@ -216,9 +218,9 @@ namespace DYE::DYEditor
 			return {};
 		}
 
-		bool TransformComponent_DrawInspector(DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
+		bool LocalTransformComponent_DrawInspector(DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
 		{
-			auto &transformComponent = entity.GetComponent<TransformComponent>();
+			auto &transformComponent = entity.GetComponent<LocalTransformComponent>();
 
 			bool changed = ImGuiUtil::DrawVector3Control("Position", transformComponent.Position);
 			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
@@ -249,11 +251,6 @@ namespace DYE::DYEditor
 		void CameraComponent_Add(Entity& entity)
 		{
 			entity.AddComponent<CameraComponent>();
-
-			// The component only makes sense with a transform component.
-			// TODO: Move this somewhere else (maybe a list of required components in TypeDescriptor?)
-			//		Right now these additional entities aren't tracked by undo/redo system.
-			entity.AddOrGetComponent<TransformComponent>();
 		}
 
 		SerializationResult
@@ -322,10 +319,26 @@ namespace DYE::DYEditor
 		{
 			auto &cameraComponent = entity.GetComponent<CameraComponent>();
 
-			bool const changed = ImGuiUtil::DrawCameraPropertiesControl("Camera Properties", cameraComponent.Properties);
+			bool changed = ImGuiUtil::DrawCameraPropertiesControl("Camera Properties", cameraComponent.Properties);
 			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
 			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
 			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+
+			bool isMissingComponentWarningFixed = ImGuiUtil::DrawTryFixWarningButtonAndInfo
+			(
+				!entity.HasComponent<LocalTransformComponent>(),
+				"Missing LocalTransform component",
+				[entity]()
+				{
+					Undo::AddComponent(entity, LocalTransformComponentTypeName,
+									   TypeRegistry::GetComponentTypeDescriptor_LocalTransformComponent());
+				}
+			);
+			if (isMissingComponentWarningFixed)
+			{
+				changed = true;
+				drawInspectorContext.ShouldEarlyOutIfInIteratorLoop = true;
+			}
 
 			return changed;
 		}
@@ -333,11 +346,6 @@ namespace DYE::DYEditor
 		void SpriteRendererComponent_Add(DYEditor::Entity& entity)
 		{
 			entity.AddComponent<SpriteRendererComponent>();
-
-			// The component only makes sense with a transform component.
-			// TODO: Move this somewhere else (maybe a list of required components in TypeDescriptor?)
-			//		Right now these additional entities aren't tracked by undo/redo system.
-			entity.AddOrGetComponent<TransformComponent>();
 		}
 
 		SerializationResult
@@ -376,7 +384,7 @@ namespace DYE::DYEditor
 		{
 			auto &component = entity.GetComponent<SpriteRendererComponent>();
 
-			bool const changed = ImGuiUtil::DrawColor4Control("Color", component.Color);
+			bool changed = ImGuiUtil::DrawColor4Control("Color", component.Color);
 			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
 			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
 			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
@@ -400,6 +408,22 @@ namespace DYE::DYEditor
 
 			// Draw a preview of the texture.
 			ImGuiUtil::DrawTexture2DPreviewWithLabel("Texture Preview", component.Texture);
+
+			bool isMissingComponentWarningFixed = ImGuiUtil::DrawTryFixWarningButtonAndInfo
+			(
+				!entity.HasComponent<LocalTransformComponent>(),
+				"Missing LocalTransform component",
+				[entity]()
+				{
+					Undo::AddComponent(entity, LocalTransformComponentTypeName,
+									   TypeRegistry::GetComponentTypeDescriptor_LocalTransformComponent());
+				}
+			);
+			if (isMissingComponentWarningFixed)
+			{
+				changed = true;
+				drawInspectorContext.ShouldEarlyOutIfInIteratorLoop = true;
+			}
 
 			return isPathChanged || changed;
 		}
@@ -693,27 +717,29 @@ namespace DYE::DYEditor
 	static ComponentTypeDescriptor s_NameComponentTypeDescriptor;
 	static ComponentTypeDescriptor s_ParentComponentTypeDescriptor;
 	static ComponentTypeDescriptor s_ChildrenComponentTypeDescriptor;
-	static ComponentTypeDescriptor s_TransformComponentTypeDescriptor;
+	static ComponentTypeDescriptor s_LocalTransformComponentTypeDescriptor;
 
 	void RegisterBuiltInTypes()
 	{
 		DYE_LOG("<< Register Built-in Types to DYEditor::TypeRegistry >>");
 		TypeRegistry::RegisterComponentType<IDComponent>
 		(
-			"ID",
+			NAME_OF(DYE::DYEditor::IDComponent),
 			ComponentTypeDescriptor
 			{
 				.ShouldBeIncludedInNormalAddComponentList = false,
 				.ShouldDrawInNormalInspector = false,
 				.Serialize = BuiltInFunctions::IDComponent_Serialize,
 				.Deserialize = BuiltInFunctions::IDComponent_Deserialize,
-				.DrawInspector = BuiltInFunctions::IDComponent_DrawInspector
+				.DrawInspector = BuiltInFunctions::IDComponent_DrawInspector,
+				.GetDisplayName = []() { return "ID"; },
 			}
 		);
+		TypeRegistry::RegisterFormerlyKnownTypeName("ID", NAME_OF(DYE::DYEditor::IDComponent));
 
 		s_NameComponentTypeDescriptor = TypeRegistry::RegisterComponentType<NameComponent>
 		(
-			NameComponentName,
+			NameComponentTypeName,
 			ComponentTypeDescriptor
 			{
 				.ShouldBeIncludedInNormalAddComponentList = false,
@@ -723,50 +749,57 @@ namespace DYE::DYEditor
 				.Serialize = BuiltInFunctions::NameComponent_Serialize,
 				.Deserialize = BuiltInFunctions::NameComponent_Deserialize,
 				.DrawInspector = BuiltInFunctions::NameComponent_DrawInspector,
+				.GetDisplayName = []() { return "Name"; },
 			}
 		);
+		TypeRegistry::RegisterFormerlyKnownTypeName("Name", NameComponentTypeName);
 
 		s_ParentComponentTypeDescriptor = TypeRegistry::RegisterComponentType<ParentComponent>
 		(
-			ParentComponentName,
+			ParentComponentTypeName,
 			ComponentTypeDescriptor
 			{
 				.ShouldBeIncludedInNormalAddComponentList = false,
 				.ShouldDrawInNormalInspector = false,
 				.Serialize = BuiltInFunctions::ParentComponent_Serialize,
 				.Deserialize = BuiltInFunctions::ParentComponent_Deserialize,
-				.DrawInspector = BuiltInFunctions::ParentComponent_DrawInspector
+				.DrawInspector = BuiltInFunctions::ParentComponent_DrawInspector,
+				.GetDisplayName = []() { return "Parent"; },
 			}
 		);
+		TypeRegistry::RegisterFormerlyKnownTypeName("Parent", ParentComponentTypeName);
 
 
 		s_ChildrenComponentTypeDescriptor = TypeRegistry::RegisterComponentType<ChildrenComponent>
 		(
-			ChildrenComponentName,
+			ChildrenComponentTypeName,
 			ComponentTypeDescriptor
 			{
 				.ShouldBeIncludedInNormalAddComponentList = false,
 				.ShouldDrawInNormalInspector = false,
 				.Serialize = BuiltInFunctions::ChildrenComponent_Serialize,
 				.Deserialize = BuiltInFunctions::ChildrenComponent_Deserialize,
-				.DrawInspector = BuiltInFunctions::ChildrenComponent_DrawInspector
+				.DrawInspector = BuiltInFunctions::ChildrenComponent_DrawInspector,
+				.GetDisplayName = []() { return "Children"; },
 			}
 		);
+		TypeRegistry::RegisterFormerlyKnownTypeName("Children", ChildrenComponentTypeName);
 
-		s_TransformComponentTypeDescriptor = TypeRegistry::RegisterComponentType<TransformComponent>
+		s_LocalTransformComponentTypeDescriptor = TypeRegistry::RegisterComponentType<LocalTransformComponent>
 		(
-			TransformComponentName,
+			LocalTransformComponentTypeName,
 			ComponentTypeDescriptor
-			{
-				.Serialize = BuiltInFunctions::TransformComponent_Serialize,
-				.Deserialize = BuiltInFunctions::TransformComponent_Deserialize,
-				.DrawInspector = BuiltInFunctions::TransformComponent_DrawInspector
-			}
+				{
+					.Serialize = BuiltInFunctions::LocalTransformComponent_Serialize,
+					.Deserialize = BuiltInFunctions::LocalTransformComponent_Deserialize,
+					.DrawInspector = BuiltInFunctions::LocalTransformComponent_DrawInspector,
+					.GetDisplayName = []() { return "Local Transform"; },
+				}
 		);
 
 		TypeRegistry::RegisterComponentType<CameraComponent>
 		(
-			"Camera",
+			NAME_OF(DYE::DYEditor::CameraComponent),
 			ComponentTypeDescriptor
 			{
 				.Add = BuiltInFunctions::CameraComponent_Add,
@@ -774,13 +807,14 @@ namespace DYE::DYEditor
 				.Serialize = BuiltInFunctions::CameraComponent_Serialize,
 				.Deserialize = BuiltInFunctions::CameraComponent_Deserialize,
 				.DrawInspector = BuiltInFunctions::CameraComponent_DrawInspector,
-				.DrawHeader = DefaultDrawComponentHeaderWithIsEnabled<CameraComponent>
+				.DrawHeader = DefaultDrawComponentHeaderWithIsEnabled<CameraComponent>,
+				.GetDisplayName = []() { return "Camera"; },
 			}
 		);
 
 		TypeRegistry::RegisterComponentType<SpriteRendererComponent>
 		(
-			"Sprite Renderer",
+			NAME_OF(DYE::DYEditor::SpriteRendererComponent),
 			ComponentTypeDescriptor
 			{
 				.Add = BuiltInFunctions::SpriteRendererComponent_Add,
@@ -788,51 +822,56 @@ namespace DYE::DYEditor
 				.Serialize = BuiltInFunctions::SpriteRendererComponent_Serialize,
 				.Deserialize = BuiltInFunctions::SpriteRendererComponent_Deserialize,
 				.DrawInspector = BuiltInFunctions::SpriteRendererComponent_DrawInspector,
-				.DrawHeader = DefaultDrawComponentHeaderWithIsEnabled<SpriteRendererComponent>
+				.DrawHeader = DefaultDrawComponentHeaderWithIsEnabled<SpriteRendererComponent>,
+				.GetDisplayName = []() { return "Sprite Renderer"; },
 			}
 		);
 
 		TypeRegistry::RegisterComponentType<AudioSource2DComponent>
 		(
-			"Audio Source 2D",
+			NAME_OF(DYE::DYEditor::AudioSource2DComponent),
 			ComponentTypeDescriptor
 			{
 				.Serialize = BuiltInFunctions::AudioSource2DComponent_Serialize,
 				.Deserialize = BuiltInFunctions::AudioSource2DComponent_Deserialize,
-				.DrawInspector = BuiltInFunctions::AudioSource2DComponent_DrawInspector
+				.DrawInspector = BuiltInFunctions::AudioSource2DComponent_DrawInspector,
+				.GetDisplayName = []() { return "Audio Source 2D"; },
 			}
 		);
 
 		TypeRegistry::RegisterComponentType<PlayAudioSourceOnInitializeComponent>
 		(
-			"Play Audio Source On Initialize",
+			NAME_OF(DYE::DYEditor::PlayAudioSourceOnInitializeComponent),
 			ComponentTypeDescriptor
 			{
 				.Serialize = BuiltInFunctions::SerializeEmptyComponent<PlayAudioSourceOnInitializeComponent>,
 				.Deserialize = BuiltInFunctions::DeserializeEmptyComponent<PlayAudioSourceOnInitializeComponent>,
-				.DrawInspector = BuiltInFunctions::PlayAudioSourceOnInitializeComponent_DrawInspector
+				.DrawInspector = BuiltInFunctions::PlayAudioSourceOnInitializeComponent_DrawInspector,
+				.GetDisplayName = []() { return "Play Audio Source On Initialize"; },
 			}
 		);
 
 		TypeRegistry::RegisterComponentType<WindowHandleComponent>
 		(
-			"Window Handle",
+			NAME_OF(DYE::DYEditor::WindowHandleComponent),
 			ComponentTypeDescriptor
 			{
 				.Serialize = BuiltInFunctions::SerializeEmptyComponent<WindowHandleComponent>,
 				.Deserialize = BuiltInFunctions::DeserializeEmptyComponent<WindowHandleComponent>,
-				.DrawInspector = BuiltInFunctions::WindowHandleComponent_DrawInspector
+				.DrawInspector = BuiltInFunctions::WindowHandleComponent_DrawInspector,
+				.GetDisplayName = []() { return "Window Handle"; },
 			}
 		);
 
 		TypeRegistry::RegisterComponentType<CreateWindowOnInitializeComponent>
 		(
-			"Create Window On Initialize",
+			NAME_OF(DYE::DYEditor::CreateWindowOnInitializeComponent),
 			ComponentTypeDescriptor
 			{
 				.Serialize = BuiltInFunctions::CreateWindowOnInitializeComponent_Serialize,
 				.Deserialize = BuiltInFunctions::CreateWindowOnInitializeComponent_Deserialize,
-				.DrawInspector = BuiltInFunctions::CreateWindowOnInitializeComponent_DrawInspector
+				.DrawInspector = BuiltInFunctions::CreateWindowOnInitializeComponent_DrawInspector,
+				.GetDisplayName = []() { return "Create Window On Initialize"; },
 			}
 		);
 
@@ -863,9 +902,9 @@ namespace DYE::DYEditor
 		return s_NameComponentTypeDescriptor;
 	}
 
-	ComponentTypeDescriptor TypeRegistry::GetComponentTypeDescriptor_TransformComponent()
+	ComponentTypeDescriptor TypeRegistry::GetComponentTypeDescriptor_LocalTransformComponent()
 	{
-		return s_TransformComponentTypeDescriptor;
+		return s_LocalTransformComponentTypeDescriptor;
 	}
 
 	ComponentTypeDescriptor TypeRegistry::GetComponentTypeDescriptor_ParentComponent()

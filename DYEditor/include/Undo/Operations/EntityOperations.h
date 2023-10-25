@@ -75,7 +75,11 @@ namespace DYE::DYEditor
 
 		World *pWorld;
 		GUID EntityGUID;
+		std::string ComponentTypeName;
 		ComponentTypeDescriptor TypeDescriptor;
+
+		/// -1 means invalid
+		int ComponentAdditionIndex = -1;
 	};
 
 	class ComponentRemovalOperation final : public UndoOperationBase
@@ -86,7 +90,11 @@ namespace DYE::DYEditor
 
 		World *pWorld;
 		GUID EntityGUID;
+		std::string ComponentTypeName;
 		ComponentTypeDescriptor TypeDescriptor;
 		SerializedComponent SerializedComponentBeforeRemoval;
+
+		/// -1 means invalid
+		int ComponentOrderInListBeforeRemoval = -1;
 	};
 }

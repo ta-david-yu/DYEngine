@@ -12,7 +12,7 @@ namespace DYE::DYEditor
 	{
 		// Start audio source.
 		{
-			auto startView = world.GetView<AudioSource2DComponent, StartAudioSourceComponent>();
+			auto startView = world.GetRegistry().view<AudioSource2DComponent, StartAudioSourceComponent>();
 			for (auto entity: startView)
 			{
 				auto &audioSource = startView.get<AudioSource2DComponent>(entity);
@@ -25,21 +25,21 @@ namespace DYE::DYEditor
 
 		// Stop audio source.
 		{
-			auto stopView = world.GetView<AudioSource2DComponent, StopAudioSourceComponent>();
+			auto stopView = world.GetRegistry().view<AudioSource2DComponent, StopAudioSourceComponent>();
 			for (auto entity: stopView)
 			{
 				auto &audioSource = stopView.get<AudioSource2DComponent>(entity);
 				audioSource.Source.Stop();
 
 				auto wrappedEntity = world.WrapIdentifierIntoEntity(entity);
-				wrappedEntity.RemoveComponent<StopAudioSourceComponent>();
+				wrappedEntity.template RemoveComponent<StopAudioSourceComponent>();
 			}
 		}
 	}
 
 	void PlayAudioSourceOnInitializeSystem::Execute(World &world, DYE::DYEditor::ExecuteParameters params)
 	{
-		auto view = world.GetView<AudioSource2DComponent, PlayAudioSourceOnInitializeComponent>();
+		auto view = world.GetRegistry().view<AudioSource2DComponent, PlayAudioSourceOnInitializeComponent>();
 		for (auto entity: view)
 		{
 			auto wrappedEntity = world.WrapIdentifierIntoEntity(entity);

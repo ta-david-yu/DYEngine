@@ -6,6 +6,7 @@
 #include <optional>
 #include <vector>
 #include <unordered_map>
+#include <concepts>
 #include <entt/entt.hpp>
 
 namespace DYE::DYEditor
@@ -26,7 +27,6 @@ namespace DYE::DYEditor
 		friend class EntityDeletionOperation;
 		friend class EntityMoveOperation;
 
-		friend entt::registry& GetWorldUnderlyingRegistry(World& world);
 	public:
 		World();
 		~World() = default;
@@ -57,6 +57,7 @@ namespace DYE::DYEditor
 		Entity GetEntityAtIndex(std::size_t index);
 
 		template<typename Func>
+		requires std::invocable<Func, DYE::DYEditor::Entity> || std::invocable<Func, DYE::DYEditor::Entity&>
 		void ForEachEntity(Func function)
 		{
 			for (auto& entityHandle : m_EntityHandles)
@@ -67,6 +68,7 @@ namespace DYE::DYEditor
 		}
 
 		template<typename Func>
+		requires std::invocable<Func, DYE::DYEditor::Entity, std::size_t> || std::invocable<Func, DYE::DYEditor::Entity&, std::size_t>
 		void ForEachEntityAndIndex(Func function)
 		{
 			for (std::size_t i = 0; i < m_EntityHandles.size(); i++)
@@ -77,34 +79,12 @@ namespace DYE::DYEditor
 			}
 		}
 
-		template<typename Type, typename... Types, typename... ExcludeTypes>
-		auto GetView(Exclude_t<ExcludeTypes...> excludes = {})
-		{
-			return m_Registry.view<Type, Types..., ExcludeTypes...>(excludes);
-		}
-
-		template<typename Type, typename... Types, typename... ExcludeTypes>
-		auto GetView(Exclude_t<ExcludeTypes...> excludes = {}) const
-		{
-			return m_Registry.view<Type, Types..., ExcludeTypes...>(excludes);
-		}
-
-		template<typename... OwnedTypes, typename... GetTypes, typename... ExcludeTypes>
-		auto GetGroup(Get_t<GetTypes...> gets = {}, Exclude_t<ExcludeTypes...> excludes = {})
-		{
-			return m_Registry.group<OwnedTypes...>(gets, excludes);
-		}
-
-		template<typename... OwnedTypes, typename... GetTypes, typename... ExcludeTypes>
-		auto GetGroup(Get_t<GetTypes...> gets = {}, Exclude_t<ExcludeTypes...> excludes = {}) const
-		{
-			return m_Registry.group<OwnedTypes...>(gets, excludes);
-		}
-
 		bool IsEmpty() const;
-		void Reserve(std::size_t size);
+		void Reserve(std::size_t capacity);
 		void Clear();
 		std::size_t GetNumberOfEntities() const { return m_EntityHandles.size(); }
+
+		entt::registry &GetRegistry() { return m_Registry; };
 
 	private:
 		/// Create an empty entity that is not tracked by the internal Entity Handle array & GUID map.
@@ -140,6 +120,4 @@ namespace DYE::DYEditor
 
 		entt::registry m_Registry;
 	};
-
-	entt::registry& GetWorldUnderlyingRegistry(World& world);
 }

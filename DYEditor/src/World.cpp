@@ -27,6 +27,10 @@ namespace DYE::DYEditor
 		entity.AddComponent<IDComponent>().ID = guid;
 		entity.AddComponent<NameComponent>(name);
 
+#ifdef DYE_EDITOR
+		entity.AddComponent<EntityEditorOnlyMetadata>();
+#endif
+
 		m_EntityHandles.push_back(EntityHandle { .Identifier = entity.m_EntityIdentifier });
 		m_GUIDToEntityIdentifierMap.insert({guid, entity.m_EntityIdentifier});
 
@@ -40,6 +44,10 @@ namespace DYE::DYEditor
 		entity.AddComponent<IDComponent>().ID = guid;
 		entity.AddComponent<NameComponent>(name);
 
+#ifdef DYE_EDITOR
+		entity.AddComponent<EntityEditorOnlyMetadata>();
+#endif
+
 		m_EntityHandles.insert(m_EntityHandles.begin() + index, EntityHandle { .Identifier = entity.m_EntityIdentifier });
 		m_GUIDToEntityIdentifierMap.insert({guid, entity.m_EntityIdentifier});
 
@@ -51,6 +59,10 @@ namespace DYE::DYEditor
 		auto entity = Entity(*this, m_Registry.create());
 		entity.AddComponent<IDComponent>().ID = guid;
 		entity.AddComponent<NameComponent>(name);
+
+#ifdef DYE_EDITOR
+		entity.AddComponent<EntityEditorOnlyMetadata>();
+#endif
 
 		m_EntityHandles.push_back(EntityHandle { .Identifier = entity.m_EntityIdentifier });
 		m_GUIDToEntityIdentifierMap.insert({guid, entity.m_EntityIdentifier});
@@ -312,20 +324,26 @@ namespace DYE::DYEditor
 	bool World::IsEmpty() const
 	{
 		return m_Registry.empty();
+		// TODO: Update syntax to EnTT 3.12.2
+		//return m_Registry.storage<EntityIdentifier>()->in_use() == 0u;
 	}
 
-	void World::Reserve(std::size_t size)
+	void World::Reserve(std::size_t capacity)
 	{
-		m_EntityHandles.reserve(size);
-		m_GUIDToEntityIdentifierMap.reserve(size);
-		m_Registry.reserve(size);
+		m_EntityHandles.reserve(capacity);
+		m_GUIDToEntityIdentifierMap.reserve(capacity);
+		m_Registry.reserve(capacity);
+		// TODO: Update syntax to EnTT 3.12.2
+		//m_Registry.storage<EntityIdentifier>().reserve(capacity);
 	}
 
 	void World::Clear()
 	{
 		m_EntityHandles.clear();
 		m_GUIDToEntityIdentifierMap.clear();
-		m_Registry.clear<>();
+		// TODO: figure out why sometimes this registry.clear() can trigger assert error,
+		//		 this only happens in EnTT 3.12.2.
+		m_Registry.clear();
 	}
 
 	Entity World::createUntrackedEntity()
@@ -393,10 +411,5 @@ namespace DYE::DYEditor
 
 		// Remove the entity from the actual world registry.
 		m_Registry.destroy(identifier);
-	}
-
-	entt::registry& GetWorldUnderlyingRegistry(World &world)
-	{
-		return world.m_Registry;
 	}
 }

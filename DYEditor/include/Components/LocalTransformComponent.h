@@ -5,7 +5,7 @@
 
 namespace DYE::DYEditor
 {
-	struct TransformComponent
+	struct LocalTransformComponent
 	{
 		glm::vec3 Position {0, 0, 0};
 		glm::vec3 Scale {1, 1, 1};

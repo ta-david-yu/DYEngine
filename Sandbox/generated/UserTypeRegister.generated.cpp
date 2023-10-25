@@ -7,9 +7,12 @@
 //------------------------------------------------------------------------------
 #include "Type/UserTypeRegister.h"
 
+#include "Util/Macro.h"
 #include "Type/TypeRegistry.h"
 #include "Serialization/SerializedObjectFactory.h"
 #include "ImGui/ImGuiUtil.h"
+#include "ImGui/EditorImGuiUtil.h"
+#include "Undo/Undo.h"
 
 // Insert user headers here...
 #include "include/TestComponents.h"
@@ -32,10 +35,11 @@ namespace DYE::DYEditor
 	{
 		// Insert user type registration here...
 
+
 		// Component located in include/TestComponents.h
 		TypeRegistry::RegisterComponentType<TestNamespace::TestComponentA>
 			(
-				"TestA",
+				NAME_OF(TestNamespace::TestComponentA),
 				ComponentTypeDescriptor
 					{
 						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
@@ -62,14 +66,15 @@ namespace DYE::DYEditor
 							changed |= ImGuiUtil::DrawIntControl("IntegerValue", component.IntegerValue); updateContextAfterDrawControlCall(drawInspectorContext);
 							ImGui::BeginDisabled(true); ImGuiUtil::DrawReadOnlyTextWithLabel("intCannotBeSerialized", "Variable of unsupported type 'int'"); ImGui::EndDisabled();
 							return changed;
-						}
+						},
+						.GetDisplayName = []() { return "TestA"; },
 					}
 			);
 
 		// Component located in include/TestComponents.h
 		TypeRegistry::RegisterComponentType<TestNamespace::Subnamespace::SubtestComponentA>
 			(
-				"SubTestA",
+				NAME_OF(TestNamespace::Subnamespace::SubtestComponentA),
 				ComponentTypeDescriptor
 					{
 						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
@@ -90,14 +95,15 @@ namespace DYE::DYEditor
 							auto& component = entity.GetComponent<TestNamespace::Subnamespace::SubtestComponentA>();
 							changed |= ImGuiUtil::DrawIntControl("IntegerValue", component.IntegerValue); updateContextAfterDrawControlCall(drawInspectorContext);
 							return changed;
-						}
+						},
+						.GetDisplayName = []() { return "TestNamespace::Subnamespace::SubtestComponentA"; },
 					}
 			);
 
 		// Component located in include/TestComponents.h
 		TypeRegistry::RegisterComponentType<TestComponentB>
 			(
-				"TestB",
+				NAME_OF(TestComponentB),
 				ComponentTypeDescriptor
 					{
 						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
@@ -129,14 +135,15 @@ namespace DYE::DYEditor
 							changed |= ImGuiUtil::DrawVector3Control("Position", component.Position); updateContextAfterDrawControlCall(drawInspectorContext);
 							changed |= ImGuiUtil::DrawVector4Control("vec4", component.vec4); updateContextAfterDrawControlCall(drawInspectorContext);
 							return changed;
-						}
+						},
+						.GetDisplayName = []() { return "TestComponentB"; },
 					}
 			);
 
 		// Component located in include/TestComponents.h
 		TypeRegistry::RegisterComponentType<ComponentWithAllPrimitiveProperties>
 			(
-				"ComponentWithAllPrimitiveProperties",
+				NAME_OF(ComponentWithAllPrimitiveProperties),
 				ComponentTypeDescriptor
 					{
 						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
@@ -194,14 +201,15 @@ namespace DYE::DYEditor
 								updateContextAfterDrawControlCall(drawInspectorContext);
 							}
 							return changed;
-						}
+						},
+						.GetDisplayName = []() { return "ComponentWithAllPrimitiveProperties"; },
 					}
 			);
 
 		// Component located in include/TestComponents.h
 		TypeRegistry::RegisterComponentType<HasAngularVelocity>
 			(
-				"HasAngularVelocity",
+				NAME_OF(HasAngularVelocity),
 				ComponentTypeDescriptor
 					{
 						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
@@ -221,15 +229,36 @@ namespace DYE::DYEditor
 							bool changed = false;
 							auto& component = entity.GetComponent<HasAngularVelocity>();
 							changed |= ImGuiUtil::DrawFloatControl("AngleDegreePerSecond", component.AngleDegreePerSecond); updateContextAfterDrawControlCall(drawInspectorContext);
+
+							bool isMissingComponentWarningFixed_ComponentWithAllPrimitiveProperties = ImGuiUtil::DrawTryFixWarningButtonAndInfo
+							(
+								!entity.HasComponent<ComponentWithAllPrimitiveProperties>(),
+								"Missing ComponentWithAllPrimitiveProperties",
+								[entity]()
+								{
+									Undo::AddComponent
+									(
+										entity, NAME_OF(ComponentWithAllPrimitiveProperties),
+									   	TypeRegistry::TryGetComponentTypeDescriptor("ComponentWithAllPrimitiveProperties").Descriptor
+									);
+								}
+							);
+							if (isMissingComponentWarningFixed_ComponentWithAllPrimitiveProperties)
+							{
+								changed = true;
+								drawInspectorContext.ShouldEarlyOutIfInIteratorLoop = true;
+							}
 							return changed;
-						}
+						},
+						.GetDisplayName = []() { return "HasAngularVelocity"; },
 					}
 			);
+		TypeRegistry::RegisterFormerlyKnownTypeName("HasAngularVelocity_OldName", NAME_OF(HasAngularVelocity));
 
 		// Component located in include/TestComponents.h
 		TypeRegistry::RegisterComponentType<CreateEntity>
 			(
-				"CreateEntity",
+				NAME_OF(CreateEntity),
 				ComponentTypeDescriptor
 					{
 						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
@@ -252,15 +281,56 @@ namespace DYE::DYEditor
 							auto& component = entity.GetComponent<CreateEntity>();
 							changed |= ImGuiUtil::DrawTextControl("EntityNamePrefix", component.EntityNamePrefix); updateContextAfterDrawControlCall(drawInspectorContext);
 							changed |= ImGuiUtil::DrawIntControl("NumberOfEntitiesToCreate", component.NumberOfEntitiesToCreate); updateContextAfterDrawControlCall(drawInspectorContext);
+
+							bool isMissingComponentWarningFixed_HasAngularVelocity = ImGuiUtil::DrawTryFixWarningButtonAndInfo
+							(
+								!entity.HasComponent<HasAngularVelocity>(),
+								"Missing HasAngularVelocity",
+								[entity]()
+								{
+									Undo::AddComponent
+									(
+										entity, NAME_OF(HasAngularVelocity),
+									   	TypeRegistry::TryGetComponentTypeDescriptor("HasAngularVelocity").Descriptor
+									);
+								}
+							);
+							if (isMissingComponentWarningFixed_HasAngularVelocity)
+							{
+								changed = true;
+								drawInspectorContext.ShouldEarlyOutIfInIteratorLoop = true;
+							}
+
+							bool isMissingComponentWarningFixed_DYE__DYEditor__LocalTransformComponent = ImGuiUtil::DrawTryFixWarningButtonAndInfo
+							(
+								!entity.HasComponent<DYE::DYEditor::LocalTransformComponent>(),
+								"Missing DYE::DYEditor::LocalTransformComponent",
+								[entity]()
+								{
+									Undo::AddComponent
+									(
+										entity, NAME_OF(DYE::DYEditor::LocalTransformComponent),
+									   	TypeRegistry::TryGetComponentTypeDescriptor("DYE::DYEditor::LocalTransformComponent").Descriptor
+									);
+								}
+							);
+							if (isMissingComponentWarningFixed_DYE__DYEditor__LocalTransformComponent)
+							{
+								changed = true;
+								drawInspectorContext.ShouldEarlyOutIfInIteratorLoop = true;
+							}
 							return changed;
-						}
+						},
+						.GetDisplayName = []() { return "CreateEntity"; },
 					}
 			);
+		TypeRegistry::RegisterFormerlyKnownTypeName("Createee", NAME_OF(CreateEntity));
+		TypeRegistry::RegisterFormerlyKnownTypeName("CreateeeHA", NAME_OF(CreateEntity));
 
 		// Component located in include/TestComponents.h
 		TypeRegistry::RegisterComponentType<PrintMessageOnTeardown>
 			(
-				"PrintMessageOnTeardown",
+				NAME_OF(PrintMessageOnTeardown),
 				ComponentTypeDescriptor
 					{
 						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
@@ -281,14 +351,16 @@ namespace DYE::DYEditor
 							auto& component = entity.GetComponent<PrintMessageOnTeardown>();
 							changed |= ImGuiUtil::DrawTextControl("Message", component.Message); updateContextAfterDrawControlCall(drawInspectorContext);
 							return changed;
-						}
+						},
+						.GetDisplayName = []() { return "PrintMessageOnTeardown"; },
 					}
 			);
+		TypeRegistry::RegisterFormerlyKnownTypeName("PrintMessageOnTeardown2", NAME_OF(PrintMessageOnTeardown));
 
 		// Component located in include/AnotherTestComponents.h
 		TypeRegistry::RegisterComponentType<TestComponentC>
 			(
-				"TestC",
+				NAME_OF(TestComponentC),
 				ComponentTypeDescriptor
 					{
 						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
@@ -316,7 +388,8 @@ namespace DYE::DYEditor
 							changed |= ImGuiUtil::DrawTextControl("TestName", component.TestName); updateContextAfterDrawControlCall(drawInspectorContext);
 							changed |= ImGuiUtil::DrawCharControl("TestChar", component.TestChar); updateContextAfterDrawControlCall(drawInspectorContext);
 							return changed;
-						}
+						},
+						.GetDisplayName = []() { return "TestC"; },
 					}
 			);
 
@@ -327,10 +400,12 @@ namespace DYE::DYEditor
 		// System located in include/SystemExample.h
 		static UpdateSystemB _UpdateSystemB;
 		TypeRegistry::RegisterSystem("Update System B", &_UpdateSystemB);
+		TypeRegistry::RegisterFormerlyKnownTypeName("Update System B Old Name", "Update System B");
 
 		// System located in include/SystemExample.h
 		static FixedUpdateSystem1 _FixedUpdateSystem1;
 		TypeRegistry::RegisterSystem("Fixed Update System 1", &_FixedUpdateSystem1);
+		TypeRegistry::RegisterFormerlyKnownTypeName("Fixed Update System 1 Old Name", "Fixed Update System 1");
 
 		// System located in include/SystemExample.h
 		static FixedUpdateSystem2 _FixedUpdateSystem2;
@@ -339,10 +414,6 @@ namespace DYE::DYEditor
 		// System located in include/SystemExample.h
 		static FixedUpdateSystem3 _FixedUpdateSystem3;
 		TypeRegistry::RegisterSystem("Fixed Update System 3", &_FixedUpdateSystem3);
-
-		// System located in include/SystemExample.h
-		static ImGuiSystem1 _ImGuiSystem1;
-		TypeRegistry::RegisterSystem("ImGui System 1", &_ImGuiSystem1);
 
 		// System located in include/SystemExample.h
 		static SystemNamespace::InitializeSystemA _InitializeSystemA;
@@ -364,6 +435,9 @@ namespace DYE::DYEditor
 		static PressButtonToLoadSceneImGuiSystem _PressButtonToLoadSceneImGuiSystem;
 		TypeRegistry::RegisterSystem("Runtime Load Scene ImGui System", &_PressButtonToLoadSceneImGuiSystem);
 
+		// System located in include/SystemExample.h
+		static GetViewTestImGuiSystem _GetViewTestImGuiSystem;
+		TypeRegistry::RegisterSystem("Get View Test ImGui System", &_GetViewTestImGuiSystem);
 	}
 
 	class UserTypeRegister_Generated

@@ -9,6 +9,7 @@
 #include <vector>
 #include <optional>
 #include <map>
+#include <unordered_map>
 
 namespace DYE::DYEditor
 {
@@ -20,6 +21,7 @@ namespace DYE::DYEditor
 		bool IsModificationActivated = false;
 		bool IsModificationDeactivated = false;
 		bool IsModificationDeactivatedAfterEdit = false;
+		bool ShouldEarlyOutIfInIteratorLoop = false;
 	};
 
 	struct SerializationResult
@@ -43,8 +45,11 @@ namespace DYE::DYEditor
 	using DrawComponentInspectorFunction = bool (DrawComponentInspectorContext &drawInspectorContext, DYE::DYEditor::Entity& entity);
 	/// \return true if the content of the header is not-collapsed.
 	using DrawComponentHeaderFunction = bool (DrawComponentHeaderContext &drawHeaderContext, DYE::DYEditor::Entity& entity, bool &isHeaderVisible, std::string const& headerLabel);
+	/// \return the user-friendly display name of the component type that will be used in the editor interface.
+	using GetComponentDisplayNameFunction = char const* ();
 
-	/// One should always provide 'Serialize', 'Deserialize' and 'DrawInspector' functions.
+	/// One should always provide 'Serialize', 'Deserialize' and 'DrawInspector' functions. \n
+	/// If you want to add new data to this struct, remember we want to keep it trivially copyable.
 	struct ComponentTypeDescriptor
 	{
 		bool ShouldBeIncludedInNormalAddComponentList = true;
@@ -59,6 +64,8 @@ namespace DYE::DYEditor
 
 		DrawComponentInspectorFunction* DrawInspector = nullptr;
 		DrawComponentHeaderFunction* DrawHeader = nullptr;
+
+		GetComponentDisplayNameFunction* GetDisplayName = nullptr;
 	};
 
 	// TypeRegistry keeps track of all the types, so we could use them in runtime.
@@ -71,7 +78,7 @@ namespace DYE::DYEditor
 		/// For now only 'Has', 'Add', 'Remove' have default implementations that make sense. For other functions, it's
 		/// necessary to assign user-defined functions.
 		template<typename T>
-		static ComponentTypeDescriptor RegisterComponentType(std::string const &componentName, ComponentTypeDescriptor descriptor)
+		static ComponentTypeDescriptor RegisterComponentType(std::string const &componentTypeName, ComponentTypeDescriptor descriptor)
 		{
 			if (descriptor.Has == nullptr)
 			{
@@ -88,7 +95,7 @@ namespace DYE::DYEditor
 				descriptor.Remove = DefaultRemoveComponentOfType<T>;
 			}
 
-			registerComponentType(componentName, descriptor);
+			registerComponentType(componentTypeName, descriptor);
 
 			return descriptor;
 		}
@@ -100,30 +107,56 @@ namespace DYE::DYEditor
 		/// The function is expensive, the user should cache the result instead of calling the function regularly.
 		static std::vector<std::pair<std::string, ComponentTypeDescriptor>> GetComponentTypesNamesAndDescriptors();
 
-		static void RegisterSystem(std::string const& systemName, SystemBase* systemInstance);
+		static void RegisterSystem(std::string const& systemTypeName, SystemBase* systemInstance);
 
 		/// Retrieves an array of pairs of system names and instances.
 		/// The function is expensive, the user should cache the result instead of calling the function regularly.
 		static std::vector<std::pair<std::string, SystemBase*>> GetSystemNamesAndInstances();
 
-		static std::optional<ComponentTypeDescriptor> TryGetComponentTypeDescriptor(std::string const& componentTypeName);
+		struct TryGetComponentTypeDescriptorResult
+		{
+			bool Success = false;
+			ComponentTypeDescriptor Descriptor;
+
+			/// The given component type name could be a formerly known name, this field will be the current real type name if Success is true.
+			char const* FullTypeName = nullptr;
+		};
+		static TryGetComponentTypeDescriptorResult TryGetComponentTypeDescriptor(std::string const& componentTypeName);
 
 		/// Specialized functions to get certain built-in component Type Descriptor. Implemented inside BuiltInTypeRegister.cpp.
 		static ComponentTypeDescriptor GetComponentTypeDescriptor_NameComponent();
-		static ComponentTypeDescriptor GetComponentTypeDescriptor_TransformComponent();
+		static ComponentTypeDescriptor GetComponentTypeDescriptor_LocalTransformComponent();
 		static ComponentTypeDescriptor GetComponentTypeDescriptor_ParentComponent();
 		static ComponentTypeDescriptor GetComponentTypeDescriptor_ChildrenComponent();
 
-		/// \return a pointer to the system instance, else nullptr.
-		static SystemBase* TryGetSystemInstance(std::string const& systemName);
+		struct TryGetSystemInstanceResult
+		{
+			bool Success = false;
+			SystemBase* pInstance = nullptr;
+
+			/// The given system name could be a formerly known name, this field will be the current real type name if Success is true.
+			char const* FullTypeName = nullptr;
+		};
+		static TryGetSystemInstanceResult TryGetSystemInstance(std::string const& systemName);
+
+		static void RegisterFormerlyKnownTypeName(std::string const &formerlyKnownName, std::string const &currentTypeName);
 
 	private:
-		static void registerComponentType(std::string const &componentName, ComponentTypeDescriptor componentDescriptor);
+		static void registerComponentType(std::string const &componentTypeName, ComponentTypeDescriptor componentDescriptor);
 
 	private:
-		// TODO: maybe we could use array or vector instead?
+		/// Full type name -> Pointer to type descriptor
 		inline static std::map<std::string, ComponentTypeDescriptor> s_ComponentTypeRegistry;
+
+		/// User defined -> Pointer to system base
 		inline static std::map<std::string, SystemBase*> s_SystemRegistry;
+
+		/// Formerly known type name -> Current type name \n
+		/// We use this for both component type names & system type names.
+		inline static std::unordered_map<std::string, std::string> s_FormerlyKnownTypeNames;
+
+		/// Full type name -> A list of component type names to be used with
+		inline static std::unordered_map<std::string, std::vector<std::string>> s_UseWithComponentHintsMap;
 
 		static std::vector<std::pair<std::string, ComponentTypeDescriptor>> s_ComponentNamesAndDescriptorsCache;
 		static std::vector<std::pair<std::string, SystemBase*>> s_SystemNamesAndPointersCache;

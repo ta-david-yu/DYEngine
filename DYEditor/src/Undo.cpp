@@ -300,14 +300,14 @@ namespace DYE::DYEditor
 		// Change the name of the new root entity with the given new name.
 		auto serializedNameComponentBefore = SerializedObjectFactory::CreateSerializedComponentOfType(
 			newRootEntity,
-			NameComponentName,
+			NameComponentTypeName,
 			TypeRegistry::GetComponentTypeDescriptor_NameComponent());
 
 		newRootEntity.GetComponent<NameComponent>().Name = newEntityName;
 
 		auto serializedNameComponentAfter = SerializedObjectFactory::CreateSerializedComponentOfType(
 			newRootEntity,
-			NameComponentName,
+			NameComponentTypeName,
 			TypeRegistry::GetComponentTypeDescriptor_NameComponent());
 
 		Undo::RegisterComponentModification(newRootEntity, serializedNameComponentBefore, serializedNameComponentAfter);
@@ -375,18 +375,18 @@ namespace DYE::DYEditor
 			{
 				// If the parent doesn't have a children component,
 				// we will add one first and then do the modification.
-				Undo::AddComponent(oldParent, ChildrenComponentName,
+				Undo::AddComponent(oldParent, ChildrenComponentTypeName,
 								   TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
 				pChildrenComponent = &oldParent.GetComponent<ChildrenComponent>();
 			}
 
 			auto serializedChildrenComponentBeforeModification =
-				SerializedObjectFactory::CreateSerializedComponentOfType(oldParent, ChildrenComponentName,
+				SerializedObjectFactory::CreateSerializedComponentOfType(oldParent, ChildrenComponentTypeName,
 																		 TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
 			// Erase the entity from the old parent's children list.
 			std::erase(pChildrenComponent->ChildrenGUIDs, entityGUID);
 			auto serializedChildrenComponentAfterModification =
-				SerializedObjectFactory::CreateSerializedComponentOfType(oldParent, ChildrenComponentName,
+				SerializedObjectFactory::CreateSerializedComponentOfType(oldParent, ChildrenComponentTypeName,
 																		 TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
 
 			Undo::RegisterComponentModification(oldParent, serializedChildrenComponentBeforeModification,
@@ -529,7 +529,7 @@ namespace DYE::DYEditor
 		{
 			// If the parent doesn't have a children component,
 			// we will add one first and then do the modification.
-			Undo::AddComponent(newParent, ChildrenComponentName,
+			Undo::AddComponent(newParent, ChildrenComponentTypeName,
 							   TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
 			pNewParentEntityChildrenComponent = &newParent.GetComponent<ChildrenComponent>();
 		}
@@ -621,18 +621,18 @@ namespace DYE::DYEditor
 			{
 				// If the parent doesn't have a children component,
 				// we will add one first and then do the modification.
-				Undo::AddComponent(oldParent, ChildrenComponentName,
+				Undo::AddComponent(oldParent, ChildrenComponentTypeName,
 								   TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
 				pChildrenComponent = &oldParent.GetComponent<ChildrenComponent>();
 			}
 
 			auto serializedChildrenComponentBeforeModification =
-				SerializedObjectFactory::CreateSerializedComponentOfType(oldParent, ChildrenComponentName,
+				SerializedObjectFactory::CreateSerializedComponentOfType(oldParent, ChildrenComponentTypeName,
 																		 TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
 			// Remove the entity from the old parent's children list.
 			std::erase(pChildrenComponent->ChildrenGUIDs, entityGUID);
 			auto serializedChildrenComponentAfterModification =
-				SerializedObjectFactory::CreateSerializedComponentOfType(oldParent, ChildrenComponentName,
+				SerializedObjectFactory::CreateSerializedComponentOfType(oldParent, ChildrenComponentTypeName,
 																		 TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
 
 			Undo::RegisterComponentModification(oldParent, serializedChildrenComponentBeforeModification,
@@ -644,7 +644,7 @@ namespace DYE::DYEditor
 				// we also remove the children component from the old parent entity.
 				if (pChildrenComponent->ChildrenGUIDs.empty())
 				{
-					Undo::RemoveComponent(oldParent, ChildrenComponentName, TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
+					Undo::RemoveComponent(oldParent, ChildrenComponentTypeName, TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
 				}
 			}
 		}
@@ -661,17 +661,17 @@ namespace DYE::DYEditor
 			{
 				// If the entity doesn't have a parent component,
 				// we will add one first and then do the modification.
-				Undo::AddComponent(entity, ParentComponentName,
+				Undo::AddComponent(entity, ParentComponentTypeName,
 								   TypeRegistry::GetComponentTypeDescriptor_ParentComponent());
 				pParentComponent = &entity.GetComponent<ParentComponent>();
 			}
 
 			auto serializedParentComponentBeforeModification =
-				SerializedObjectFactory::CreateSerializedComponentOfType(entity, ParentComponentName,
+				SerializedObjectFactory::CreateSerializedComponentOfType(entity, ParentComponentTypeName,
 																		 TypeRegistry::GetComponentTypeDescriptor_ParentComponent());
 			pParentComponent->ParentGUID = parentGUID;
 			auto serializedParentComponentAfterModification =
-				SerializedObjectFactory::CreateSerializedComponentOfType(entity, ParentComponentName,
+				SerializedObjectFactory::CreateSerializedComponentOfType(entity, ParentComponentTypeName,
 																		 TypeRegistry::GetComponentTypeDescriptor_ParentComponent());
 
 			Undo::RegisterComponentModification(entity, serializedParentComponentBeforeModification,
@@ -684,7 +684,7 @@ namespace DYE::DYEditor
 				SerializedObjectFactory::CreateSerializedComponentOfType
 				(
 					newParent,
-					ChildrenComponentName,
+					ChildrenComponentTypeName,
 					TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent()
 				);
 
@@ -701,7 +701,7 @@ namespace DYE::DYEditor
 				SerializedObjectFactory::CreateSerializedComponentOfType
 				(
 					newParent,
-					ChildrenComponentName,
+					ChildrenComponentTypeName,
 					TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent()
 				);
 
@@ -785,12 +785,12 @@ namespace DYE::DYEditor
 			ChildrenComponent &childrenComponent = tryGetChildren.value().get();
 
 			auto serializedChildrenComponentBeforeModification =
-				SerializedObjectFactory::CreateSerializedComponentOfType(oldParent, ChildrenComponentName,
+				SerializedObjectFactory::CreateSerializedComponentOfType(oldParent, ChildrenComponentTypeName,
 																		 TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
 			// Remove the entity from the old parent's children list.
 			std::erase(childrenComponent.ChildrenGUIDs, entityGUID);
 			auto serializedChildrenComponentAfterModification =
-				SerializedObjectFactory::CreateSerializedComponentOfType(oldParent, ChildrenComponentName,
+				SerializedObjectFactory::CreateSerializedComponentOfType(oldParent, ChildrenComponentTypeName,
 																		 TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
 
 			Undo::RegisterComponentModification(oldParent, serializedChildrenComponentBeforeModification,
@@ -800,11 +800,11 @@ namespace DYE::DYEditor
 			// we also remove the children component from the old parent entity.
 			if (childrenComponent.ChildrenGUIDs.empty())
 			{
-				Undo::RemoveComponent(oldParent, ChildrenComponentName, TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
+				Undo::RemoveComponent(oldParent, ChildrenComponentTypeName, TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
 			}
 
 			// Remove the parent component from the entity.
-			Undo::RemoveComponent(entity, ParentComponentName, TypeRegistry::GetComponentTypeDescriptor_ParentComponent());
+			Undo::RemoveComponent(entity, ParentComponentTypeName, TypeRegistry::GetComponentTypeDescriptor_ParentComponent());
 		}
 
 		if (!isAlreadyInGroupOperationBeforeThisFunctionCall)
@@ -831,10 +831,11 @@ namespace DYE::DYEditor
 				operation->EntityGUID.ToString().c_str());
 
 		auto tryGetComponentTypeDescriptor = TypeRegistry::TryGetComponentTypeDescriptor(componentTypeName);
-		DYE_ASSERT_LOG_WARN(tryGetComponentTypeDescriptor.has_value(),
-							"Try to create a component modification operation but doesn't recognize the component type '%s'.", componentTypeName.c_str());
+		DYE_ASSERT_LOG_WARN(tryGetComponentTypeDescriptor.Success,
+							"Try to create a component modification operation but doesn't recognize the component type '%s'.",
+							componentTypeName.c_str());
 
-		operation->TypeDescriptor = tryGetComponentTypeDescriptor.value();
+		operation->TypeDescriptor = tryGetComponentTypeDescriptor.Descriptor;
 
 		pushNewOperation(std::move(operation));
 	}
@@ -844,6 +845,7 @@ namespace DYE::DYEditor
 		auto operation = std::make_unique<ComponentAdditionOperation>();
 		operation->pWorld = &entity.GetWorld();
 		operation->EntityGUID = entity.GetComponent<IDComponent>().ID;
+		operation->ComponentTypeName = componentTypeName;
 		operation->TypeDescriptor = typeDescriptor;
 
 		sprintf(&operation->Description[0], "Add %s to Entity '%s' (GUID: %s)",
@@ -853,6 +855,18 @@ namespace DYE::DYEditor
 
 		operation->TypeDescriptor.Add(entity);
 
+#ifdef DYE_EDITOR
+		auto tryGetEntityMetadata = entity.TryGetComponent<EntityEditorOnlyMetadata>();
+		DYE_ASSERT_LOG_WARN(tryGetEntityMetadata.has_value(),
+							"In editor build, an entity should always have 'EntityEditorOnlyMetadata' component.");
+
+		// Insert the component at the end of the serialized component list.
+
+		auto &serializedComponentNamesInOrder = tryGetEntityMetadata.value().get().SuccessfullyDeserializedComponentNames;
+		operation->ComponentAdditionIndex = serializedComponentNamesInOrder.size();
+		serializedComponentNamesInOrder.push_back(componentTypeName);
+#endif
+
 		pushNewOperation(std::move(operation));
 	}
 
@@ -861,8 +875,11 @@ namespace DYE::DYEditor
 		auto operation = std::make_unique<ComponentRemovalOperation>();
 		operation->pWorld = &entity.GetWorld();
 		operation->EntityGUID = entity.GetComponent<IDComponent>().ID;
+		operation->ComponentTypeName = componentTypeName;
 		operation->TypeDescriptor = typeDescriptor;
-		operation->SerializedComponentBeforeRemoval = SerializedObjectFactory::CreateSerializedComponentOfType(entity, componentTypeName, typeDescriptor);
+		operation->SerializedComponentBeforeRemoval = SerializedObjectFactory::CreateSerializedComponentOfType(entity,
+																											   componentTypeName,
+																											   typeDescriptor);
 
 		sprintf(&operation->Description[0], "Remove %s from Entity '%s' (GUID: %s)",
 				componentTypeName.c_str(),
@@ -870,6 +887,23 @@ namespace DYE::DYEditor
 				operation->EntityGUID.ToString().c_str());
 
 		operation->TypeDescriptor.Remove(entity);
+
+#ifdef DYE_EDITOR
+		auto tryGetEntityMetadata = entity.TryGetComponent<EntityEditorOnlyMetadata>();
+		DYE_ASSERT_LOG_WARN(tryGetEntityMetadata.has_value(),
+							"In editor build, an entity should always have 'EntityEditorOnlyMetadata' component.");
+		auto &serializedComponentNamesInOrder = tryGetEntityMetadata.value().get().SuccessfullyDeserializedComponentNames;
+		for (int i = 0; i < serializedComponentNamesInOrder.size(); i++)
+		{
+			std::string &typeName = serializedComponentNamesInOrder[i];
+			if (typeName == componentTypeName)
+			{
+				operation->ComponentOrderInListBeforeRemoval = i;
+				serializedComponentNamesInOrder.erase(serializedComponentNamesInOrder.cbegin() + i);
+				break;
+			}
+		}
+#endif
 
 		pushNewOperation(std::move(operation));
 	}

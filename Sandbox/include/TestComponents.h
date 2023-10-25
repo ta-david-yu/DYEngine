@@ -1,11 +1,11 @@
 #pragma once
 
 #include "Core/EditorCore.h"
-
+#include "Core/Components.h"
 
 namespace TestNamespace
 {
-	DYE_COMPONENT("TestA", TestNamespace::TestComponentA)
+	DYE_COMPONENT(TestNamespace::TestComponentA, "TestA")
 	struct TestComponentA
 	{
 		DYE_PROPERTY()
@@ -24,7 +24,7 @@ namespace TestNamespace
 
 	namespace Subnamespace
 	{
-		DYE_COMPONENT("SubTestA", TestNamespace::Subnamespace::SubtestComponentA)
+		DYE_COMPONENT(TestNamespace::Subnamespace::SubtestComponentA)
 		struct SubtestComponentA
 		{
 			DYE_PROPERTY()
@@ -33,7 +33,7 @@ namespace TestNamespace
 	}
 }
 
-DYE_COMPONENT("TestB", TestComponentB)
+DYE_COMPONENT(TestComponentB)
 struct TestComponentB
 {
 	DYE_PROPERTY()
@@ -55,7 +55,7 @@ struct TestComponentB
 	DYE::Vector4 vec4 = glm::vec4 {1, 2, 3, 4};
 };
 
-DYE_COMPONENT("ComponentWithAllPrimitiveProperties", ComponentWithAllPrimitiveProperties)
+DYE_COMPONENT(ComponentWithAllPrimitiveProperties, "ComponentWithAllPrimitiveProperties")
 struct ComponentWithAllPrimitiveProperties
 {
 	DYE_PROPERTY()
@@ -108,14 +108,20 @@ struct ComponentWithAllPrimitiveProperties
 };
 
 
-DYE_COMPONENT("HasAngularVelocity", HasAngularVelocity)
+DYE_COMPONENT(HasAngularVelocity)
+DYE_FORMERLY_KNOWN_AS("HasAngularVelocity_OldName")
+DYE_USE_WITH_COMPONENT_HINT(ComponentWithAllPrimitiveProperties)
 struct HasAngularVelocity
 {
 	DYE_PROPERTY()
 	DYE::Float AngleDegreePerSecond = 30.0f;
 };
 
-DYE_COMPONENT("CreateEntity", CreateEntity)
+DYE_COMPONENT(CreateEntity)
+DYE_FORMERLY_KNOWN_AS("Createee")
+DYE_FORMERLY_KNOWN_AS("CreateeeHA")
+DYE_USE_WITH_COMPONENT_HINT(HasAngularVelocity)
+DYE_USE_WITH_COMPONENT_HINT(DYE::DYEditor::LocalTransformComponent)
 struct CreateEntity
 {
 	DYE_PROPERTY()
@@ -125,7 +131,8 @@ struct CreateEntity
 	DYE::Int32 NumberOfEntitiesToCreate = 10;
 };
 
-DYE_COMPONENT("PrintMessageOnTeardown", PrintMessageOnTeardown)
+DYE_COMPONENT(PrintMessageOnTeardown)
+DYE_FORMERLY_KNOWN_AS("PrintMessageOnTeardown2")
 struct PrintMessageOnTeardown
 {
 	DYE_PROPERTY()

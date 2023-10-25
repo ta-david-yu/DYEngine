@@ -15,18 +15,13 @@ set(SOURCE_FILES
         src/LayerStack.cpp
         src/ImGuiLayer.cpp
         src/Logger.cpp
-        src/SceneLayer.cpp
-        src/GameObject.cpp
-        src/ComponentBase.cpp
         src/TypeUtil.cpp
-        src/Transform.cpp
         src/UniformType.cpp
         src/Shader.cpp
         src/OpenGL.cpp
         src/Buffer.cpp
         src/VertexArray.cpp
         src/RenderCommand.cpp
-        src/ImageRenderer.cpp
         src/Texture.cpp
         src/Camera.cpp
         src/ImGuiUtil.cpp
@@ -76,18 +71,13 @@ set(HEADER_FILES
         include/Core/LayerStack.h
         include/ImGui/ImGuiLayer.h
         include/Util/Logger.h
-        include/Scene/SceneLayer.h
-        include/Scene/GameObject.h
-        include/Scene/ComponentBase.h
         include/Util/TypeUtil.h
-        include/Scene/Transform.h
         include/Graphics/UniformType.h
         include/Graphics/Shader.h
         include/Graphics/OpenGL.h
         include/Graphics/Buffer.h
         include/Graphics/VertexArray.h
         include/Graphics/RenderCommand.h
-        include/Scene/ImageRenderer.h
         include/Graphics/Texture.h
         include/Event/MouseEvent.h
         include/Message/Messaging.h

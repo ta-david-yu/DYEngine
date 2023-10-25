@@ -8,7 +8,7 @@ namespace DYE::DYEditor
 {
 	void CreateWindowOnInitializeSystem::Execute(World &world, DYE::DYEditor::ExecuteParameters params)
 	{
-		auto group = world.GetGroup<CreateWindowOnInitializeComponent>(Get<WindowHandleComponent>);
+		auto group = world.GetRegistry().group<CreateWindowOnInitializeComponent>(Get<WindowHandleComponent>);
 		for (auto entity : group)
 		{
 			// Create Window.
@@ -40,7 +40,7 @@ namespace DYE::DYEditor
 	{
 		// Close window.
 		{
-			auto group = world.GetGroup<CloseWindowComponent>(Get<WindowHandleComponent>);
+			auto group = world.GetRegistry().group<CloseWindowComponent>(Get<WindowHandleComponent>);
 			for (auto entity : group)
 			{
 				auto &windowHandle = group.get<WindowHandleComponent>(entity);
@@ -59,7 +59,7 @@ namespace DYE::DYEditor
 
 		// Create window.
 		{
-			auto group = world.GetGroup<CreateWindowComponent>(Get<WindowHandleComponent>);
+			auto group = world.GetRegistry().group<CreateWindowComponent>(Get<WindowHandleComponent>);
 			for (auto entity: group)
 			{
 				auto wrappedEntity = world.WrapIdentifierIntoEntity(entity);
@@ -100,7 +100,7 @@ namespace DYE::DYEditor
 
 		// Set window position.
 		{
-			auto group = world.GetGroup<SetWindowPositionComponent>(Get<WindowHandleComponent>);
+			auto group = world.GetRegistry().group<SetWindowPositionComponent>(Get<WindowHandleComponent>);
 			for (auto entity : group)
 			{
 				auto setPosition = group.get<SetWindowPositionComponent>(entity);
@@ -118,7 +118,7 @@ namespace DYE::DYEditor
 
 		// Set window size.
 		{
-			auto group = world.GetGroup<SetWindowSizeComponent>(Get<WindowHandleComponent>);
+			auto group = world.GetRegistry().group<SetWindowSizeComponent>(Get<WindowHandleComponent>);
 			for (auto entity : group)
 			{
 				auto setSize = group.get<SetWindowSizeComponent>(entity);
@@ -136,7 +136,7 @@ namespace DYE::DYEditor
 
 		// Set window title.
 		{
-			auto group = world.GetGroup<SetWindowTitleComponent>(Get<WindowHandleComponent>);
+			auto group = world.GetRegistry().group<SetWindowTitleComponent>(Get<WindowHandleComponent>);
 			for (auto entity : group)
 			{
 				auto setTitle = group.get<SetWindowTitleComponent>(entity);
@@ -155,7 +155,7 @@ namespace DYE::DYEditor
 
 	void CloseWindowOnTearDownSystem::Execute(World &world, DYE::DYEditor::ExecuteParameters params)
 	{
-		auto view = world.GetView<WindowHandleComponent>();
+		auto view = world.GetRegistry().view<WindowHandleComponent>();
 		for (auto entity : view)
 		{
 			auto &windowHandle = view.get<WindowHandleComponent>(entity);

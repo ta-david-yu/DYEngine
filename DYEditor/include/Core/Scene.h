@@ -125,7 +125,6 @@ namespace DYE::DYEditor
 
 		bool IsEmpty() const;
 
-		/// Execute initialize systems in the active scene.
 		void ExecuteInitializeSystems();
 		void ExecuteTeardownSystems();
 

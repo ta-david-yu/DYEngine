@@ -6,6 +6,7 @@
 #include "Core/Time.h"
 #include "Math/Math.h"
 
+#include "Graphics/DebugDraw.h"
 #include "TestComponents.h"
 #include "Core/Components.h"
 #include "Components/NameComponent.h"
@@ -51,7 +52,7 @@ void ImGuiSystem1::Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecutePa
 
 void RotateHasAngularVelocitySystem::Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params)
 {
-	auto view = world.GetView<HasAngularVelocity, DYE::DYEditor::TransformComponent>();
+	auto view = world.GetRegistry().view<HasAngularVelocity, DYE::DYEditor::LocalTransformComponent>();
 
 	for (auto&& [entity, hasAngularVelocity, transform] : view.each())
 	{
@@ -62,7 +63,7 @@ void RotateHasAngularVelocitySystem::Execute(DYE::DYEditor::World &world, DYE::D
 
 void CreateEntitiesSystem::Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params)
 {
-	auto view = world.GetView<CreateEntity>();
+	auto view = world.GetRegistry().view<CreateEntity>();
 
 	for (auto entity : view)
 	{
@@ -86,11 +87,11 @@ void CreateEntitiesSystem::Execute(DYE::DYEditor::World &world, DYE::DYEditor::E
 
 void PrintMessageOnTeardownSystem::Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params)
 {
-	auto view = world.GetView<DYE::DYEditor::NameComponent, PrintMessageOnTeardown>();
+	auto view = world.GetRegistry().view<DYE::DYEditor::NameComponent, PrintMessageOnTeardown>();
 
 	for (auto&& [entity, name, message] : view.each())
 	{
-		printf("%s: %s\n", name.Name.c_str(), message.Message.c_str());
+		DYE_LOG("%s: %s\n", name.Name.c_str(), message.Message.c_str());
 	}
 }
 
@@ -105,6 +106,31 @@ void PressButtonToLoadSceneImGuiSystem::Execute(DYE::DYEditor::World &world, DYE
 		{
 			world.CreateCommandEntity().AddComponent<DYE::DYEditor::LoadSceneComponent>().SceneAssetPath = m_ScenePath;
 		}
+	}
+
+	ImGui::End();
+}
+
+void GetViewTestImGuiSystem::Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params)
+{
+	auto viewWithExclude = world.GetRegistry().view<
+	    DYE::DYEditor::NameComponent,
+		DYE::DYEditor::LocalTransformComponent,
+		DYE::DYEditor::SpriteRendererComponent>
+		(DYE::DYEditor::Exclude_t<PrintMessageOnTeardown>());
+
+	if (ImGui::Begin("Get View Test Window"))
+	{
+		int count = 0;
+		for (auto entity : viewWithExclude)
+		{
+			auto& nameComponent = viewWithExclude.get<DYE::DYEditor::NameComponent>(entity);
+			auto& localTransformComponent = viewWithExclude.get<DYE::DYEditor::LocalTransformComponent>(entity);
+			DYE::ImGuiUtil::DrawReadOnlyTextWithLabel("Name", nameComponent.Name);
+			DYE::DebugDraw::Sphere(localTransformComponent.Position, 0.5f, DYE::Color::White);
+			count++;
+		}
+		DYE::ImGuiUtil::DrawIntControl("Count", count);
 	}
 
 	ImGui::End();
