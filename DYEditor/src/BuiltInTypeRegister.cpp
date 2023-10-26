@@ -247,11 +247,6 @@ namespace DYE::DYEditor
 			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
 			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
 
-			changed |= ImGuiUtil::DrawVector3Control("Scale", transformComponent.Scale, 1.0f);
-			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
-			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
-			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
-
 			glm::vec3 rotationInEulerAnglesDegree = glm::eulerAngles(transformComponent.Rotation);
 			rotationInEulerAnglesDegree += glm::vec3(0.f);
 			rotationInEulerAnglesDegree = glm::degrees(rotationInEulerAnglesDegree);
@@ -261,6 +256,12 @@ namespace DYE::DYEditor
 				transformComponent.Rotation = glm::quat {glm::radians(rotationInEulerAnglesDegree)};
 				changed = true;
 			}
+
+			changed |= ImGuiUtil::DrawVector3Control("Scale", transformComponent.Scale, 1.0f);
+			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
+			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
+			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+
 			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
 			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
 			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
