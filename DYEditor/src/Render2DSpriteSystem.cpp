@@ -1,6 +1,6 @@
 #include "Systems/Render2DSpriteSystem.h"
 
-#include "Components/LocalTransformComponent.h"
+#include "Components/TransformComponents.h"
 #include "Components/SpriteRendererComponent.h"
 #include "Graphics/RenderPipelineManager.h"
 #include "Graphics/RenderPipeline2D.h"

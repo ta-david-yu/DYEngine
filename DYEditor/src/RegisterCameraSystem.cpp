@@ -1,7 +1,7 @@
 #include "Systems/RegisterCameraSystem.h"
 
 #include "Graphics/Camera.h"
-#include "Components/LocalTransformComponent.h"
+#include "Components/TransformComponents.h"
 #include "Components/CameraComponent.h"
 #include "Graphics/RenderPipelineManager.h"
 #include "ImGui/ImGuiUtil.h"

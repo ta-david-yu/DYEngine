@@ -36,7 +36,8 @@ set(SOURCE_FILES
         src/SerializedArray.cpp
         src/SubWindowConfiguration.cpp
         src/ExecuteLoadSceneCommandSystem.cpp
-        src/AudioSystems.cpp src/WindowSystems.cpp)
+        src/AudioSystems.cpp src/WindowSystems.cpp
+        src/TransformSystems.cpp)
 set(HEADER_FILES
         include/SceneEditorLayer.h
         include/SceneRuntimeLayer.h
@@ -64,7 +65,7 @@ set(HEADER_FILES
         include/Components/SpriteRendererComponent.h
         include/Components/CameraComponent.h
         include/Components/NameComponent.h
-        include/Components/LocalTransformComponent.h
+        include/Components/TransformComponents.h
         include/Core/Systems.h
         include/Systems/Render2DSpriteSystem.h
         include/Systems/RegisterCameraSystem.h
@@ -93,7 +94,8 @@ set(HEADER_FILES
         include/Components/WindowComponents.h
         include/Systems/WindowSystems.h
         include/Components/Command/WindowCommandComponents.h
-        include/Core/EntityTypes.h)
+        include/Core/EntityTypes.h
+        include/Systems/TransformSystems.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")

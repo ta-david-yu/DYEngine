@@ -25,6 +25,11 @@ namespace DYE::DYEditor
 		glm::vec3 GetForward() const { return Rotation * glm::vec3(0, 1, 0); }
 	};
 
+	struct LocalToWorldComponent
+	{
+		glm::mat4 Matrix = glm::mat4 {1.0f};
+	};
+
 	namespace Internal
 	{
 		/// This component is only meant for Editor,

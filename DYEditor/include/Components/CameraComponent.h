@@ -2,7 +2,7 @@
 
 #include "Graphics/Camera.h"
 
-#include "Components/LocalTransformComponent.h"
+#include "Components/TransformComponents.h"
 
 namespace DYE::DYEditor
 {
