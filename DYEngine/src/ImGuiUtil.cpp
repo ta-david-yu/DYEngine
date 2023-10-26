@@ -1689,6 +1689,7 @@ namespace DYE::ImGuiUtil
 	}
 
 	template<typename Type, typename ControlFunc>
+	requires std::predicate<ControlFunc, std::vector<Type>&, std::size_t>
 	bool Internal::ArrayControl<Type, ControlFunc>::Draw()
 	{
 		auto &arrayLabel = Label;
