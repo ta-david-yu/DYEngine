@@ -82,6 +82,33 @@ namespace DYE::DYEditor
 		return {};
 	}
 
+	std::optional<Entity> ChildrenComponent::TryGetChildAt(int index, World &world)
+	{
+		if (index >= m_ChildrenGUIDs.size())
+		{
+			return {};
+		}
+
+		if (m_ChildrenEntityIdentifiersCache[index] == entt::null)
+		{
+			auto guid = m_ChildrenGUIDs[index];
+
+			auto tryGetEntity = world.TryGetEntityWithGUID(guid);
+			if (!tryGetEntity.has_value())
+			{
+				DYE_LOG("ChildrenComponent::TryGetChildAt: Child (GUID=%s) at index %d doesn't have a matching entity in the world.", guid.ToString().c_str(), i);
+				m_ChildrenEntityIdentifiersCache[index] = entt::null;
+				return {};
+			}
+
+			m_ChildrenEntityIdentifiersCache[index] = tryGetEntity.value().GetIdentifier();
+			return tryGetEntity.value();
+		}
+
+		return world.WrapIdentifierIntoEntity(m_ChildrenEntityIdentifiersCache[index]);
+	}
+
+
 	void ChildrenComponent::SetChildGUIDAt(std::size_t index, GUID guid)
 	{
 		DYE_ASSERT_LOG_WARN(index < m_ChildrenGUIDs.size(), "Try to set the child guid at index '%zu', but the index is out of bounds.", index);
@@ -104,16 +131,19 @@ namespace DYE::DYEditor
 		m_ChildrenEntityIdentifiersCache.push_back(entt::null);
 	}
 
-	void ChildrenComponent::RemoveChildWithGUID(GUID guid)
+	std::size_t ChildrenComponent::RemoveChildWithGUID(GUID guid)
 	{
+		std::size_t removedCount = 0;
 		for (int i = m_ChildrenGUIDs.size() - 1; i >= 0; i--)
 		{
 			if (m_ChildrenGUIDs[i] == guid)
 			{
 				m_ChildrenGUIDs.erase(m_ChildrenGUIDs.begin() + i);
 				m_ChildrenEntityIdentifiersCache.erase(m_ChildrenEntityIdentifiersCache.begin() + i);
+				removedCount++;
 			}
 		}
+		return removedCount;
 	}
 
 	void ChildrenComponent::PopBack()

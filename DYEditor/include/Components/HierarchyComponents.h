@@ -53,27 +53,24 @@ namespace DYE::DYEditor
 		std::size_t GetChildrenCount() const { return m_ChildrenGUIDs.size(); }
 		std::vector<GUID> const& GetChildrenGUIDs() const { return m_ChildrenGUIDs; }
 		std::optional<GUID> TryGetChildGUIDAt(int index) const;
+		std::optional<Entity> TryGetChildAt(int index, World &world);
 
 		void SetChildGUIDAt(std::size_t index, GUID guid);
 		void InsertChildGUIDAt(std::size_t index, GUID guid);
 		void PushBackWithGUID(GUID guid);
 
-		void RemoveChildWithGUID(GUID guid);
+		/// \return the number of removed children.
+		std::size_t RemoveChildWithGUID(GUID guid);
 		void PopBack();
 
 		void RefreshChildrenEntityIdentifierCache(World &world);
 
 	private:
 		std::vector<GUID> m_ChildrenGUIDs;
-
-		bool m_IsCacheValid = false;
 		std::vector<EntityIdentifier> m_ChildrenEntityIdentifiersCache;
 
 	private:
 		friend DeserializationResult BuiltInComponentTypeFunctions::ChildrenComponent_Deserialize(SerializedComponent &serializedComponent, DYE::DYEditor::Entity &entity);
 		friend bool BuiltInComponentTypeFunctions::ChildrenComponent_DrawInspector(DrawComponentInspectorContext &drawInspectorContext, Entity &entity);
-
-		void invalidateCache() { m_IsCacheValid = false; }
-		bool isCacheValidFast() const { return m_IsCacheValid && m_ChildrenGUIDs.size() == m_ChildrenEntityIdentifiersCache.size(); }
 	};
 }
