@@ -21,6 +21,9 @@ namespace DYE::ImGuiUtil::Internal
 		ControlFunc ControlFunction;
 	};
 
-	using GUIDControlFunctionPointer = bool (*)(const char *, ::DYE::GUID &);
-	extern template struct ArrayControl<DYE::GUID, GUIDControlFunctionPointer>;
+	// TODO: remove explicit template instantiation, want to further use concepts to constrain the function type
+	// std::predicate<Func, std::vector<Type>&, std::size_t>
+
+	using GUIDControlFunctionType = bool (std::vector<::DYE::GUID>&, std::size_t);
+	extern template struct ArrayControl<DYE::GUID, GUIDControlFunctionType*>;
 }

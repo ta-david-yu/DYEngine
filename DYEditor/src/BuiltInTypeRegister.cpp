@@ -195,9 +195,10 @@ namespace DYE::DYEditor
 			bool changed = false;
 			auto &childrenGUIDs = childrenComponent.m_ChildrenGUIDs;
 
-			ImGuiUtil::Internal::GUIDControlFunctionPointer lambda = [](char const* id, GUID &guid) -> bool
+			ImGuiUtil::Internal::GUIDControlFunctionType* lambda = [](std::vector<::DYE::GUID> &array, std::size_t index) -> bool
 			{
-				bool const isGUIDChanged = ImGuiUtil::DrawGUIDControl(std::string(id), guid);
+				char elementControlID[16]; sprintf(elementControlID, "Element %zu", index);
+				bool const isGUIDChanged = ImGuiUtil::DrawGUIDControl(std::string(elementControlID), array[index]);
 				return isGUIDChanged;
 			};
 			bool const isGUIDsArrayChanged = ImGuiUtil::Internal::ArrayControl("Children", childrenGUIDs, lambda).Draw();
