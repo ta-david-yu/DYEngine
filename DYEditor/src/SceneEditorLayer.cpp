@@ -192,7 +192,7 @@ namespace DYE::DYEditor
 		m_InspectorContext.Mode = editorConfig.GetOrDefault(EditorConfigKeys::DebugInspector, false)? InspectorMode::Debug : InspectorMode::Normal;
 		m_SceneViewCamera.Properties.TargetType = RenderTargetType::RenderTexture;
 		m_SceneViewCamera.Properties.pTargetRenderTexture = m_SceneViewCameraTargetFramebuffer.get();
-		m_SceneViewCamera.Position = editorConfig.GetOrDefault(EditorConfigKeys::SceneViewCameraPosition, glm::vec3 {0, 0, 10.0f});
+		m_SceneViewCamera.SetPosition(editorConfig.GetOrDefault(EditorConfigKeys::SceneViewCameraPosition, glm::vec3 {0, 0, 10.0f}));
 		m_SceneViewCamera.Properties.ClearColor = editorConfig.GetOrDefault(EditorConfigKeys::SceneViewCameraClearColor, glm::vec4 {0, 0, 0, 1});
 
 		bool const shouldSetupSubWindowsBasedOnRuntimeConfig = editorConfig.GetOrDefault(EditorConfigKeys::ShowSubWindowsInEditMode, false);
@@ -210,7 +210,7 @@ namespace DYE::DYEditor
 		// Save current active scene as default scene for the next launch.
 		ProjectConfig &editorConfig = GetEditorConfig();
 		editorConfig.Set<std::string>(EditorConfigKeys::DefaultScene, m_CurrentSceneFilePath.string());
-		editorConfig.Set<glm::vec3>(EditorConfigKeys::SceneViewCameraPosition, m_SceneViewCamera.Position);
+		editorConfig.Set<glm::vec3>(EditorConfigKeys::SceneViewCameraPosition, m_SceneViewCamera.GetPosition());
 		editorConfig.Set<glm::vec4>(EditorConfigKeys::SceneViewCameraClearColor, m_SceneViewCamera.Properties.ClearColor);
 		editorConfig.Save();
 
@@ -235,22 +235,23 @@ namespace DYE::DYEditor
 			return;
 		}
 
+		auto sceneViewCameraPosition = m_SceneViewCamera.GetPosition();
 		// Scene View Camera Input.
 		if (INPUT.GetKey(KeyCode::Up))
 		{
-			m_SceneViewCamera.Position.y += m_CameraKeyboardMoveUnitPerSecond * TIME.DeltaTime();
+			sceneViewCameraPosition.y += m_CameraKeyboardMoveUnitPerSecond * TIME.DeltaTime();
 		}
 		if (INPUT.GetKey(KeyCode::Down))
 		{
-			m_SceneViewCamera.Position.y -= m_CameraKeyboardMoveUnitPerSecond * TIME.DeltaTime();
+			sceneViewCameraPosition.y -= m_CameraKeyboardMoveUnitPerSecond * TIME.DeltaTime();
 		}
 		if (INPUT.GetKey(KeyCode::Right))
 		{
-			m_SceneViewCamera.Position.x += m_CameraKeyboardMoveUnitPerSecond * TIME.DeltaTime();
+			sceneViewCameraPosition.x += m_CameraKeyboardMoveUnitPerSecond * TIME.DeltaTime();
 		}
 		if (INPUT.GetKey(KeyCode::Left))
 		{
-			m_SceneViewCamera.Position.x -= m_CameraKeyboardMoveUnitPerSecond * TIME.DeltaTime();
+			sceneViewCameraPosition.x -= m_CameraKeyboardMoveUnitPerSecond * TIME.DeltaTime();
 		}
 
 		if (isMiddleMouseButtonPressed)
@@ -266,8 +267,9 @@ namespace DYE::DYEditor
 
 			// Invert x so when the mouse cursor moves left, the camera moves right.
 			// We don't need to invert y because the Y direction in screen coordinate (i.e. mouse delta) is opposite to 2d world coordinate.
-			m_SceneViewCamera.Position += glm::vec3 {-panMove.x, panMove.y, 0};
+			sceneViewCameraPosition += glm::vec3 {-panMove.x, panMove.y, 0};
 		}
+		m_SceneViewCamera.SetPosition(sceneViewCameraPosition);
 
 		SceneViewEntitySelection::ReceiveEntityGeometrySubmission(m_IsSceneViewDrawn);
 	}
@@ -840,7 +842,11 @@ namespace DYE::DYEditor
 				// Scene View Camera Settings
 				ImGui::PushID("Scene View Camera");
 
-				ImGuiUtil::DrawVector3Control("Position", sceneViewCamera.Position);
+				auto position = sceneViewCamera.GetPosition();
+				if (ImGuiUtil::DrawVector3Control("Position", position))
+				{
+					sceneViewCamera.SetPosition(position);
+				}
 				ImGuiUtil::DrawCameraPropertiesControl("Properties", sceneViewCamera.Properties);
 
 				ImGui::PopID();
@@ -970,7 +976,7 @@ namespace DYE::DYEditor
 
 		ImGuizmo::SetRect(context.ViewportBounds.X, context.ViewportBounds.Y, context.ViewportBounds.Width, context.ViewportBounds.Height);
 
-		glm::mat4 viewMatrix = sceneViewCamera.GetViewMatrix();
+		glm::mat4 viewMatrix = sceneViewCamera.ViewMatrix;
 		glm::mat4 projectionMatrix = sceneViewCamera.Properties.GetProjectionMatrix(context.ViewportBounds.Width / context.ViewportBounds.Height);
 
 		glm::mat4 transformMatrix = transform.GetTransformMatrix();

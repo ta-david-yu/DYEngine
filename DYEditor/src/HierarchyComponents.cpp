@@ -96,7 +96,7 @@ namespace DYE::DYEditor
 			auto tryGetEntity = world.TryGetEntityWithGUID(guid);
 			if (!tryGetEntity.has_value())
 			{
-				DYE_LOG("ChildrenComponent::TryGetChildAt: Child (GUID=%s) at index %d doesn't have a matching entity in the world.", guid.ToString().c_str(), i);
+				DYE_LOG("ChildrenComponent::TryGetChildAt: Child (GUID=%s) at index %d doesn't have a matching entity in the world.", guid.ToString().c_str(), index);
 				m_ChildrenEntityIdentifiersCache[index] = entt::null;
 				return {};
 			}

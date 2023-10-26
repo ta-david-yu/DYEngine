@@ -143,7 +143,7 @@ namespace DYE
 		// Sort the submission (render queue, sorting layer, camera distance etc).
 		// TODO: we want to use insertion sort instead cuz the vector will already be kinda sorted in every Submit call
 		// TODO: we can also further decode the sorting criteria into an integer and use radix sort as well (see: https://youtu.be/4BISSS3MCNA)
-		glm::mat4 const viewMatrix = camera.GetViewMatrix();
+		glm::mat4 const viewMatrix = camera.ViewMatrix;
 		std::stable_sort
 		(
 			m_Submissions.begin(),

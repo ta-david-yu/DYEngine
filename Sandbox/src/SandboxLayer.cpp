@@ -29,7 +29,7 @@ namespace DYE::Sandbox
 		m_Camera.Properties.ClearColor = Color::Black;
 		m_Camera.Properties.TargetWindowIndex = WindowManager::MainWindowIndex;
 		m_Camera.Properties.ManualAspectRatio = (float) mainWindowPtr->GetWidth() / (float) mainWindowPtr->GetHeight();
-		m_Camera.Position = glm::vec3 {0, 0, 20};
+		m_Camera.SetPosition(glm::vec3 {0, 0, 20});
 		m_Camera.Properties.OrthographicSize = 20;
 		m_Camera.Properties.IsOrthographic = true;
 

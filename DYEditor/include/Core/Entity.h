@@ -90,6 +90,7 @@ namespace DYE::DYEditor
 		/// Syntactic sugar for TryGetComponent<NameComponent>().Name
 		/// \return
 		std::optional<std::string> TryGetName();
+		std::string GetName();
 
 		std::optional<GUID> TryGetGUID();
 

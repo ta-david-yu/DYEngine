@@ -268,6 +268,55 @@ namespace DYE::DYEditor
 			return changed;
 		}
 
+		SerializationResult
+		LocalToWorldComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
+		{
+			return {};
+		}
+
+		DeserializationResult
+		LocalToWorldComponent_Deserialize(SerializedComponent &serializedComponent, DYE::DYEditor::Entity &entity)
+		{
+			auto &localToWorldComponent = entity.AddOrGetComponent<LocalToWorldComponent>();
+			return {};
+		}
+
+		bool LocalToWorldComponent_DrawInspector(DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
+		{
+			bool changed = false;
+			auto &localToWorldComponent = entity.GetComponent<LocalToWorldComponent>();
+
+			ImGui::BeginDisabled();
+
+			auto position = localToWorldComponent.GetPosition();
+			ImGuiUtil::DrawVector3Control("World Position", position);
+
+			glm::vec3 rotationInEulerAnglesDegree = glm::eulerAngles(localToWorldComponent.GetRotation());
+			rotationInEulerAnglesDegree += glm::vec3(0.f);
+			rotationInEulerAnglesDegree = glm::degrees(rotationInEulerAnglesDegree);
+			ImGuiUtil::DrawVector3Control("World Rotation", rotationInEulerAnglesDegree);
+
+			ImGui::EndDisabled();
+
+			bool isMissingComponentWarningFixed = ImGuiUtil::DrawTryFixWarningButtonAndInfo
+				(
+					!entity.HasComponent<LocalTransformComponent>(),
+					"Missing LocalTransform component",
+					[entity]()
+					{
+						Undo::AddComponent(entity, LocalTransformComponentTypeName,
+										   TypeRegistry::GetComponentTypeDescriptor_LocalTransformComponent());
+					}
+				);
+			if (isMissingComponentWarningFixed)
+			{
+				changed = true;
+				drawInspectorContext.ShouldEarlyOutIfInIteratorLoop = true;
+			}
+
+			return changed;
+		}
+
 		void CameraComponent_Add(Entity& entity)
 		{
 			entity.AddComponent<CameraComponent>();
@@ -345,15 +394,15 @@ namespace DYE::DYEditor
 			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
 
 			bool isMissingComponentWarningFixed = ImGuiUtil::DrawTryFixWarningButtonAndInfo
-			(
-				!entity.HasComponent<LocalTransformComponent>(),
-				"Missing LocalTransform component",
-				[entity]()
-				{
-					Undo::AddComponent(entity, LocalTransformComponentTypeName,
-									   TypeRegistry::GetComponentTypeDescriptor_LocalTransformComponent());
-				}
-			);
+				(
+					!entity.HasComponent<LocalToWorldComponent>(),
+					"Missing LocalToWorld component",
+					[entity]()
+					{
+						Undo::AddComponent(entity, LocalToWorldComponentTypeName,
+										   TypeRegistry::GetComponentTypeDescriptor_LocalToWorldComponent());
+					}
+				);
 			if (isMissingComponentWarningFixed)
 			{
 				changed = true;
@@ -430,15 +479,15 @@ namespace DYE::DYEditor
 			ImGuiUtil::DrawTexture2DPreviewWithLabel("Texture Preview", component.Texture);
 
 			bool isMissingComponentWarningFixed = ImGuiUtil::DrawTryFixWarningButtonAndInfo
-			(
-				!entity.HasComponent<LocalTransformComponent>(),
-				"Missing LocalTransform component",
-				[entity]()
-				{
-					Undo::AddComponent(entity, LocalTransformComponentTypeName,
-									   TypeRegistry::GetComponentTypeDescriptor_LocalTransformComponent());
-				}
-			);
+				(
+					!entity.HasComponent<LocalToWorldComponent>(),
+					"Missing LocalToWorld component",
+					[entity]()
+					{
+						Undo::AddComponent(entity, LocalToWorldComponentTypeName,
+										   TypeRegistry::GetComponentTypeDescriptor_LocalToWorldComponent());
+					}
+				);
 			if (isMissingComponentWarningFixed)
 			{
 				changed = true;
@@ -738,6 +787,7 @@ namespace DYE::DYEditor
 	static ComponentTypeDescriptor s_ParentComponentTypeDescriptor;
 	static ComponentTypeDescriptor s_ChildrenComponentTypeDescriptor;
 	static ComponentTypeDescriptor s_LocalTransformComponentTypeDescriptor;
+	static ComponentTypeDescriptor s_LocalToWorldComponentTypeDescriptor;
 
 	void RegisterBuiltInTypes()
 	{
@@ -814,6 +864,18 @@ namespace DYE::DYEditor
 					.Deserialize = BuiltInComponentTypeFunctions::LocalTransformComponent_Deserialize,
 					.DrawInspector = BuiltInComponentTypeFunctions::LocalTransformComponent_DrawInspector,
 					.GetDisplayName = []() { return "Local Transform"; },
+				}
+		);
+
+		s_LocalToWorldComponentTypeDescriptor = TypeRegistry::RegisterComponentType<LocalToWorldComponent>
+		(
+			LocalToWorldComponentTypeName,
+			ComponentTypeDescriptor
+				{
+					.Serialize = BuiltInComponentTypeFunctions::LocalToWorldComponent_Serialize,
+					.Deserialize = BuiltInComponentTypeFunctions::LocalToWorldComponent_Deserialize,
+					.DrawInspector = BuiltInComponentTypeFunctions::LocalToWorldComponent_DrawInspector,
+					.GetDisplayName = []() { return "Local To World"; },
 				}
 		);
 
@@ -895,6 +957,9 @@ namespace DYE::DYEditor
 			}
 		);
 
+		static ComputeLocalToWorldSystem _ComputeLocalToWorldSystem;
+		TypeRegistry::RegisterSystem(ComputeLocalToWorldSystem::TypeName, &_ComputeLocalToWorldSystem);
+
 		static Render2DSpriteSystem _Render2DSpriteSystem;
 		TypeRegistry::RegisterSystem(Render2DSpriteSystem::TypeName, &_Render2DSpriteSystem);
 
@@ -925,6 +990,11 @@ namespace DYE::DYEditor
 	ComponentTypeDescriptor TypeRegistry::GetComponentTypeDescriptor_LocalTransformComponent()
 	{
 		return s_LocalTransformComponentTypeDescriptor;
+	}
+
+	ComponentTypeDescriptor TypeRegistry::GetComponentTypeDescriptor_LocalToWorldComponent()
+	{
+		return s_LocalToWorldComponentTypeDescriptor;
 	}
 
 	ComponentTypeDescriptor TypeRegistry::GetComponentTypeDescriptor_ParentComponent()

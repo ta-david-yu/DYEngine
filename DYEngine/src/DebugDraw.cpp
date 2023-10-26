@@ -321,7 +321,7 @@ namespace DYE
 		s_GeometryGizmoShaderProgram->Use();
 
 		// View matrix
-		glm::mat4 viewMatrix = camera.GetViewMatrix();
+		glm::mat4 viewMatrix = camera.ViewMatrix;
 		auto viewMatrixLoc = glGetUniformLocation(s_GeometryGizmoShaderProgram->GetID(), DefaultUniformNames::ViewMatrix);
 		glCall(glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix)));
 
@@ -347,7 +347,7 @@ namespace DYE
 		s_LineGizmoShaderProgram->Use();
 
 		// View matrix
-		glm::mat4 viewMatrix = camera.GetViewMatrix();
+		glm::mat4 viewMatrix = camera.ViewMatrix;
 		auto viewMatrixLoc = glGetUniformLocation(s_LineGizmoShaderProgram->GetID(), DefaultUniformNames::ViewMatrix);
 		glCall(glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix)));
 

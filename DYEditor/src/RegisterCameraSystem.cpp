@@ -23,17 +23,17 @@ namespace DYE::DYEditor
 		m_NumberOfRegisteredCamerasLastFrame = 0;
 
 		// We use group here because we know RegisterCameraSystem is the main critical path for CameraComponent.
-		auto group = world.GetRegistry().group<CameraComponent>(entt::get<LocalTransformComponent>);
+		auto group = world.GetRegistry().group<CameraComponent>(Get<LocalToWorldComponent>);
 		for (auto entity : group)
 		{
-			auto [camera, transform] = group.get<CameraComponent, LocalTransformComponent>(entity);
+			auto [camera, localToWorld] = group.get<CameraComponent, LocalToWorldComponent>(entity);
 
 			if (!camera.IsEnabled)
 			{
 				continue;
 			}
 
-			Camera cameraToRegister = camera.CreateCameraWithTransform(transform);
+			Camera cameraToRegister = camera.CreateCameraWithLocalToWorldComponent(localToWorld);
 			RenderPipelineManager::RegisterCameraForNextRender(cameraToRegister);
 
 			m_NumberOfRegisteredCamerasLastFrame++;

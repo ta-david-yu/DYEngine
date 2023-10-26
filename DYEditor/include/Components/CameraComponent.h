@@ -12,11 +12,10 @@ namespace DYE::DYEditor
 		CameraProperties Properties;
 
 		[[nodiscard]]
-		Camera CreateCameraWithTransform(LocalTransformComponent const& transform) const
+		Camera CreateCameraWithLocalToWorldComponent(LocalToWorldComponent const& localToWorld) const
 		{
 			Camera camera;
-			camera.Position = transform.Position;
-			camera.Rotation = transform.Rotation;
+			camera.ViewMatrix = glm::inverse(localToWorld.Matrix);
 			camera.Properties = Properties;
 
 			return camera;

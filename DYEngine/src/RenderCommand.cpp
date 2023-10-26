@@ -167,7 +167,7 @@ namespace DYE
 			glCall(glUniformMatrix4fv(modelMatrixLoc, 1, GL_FALSE, glm::value_ptr(objectToWorldMatrix)));
 
 			// World space to camera space
-			glm::mat4 viewMatrix = camera.GetViewMatrix();
+			glm::mat4 viewMatrix = camera.ViewMatrix;
 			auto viewMatrixLoc = glGetUniformLocation(shader.GetID(), DefaultUniformNames::ViewMatrix);
 			glCall(glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix)));
 

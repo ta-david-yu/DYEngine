@@ -3,8 +3,10 @@
 #include "Graphics/WindowManager.h"
 #include "Graphics/Framebuffer.h"
 #include "Util/Logger.h"
+#include "Math/Math.h"
 
 #include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/orthonormalize.hpp>
 
 namespace DYE
 {
@@ -99,10 +101,30 @@ namespace DYE
 		return { targetWidth, targetHeight };
 	}
 
-	glm::mat4 Camera::GetViewMatrix() const
+	glm::vec3 Camera::GetPosition() const
 	{
-		auto viewMatrix = glm::translate(glm::mat4(1.0f), Position) * glm::toMat4(Rotation);
-		return glm::inverse(viewMatrix);
+		glm::vec3 position = ViewMatrix[3];
+		return -position;
+	}
+
+	void Camera::SetPosition(glm::vec3 position)
+	{
+		ViewMatrix[3][0] = -position.x;
+		ViewMatrix[3][1] = -position.y;
+		ViewMatrix[3][2] = -position.z;
+	}
+
+	glm::quat Camera::GetRotation() const
+	{
+		glm::mat3 rotationMatrix = glm::orthonormalize(glm::mat3 {ViewMatrix});
+		glm::mat3 inverseRotation = glm::inverse(rotationMatrix);
+		return { inverseRotation };
+	}
+
+	void Camera::SetRotation(glm::quat rotation)
+	{
+		glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), GetPosition()) * glm::toMat4(rotation);
+		ViewMatrix = glm::inverse(transformMatrix);
 	}
 
 	glm::vec2 Camera::ViewportToScreenPoint(glm::vec2 viewportPoint) const
@@ -135,7 +157,7 @@ namespace DYE
 		//pointInProjectionSpace.y = -pointInProjectionSpace.y; // The origin in projection space is the top-left corner.
 
 		auto const projectionMatrix = Properties.GetProjectionMatrix(viewportDimensions.x / viewportDimensions.y);
-		auto const viewMatrix = GetViewMatrix();
+		auto const viewMatrix = ViewMatrix;
 		glm::mat4 toWorldMatrix = glm::inverse(projectionMatrix * viewMatrix);
 
 		// Near-to-far plane is mapped to -1 ~ 1 in clip space.
@@ -162,7 +184,7 @@ namespace DYE
 		//pointInProjectionSpace.y = -pointInProjectionSpace.y; // The origin in projection space is the top-left corner.
 
 		auto const projectionMatrix = Properties.GetProjectionMatrix(viewportDimensions.x / viewportDimensions.y);
-		auto const viewMatrix = GetViewMatrix();
+		auto const viewMatrix = ViewMatrix;
 		glm::mat4 toWorldMatrix = glm::inverse(projectionMatrix * viewMatrix);
 
 		// Near-to-far plane is mapped to -1 ~ 1 in clip space.

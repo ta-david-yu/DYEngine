@@ -16,17 +16,17 @@ namespace DYE::DYEditor
 	void Render2DSpriteSystem::InitializeLoad(DYEditor::World &world, DYE::DYEditor::InitializeLoadParameters)
 	{
 		// Call this on initialize load to perform initialization step on the group.
-		auto group = world.GetRegistry().group<SpriteRendererComponent>(Get<LocalTransformComponent>);
+		auto group = world.GetRegistry().group<SpriteRendererComponent>(Get<LocalToWorldComponent>);
 	}
 
 	void Render2DSpriteSystem::Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params)
 	{
 		m_NumberOfRenderedEntitiesLastFrame = 0;
 		// We use group here because we know Render2DSpriteSystem is the main critical path for SpriteRendererComponent.
-		auto group = world.GetRegistry().group<SpriteRendererComponent>(Get<LocalTransformComponent>);
+		auto group = world.GetRegistry().group<SpriteRendererComponent>(Get<LocalToWorldComponent>);
 		for (auto entity : group)
 		{
-			auto [sprite, transform] = group.get<SpriteRendererComponent, LocalTransformComponent>(entity);
+			auto [sprite, localToWorld] = group.get<SpriteRendererComponent, LocalToWorldComponent>(entity);
 
 			if (!sprite.IsEnabled)
 			{
@@ -35,7 +35,7 @@ namespace DYE::DYEditor
 
 			Entity wrappedEntity = world.WrapIdentifierIntoEntity(entity);
 
-			glm::mat4 modelMatrix = transform.GetTransformMatrix();
+			glm::mat4 modelMatrix = localToWorld.Matrix;
 
 			// Scale the matrix based on sprite pixels per unit.
 			modelMatrix = glm::scale(modelMatrix, sprite.Texture->GetScaleFromTextureDimensions());

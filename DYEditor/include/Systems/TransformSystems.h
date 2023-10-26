@@ -12,5 +12,6 @@ namespace DYE::DYEditor
 		ExecutionPhase GetPhase() const final { return ExecutionPhase::Render; }
 
 		void Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params) final;
+		void DrawInspector(DYE::DYEditor::World &world) override;
 	};
 }
