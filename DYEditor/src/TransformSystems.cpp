@@ -9,7 +9,11 @@
 
 namespace DYE::DYEditor
 {
-
+	void ComputeLocalToWorldSystem::InitializeLoad(World &world, DYE::DYEditor::InitializeLoadParameters)
+	{
+		auto syncGroup = world.GetRegistry().group<LocalToWorldComponent, LocalTransformComponent>(Exclude<ParentComponent>);
+	}
+	
 	void ComputeLocalToWorldSystem::Execute(World &world, DYE::DYEditor::ExecuteParameters params)
 	{
 		// TODO: ComputeLocalToWorldSystem Options:
@@ -26,31 +30,107 @@ namespace DYE::DYEditor
 		// Right now we might go with (2) & (4) combined + parallel operation.
 		// see https://skypjack.github.io/entt/md_docs_md_entity.html, Multithreading/Iterators section
 
-		auto group = world.GetRegistry().group<LocalToWorldComponent>(Get<LocalTransformComponent>, Exclude<ParentComponent, ChildrenComponent>);
+
+		// Synchronize LocalToWorld for root transforms.
+		auto syncGroup = world.GetRegistry().group<LocalToWorldComponent, LocalTransformComponent>({}, Exclude<ParentComponent>);
 		std::for_each
 		(
-			std::execution::par_unseq, group.begin(), group.end(),
-			[&group, &world](auto entityIdentifier)
+			std::execution::par_unseq, syncGroup.begin(), syncGroup.end(),
+			[&syncGroup](auto entityIdentifier)
 			{
-				LocalToWorldComponent &localToWorld = group.get<LocalToWorldComponent>(entityIdentifier);
-				LocalTransformComponent localTransformComponent = group.get<LocalTransformComponent>(entityIdentifier);
+				LocalToWorldComponent &localToWorld = syncGroup.get<LocalToWorldComponent>(entityIdentifier);
+				LocalTransformComponent localTransformComponent = syncGroup.get<LocalTransformComponent>(entityIdentifier);
+
 				localToWorld.Matrix = localTransformComponent.GetTransformMatrix();
+			}
+		);
+
+		// Compute & propagate LocalToWorld from root transforms down to their children recursively.
+		auto propagationView = world.GetRegistry().view<LocalToWorldComponent, ChildrenComponent>(Exclude<ParentComponent>);
+		std::for_each
+		(
+			std::execution::par_unseq, propagationView.begin(), propagationView.end(),
+			[&propagationView, &world](auto entityIdentifier)
+			{
+				LocalToWorldComponent &rootParentLocalToWorld = propagationView.get<LocalToWorldComponent>(entityIdentifier);
+				ChildrenComponent &childrenComponent = propagationView.get<ChildrenComponent>(entityIdentifier);
+
+				//childrenComponent.RefreshChildrenEntityIdentifierCache(world);
+				std::vector<EntityIdentifier> const& childrenEntityIdentifiers = childrenComponent.GetChildrenCache();
+				std::for_each
+				(
+					std::execution::par_unseq, childrenEntityIdentifiers.begin(), childrenEntityIdentifiers.end(),
+					[&world, rootParentLocalToWorld](auto childEntityIdentifier)
+					{
+						computeLocalToWorldRecursively(world, rootParentLocalToWorld.Matrix, childEntityIdentifier);
+					}
+				);
+			}
+		);
+	}
+
+	void computeLocalToWorldRecursively(World &world, glm::mat4 parentToWorld, EntityIdentifier entityIdentifier)
+	{
+		Entity entity = world.WrapIdentifierIntoEntity(entityIdentifier);
+
+		DYE_ASSERT_LOG_WARN(entityIdentifier != entt::null, "The cached entity identifier in children component is invalid.");
+
+		glm::mat4 localToParent = glm::mat4 {1.0f};	// By default, local to parent transformation matrix is an identity matrix, meaning there is no transform offset to the parent.
+		auto tryGetLocalTransform = entity.TryGetComponent<LocalTransformComponent>();
+		if (tryGetLocalTransform.has_value())
+		{
+			localToParent = tryGetLocalTransform.value().get().GetTransformMatrix();
+		}
+
+		glm::mat4 localToWorld = parentToWorld * localToParent;
+		auto tryGetLocalToWorld = entity.TryGetComponent<LocalToWorldComponent>();
+		if (tryGetLocalToWorld.has_value())
+		{
+			tryGetLocalToWorld.value().get().Matrix = localToWorld;
+		}
+
+		// Propagate local to world to the children if there is any.
+		auto tryGetChildrenComponent = entity.TryGetComponent<ChildrenComponent>();
+		if (!tryGetChildrenComponent.has_value())
+		{
+			return;
+		}
+
+		std::vector<EntityIdentifier> const& childrenEntityIdentifiers = tryGetChildrenComponent.value().get().GetChildrenCache();
+		std::for_each
+		(
+			std::execution::par_unseq, childrenEntityIdentifiers.begin(), childrenEntityIdentifiers.end(),
+			[&world, localToWorld](auto childEntityIdentifier)
+			{
+				computeLocalToWorldRecursively(world, localToWorld, childEntityIdentifier);
 			}
 		);
 	}
 
 	void ComputeLocalToWorldSystem::DrawInspector(World &world)
 	{
-		auto group = world.GetRegistry().group<LocalToWorldComponent>(Get<LocalTransformComponent>, Exclude<ParentComponent, ChildrenComponent>);
+		ImGui::TextUnformatted("Sync Group");
+		ImGui::Separator();
+		auto syncGroup = world.GetRegistry().group<LocalToWorldComponent, LocalTransformComponent>({}, Exclude<ParentComponent>);
 		std::for_each
 		(
-			group.begin(), group.end(),
-			[&group, &world](auto entityIdentifier)
+			syncGroup.begin(), syncGroup.end(),
+			[&world](auto entityIdentifier)
 			{
-				auto [localToWorld, localTransform] = group.get<LocalToWorldComponent, LocalTransformComponent>(entityIdentifier);
-
 				Entity entity = world.WrapIdentifierIntoEntity(entityIdentifier);
-				//DYE_LOG("%s", entity.GetName().c_str());
+				ImGui::TextUnformatted(entity.GetName().c_str());
+			}
+		);
+
+		ImGui::TextUnformatted("Propagation Group");
+		ImGui::Separator();
+		auto propagationView = world.GetRegistry().view<LocalToWorldComponent, ChildrenComponent>(Exclude<ParentComponent>);
+		std::for_each
+		(
+			propagationView.begin(), propagationView.end(),
+			[&world](auto entityIdentifier)
+			{
+				Entity entity = world.WrapIdentifierIntoEntity(entityIdentifier);
 				ImGui::TextUnformatted(entity.GetName().c_str());
 			}
 		);

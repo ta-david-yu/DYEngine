@@ -240,7 +240,7 @@ namespace DYE::DYEditor
 				newEntity.GetComponent<ParentComponent>().SetParentGUID(level.NewParentGUID);
 
 				std::size_t const numberOfChildren = level.pChildrenComponent->GetChildrenCount();
-				level.pChildrenComponent->SetChildGUIDAt(numberOfChildren - level.NumberOfChildrenLeft, newGUID);
+				level.pChildrenComponent->SetChildAt(numberOfChildren - level.NumberOfChildrenLeft, newEntity.GetIdentifier(), newGUID);
 
 				level.NumberOfChildrenLeft--;
 				if (level.NumberOfChildrenLeft == 0)
@@ -692,11 +692,11 @@ namespace DYE::DYEditor
 			auto &newParentChildren = newParent.GetComponent<ChildrenComponent>();
 			if (insertAtTheLastLocationInParentHierarchy)
 			{
-				newParentChildren.PushBackWithGUID(entityGUID);
+				newParentChildren.PushBack(entity.GetIdentifier(), entityGUID);
 			}
 			else
 			{
-				newParentChildren.InsertChildGUIDAt(indexInParent, entityGUID);
+				newParentChildren.InsertChildAt(indexInParent, entity.GetIdentifier(), entityGUID);
 			}
 			auto serializedChildrenComponentAfterModification =
 				SerializedObjectFactory::CreateSerializedComponentOfType

@@ -11,7 +11,8 @@ namespace DYE::DYEditor
 		[[nodiscard]]
 		ExecutionPhase GetPhase() const final { return ExecutionPhase::Render; }
 
-		void Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params) final;
-		void DrawInspector(DYE::DYEditor::World &world) override;
+		void InitializeLoad(DYE::DYEditor::World& world, DYE::DYEditor::InitializeLoadParameters) final;
+		void Execute(DYE::DYEditor::World &childEntityIdentifier, DYE::DYEditor::ExecuteParameters params) final;
+		void DrawInspector(DYE::DYEditor::World &world) final;
 	};
 }

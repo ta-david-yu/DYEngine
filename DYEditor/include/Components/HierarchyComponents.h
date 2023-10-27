@@ -52,12 +52,18 @@ namespace DYE::DYEditor
 	{
 		std::size_t GetChildrenCount() const { return m_ChildrenGUIDs.size(); }
 		std::vector<GUID> const& GetChildrenGUIDs() const { return m_ChildrenGUIDs; }
+		/// \return a list of cached children entity identifiers. This function doesn't guarantee all the return entities are valid.
+		/// Use entityIdentifier == entt::null to check if an identifier cache is invalid.
+		std::vector<EntityIdentifier> const& GetChildrenCache() const { return m_ChildrenEntityIdentifiersCache; }
 		std::optional<GUID> TryGetChildGUIDAt(int index) const;
 		std::optional<Entity> TryGetChildAt(int index, World &world);
 
 		void SetChildGUIDAt(std::size_t index, GUID guid);
+		void SetChildAt(std::size_t index, EntityIdentifier identifier, GUID guid);
 		void InsertChildGUIDAt(std::size_t index, GUID guid);
+		void InsertChildAt(std::size_t index, EntityIdentifier identifier, GUID guid);
 		void PushBackWithGUID(GUID guid);
+		void PushBack(EntityIdentifier identifier, GUID guid);
 
 		/// \return the number of removed children.
 		std::size_t RemoveChildWithGUID(GUID guid);

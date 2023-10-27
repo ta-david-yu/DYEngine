@@ -7,6 +7,7 @@
 #include "Serialization/SerializedObjectFactory.h"
 
 #include <algorithm>
+#include <execution>
 
 namespace DYE::DYEditor
 {
@@ -230,7 +231,7 @@ namespace DYE::DYEditor
 				newEntity.GetComponent<ParentComponent>().SetParentGUID(level.NewParentGUID);
 
 				std::size_t const numberOfChildren = level.pChildrenComponent->GetChildrenCount();
-				level.pChildrenComponent->SetChildGUIDAt(numberOfChildren - level.NumberOfChildrenLeft, newGUID);
+				level.pChildrenComponent->SetChildAt(numberOfChildren - level.NumberOfChildrenLeft, newEntity.GetIdentifier(), newGUID);
 
 				level.NumberOfChildrenLeft--;
 				if (level.NumberOfChildrenLeft == 0)
@@ -411,5 +412,30 @@ namespace DYE::DYEditor
 
 		// Remove the entity from the actual world registry.
 		m_Registry.destroy(identifier);
+	}
+
+	void World::refreshAllHierarchyComponentEntityCache()
+	{
+		auto parentView = m_Registry.view<ParentComponent>();
+		std::for_each
+		(
+			std::execution::par_unseq, parentView.begin(), parentView.end(),
+			[this, &parentView](auto entityIdentifier)
+			{
+				ParentComponent &parent = parentView.get<ParentComponent>(entityIdentifier);
+				parent.RefreshEntityIdentifierCache(*this);
+			}
+		);
+
+		auto childrenView = m_Registry.view<ChildrenComponent>();
+		std::for_each
+		(
+			std::execution::par_unseq, childrenView.begin(), childrenView.end(),
+			[this, &childrenView](auto entityIdentifier)
+			{
+				ChildrenComponent &children = childrenView.get<ChildrenComponent>(entityIdentifier);
+				children.RefreshChildrenEntityIdentifierCache(*this);
+			}
+		);
 	}
 }

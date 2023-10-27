@@ -112,23 +112,41 @@ namespace DYE::DYEditor
 	void ChildrenComponent::SetChildGUIDAt(std::size_t index, GUID guid)
 	{
 		DYE_ASSERT_LOG_WARN(index < m_ChildrenGUIDs.size(), "Try to set the child guid at index '%zu', but the index is out of bounds.", index);
+		DYE_ASSERT_LOG_WARN(index < m_ChildrenEntityIdentifiersCache.size(), "Try to set the child at index '%zu', but the index is out of bounds.", index);
 		m_ChildrenGUIDs[index] = guid;
-
 		m_ChildrenEntityIdentifiersCache[index] = entt::null;
+	}
+
+	void ChildrenComponent::SetChildAt(std::size_t index, EntityIdentifier identifier, GUID guid)
+	{
+		DYE_ASSERT_LOG_WARN(index < m_ChildrenGUIDs.size(), "Try to set the child at index '%zu', but the index is out of bounds.", index);
+		DYE_ASSERT_LOG_WARN(index < m_ChildrenEntityIdentifiersCache.size(), "Try to set the child at index '%zu', but the index is out of bounds.", index);
+		m_ChildrenGUIDs[index] = guid;
+		m_ChildrenEntityIdentifiersCache[index] = identifier;
 	}
 
 	void ChildrenComponent::InsertChildGUIDAt(std::size_t index, GUID guid)
 	{
 		m_ChildrenGUIDs.insert(m_ChildrenGUIDs.begin() + index, guid);
-
 		m_ChildrenEntityIdentifiersCache.insert(m_ChildrenEntityIdentifiersCache.begin() + index, (EntityIdentifier) entt::null);
+	}
+
+	void ChildrenComponent::InsertChildAt(std::size_t index, EntityIdentifier identifier, GUID guid)
+	{
+		m_ChildrenGUIDs.insert(m_ChildrenGUIDs.begin() + index, guid);
+		m_ChildrenEntityIdentifiersCache.insert(m_ChildrenEntityIdentifiersCache.begin() + index, identifier);
 	}
 
 	void ChildrenComponent::PushBackWithGUID(GUID guid)
 	{
 		m_ChildrenGUIDs.push_back(guid);
-
 		m_ChildrenEntityIdentifiersCache.push_back(entt::null);
+	}
+
+	void ChildrenComponent::PushBack(EntityIdentifier identifier, GUID guid)
+	{
+		m_ChildrenGUIDs.push_back(guid);
+		m_ChildrenEntityIdentifiersCache.push_back(identifier);
 	}
 
 	std::size_t ChildrenComponent::RemoveChildWithGUID(GUID guid)
@@ -163,7 +181,8 @@ namespace DYE::DYEditor
 			auto tryGetEntity = world.TryGetEntityWithGUID(guid);
 			if (!tryGetEntity.has_value())
 			{
-				DYE_LOG("ChildrenComponent::RefreshChildrenEntityIdentifierCache: Child (GUID=%s) at index %d doesn't have a matching entity in the world.", guid.ToString().c_str(), i);
+				DYE_LOG("ChildrenComponent::RefreshChildrenEntityIdentifierCache: Child (GUID=%s) at index %d doesn't have a matching entity in the world. "
+						"The cache will be invalid.", guid.ToString().c_str(), i);
 				m_ChildrenEntityIdentifiersCache[i] = entt::null;
 				continue;
 			}
@@ -171,5 +190,4 @@ namespace DYE::DYEditor
 			m_ChildrenEntityIdentifiersCache[i] = tryGetEntity.value().GetIdentifier();
 		}
 	}
-
 }

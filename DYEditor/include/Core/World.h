@@ -102,6 +102,9 @@ namespace DYE::DYEditor
 		/// You should avoid using this on a single entity but instead on a batch of entity hierarchy.
 		void destroyEntityByGUIDButNotChildren(DYE::GUID entityGUID);
 
+		/// Refresh all the entity cache stored in hierarchy components such as Parent and Children components.
+		void refreshAllHierarchyComponentEntityCache();
+
 	private:
 		struct EntityHandle
 		{
