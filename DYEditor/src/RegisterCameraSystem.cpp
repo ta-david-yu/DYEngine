@@ -15,7 +15,7 @@ namespace DYE::DYEditor
 	void RegisterCameraSystem::InitializeLoad(DYEditor::World &world, DYE::DYEditor::InitializeLoadParameters)
 	{
 		// Call this on initialize load to perform initialization step on the group.
-		auto group = world.GetRegistry().group<CameraComponent>(Get<LocalTransformComponent>);
+		auto group = world.GetRegistry().group<CameraComponent>(Get<LocalToWorldComponent>);
 	}
 
 	void RegisterCameraSystem::Execute(DYEditor::World &world, DYE::DYEditor::ExecuteParameters params)

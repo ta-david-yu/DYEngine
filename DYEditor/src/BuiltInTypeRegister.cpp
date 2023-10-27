@@ -289,7 +289,7 @@ namespace DYE::DYEditor
 
 			ImGui::BeginDisabled();
 
-			auto position = localToWorldComponent.GetPosition();
+			glm::vec3 position = localToWorldComponent.GetPosition();
 			ImGuiUtil::DrawVector3Control("World Position", position);
 
 			glm::vec3 rotationInEulerAnglesDegree = glm::eulerAngles(localToWorldComponent.GetRotation());

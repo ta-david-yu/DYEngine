@@ -1861,6 +1861,12 @@ namespace DYE::DYEditor
 			ImGui::EndTooltip();
 		}
 
+		if (mode == InspectorMode::Debug)
+		{
+			// We want to draw the entity identifier in debug mode.
+			ImGui::Text("Entity Identifier: %u", entity.GetIdentifier());
+		}
+
 		// Draw a separator between the header of the inspector and the component list.
 		ImGui::Separator();
 

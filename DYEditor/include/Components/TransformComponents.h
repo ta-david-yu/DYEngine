@@ -28,6 +28,7 @@ namespace DYE::DYEditor
 
 	struct LocalToWorldComponent
 	{
+		/// 3D Affine Matrix
 		glm::mat4 Matrix = glm::mat4 {1.0f};
 
 		glm::vec3 GetRight() const { return {Matrix[0][0], Matrix[0][1], Matrix[0][2]}; }
@@ -39,6 +40,44 @@ namespace DYE::DYEditor
 		{
 			glm::mat3 rotationMatrix = glm::orthonormalize(glm::mat3 {Matrix});
 			return { rotationMatrix };
+		}
+
+		/// Note that if you have a parent transform with scale and a child that is arbitrarily rotated, the scale will be skewed.
+		/// This scale value wouldn't be able to represent the skew properly.
+		[[deprecated("You should almost never use this function")]]
+		glm::vec3 GetLossyScale() const
+		{
+			// TODO:
+			/*
+			Implementation from Unity
+
+			Matrix3x3f Transform::GetWorldScale () const
+			{
+				Matrix3x3f invRotation;
+				QuaternionToMatrix (Inverse (GetRotation ()), invRotation);
+				Matrix3x3f scaleAndRotation = GetWorldRotationAndScale ();
+				return invRotation * scaleAndRotation;
+			}
+
+			Vector3f Transform::GetWorldScaleLossy () const
+			{
+				Matrix3x3f rot = GetWorldScale ();
+				return Vector3f (rot.Get (0, 0), rot.Get (1, 1), rot.Get (2, 2));
+			}
+
+			glm::mat3 rotationMatrix = glm::orthonormalize(glm::mat3 {Matrix});
+			glm::mat3 inverseRotationMatrix = glm::inverse(rotationMatrix);
+			glm::mat3 scaleAndRotationMatrix = glm::mat3 {Matrix};
+			glm::mat3 worldScale = inverseRotationMatrix * scaleAndRotationMatrix;
+			return glm::vec3 { worldScale[0][0], worldScale[1][1], worldScale[2][2] };
+
+			 */
+
+			glm::vec3 scale;
+			scale.x = glm::length(Matrix[0]);
+			scale.y = glm::length(Matrix[1]);
+			scale.z = glm::length(Matrix[2]);
+			return scale;
 		}
 	};
 
