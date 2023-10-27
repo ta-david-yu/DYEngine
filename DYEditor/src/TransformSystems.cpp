@@ -16,7 +16,6 @@ namespace DYE::DYEditor
 	
 	void ComputeLocalToWorldSystem::Execute(World &world, DYE::DYEditor::ExecuteParameters params)
 	{
-		// TODO: ComputeLocalToWorldSystem Options:
 		// 1. Use observer to iterate through entity with changed transform components in the last tick, update LocalToWorld system.
 		// 	  This requires manually calling registry.patch or register that entity in the list.
 		// 2. Having an 'IsChanged' flag in transform component, add function interface (getter/setter) to read/write transform data &
@@ -27,8 +26,8 @@ namespace DYE::DYEditor
 		// 4. Don't care, always go through all the transforms in the hierarchy.
 		//
 		// We can further use std::for_each and std::execution::par to speed up the process.
-		// Right now we might go with (2) & (4) combined + parallel operation.
-		// see https://skypjack.github.io/entt/md_docs_md_entity.html, Multithreading/Iterators section
+		// Right now we've only implemented (4) + parallel operation. We might want to apply (2) in the future.
+		// see the multithreading/iterators section of https://skypjack.github.io/entt/md_docs_md_entity.html.
 
 
 		// Synchronize LocalToWorld for root transforms.
@@ -120,6 +119,8 @@ namespace DYE::DYEditor
 				ImGui::TextUnformatted(entity.GetName().c_str());
 			}
 		);
+
+		ImGui::Spacing();
 
 		ImGui::TextUnformatted("Propagation Group");
 		ImGui::Separator();
