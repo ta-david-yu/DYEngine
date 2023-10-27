@@ -11,7 +11,7 @@ namespace DYE::DYEditor
 {
 	void ComputeLocalToWorldSystem::InitializeLoad(World &world, DYE::DYEditor::InitializeLoadParameters)
 	{
-		auto syncGroup = world.GetRegistry().group<LocalToWorldComponent, LocalTransformComponent>(Exclude<ParentComponent>);
+		auto syncGroup = world.GetRegistry().group<LocalToWorldComponent, LocalTransformComponent>({}, Exclude<ParentComponent>);
 	}
 	
 	void ComputeLocalToWorldSystem::Execute(World &world, DYE::DYEditor::ExecuteParameters params)
@@ -55,7 +55,6 @@ namespace DYE::DYEditor
 				LocalToWorldComponent &rootParentLocalToWorld = propagationView.get<LocalToWorldComponent>(entityIdentifier);
 				ChildrenComponent &childrenComponent = propagationView.get<ChildrenComponent>(entityIdentifier);
 
-				//childrenComponent.RefreshChildrenEntityIdentifierCache(world);
 				std::vector<EntityIdentifier> const& childrenEntityIdentifiers = childrenComponent.GetChildrenCache();
 				std::for_each
 				(

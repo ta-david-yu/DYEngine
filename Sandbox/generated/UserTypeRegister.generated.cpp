@@ -134,6 +134,25 @@ namespace DYE::DYEditor
 							ImGui::BeginDisabled(true); ImGuiUtil::DrawReadOnlyTextWithLabel("ConstantFloat", "Constant variable of type 'Float'"); ImGui::EndDisabled();
 							changed |= ImGuiUtil::DrawVector3Control("Position", component.Position); updateContextAfterDrawControlCall(drawInspectorContext);
 							changed |= ImGuiUtil::DrawVector4Control("vec4", component.vec4); updateContextAfterDrawControlCall(drawInspectorContext);
+
+							bool isMissingComponentWarningFixed_ComponentWithAllPrimitiveProperties = ImGuiUtil::DrawTryFixWarningButtonAndInfo
+							(
+								!entity.HasComponent<ComponentWithAllPrimitiveProperties>(),
+								"Missing ComponentWithAllPrimitiveProperties",
+								[entity]()
+								{
+									Undo::AddComponent
+									(
+										entity, NAME_OF(ComponentWithAllPrimitiveProperties),
+									   	TypeRegistry::TryGetComponentTypeDescriptor("ComponentWithAllPrimitiveProperties").Descriptor
+									);
+								}
+							);
+							if (isMissingComponentWarningFixed_ComponentWithAllPrimitiveProperties)
+							{
+								changed = true;
+								drawInspectorContext.ShouldEarlyOutIfInIteratorLoop = true;
+							}
 							return changed;
 						},
 						.GetDisplayName = []() { return "TestComponentB"; },
@@ -200,87 +219,6 @@ namespace DYE::DYEditor
 								}
 								updateContextAfterDrawControlCall(drawInspectorContext);
 							}
-							return changed;
-						},
-						.GetDisplayName = []() { return "ComponentWithAllPrimitiveProperties"; },
-					}
-			);
-
-		// Component located in include/TestComponents.h
-		TypeRegistry::RegisterComponentType<HasAngularVelocity>
-			(
-				NAME_OF(HasAngularVelocity),
-				ComponentTypeDescriptor
-					{
-						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
-						{
-							auto const& component = entity.GetComponent<HasAngularVelocity>();
-							serializedComponent.SetPrimitiveTypePropertyValue("AngleDegreePerSecond", component.AngleDegreePerSecond);
-							return SerializationResult {};
-						},
-						.Deserialize = [](SerializedComponent& serializedComponent, DYE::DYEditor::Entity& entity)
-						{
-							auto& component = entity.AddOrGetComponent<HasAngularVelocity>();
-							component.AngleDegreePerSecond = serializedComponent.GetPrimitiveTypePropertyValueOr<Float>("AngleDegreePerSecond", 30.0f);
-							return DeserializationResult {};
-						},
-						.DrawInspector = [](DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
-						{
-							bool changed = false;
-							auto& component = entity.GetComponent<HasAngularVelocity>();
-							changed |= ImGuiUtil::DrawFloatControl("AngleDegreePerSecond", component.AngleDegreePerSecond); updateContextAfterDrawControlCall(drawInspectorContext);
-
-							bool isMissingComponentWarningFixed_ComponentWithAllPrimitiveProperties = ImGuiUtil::DrawTryFixWarningButtonAndInfo
-							(
-								!entity.HasComponent<ComponentWithAllPrimitiveProperties>(),
-								"Missing ComponentWithAllPrimitiveProperties",
-								[entity]()
-								{
-									Undo::AddComponent
-									(
-										entity, NAME_OF(ComponentWithAllPrimitiveProperties),
-									   	TypeRegistry::TryGetComponentTypeDescriptor("ComponentWithAllPrimitiveProperties").Descriptor
-									);
-								}
-							);
-							if (isMissingComponentWarningFixed_ComponentWithAllPrimitiveProperties)
-							{
-								changed = true;
-								drawInspectorContext.ShouldEarlyOutIfInIteratorLoop = true;
-							}
-							return changed;
-						},
-						.GetDisplayName = []() { return "HasAngularVelocity"; },
-					}
-			);
-		TypeRegistry::RegisterFormerlyKnownTypeName("HasAngularVelocity_OldName", NAME_OF(HasAngularVelocity));
-
-		// Component located in include/TestComponents.h
-		TypeRegistry::RegisterComponentType<CreateEntity>
-			(
-				NAME_OF(CreateEntity),
-				ComponentTypeDescriptor
-					{
-						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
-						{
-							auto const& component = entity.GetComponent<CreateEntity>();
-							serializedComponent.SetPrimitiveTypePropertyValue("EntityNamePrefix", component.EntityNamePrefix);
-							serializedComponent.SetPrimitiveTypePropertyValue("NumberOfEntitiesToCreate", component.NumberOfEntitiesToCreate);
-							return SerializationResult {};
-						},
-						.Deserialize = [](SerializedComponent& serializedComponent, DYE::DYEditor::Entity& entity)
-						{
-							auto& component = entity.AddOrGetComponent<CreateEntity>();
-							component.EntityNamePrefix = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<String>("EntityNamePrefix");
-							component.NumberOfEntitiesToCreate = serializedComponent.GetPrimitiveTypePropertyValueOr<Int32>("NumberOfEntitiesToCreate", 10);
-							return DeserializationResult {};
-						},
-						.DrawInspector = [](DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
-						{
-							bool changed = false;
-							auto& component = entity.GetComponent<CreateEntity>();
-							changed |= ImGuiUtil::DrawTextControl("EntityNamePrefix", component.EntityNamePrefix); updateContextAfterDrawControlCall(drawInspectorContext);
-							changed |= ImGuiUtil::DrawIntControl("NumberOfEntitiesToCreate", component.NumberOfEntitiesToCreate); updateContextAfterDrawControlCall(drawInspectorContext);
 
 							bool isMissingComponentWarningFixed_HasAngularVelocity = ImGuiUtil::DrawTryFixWarningButtonAndInfo
 							(
@@ -321,11 +259,89 @@ namespace DYE::DYEditor
 							}
 							return changed;
 						},
+						.GetDisplayName = []() { return "ComponentWithAllPrimitiveProperties"; },
+					}
+			);
+
+		// Component located in include/TestComponents.h
+		TypeRegistry::RegisterComponentType<HasAngularVelocity>
+			(
+				NAME_OF(HasAngularVelocity),
+				ComponentTypeDescriptor
+					{
+						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
+						{
+							auto const& component = entity.GetComponent<HasAngularVelocity>();
+							serializedComponent.SetPrimitiveTypePropertyValue("AngleDegreePerSecond", component.AngleDegreePerSecond);
+							return SerializationResult {};
+						},
+						.Deserialize = [](SerializedComponent& serializedComponent, DYE::DYEditor::Entity& entity)
+						{
+							auto& component = entity.AddOrGetComponent<HasAngularVelocity>();
+							component.AngleDegreePerSecond = serializedComponent.GetPrimitiveTypePropertyValueOr<Float>("AngleDegreePerSecond", 30.0f);
+							return DeserializationResult {};
+						},
+						.DrawInspector = [](DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
+						{
+							bool changed = false;
+							auto& component = entity.GetComponent<HasAngularVelocity>();
+							changed |= ImGuiUtil::DrawFloatControl("AngleDegreePerSecond", component.AngleDegreePerSecond); updateContextAfterDrawControlCall(drawInspectorContext);
+
+							bool isMissingComponentWarningFixed_DYE__DYEditor__LocalTransformComponent = ImGuiUtil::DrawTryFixWarningButtonAndInfo
+							(
+								!entity.HasComponent<DYE::DYEditor::LocalTransformComponent>(),
+								"Missing DYE::DYEditor::LocalTransformComponent",
+								[entity]()
+								{
+									Undo::AddComponent
+									(
+										entity, NAME_OF(DYE::DYEditor::LocalTransformComponent),
+									   	TypeRegistry::TryGetComponentTypeDescriptor("DYE::DYEditor::LocalTransformComponent").Descriptor
+									);
+								}
+							);
+							if (isMissingComponentWarningFixed_DYE__DYEditor__LocalTransformComponent)
+							{
+								changed = true;
+								drawInspectorContext.ShouldEarlyOutIfInIteratorLoop = true;
+							}
+							return changed;
+						},
+						.GetDisplayName = []() { return "HasAngularVelocity"; },
+					}
+			);
+
+		// Component located in include/TestComponents.h
+		TypeRegistry::RegisterComponentType<CreateEntity>
+			(
+				NAME_OF(CreateEntity),
+				ComponentTypeDescriptor
+					{
+						.Serialize = [](Entity& entity, SerializedComponent& serializedComponent)
+						{
+							auto const& component = entity.GetComponent<CreateEntity>();
+							serializedComponent.SetPrimitiveTypePropertyValue("EntityNamePrefix", component.EntityNamePrefix);
+							serializedComponent.SetPrimitiveTypePropertyValue("NumberOfEntitiesToCreate", component.NumberOfEntitiesToCreate);
+							return SerializationResult {};
+						},
+						.Deserialize = [](SerializedComponent& serializedComponent, DYE::DYEditor::Entity& entity)
+						{
+							auto& component = entity.AddOrGetComponent<CreateEntity>();
+							component.EntityNamePrefix = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<String>("EntityNamePrefix");
+							component.NumberOfEntitiesToCreate = serializedComponent.GetPrimitiveTypePropertyValueOr<Int32>("NumberOfEntitiesToCreate", 10);
+							return DeserializationResult {};
+						},
+						.DrawInspector = [](DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
+						{
+							bool changed = false;
+							auto& component = entity.GetComponent<CreateEntity>();
+							changed |= ImGuiUtil::DrawTextControl("EntityNamePrefix", component.EntityNamePrefix); updateContextAfterDrawControlCall(drawInspectorContext);
+							changed |= ImGuiUtil::DrawIntControl("NumberOfEntitiesToCreate", component.NumberOfEntitiesToCreate); updateContextAfterDrawControlCall(drawInspectorContext);
+							return changed;
+						},
 						.GetDisplayName = []() { return "CreateEntity"; },
 					}
 			);
-		TypeRegistry::RegisterFormerlyKnownTypeName("Createee", NAME_OF(CreateEntity));
-		TypeRegistry::RegisterFormerlyKnownTypeName("CreateeeHA", NAME_OF(CreateEntity));
 
 		// Component located in include/TestComponents.h
 		TypeRegistry::RegisterComponentType<PrintMessageOnTeardown>

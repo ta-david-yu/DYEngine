@@ -918,6 +918,12 @@ namespace DYE::DYEditor
 			return changed;
 		}
 
+		if (context.GizmoType == -1)
+		{
+			// No gizmo type is now being used, skip it.
+			return changed;
+		}
+
 		auto tryGetEntityTransform = selectedEntity.TryGetComponent<LocalTransformComponent>();
 		if (!tryGetEntityTransform.has_value())
 		{
@@ -925,13 +931,15 @@ namespace DYE::DYEditor
 			return changed;
 		}
 
-		if (context.GizmoType == -1)
-		{
-			// No gizmo type is now being used, skip it.
-			return changed;
-		}
-
 		LocalTransformComponent &transform = tryGetEntityTransform.value().get();
+
+		auto tryGetEntityLocalToWorld = selectedEntity.TryGetComponent<LocalToWorldComponent>();
+
+		glm::mat4 localToWorld = !tryGetEntityLocalToWorld.has_value()? transform.GetTransformMatrix() : tryGetEntityLocalToWorld.value().get().Matrix;
+		glm::mat4 worldToLocal = glm::inverse(localToWorld);
+		glm::mat4 localToParent = transform.GetTransformMatrix();
+		glm::mat4 parentToWorld = !tryGetEntityLocalToWorld.has_value()? glm::mat4 {1.0f} : tryGetEntityLocalToWorld.value().get().Matrix * glm::inverse(localToParent);
+		glm::mat4 worldToParent = glm::inverse(parentToWorld);
 
 		// End manipulating gizmo if the gizmo was not being used anymore.
 		// Make an undo operation!
@@ -979,14 +987,14 @@ namespace DYE::DYEditor
 		glm::mat4 viewMatrix = sceneViewCamera.ViewMatrix;
 		glm::mat4 projectionMatrix = sceneViewCamera.Properties.GetProjectionMatrix(context.ViewportBounds.Width / context.ViewportBounds.Height);
 
-		glm::mat4 transformMatrix = transform.GetTransformMatrix();
+		glm::mat4 newLocalToWorld = localToWorld;
 		bool const manipulated = ImGuizmo::Manipulate
 		(
 			glm::value_ptr(viewMatrix),
 			glm::value_ptr(projectionMatrix),
 			(ImGuizmo::OPERATION) context.GizmoType,
 			context.IsGizmoLocalSpace? ImGuizmo::LOCAL : ImGuizmo::WORLD,
-			glm::value_ptr(transformMatrix)
+			glm::value_ptr(newLocalToWorld)
 		);
 
 		if (!manipulated)
@@ -1009,11 +1017,18 @@ namespace DYE::DYEditor
 		}
 
 		// Apply the transform changes back to the select entity transform.
-		// Since we store rotation as quaternion, we need to convert it from euler angles to quaternion first.
-		glm::vec3 eulerRotation = glm::eulerAngles(transform.Rotation);
-		if (Math::DecomposeTransform(transformMatrix, transform.Position, eulerRotation, transform.Scale))
+		// Since the gizmo is manipulating the matrix in world space (i.e., local to world matrix),
+		// we need to transform the matrix back to parent local space (i.e., local to parent matrix) first
+		// before applying the matrix back to local transform component.
+		glm::mat4 newLocalToParent = worldToParent * newLocalToWorld;
+		glm::vec3 newLocalPosition;
+		glm::vec3 newLocalRotationInEulerAngles;
+		glm::vec3 newLocalScale;
+		if (Math::DecomposeTransform(newLocalToParent, newLocalPosition, newLocalRotationInEulerAngles, newLocalScale))
 		{
-			transform.Rotation = glm::quat(eulerRotation);
+			transform.Position = newLocalPosition;
+			transform.Rotation = glm::quat(newLocalRotationInEulerAngles);
+			transform.Scale = newLocalScale;
 		}
 
 		changed = true;
