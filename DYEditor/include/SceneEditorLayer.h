@@ -73,6 +73,8 @@ namespace DYE::DYEditor
 		void SetApplication(Application* application) { m_pApplication = application; }
 		void SetRuntimeLayer(std::shared_ptr<SceneRuntimeLayer> runtimeLayer) { m_RuntimeLayer = std::move(runtimeLayer); }
 
+		void FocusSceneViewCameraToEntity(Entity entity);
+
 	private:
 		Application* m_pApplication = nullptr;
 		std::shared_ptr<SceneRuntimeLayer> m_RuntimeLayer;

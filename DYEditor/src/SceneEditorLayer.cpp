@@ -375,6 +375,25 @@ namespace DYE::DYEditor
 					break;
 				}
 
+				case KeyCode::F:
+				{
+					bool const isRelatedWindowFocused = m_IsSceneViewWindowFocused || m_IsSceneHierarchyWindowFocused;
+					if (!isRelatedWindowFocused)
+					{
+						break;
+					}
+
+					auto tryGetSelectedEntity = activeScene.World.TryGetEntityWithGUID(m_CurrentlySelectedEntityGUID);
+					if (!tryGetSelectedEntity.has_value())
+					{
+						break;
+					}
+
+					FocusSceneViewCameraToEntity(tryGetSelectedEntity.value());
+
+					break;
+				}
+
 				case KeyCode::N:
 				{
 					if (shift && control)
@@ -2441,6 +2460,22 @@ namespace DYE::DYEditor
 			scene.Clear();
 			SerializedObjectFactory::ApplySerializedSceneToEmptyScene(m_SerializedSceneCacheWhenEnterPlayMode, scene);
 		}
+	}
+
+
+	void SceneEditorLayer::FocusSceneViewCameraToEntity(Entity entity)
+	{
+		glm::vec3 entityPosition = glm::vec3 {0};
+		auto tryGetLocalToWorld = entity.TryGetComponent<LocalToWorldComponent>();
+		if (tryGetLocalToWorld.has_value())
+		{
+			entityPosition = tryGetLocalToWorld.value().get().GetPosition();
+		}
+
+		glm::vec3 cameraPosition = m_SceneViewCamera.GetPosition();
+		cameraPosition.x = entityPosition.x;
+		cameraPosition.y = entityPosition.y;
+		m_SceneViewCamera.SetPosition(cameraPosition);
 	}
 
 	void SceneEditorLayer::initializeNewSceneWithDefaultEntityAndSystems(Scene &newScene)
