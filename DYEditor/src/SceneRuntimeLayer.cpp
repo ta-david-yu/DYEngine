@@ -16,11 +16,6 @@ namespace DYE::DYEditor
 
 	void SceneRuntimeLayer::OnFixedUpdate()
 	{
-		if (!RuntimeState::IsPlaying())
-		{
-			return;
-		}
-
 		ExecuteParameters const params { .Phase = ExecutionPhase::FixedUpdate };
 		for (auto& systemDescriptor : RuntimeSceneManagement::GetActiveMainScene().FixedUpdateSystemDescriptors)
 		{
@@ -29,17 +24,20 @@ namespace DYE::DYEditor
 				continue;
 			}
 
+#if DYE_EDITOR
+			bool const isEditMode = !RuntimeState::IsPlaying();
+			if (isEditMode && !systemDescriptor.Instance->ExecuteInEditMode())
+			{
+				continue;
+			}
+#endif
+
 			systemDescriptor.Instance->Execute(RuntimeSceneManagement::GetActiveMainScene().World, params);
 		}
 	}
 
 	void SceneRuntimeLayer::OnUpdate()
 	{
-		if (!RuntimeState::IsPlaying())
-		{
-			return;
-		}
-
 		ExecuteParameters params { .Phase = ExecutionPhase::Update };
 		for (auto& systemDescriptor : RuntimeSceneManagement::GetActiveMainScene().UpdateSystemDescriptors)
 		{
@@ -47,6 +45,14 @@ namespace DYE::DYEditor
 			{
 				continue;
 			}
+
+#if DYE_EDITOR
+			bool const isEditMode = !RuntimeState::IsPlaying();
+			if (isEditMode && !systemDescriptor.Instance->ExecuteInEditMode())
+			{
+				continue;
+			}
+#endif
 
 			systemDescriptor.Instance->Execute(RuntimeSceneManagement::GetActiveMainScene().World, params);
 		}
@@ -58,6 +64,14 @@ namespace DYE::DYEditor
 			{
 				continue;
 			}
+
+#if DYE_EDITOR
+			bool const isEditMode = !RuntimeState::IsPlaying();
+			if (isEditMode && !systemDescriptor.Instance->ExecuteInEditMode())
+			{
+				continue;
+			}
+#endif
 
 			systemDescriptor.Instance->Execute(RuntimeSceneManagement::GetActiveMainScene().World, params);
 		}
@@ -73,6 +87,14 @@ namespace DYE::DYEditor
 				continue;
 			}
 
+#if DYE_EDITOR
+			bool const isEditMode = !RuntimeState::IsPlaying();
+			if (isEditMode && !systemDescriptor.Instance->ExecuteInEditMode())
+			{
+				continue;
+			}
+#endif
+
 			systemDescriptor.Instance->Execute(RuntimeSceneManagement::GetActiveMainScene().World, params);
 		}
 	}
@@ -87,17 +109,20 @@ namespace DYE::DYEditor
 				continue;
 			}
 
+#if DYE_EDITOR
+			bool const isEditMode = !RuntimeState::IsPlaying();
+			if (isEditMode && !systemDescriptor.Instance->ExecuteInEditMode())
+			{
+				continue;
+			}
+#endif
+
 			systemDescriptor.Instance->Execute(RuntimeSceneManagement::GetActiveMainScene().World, params);
 		}
 	}
 
 	void SceneRuntimeLayer::OnImGui()
 	{
-		if (!RuntimeState::IsPlaying())
-		{
-			return;
-		}
-
 		ExecuteParameters const params { .Phase = ExecutionPhase::ImGui };
 
 		for (auto& systemDescriptor : RuntimeSceneManagement::GetActiveMainScene().ImGuiSystemDescriptors)
@@ -107,25 +132,38 @@ namespace DYE::DYEditor
 				continue;
 			}
 
+#if DYE_EDITOR
+			bool const isEditMode = !RuntimeState::IsPlaying();
+			if (isEditMode && !systemDescriptor.Instance->ExecuteInEditMode())
+			{
+				continue;
+			}
+#endif
+
 			systemDescriptor.Instance->Execute(RuntimeSceneManagement::GetActiveMainScene().World, params);
 		}
 	}
 
 	void SceneRuntimeLayer::OnEndOfFrame()
 	{
-		if (RuntimeState::IsPlaying())
+		ExecuteParameters const params {.Phase = ExecutionPhase::Cleanup};
+
+		for (auto &systemDescriptor: RuntimeSceneManagement::GetActiveMainScene().CleanupSystemDescriptors)
 		{
-			ExecuteParameters const params { .Phase = ExecutionPhase::Cleanup };
-
-			for (auto& systemDescriptor : RuntimeSceneManagement::GetActiveMainScene().CleanupSystemDescriptors)
+			if (!systemDescriptor.IsEnabled)
 			{
-				if (!systemDescriptor.IsEnabled)
-				{
-					continue;
-				}
-
-				systemDescriptor.Instance->Execute(RuntimeSceneManagement::GetActiveMainScene().World, params);
+				continue;
 			}
+
+#if DYE_EDITOR
+			bool const isEditMode = !RuntimeState::IsPlaying();
+			if (isEditMode && !systemDescriptor.Instance->ExecuteInEditMode())
+			{
+				continue;
+			}
+#endif
+
+			systemDescriptor.Instance->Execute(RuntimeSceneManagement::GetActiveMainScene().World, params);
 		}
 
 		RuntimeState::consumeWillChangeModeIfNeeded();

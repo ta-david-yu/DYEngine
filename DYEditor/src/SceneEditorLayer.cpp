@@ -34,6 +34,8 @@
 #include <unordered_set>
 #include <stack>
 #include <iostream>
+#include <execution>
+#include <algorithm>
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -1031,6 +1033,11 @@ namespace DYE::DYEditor
 			transform.Scale = newLocalScale;
 		}
 
+		if (tryGetEntityLocalToWorld.has_value())
+		{
+			tryGetEntityLocalToWorld.value().get().Matrix = newLocalToWorld;
+		}
+
 		changed = true;
 
 		return changed;
@@ -1545,26 +1552,28 @@ namespace DYE::DYEditor
 			ImGui::PushID(phaseId.c_str());
 			ImGui::Separator();
 
-			if (!isPhaseRunning)
-			{
-				ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
-			}
 			bool const showSystems = ImGui::CollapsingHeader(phaseId.c_str(), ImGuiTreeNodeFlags_AllowItemOverlap);
 			if (!systemDescriptors.empty())
 			{
 				// Draw number of systems in this phase category on the header for easier read.
-				ImGui::SameLine();
-				ImGui::Text("(%d)", systemDescriptors.size());
-			}
-			if (!isPhaseRunning)
-			{
-				ImGui::PopStyleColor();
-			}
+				std::size_t const numberOfSystems = systemDescriptors.size();
+				int const numberOfExecutingSystems = std::count_if
+				(
+					std::execution::par_unseq, systemDescriptors.begin(), systemDescriptors.end(),
+					[](SystemDescriptor const &descriptor)
+					{
+						bool const isEnabled = descriptor.IsEnabled;
+						bool const isExecuting = RuntimeState::IsPlaying() || descriptor.Instance->ExecuteInEditMode();
+						return isEnabled && isExecuting;
+					}
+				);
 
-			if (phase == ExecutionPhase::Render || phase == ExecutionPhase::PostRender)
-			{
 				ImGui::SameLine();
-				ImGuiUtil::DrawHelpMarker("Render & PostRender systems are executed in both Play Mode & Edit Mode.");
+				ImGui::Text("(%d/%zu)", numberOfExecutingSystems, numberOfSystems);
+				if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+				{
+					ImGui::SetTooltip("There are %d systems out of %zu executing in phase '%s'.", numberOfExecutingSystems, numberOfSystems, phaseId.c_str());
+				}
 			}
 
 			if (showSystems)
@@ -1721,9 +1730,11 @@ namespace DYE::DYEditor
 			ImGui::AlignTextToFramePadding();
 
 			bool isHeaderVisible = true;
+
 			ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.203f, 0.203f, 0.276f, 1.000f));
 			bool const isShown = ImGui::CollapsingHeader("", &isHeaderVisible, ImGuiTreeNodeFlags_AllowItemOverlap);
 			ImGui::PopStyleColor();
+
 			bool const isRemoved = !isHeaderVisible;
 			if (isRemoved)
 			{
@@ -1744,8 +1755,14 @@ namespace DYE::DYEditor
 			}
 
 			// Draw header text (system name most likely).
-			ImGui::SameLine();
-			ImGui::TextUnformatted(headerText);
+			// Make the text look disabled if the system is not executing right now.
+			bool const isExecuting = RuntimeState::IsPlaying() || systemDescriptor.Instance->ExecuteInEditMode();
+			ImGui::BeginDisabled(!isExecuting);
+			{
+				ImGui::SameLine();
+				ImGui::TextUnformatted(headerText);
+			}
+			ImGui::EndDisabled();
 
 			// Draw move up & move down buttons, from right to left.
 			bool const isTheFirst = i == 0;
