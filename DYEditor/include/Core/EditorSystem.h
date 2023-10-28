@@ -72,6 +72,7 @@ namespace DYE::DYEditor
 
 	struct SystemBase
 	{
+		virtual bool ExecuteInEditMode() const { return false; }
 		virtual ExecutionPhase GetPhase() const = 0;
 		virtual void InitializeLoad(DYE::DYEditor::World& world, DYE::DYEditor::InitializeLoadParameters) {}
 		virtual void Execute(DYE::DYEditor::World& world, DYE::DYEditor::ExecuteParameters params) = 0;

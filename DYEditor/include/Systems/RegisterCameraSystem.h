@@ -8,6 +8,7 @@ namespace DYE::DYEditor
 	{
 		static constexpr char const* TypeName = "Register Camera System";
 
+		inline bool ExecuteInEditMode() const final { return true; }
 		inline ExecutionPhase GetPhase() const override { return ExecutionPhase::Render; }
 		void InitializeLoad(DYE::DYEditor::World &world, DYE::DYEditor::InitializeLoadParameters) override;
 		void Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params) override;
