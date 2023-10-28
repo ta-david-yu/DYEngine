@@ -637,7 +637,7 @@ namespace DYE::DYEditor
 		m_IsSceneHierarchyWindowFocused = ImGui::IsWindowFocused();
 		if (isSceneHierarchyDrawn)
 		{
-			bool const isHierarchyChanged = drawSceneEntityHierarchyPanel(activeScene, &m_CurrentlySelectedEntityGUID);
+			bool const isHierarchyChanged = drawSceneEntityHierarchyPanel(activeScene, &m_CurrentlySelectedEntityGUID, m_EntityNodesToBeOpenInHierarchy);
 			m_IsActiveSceneDirty |= isHierarchyChanged;
 		}
 		ImGui::End();
@@ -1067,7 +1067,7 @@ namespace DYE::DYEditor
 		return changed;
 	}
 
-	bool SceneEditorLayer::drawSceneEntityHierarchyPanel(Scene &scene, DYE::GUID *pCurrentSelectedEntityGUID)
+	bool SceneEditorLayer::drawSceneEntityHierarchyPanel(Scene &scene, DYE::GUID *pCurrentSelectedEntityGUID, std::unordered_set<DYE::GUID> &entityNodesToBeOpen)
 	{
 		bool changed = false;
 
@@ -1146,7 +1146,8 @@ namespace DYE::DYEditor
 			 &pCurrentSelectedEntityGUID,
 			 &levelStack,
 			 &setParent,
-			 &reorderAtTop]
+			 &reorderAtTop,
+			 &entityNodesToBeOpen]
 			 (DYEditor::Entity &entity, std::size_t indexInWorld)
 			{
 				auto tryGetNameResult = entity.TryGetName();
@@ -1221,6 +1222,13 @@ namespace DYE::DYEditor
 				{
 					// We use GUID as the id of the TreeNode.
 					ImGuiID const nodeId = ImGui::GetCurrentWindow()->GetID(guid.ToString().c_str());
+
+					if (entityNodesToBeOpen.contains(guid))
+					{
+						ImGui::SetNextItemOpen(true, ImGuiCond_Once);
+						entityNodesToBeOpen.erase(guid);
+					}
+
 					isNodeOpen = ImGui::TreeNodeEx(guid.ToString().c_str(), flags, name.c_str()) && !isLeafNode;
 					if (ImGui::BeginPopupContextItem())
 					{
@@ -2378,6 +2386,19 @@ namespace DYE::DYEditor
 			}
 
 			m_CurrentlySelectedEntityGUID = tryGetGUID.value();
+
+			// Insert all parents GUID into the to-be-open set,
+			// so they get expanded in the hierarchy window in the next frame.
+			m_EntityNodesToBeOpenInHierarchy.insert(m_CurrentlySelectedEntityGUID);
+			auto tryGetParent = selectedEntity.TryGetComponent<ParentComponent>();
+			while (tryGetParent.has_value())
+			{
+				DYE::GUID parentGUID = tryGetParent.value().get().GetParentGUID();
+				m_EntityNodesToBeOpenInHierarchy.insert(parentGUID);
+
+				selectedEntity = tryGetParent.value().get().GetParent(activeScene.World);
+				tryGetParent = selectedEntity.TryGetComponent<ParentComponent>();
+			}
 		}
 	}
 
