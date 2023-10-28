@@ -126,6 +126,7 @@ namespace DYE::DYEditor
 		/// Specialized functions to get certain built-in component Type Descriptor. Implemented inside BuiltInTypeRegister.cpp.
 		static ComponentTypeDescriptor GetComponentTypeDescriptor_NameComponent();
 		static ComponentTypeDescriptor GetComponentTypeDescriptor_LocalTransformComponent();
+		static ComponentTypeDescriptor GetComponentTypeDescriptor_LocalToWorldComponent();
 		static ComponentTypeDescriptor GetComponentTypeDescriptor_ParentComponent();
 		static ComponentTypeDescriptor GetComponentTypeDescriptor_ChildrenComponent();
 

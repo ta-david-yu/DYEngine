@@ -1689,6 +1689,7 @@ namespace DYE::ImGuiUtil
 	}
 
 	template<typename Type, typename ControlFunc>
+	requires std::predicate<ControlFunc, std::vector<Type>&, std::size_t>
 	bool Internal::ArrayControl<Type, ControlFunc>::Draw()
 	{
 		auto &arrayLabel = Label;
@@ -1707,7 +1708,7 @@ namespace DYE::ImGuiUtil
 		ImGui::PushID(arrayLabel.c_str());
 
 		ImGuiTreeNodeFlags const treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap;
-		if (ImGui::TreeNodeEx("Array Tree Node", treeNodeFlags, "%s (%d)", arrayLabel.c_str(), elements.size()))
+		if (ImGui::TreeNodeEx("Array Tree Node", treeNodeFlags, "%s (%zu)", arrayLabel.c_str(), elements.size()))
 		{
 			char controlID[16];
 			ImGuiUtil::Settings::ControlLabelWidth = 80;
@@ -1771,7 +1772,9 @@ namespace DYE::ImGuiUtil
 														   ImGui::GetTextLineHeightWithSpacing()};
 					ImGui::ItemSize(previewWindowSize);
 					ImGui::SameLine();
-					controlFunction(controlID, element);
+
+					// array, element index
+					controlFunction(elements, i);
 
 					ImGui::EndDragDropSource();
 
@@ -1787,7 +1790,7 @@ namespace DYE::ImGuiUtil
 					ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.3f);
 				}
 
-				changed |= controlFunction(controlID, element);
+				changed |= controlFunction(elements, i);
 				lastControlActivated |= ImGuiUtil::IsControlActivated();
 				lastControlDeactivated |= ImGuiUtil::IsControlDeactivated();
 				lastControlDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
@@ -1956,5 +1959,5 @@ namespace DYE::ImGuiUtil
 		return changed;
 	}
 
-	template struct Internal::ArrayControl<DYE::GUID, bool (*)(const char *,::DYE::GUID &)>;
+	template struct Internal::ArrayControl<DYE::GUID, Internal::GUIDControlFunctionType*>;
 }

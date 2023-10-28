@@ -37,6 +37,11 @@ namespace DYE::DYEditor
 		return this->GetComponent<NameComponent>().Name;
 	}
 
+	std::string Entity::GetName()
+	{
+		return this->GetComponent<NameComponent>().Name;
+	}
+
 	std::optional<GUID> Entity::TryGetGUID()
 	{
 		if (!this->HasComponent<IDComponent>())

@@ -192,7 +192,7 @@ namespace DYE::DYEditor
 		m_InspectorContext.Mode = editorConfig.GetOrDefault(EditorConfigKeys::DebugInspector, false)? InspectorMode::Debug : InspectorMode::Normal;
 		m_SceneViewCamera.Properties.TargetType = RenderTargetType::RenderTexture;
 		m_SceneViewCamera.Properties.pTargetRenderTexture = m_SceneViewCameraTargetFramebuffer.get();
-		m_SceneViewCamera.Position = editorConfig.GetOrDefault(EditorConfigKeys::SceneViewCameraPosition, glm::vec3 {0, 0, 10.0f});
+		m_SceneViewCamera.SetPosition(editorConfig.GetOrDefault(EditorConfigKeys::SceneViewCameraPosition, glm::vec3 {0, 0, 10.0f}));
 		m_SceneViewCamera.Properties.ClearColor = editorConfig.GetOrDefault(EditorConfigKeys::SceneViewCameraClearColor, glm::vec4 {0, 0, 0, 1});
 
 		bool const shouldSetupSubWindowsBasedOnRuntimeConfig = editorConfig.GetOrDefault(EditorConfigKeys::ShowSubWindowsInEditMode, false);
@@ -210,7 +210,7 @@ namespace DYE::DYEditor
 		// Save current active scene as default scene for the next launch.
 		ProjectConfig &editorConfig = GetEditorConfig();
 		editorConfig.Set<std::string>(EditorConfigKeys::DefaultScene, m_CurrentSceneFilePath.string());
-		editorConfig.Set<glm::vec3>(EditorConfigKeys::SceneViewCameraPosition, m_SceneViewCamera.Position);
+		editorConfig.Set<glm::vec3>(EditorConfigKeys::SceneViewCameraPosition, m_SceneViewCamera.GetPosition());
 		editorConfig.Set<glm::vec4>(EditorConfigKeys::SceneViewCameraClearColor, m_SceneViewCamera.Properties.ClearColor);
 		editorConfig.Save();
 
@@ -235,22 +235,23 @@ namespace DYE::DYEditor
 			return;
 		}
 
+		auto sceneViewCameraPosition = m_SceneViewCamera.GetPosition();
 		// Scene View Camera Input.
 		if (INPUT.GetKey(KeyCode::Up))
 		{
-			m_SceneViewCamera.Position.y += m_CameraKeyboardMoveUnitPerSecond * TIME.DeltaTime();
+			sceneViewCameraPosition.y += m_CameraKeyboardMoveUnitPerSecond * TIME.DeltaTime();
 		}
 		if (INPUT.GetKey(KeyCode::Down))
 		{
-			m_SceneViewCamera.Position.y -= m_CameraKeyboardMoveUnitPerSecond * TIME.DeltaTime();
+			sceneViewCameraPosition.y -= m_CameraKeyboardMoveUnitPerSecond * TIME.DeltaTime();
 		}
 		if (INPUT.GetKey(KeyCode::Right))
 		{
-			m_SceneViewCamera.Position.x += m_CameraKeyboardMoveUnitPerSecond * TIME.DeltaTime();
+			sceneViewCameraPosition.x += m_CameraKeyboardMoveUnitPerSecond * TIME.DeltaTime();
 		}
 		if (INPUT.GetKey(KeyCode::Left))
 		{
-			m_SceneViewCamera.Position.x -= m_CameraKeyboardMoveUnitPerSecond * TIME.DeltaTime();
+			sceneViewCameraPosition.x -= m_CameraKeyboardMoveUnitPerSecond * TIME.DeltaTime();
 		}
 
 		if (isMiddleMouseButtonPressed)
@@ -266,8 +267,9 @@ namespace DYE::DYEditor
 
 			// Invert x so when the mouse cursor moves left, the camera moves right.
 			// We don't need to invert y because the Y direction in screen coordinate (i.e. mouse delta) is opposite to 2d world coordinate.
-			m_SceneViewCamera.Position += glm::vec3 {-panMove.x, panMove.y, 0};
+			sceneViewCameraPosition += glm::vec3 {-panMove.x, panMove.y, 0};
 		}
+		m_SceneViewCamera.SetPosition(sceneViewCameraPosition);
 
 		SceneViewEntitySelection::ReceiveEntityGeometrySubmission(m_IsSceneViewDrawn);
 	}
@@ -840,7 +842,11 @@ namespace DYE::DYEditor
 				// Scene View Camera Settings
 				ImGui::PushID("Scene View Camera");
 
-				ImGuiUtil::DrawVector3Control("Position", sceneViewCamera.Position);
+				auto position = sceneViewCamera.GetPosition();
+				if (ImGuiUtil::DrawVector3Control("Position", position))
+				{
+					sceneViewCamera.SetPosition(position);
+				}
 				ImGuiUtil::DrawCameraPropertiesControl("Properties", sceneViewCamera.Properties);
 
 				ImGui::PopID();
@@ -912,6 +918,12 @@ namespace DYE::DYEditor
 			return changed;
 		}
 
+		if (context.GizmoType == -1)
+		{
+			// No gizmo type is now being used, skip it.
+			return changed;
+		}
+
 		auto tryGetEntityTransform = selectedEntity.TryGetComponent<LocalTransformComponent>();
 		if (!tryGetEntityTransform.has_value())
 		{
@@ -919,13 +931,15 @@ namespace DYE::DYEditor
 			return changed;
 		}
 
-		if (context.GizmoType == -1)
-		{
-			// No gizmo type is now being used, skip it.
-			return changed;
-		}
-
 		LocalTransformComponent &transform = tryGetEntityTransform.value().get();
+
+		auto tryGetEntityLocalToWorld = selectedEntity.TryGetComponent<LocalToWorldComponent>();
+
+		glm::mat4 localToWorld = !tryGetEntityLocalToWorld.has_value()? transform.GetTransformMatrix() : tryGetEntityLocalToWorld.value().get().Matrix;
+		glm::mat4 worldToLocal = glm::inverse(localToWorld);
+		glm::mat4 localToParent = transform.GetTransformMatrix();
+		glm::mat4 parentToWorld = !tryGetEntityLocalToWorld.has_value()? glm::mat4 {1.0f} : tryGetEntityLocalToWorld.value().get().Matrix * glm::inverse(localToParent);
+		glm::mat4 worldToParent = glm::inverse(parentToWorld);
 
 		// End manipulating gizmo if the gizmo was not being used anymore.
 		// Make an undo operation!
@@ -970,17 +984,17 @@ namespace DYE::DYEditor
 
 		ImGuizmo::SetRect(context.ViewportBounds.X, context.ViewportBounds.Y, context.ViewportBounds.Width, context.ViewportBounds.Height);
 
-		glm::mat4 viewMatrix = sceneViewCamera.GetViewMatrix();
+		glm::mat4 viewMatrix = sceneViewCamera.ViewMatrix;
 		glm::mat4 projectionMatrix = sceneViewCamera.Properties.GetProjectionMatrix(context.ViewportBounds.Width / context.ViewportBounds.Height);
 
-		glm::mat4 transformMatrix = transform.GetTransformMatrix();
+		glm::mat4 newLocalToWorld = localToWorld;
 		bool const manipulated = ImGuizmo::Manipulate
 		(
 			glm::value_ptr(viewMatrix),
 			glm::value_ptr(projectionMatrix),
 			(ImGuizmo::OPERATION) context.GizmoType,
 			context.IsGizmoLocalSpace? ImGuizmo::LOCAL : ImGuizmo::WORLD,
-			glm::value_ptr(transformMatrix)
+			glm::value_ptr(newLocalToWorld)
 		);
 
 		if (!manipulated)
@@ -1003,11 +1017,18 @@ namespace DYE::DYEditor
 		}
 
 		// Apply the transform changes back to the select entity transform.
-		// Since we store rotation as quaternion, we need to convert it from euler angles to quaternion first.
-		glm::vec3 eulerRotation = glm::eulerAngles(transform.Rotation);
-		if (Math::DecomposeTransform(transformMatrix, transform.Position, eulerRotation, transform.Scale))
+		// Since the gizmo is manipulating the matrix in world space (i.e., local to world matrix),
+		// we need to transform the matrix back to parent local space (i.e., local to parent matrix) first
+		// before applying the matrix back to local transform component.
+		glm::mat4 newLocalToParent = worldToParent * newLocalToWorld;
+		glm::vec3 newLocalPosition;
+		glm::vec3 newLocalRotationInEulerAngles;
+		glm::vec3 newLocalScale;
+		if (Math::DecomposeTransform(newLocalToParent, newLocalPosition, newLocalRotationInEulerAngles, newLocalScale))
 		{
-			transform.Rotation = glm::quat(eulerRotation);
+			transform.Position = newLocalPosition;
+			transform.Rotation = glm::quat(newLocalRotationInEulerAngles);
+			transform.Scale = newLocalScale;
 		}
 
 		changed = true;
@@ -1116,9 +1137,9 @@ namespace DYE::DYEditor
 				auto tryGetChildrenComponent = entity.TryGetComponent<ChildrenComponent>();
 
 				auto tryGetParent = entity.TryGetComponent<ParentComponent>();
-				auto parentGUID = tryGetParent.has_value()? tryGetParent.value().get().ParentGUID : (DYE::GUID) 0;
+				auto parentGUID = tryGetParent.has_value() ? tryGetParent.value().get().GetParentGUID() : (DYE::GUID) 0;
 
-				std::size_t childrenCount = tryGetChildrenComponent.has_value()? tryGetChildrenComponent.value().get().ChildrenGUIDs.size() : 0;
+				std::size_t childrenCount = tryGetChildrenComponent.has_value() ? tryGetChildrenComponent.value().get().GetChildrenCount() : 0;
 
 				HierarchyLevel *pLevel = levelStack.empty()? nullptr : &levelStack.back();
 				while
@@ -1853,6 +1874,12 @@ namespace DYE::DYEditor
 			ImGui::BeginTooltip();
 			ImGui::TextUnformatted("Add a new component to the entity.");
 			ImGui::EndTooltip();
+		}
+
+		if (mode == InspectorMode::Debug)
+		{
+			// We want to draw the entity identifier in debug mode.
+			ImGui::Text("Entity Identifier: %u", entity.GetIdentifier());
 		}
 
 		// Draw a separator between the header of the inspector and the component list.

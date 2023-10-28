@@ -23,7 +23,7 @@
 
 namespace DYE::DYEditor
 {
-	namespace BuiltInFunctions
+	namespace BuiltInComponentTypeFunctions
 	{
 		template<typename T>
 		SerializationResult
@@ -108,7 +108,7 @@ namespace DYE::DYEditor
 		SerializationResult
 		ParentComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
 		{
-			serializedComponent.SetPrimitiveTypePropertyValue("ParentGUID", entity.GetComponent<ParentComponent>().ParentGUID);
+			serializedComponent.SetPrimitiveTypePropertyValue("ParentGUID", entity.GetComponent<ParentComponent>().GetParentGUID());
 
 			return {};
 		}
@@ -117,7 +117,9 @@ namespace DYE::DYEditor
 		ParentComponent_Deserialize(SerializedComponent &serializedComponent, DYE::DYEditor::Entity &entity)
 		{
 			auto &parentComponent = entity.AddOrGetComponent<ParentComponent>();
-			parentComponent.ParentGUID = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::GUID>("ParentGUID");
+
+			GUID deserializedParentGUID = serializedComponent.GetPrimitiveTypePropertyValueOrDefault<DYE::GUID>("ParentGUID");
+			parentComponent.SetParentGUID(deserializedParentGUID);
 
 			return {};
 		}
@@ -126,7 +128,13 @@ namespace DYE::DYEditor
 		{
 			auto &parentComponent = entity.GetComponent<ParentComponent>();
 
-			bool const changed = ImGuiUtil::DrawGUIDControl("ParentGUID", parentComponent.ParentGUID);
+			GUID parentGUID = parentComponent.GetParentGUID();
+			bool const changed = ImGuiUtil::DrawGUIDControl("ParentGUID", parentGUID);
+			if (changed)
+			{
+				parentComponent.TrySetParentGUIDIfFoundInWorld(parentGUID, entity.GetWorld());
+			}
+
 			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
 			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
 			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
@@ -137,7 +145,7 @@ namespace DYE::DYEditor
 		SerializationResult
 		ChildrenComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
 		{
-			auto const &childrenGUIDs = entity.GetComponent<ChildrenComponent>().ChildrenGUIDs;
+			auto const &childrenGUIDs = entity.GetComponent<ChildrenComponent>().GetChildrenGUIDs();
 			SerializedArray serializedArray;
 
 			for (int i = 0; i < childrenGUIDs.size(); ++i)
@@ -154,7 +162,8 @@ namespace DYE::DYEditor
 		ChildrenComponent_Deserialize(SerializedComponent &serializedComponent, DYE::DYEditor::Entity &entity)
 		{
 			auto &childrenComponent = entity.AddOrGetComponent<ChildrenComponent>();
-			childrenComponent.ChildrenGUIDs.clear();
+			childrenComponent.m_ChildrenGUIDs.clear();
+			childrenComponent.m_ChildrenEntityIdentifiersCache.clear();
 
 			auto tryGetSerializedArray = serializedComponent.TryGetArrayProperty("Children");
 			if (!tryGetSerializedArray.has_value())
@@ -163,7 +172,7 @@ namespace DYE::DYEditor
 			}
 
 			auto &serializedArray = tryGetSerializedArray.value();
-			childrenComponent.ChildrenGUIDs.reserve(serializedArray.Size());
+			childrenComponent.m_ChildrenGUIDs.reserve(serializedArray.Size());
 			for (int i = 0; i < serializedArray.Size(); i++)
 			{
 				auto tryGetElement = serializedArray.TryGetElementAtIndex<GUID>(i);
@@ -171,8 +180,10 @@ namespace DYE::DYEditor
 				{
 					continue;
 				}
-				childrenComponent.ChildrenGUIDs.push_back(tryGetElement.value());
+				childrenComponent.m_ChildrenGUIDs.push_back(tryGetElement.value());
 			}
+
+			childrenComponent.RefreshChildrenEntityIdentifierCache(entity.GetWorld());
 
 			return {};
 		}
@@ -182,18 +193,27 @@ namespace DYE::DYEditor
 			auto &childrenComponent = entity.GetComponent<ChildrenComponent>();
 
 			bool changed = false;
-			auto &childrenGUIDs = childrenComponent.ChildrenGUIDs;
+			auto &childrenGUIDs = childrenComponent.m_ChildrenGUIDs;
 
-			ImGuiUtil::Internal::GUIDControlFunctionPointer lambda = [](char const* id, GUID &guid) -> bool
+			ImGuiUtil::Internal::GUIDControlFunctionType* lambda = [](std::vector<::DYE::GUID> &array, std::size_t index) -> bool
 			{
-				return ImGuiUtil::DrawGUIDControl(std::string(id), guid);
+				char elementControlID[16]; sprintf(elementControlID, "Element %zu", index);
+				bool const isGUIDChanged = ImGuiUtil::DrawGUIDControl(std::string(elementControlID), array[index]);
+				return isGUIDChanged;
 			};
-			changed |= ImGuiUtil::Internal::ArrayControl("Children", childrenGUIDs, lambda).Draw();
+			bool const isGUIDsArrayChanged = ImGuiUtil::Internal::ArrayControl("Children", childrenGUIDs, lambda).Draw();
+
+			if (isGUIDsArrayChanged)
+			{
+				// TODO: We want to improve this in the future, we only want to update the cache index, not the whole vector array.
+				childrenComponent.RefreshChildrenEntityIdentifierCache(entity.GetWorld());
+			}
+
 			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
 			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
 			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
 
-			return changed;
+			return changed || isGUIDsArrayChanged;
 		}
 
 		SerializationResult
@@ -227,11 +247,6 @@ namespace DYE::DYEditor
 			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
 			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
 
-			changed |= ImGuiUtil::DrawVector3Control("Scale", transformComponent.Scale, 1.0f);
-			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
-			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
-			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
-
 			glm::vec3 rotationInEulerAnglesDegree = glm::eulerAngles(transformComponent.Rotation);
 			rotationInEulerAnglesDegree += glm::vec3(0.f);
 			rotationInEulerAnglesDegree = glm::degrees(rotationInEulerAnglesDegree);
@@ -241,9 +256,64 @@ namespace DYE::DYEditor
 				transformComponent.Rotation = glm::quat {glm::radians(rotationInEulerAnglesDegree)};
 				changed = true;
 			}
+
+			changed |= ImGuiUtil::DrawVector3Control("Scale", transformComponent.Scale, 1.0f);
 			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
 			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
 			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+
+			drawInspectorContext.IsModificationActivated |= ImGuiUtil::IsControlActivated();
+			drawInspectorContext.IsModificationDeactivated |= ImGuiUtil::IsControlDeactivated();
+			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
+
+			return changed;
+		}
+
+		SerializationResult
+		LocalToWorldComponent_Serialize(DYE::DYEditor::Entity &entity, SerializedComponent &serializedComponent)
+		{
+			return {};
+		}
+
+		DeserializationResult
+		LocalToWorldComponent_Deserialize(SerializedComponent &serializedComponent, DYE::DYEditor::Entity &entity)
+		{
+			auto &localToWorldComponent = entity.AddOrGetComponent<LocalToWorldComponent>();
+			return {};
+		}
+
+		bool LocalToWorldComponent_DrawInspector(DrawComponentInspectorContext &drawInspectorContext, Entity &entity)
+		{
+			bool changed = false;
+			auto &localToWorldComponent = entity.GetComponent<LocalToWorldComponent>();
+
+			ImGui::BeginDisabled();
+
+			glm::vec3 position = localToWorldComponent.GetPosition();
+			ImGuiUtil::DrawVector3Control("World Position", position);
+
+			glm::vec3 rotationInEulerAnglesDegree = glm::eulerAngles(localToWorldComponent.GetRotation());
+			rotationInEulerAnglesDegree += glm::vec3(0.f);
+			rotationInEulerAnglesDegree = glm::degrees(rotationInEulerAnglesDegree);
+			ImGuiUtil::DrawVector3Control("World Rotation", rotationInEulerAnglesDegree);
+
+			ImGui::EndDisabled();
+
+			bool isMissingComponentWarningFixed = ImGuiUtil::DrawTryFixWarningButtonAndInfo
+				(
+					!entity.HasComponent<LocalTransformComponent>(),
+					"Missing LocalTransform component",
+					[entity]()
+					{
+						Undo::AddComponent(entity, LocalTransformComponentTypeName,
+										   TypeRegistry::GetComponentTypeDescriptor_LocalTransformComponent());
+					}
+				);
+			if (isMissingComponentWarningFixed)
+			{
+				changed = true;
+				drawInspectorContext.ShouldEarlyOutIfInIteratorLoop = true;
+			}
 
 			return changed;
 		}
@@ -325,15 +395,15 @@ namespace DYE::DYEditor
 			drawInspectorContext.IsModificationDeactivatedAfterEdit |= ImGuiUtil::IsControlDeactivatedAfterEdit();
 
 			bool isMissingComponentWarningFixed = ImGuiUtil::DrawTryFixWarningButtonAndInfo
-			(
-				!entity.HasComponent<LocalTransformComponent>(),
-				"Missing LocalTransform component",
-				[entity]()
-				{
-					Undo::AddComponent(entity, LocalTransformComponentTypeName,
-									   TypeRegistry::GetComponentTypeDescriptor_LocalTransformComponent());
-				}
-			);
+				(
+					!entity.HasComponent<LocalToWorldComponent>(),
+					"Missing LocalToWorld component",
+					[entity]()
+					{
+						Undo::AddComponent(entity, LocalToWorldComponentTypeName,
+										   TypeRegistry::GetComponentTypeDescriptor_LocalToWorldComponent());
+					}
+				);
 			if (isMissingComponentWarningFixed)
 			{
 				changed = true;
@@ -410,15 +480,15 @@ namespace DYE::DYEditor
 			ImGuiUtil::DrawTexture2DPreviewWithLabel("Texture Preview", component.Texture);
 
 			bool isMissingComponentWarningFixed = ImGuiUtil::DrawTryFixWarningButtonAndInfo
-			(
-				!entity.HasComponent<LocalTransformComponent>(),
-				"Missing LocalTransform component",
-				[entity]()
-				{
-					Undo::AddComponent(entity, LocalTransformComponentTypeName,
-									   TypeRegistry::GetComponentTypeDescriptor_LocalTransformComponent());
-				}
-			);
+				(
+					!entity.HasComponent<LocalToWorldComponent>(),
+					"Missing LocalToWorld component",
+					[entity]()
+					{
+						Undo::AddComponent(entity, LocalToWorldComponentTypeName,
+										   TypeRegistry::GetComponentTypeDescriptor_LocalToWorldComponent());
+					}
+				);
 			if (isMissingComponentWarningFixed)
 			{
 				changed = true;
@@ -718,6 +788,7 @@ namespace DYE::DYEditor
 	static ComponentTypeDescriptor s_ParentComponentTypeDescriptor;
 	static ComponentTypeDescriptor s_ChildrenComponentTypeDescriptor;
 	static ComponentTypeDescriptor s_LocalTransformComponentTypeDescriptor;
+	static ComponentTypeDescriptor s_LocalToWorldComponentTypeDescriptor;
 
 	void RegisterBuiltInTypes()
 	{
@@ -729,9 +800,9 @@ namespace DYE::DYEditor
 			{
 				.ShouldBeIncludedInNormalAddComponentList = false,
 				.ShouldDrawInNormalInspector = false,
-				.Serialize = BuiltInFunctions::IDComponent_Serialize,
-				.Deserialize = BuiltInFunctions::IDComponent_Deserialize,
-				.DrawInspector = BuiltInFunctions::IDComponent_DrawInspector,
+				.Serialize = BuiltInComponentTypeFunctions::IDComponent_Serialize,
+				.Deserialize = BuiltInComponentTypeFunctions::IDComponent_Deserialize,
+				.DrawInspector = BuiltInComponentTypeFunctions::IDComponent_DrawInspector,
 				.GetDisplayName = []() { return "ID"; },
 			}
 		);
@@ -744,11 +815,11 @@ namespace DYE::DYEditor
 			{
 				.ShouldBeIncludedInNormalAddComponentList = false,
 				.ShouldDrawInNormalInspector = false,
-				.Add = BuiltInFunctions::NameComponent_Add,
+				.Add = BuiltInComponentTypeFunctions::NameComponent_Add,
 
-				.Serialize = BuiltInFunctions::NameComponent_Serialize,
-				.Deserialize = BuiltInFunctions::NameComponent_Deserialize,
-				.DrawInspector = BuiltInFunctions::NameComponent_DrawInspector,
+				.Serialize = BuiltInComponentTypeFunctions::NameComponent_Serialize,
+				.Deserialize = BuiltInComponentTypeFunctions::NameComponent_Deserialize,
+				.DrawInspector = BuiltInComponentTypeFunctions::NameComponent_DrawInspector,
 				.GetDisplayName = []() { return "Name"; },
 			}
 		);
@@ -761,9 +832,9 @@ namespace DYE::DYEditor
 			{
 				.ShouldBeIncludedInNormalAddComponentList = false,
 				.ShouldDrawInNormalInspector = false,
-				.Serialize = BuiltInFunctions::ParentComponent_Serialize,
-				.Deserialize = BuiltInFunctions::ParentComponent_Deserialize,
-				.DrawInspector = BuiltInFunctions::ParentComponent_DrawInspector,
+				.Serialize = BuiltInComponentTypeFunctions::ParentComponent_Serialize,
+				.Deserialize = BuiltInComponentTypeFunctions::ParentComponent_Deserialize,
+				.DrawInspector = BuiltInComponentTypeFunctions::ParentComponent_DrawInspector,
 				.GetDisplayName = []() { return "Parent"; },
 			}
 		);
@@ -777,9 +848,9 @@ namespace DYE::DYEditor
 			{
 				.ShouldBeIncludedInNormalAddComponentList = false,
 				.ShouldDrawInNormalInspector = false,
-				.Serialize = BuiltInFunctions::ChildrenComponent_Serialize,
-				.Deserialize = BuiltInFunctions::ChildrenComponent_Deserialize,
-				.DrawInspector = BuiltInFunctions::ChildrenComponent_DrawInspector,
+				.Serialize = BuiltInComponentTypeFunctions::ChildrenComponent_Serialize,
+				.Deserialize = BuiltInComponentTypeFunctions::ChildrenComponent_Deserialize,
+				.DrawInspector = BuiltInComponentTypeFunctions::ChildrenComponent_DrawInspector,
 				.GetDisplayName = []() { return "Children"; },
 			}
 		);
@@ -790,10 +861,22 @@ namespace DYE::DYEditor
 			LocalTransformComponentTypeName,
 			ComponentTypeDescriptor
 				{
-					.Serialize = BuiltInFunctions::LocalTransformComponent_Serialize,
-					.Deserialize = BuiltInFunctions::LocalTransformComponent_Deserialize,
-					.DrawInspector = BuiltInFunctions::LocalTransformComponent_DrawInspector,
+					.Serialize = BuiltInComponentTypeFunctions::LocalTransformComponent_Serialize,
+					.Deserialize = BuiltInComponentTypeFunctions::LocalTransformComponent_Deserialize,
+					.DrawInspector = BuiltInComponentTypeFunctions::LocalTransformComponent_DrawInspector,
 					.GetDisplayName = []() { return "Local Transform"; },
+				}
+		);
+
+		s_LocalToWorldComponentTypeDescriptor = TypeRegistry::RegisterComponentType<LocalToWorldComponent>
+		(
+			LocalToWorldComponentTypeName,
+			ComponentTypeDescriptor
+				{
+					.Serialize = BuiltInComponentTypeFunctions::LocalToWorldComponent_Serialize,
+					.Deserialize = BuiltInComponentTypeFunctions::LocalToWorldComponent_Deserialize,
+					.DrawInspector = BuiltInComponentTypeFunctions::LocalToWorldComponent_DrawInspector,
+					.GetDisplayName = []() { return "Local To World"; },
 				}
 		);
 
@@ -802,11 +885,11 @@ namespace DYE::DYEditor
 			NAME_OF(DYE::DYEditor::CameraComponent),
 			ComponentTypeDescriptor
 			{
-				.Add = BuiltInFunctions::CameraComponent_Add,
+				.Add = BuiltInComponentTypeFunctions::CameraComponent_Add,
 
-				.Serialize = BuiltInFunctions::CameraComponent_Serialize,
-				.Deserialize = BuiltInFunctions::CameraComponent_Deserialize,
-				.DrawInspector = BuiltInFunctions::CameraComponent_DrawInspector,
+				.Serialize = BuiltInComponentTypeFunctions::CameraComponent_Serialize,
+				.Deserialize = BuiltInComponentTypeFunctions::CameraComponent_Deserialize,
+				.DrawInspector = BuiltInComponentTypeFunctions::CameraComponent_DrawInspector,
 				.DrawHeader = DefaultDrawComponentHeaderWithIsEnabled<CameraComponent>,
 				.GetDisplayName = []() { return "Camera"; },
 			}
@@ -817,11 +900,11 @@ namespace DYE::DYEditor
 			NAME_OF(DYE::DYEditor::SpriteRendererComponent),
 			ComponentTypeDescriptor
 			{
-				.Add = BuiltInFunctions::SpriteRendererComponent_Add,
+				.Add = BuiltInComponentTypeFunctions::SpriteRendererComponent_Add,
 
-				.Serialize = BuiltInFunctions::SpriteRendererComponent_Serialize,
-				.Deserialize = BuiltInFunctions::SpriteRendererComponent_Deserialize,
-				.DrawInspector = BuiltInFunctions::SpriteRendererComponent_DrawInspector,
+				.Serialize = BuiltInComponentTypeFunctions::SpriteRendererComponent_Serialize,
+				.Deserialize = BuiltInComponentTypeFunctions::SpriteRendererComponent_Deserialize,
+				.DrawInspector = BuiltInComponentTypeFunctions::SpriteRendererComponent_DrawInspector,
 				.DrawHeader = DefaultDrawComponentHeaderWithIsEnabled<SpriteRendererComponent>,
 				.GetDisplayName = []() { return "Sprite Renderer"; },
 			}
@@ -832,9 +915,9 @@ namespace DYE::DYEditor
 			NAME_OF(DYE::DYEditor::AudioSource2DComponent),
 			ComponentTypeDescriptor
 			{
-				.Serialize = BuiltInFunctions::AudioSource2DComponent_Serialize,
-				.Deserialize = BuiltInFunctions::AudioSource2DComponent_Deserialize,
-				.DrawInspector = BuiltInFunctions::AudioSource2DComponent_DrawInspector,
+				.Serialize = BuiltInComponentTypeFunctions::AudioSource2DComponent_Serialize,
+				.Deserialize = BuiltInComponentTypeFunctions::AudioSource2DComponent_Deserialize,
+				.DrawInspector = BuiltInComponentTypeFunctions::AudioSource2DComponent_DrawInspector,
 				.GetDisplayName = []() { return "Audio Source 2D"; },
 			}
 		);
@@ -844,9 +927,9 @@ namespace DYE::DYEditor
 			NAME_OF(DYE::DYEditor::PlayAudioSourceOnInitializeComponent),
 			ComponentTypeDescriptor
 			{
-				.Serialize = BuiltInFunctions::SerializeEmptyComponent<PlayAudioSourceOnInitializeComponent>,
-				.Deserialize = BuiltInFunctions::DeserializeEmptyComponent<PlayAudioSourceOnInitializeComponent>,
-				.DrawInspector = BuiltInFunctions::PlayAudioSourceOnInitializeComponent_DrawInspector,
+				.Serialize = BuiltInComponentTypeFunctions::SerializeEmptyComponent<PlayAudioSourceOnInitializeComponent>,
+				.Deserialize = BuiltInComponentTypeFunctions::DeserializeEmptyComponent<PlayAudioSourceOnInitializeComponent>,
+				.DrawInspector = BuiltInComponentTypeFunctions::PlayAudioSourceOnInitializeComponent_DrawInspector,
 				.GetDisplayName = []() { return "Play Audio Source On Initialize"; },
 			}
 		);
@@ -856,9 +939,9 @@ namespace DYE::DYEditor
 			NAME_OF(DYE::DYEditor::WindowHandleComponent),
 			ComponentTypeDescriptor
 			{
-				.Serialize = BuiltInFunctions::SerializeEmptyComponent<WindowHandleComponent>,
-				.Deserialize = BuiltInFunctions::DeserializeEmptyComponent<WindowHandleComponent>,
-				.DrawInspector = BuiltInFunctions::WindowHandleComponent_DrawInspector,
+				.Serialize = BuiltInComponentTypeFunctions::SerializeEmptyComponent<WindowHandleComponent>,
+				.Deserialize = BuiltInComponentTypeFunctions::DeserializeEmptyComponent<WindowHandleComponent>,
+				.DrawInspector = BuiltInComponentTypeFunctions::WindowHandleComponent_DrawInspector,
 				.GetDisplayName = []() { return "Window Handle"; },
 			}
 		);
@@ -868,12 +951,15 @@ namespace DYE::DYEditor
 			NAME_OF(DYE::DYEditor::CreateWindowOnInitializeComponent),
 			ComponentTypeDescriptor
 			{
-				.Serialize = BuiltInFunctions::CreateWindowOnInitializeComponent_Serialize,
-				.Deserialize = BuiltInFunctions::CreateWindowOnInitializeComponent_Deserialize,
-				.DrawInspector = BuiltInFunctions::CreateWindowOnInitializeComponent_DrawInspector,
+				.Serialize = BuiltInComponentTypeFunctions::CreateWindowOnInitializeComponent_Serialize,
+				.Deserialize = BuiltInComponentTypeFunctions::CreateWindowOnInitializeComponent_Deserialize,
+				.DrawInspector = BuiltInComponentTypeFunctions::CreateWindowOnInitializeComponent_DrawInspector,
 				.GetDisplayName = []() { return "Create Window On Initialize"; },
 			}
 		);
+
+		static ComputeLocalToWorldSystem _ComputeLocalToWorldSystem;
+		TypeRegistry::RegisterSystem(ComputeLocalToWorldSystem::TypeName, &_ComputeLocalToWorldSystem);
 
 		static Render2DSpriteSystem _Render2DSpriteSystem;
 		TypeRegistry::RegisterSystem(Render2DSpriteSystem::TypeName, &_Render2DSpriteSystem);
@@ -905,6 +991,11 @@ namespace DYE::DYEditor
 	ComponentTypeDescriptor TypeRegistry::GetComponentTypeDescriptor_LocalTransformComponent()
 	{
 		return s_LocalTransformComponentTypeDescriptor;
+	}
+
+	ComponentTypeDescriptor TypeRegistry::GetComponentTypeDescriptor_LocalToWorldComponent()
+	{
+		return s_LocalToWorldComponentTypeDescriptor;
 	}
 
 	ComponentTypeDescriptor TypeRegistry::GetComponentTypeDescriptor_ParentComponent()

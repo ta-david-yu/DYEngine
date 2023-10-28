@@ -237,10 +237,10 @@ namespace DYE::DYEditor
 				// We need to reassign child's ParentComponent & parent's ChildrenComponent with the new GUIDs.
 				HierarchyLevel &level = hierarchyLevels.top();
 
-				newEntity.GetComponent<ParentComponent>().ParentGUID = level.NewParentGUID;
+				newEntity.GetComponent<ParentComponent>().SetParentGUID(level.NewParentGUID);
 
-				std::size_t const numberOfChildren = level.pChildrenComponent->ChildrenGUIDs.size();
-				level.pChildrenComponent->ChildrenGUIDs[numberOfChildren - level.NumberOfChildrenLeft] = newGUID;
+				std::size_t const numberOfChildren = level.pChildrenComponent->GetChildrenCount();
+				level.pChildrenComponent->SetChildAt(numberOfChildren - level.NumberOfChildrenLeft, newEntity.GetIdentifier(), newGUID);
 
 				level.NumberOfChildrenLeft--;
 				if (level.NumberOfChildrenLeft == 0)
@@ -259,7 +259,7 @@ namespace DYE::DYEditor
 				continue;
 			}
 
-			auto &childrenGUIDs = tryGetChild.value().get().ChildrenGUIDs;
+			auto const &childrenGUIDs = tryGetChild.value().get().GetChildrenGUIDs();
 			hierarchyLevels.push
 			(
 				HierarchyLevel
@@ -358,10 +358,10 @@ namespace DYE::DYEditor
 		auto tryGetOldParent = entity.TryGetComponent<ParentComponent>();
 		if (tryGetOldParent.has_value())
 		{
-			auto tryGetOldParentEntity = entity.GetWorld().TryGetEntityWithGUID(tryGetOldParent.value().get().ParentGUID);
+			auto tryGetOldParentEntity = entity.GetWorld().TryGetEntityWithGUID(tryGetOldParent.value().get().GetParentGUID());
 			DYE_ASSERT_LOG_WARN(tryGetOldParentEntity.has_value(),
 								"The entity has a parent component already but the old GUID '%s' wasn't referencing to a valid entity.",
-								tryGetOldParent.value().get().ParentGUID.ToString().c_str());
+								tryGetOldParent.value().get().GetParentGUID().ToString().c_str());
 
 			Entity oldParent = tryGetOldParentEntity.value();
 
@@ -384,7 +384,7 @@ namespace DYE::DYEditor
 				SerializedObjectFactory::CreateSerializedComponentOfType(oldParent, ChildrenComponentTypeName,
 																		 TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
 			// Erase the entity from the old parent's children list.
-			std::erase(pChildrenComponent->ChildrenGUIDs, entityGUID);
+			pChildrenComponent->RemoveChildWithGUID(entityGUID);
 			auto serializedChildrenComponentAfterModification =
 				SerializedObjectFactory::CreateSerializedComponentOfType(oldParent, ChildrenComponentTypeName,
 																		 TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
@@ -534,7 +534,7 @@ namespace DYE::DYEditor
 			pNewParentEntityChildrenComponent = &newParent.GetComponent<ChildrenComponent>();
 		}
 
-		if (indexInParent >= pNewParentEntityChildrenComponent->ChildrenGUIDs.size())
+		if (indexInParent >= pNewParentEntityChildrenComponent->GetChildrenCount())
 		{
 			// If the index in parent is bigger than parent's children list size,
 			// We will just assume the user wants to insert it at the last place.
@@ -562,7 +562,7 @@ namespace DYE::DYEditor
 			for (flatInsertIndexOffset = 1; flatInsertIndexOffset < newParentAndItsChildren.size(); flatInsertIndexOffset++)
 			{
 				Entity child = newParentAndItsChildren[flatInsertIndexOffset];
-				if (child.TryGetGUID().value() == pNewParentEntityChildrenComponent->ChildrenGUIDs[indexInParent])
+				if (child.TryGetGUID().value() == pNewParentEntityChildrenComponent->TryGetChildGUIDAt(indexInParent).value())
 				{
 					// We find the flat index, break.
 					break;
@@ -604,10 +604,10 @@ namespace DYE::DYEditor
 		auto tryGetOldParent = entity.TryGetComponent<ParentComponent>();
 		if (tryGetOldParent.has_value())
 		{
-			auto tryGetOldParentEntity = entity.GetWorld().TryGetEntityWithGUID(tryGetOldParent.value().get().ParentGUID);
+			auto tryGetOldParentEntity = entity.GetWorld().TryGetEntityWithGUID(tryGetOldParent.value().get().GetParentGUID());
 			DYE_ASSERT_LOG_WARN(tryGetOldParentEntity.has_value(),
 								"The entity has a parent component already but the old GUID '%s' wasn't referencing to a valid entity.",
-								tryGetOldParent.value().get().ParentGUID.ToString().c_str());
+								tryGetOldParent.value().get().GetParentGUID().ToString().c_str());
 
 			Entity oldParent = tryGetOldParentEntity.value();
 
@@ -630,7 +630,7 @@ namespace DYE::DYEditor
 				SerializedObjectFactory::CreateSerializedComponentOfType(oldParent, ChildrenComponentTypeName,
 																		 TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
 			// Remove the entity from the old parent's children list.
-			std::erase(pChildrenComponent->ChildrenGUIDs, entityGUID);
+			pChildrenComponent->RemoveChildWithGUID(entityGUID);
 			auto serializedChildrenComponentAfterModification =
 				SerializedObjectFactory::CreateSerializedComponentOfType(oldParent, ChildrenComponentTypeName,
 																		 TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
@@ -642,7 +642,7 @@ namespace DYE::DYEditor
 			{
 				// If the children list is empty after the child removal & the new parent is not the old parent,
 				// we also remove the children component from the old parent entity.
-				if (pChildrenComponent->ChildrenGUIDs.empty())
+				if (pChildrenComponent->GetChildrenGUIDs().empty())
 				{
 					Undo::RemoveComponent(oldParent, ChildrenComponentTypeName, TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
 				}
@@ -669,7 +669,8 @@ namespace DYE::DYEditor
 			auto serializedParentComponentBeforeModification =
 				SerializedObjectFactory::CreateSerializedComponentOfType(entity, ParentComponentTypeName,
 																		 TypeRegistry::GetComponentTypeDescriptor_ParentComponent());
-			pParentComponent->ParentGUID = parentGUID;
+			pParentComponent->SetParent(newParent.GetIdentifier(), parentGUID);
+
 			auto serializedParentComponentAfterModification =
 				SerializedObjectFactory::CreateSerializedComponentOfType(entity, ParentComponentTypeName,
 																		 TypeRegistry::GetComponentTypeDescriptor_ParentComponent());
@@ -691,11 +692,11 @@ namespace DYE::DYEditor
 			auto &newParentChildren = newParent.GetComponent<ChildrenComponent>();
 			if (insertAtTheLastLocationInParentHierarchy)
 			{
-				newParentChildren.ChildrenGUIDs.insert(newParentChildren.ChildrenGUIDs.end(), entityGUID);
+				newParentChildren.PushBack(entity.GetIdentifier(), entityGUID);
 			}
 			else
 			{
-				newParentChildren.ChildrenGUIDs.insert(newParentChildren.ChildrenGUIDs.begin() + indexInParent, entityGUID);
+				newParentChildren.InsertChildAt(indexInParent, entity.GetIdentifier(), entityGUID);
 			}
 			auto serializedChildrenComponentAfterModification =
 				SerializedObjectFactory::CreateSerializedComponentOfType
@@ -770,10 +771,10 @@ namespace DYE::DYEditor
 		if (tryGetOldParent.has_value())
 		{
 			auto tryGetOldParentEntity = entity.GetWorld().TryGetEntityWithGUID(
-				tryGetOldParent.value().get().ParentGUID);
+				tryGetOldParent.value().get().GetParentGUID());
 			DYE_ASSERT_LOG_WARN(tryGetOldParentEntity.has_value(),
 								"The entity has a parent component already but the old GUID '%s' wasn't referencing to a valid entity.",
-								tryGetOldParent.value().get().ParentGUID.ToString().c_str());
+								tryGetOldParent.value().get().GetParentGUID().ToString().c_str());
 
 			Entity oldParent = tryGetOldParentEntity.value();
 
@@ -788,7 +789,7 @@ namespace DYE::DYEditor
 				SerializedObjectFactory::CreateSerializedComponentOfType(oldParent, ChildrenComponentTypeName,
 																		 TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
 			// Remove the entity from the old parent's children list.
-			std::erase(childrenComponent.ChildrenGUIDs, entityGUID);
+			childrenComponent.RemoveChildWithGUID(entityGUID);
 			auto serializedChildrenComponentAfterModification =
 				SerializedObjectFactory::CreateSerializedComponentOfType(oldParent, ChildrenComponentTypeName,
 																		 TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
@@ -798,7 +799,7 @@ namespace DYE::DYEditor
 
 			// If the children list is empty after the child removal,
 			// we also remove the children component from the old parent entity.
-			if (childrenComponent.ChildrenGUIDs.empty())
+			if (childrenComponent.GetChildrenGUIDs().empty())
 			{
 				Undo::RemoveComponent(oldParent, ChildrenComponentTypeName, TypeRegistry::GetComponentTypeDescriptor_ChildrenComponent());
 			}

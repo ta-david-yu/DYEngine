@@ -72,13 +72,15 @@ namespace DYE
 	struct Camera
 	{
 	public:
-		glm::vec3 Position {0, 0, 0};
-		glm::quat Rotation {glm::vec3 {0, 0, 0}};
-
+		glm::mat4 ViewMatrix {glm::mat4 {1}};
 		CameraProperties Properties;
 
 	public:
-		glm::mat4 GetViewMatrix() const;
+		glm::vec3 GetPosition() const;
+		void SetPosition(glm::vec3 position);
+
+		glm::quat GetRotation() const;
+		void SetRotation(glm::quat rotation);
 
 		/// For a viewport point, the bottom-left of the camera is (0, 0); the top-right is (1, 1).\n
 		/// For a screen point, the bottom-left of the screen is (0, 0); the right-top is (screenPixelWidth, screenPixelHeight).\n

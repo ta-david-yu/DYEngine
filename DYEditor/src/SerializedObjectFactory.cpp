@@ -98,16 +98,11 @@ namespace DYE::DYEditor
 			DYEditor::Entity entity = scene.World.createUntrackedEntity();
 			auto result = ApplySerializedEntityToEmptyEntity(serializedEntityHandle, entity);
 
-#ifdef DYE_EDITOR
-			// In editor build, we always need the information stored inside the result (i.e., to draw components in custom order).
-			entity.AddComponent<EntityDeserializationResult>(result);
-#else
 			if (!result.Success)
 			{
-				// In runtime build, tf the deserialized entity has some issue during deserialization, add the result as component to the entity.
+				// If the deserialized entity has some issue during deserialization, add the result as component to the entity.
 				entity.AddComponent<EntityDeserializationResult>(result);
 			}
-#endif
 
 			auto tryGetGUID = entity.TryGetGUID();
 			if (tryGetGUID.has_value())
@@ -119,6 +114,8 @@ namespace DYE::DYEditor
 				DYE_LOG("The entity at index %d doesn't have a GUID (IDComponent), it will not be tracked by the World.", i);
 			}
 		}
+
+		scene.World.refreshAllHierarchyComponentEntityCache();
 	}
 
 	EntityDeserializationResult SerializedObjectFactory::ApplySerializedEntityToEmptyEntity(SerializedEntity &serializedEntity,

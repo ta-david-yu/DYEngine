@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/EntityTypes.h"
 #include "Core/WorldView.h"
 #include "Core/GUID.h"
 
@@ -7,13 +8,9 @@
 #include <vector>
 #include <unordered_map>
 #include <concepts>
-#include <entt/entt.hpp>
 
 namespace DYE::DYEditor
 {
-	using EntityIdentifier = entt::entity;
-	using EntityInstanceID = std::uint32_t;
-
 	class Entity;
 	class World
 	{
@@ -104,6 +101,9 @@ namespace DYE::DYEditor
 		/// It is meant for engine-internally use (e.g. Undo/redo entity destruction).
 		/// You should avoid using this on a single entity but instead on a batch of entity hierarchy.
 		void destroyEntityByGUIDButNotChildren(DYE::GUID entityGUID);
+
+		/// Refresh all the entity cache stored in hierarchy components such as Parent and Children components.
+		void refreshAllHierarchyComponentEntityCache();
 
 	private:
 		struct EntityHandle
