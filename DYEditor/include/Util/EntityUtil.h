@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Core/Entity.h"
 
 #include <vector>

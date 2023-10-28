@@ -26,6 +26,7 @@
 #include "Math/Math.h"
 #include "Audio/AudioManager.h"
 #include "SceneViewEntitySelection.h"
+#include "Util/StringUtil.h"
 
 #include "Core/Components.h"
 #include "Core/Systems.h"
@@ -36,6 +37,7 @@
 #include <iostream>
 #include <execution>
 #include <algorithm>
+#include <regex>
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -323,8 +325,11 @@ namespace DYE::DYEditor
 						if (tryGetSelectedEntity.has_value())
 						{
 							Entity selectedEntity = tryGetSelectedEntity.value();
+
 							std::string name = selectedEntity.TryGetName().value();
-							auto newEntity = Undo::DuplicateEntityRecursively(activeScene.World, selectedEntity, name + "(D)");
+							name = StringUtil::AddOrIncrementNumberSuffix(name);
+
+							auto newEntity = Undo::DuplicateEntityRecursively(activeScene.World, selectedEntity, name);
 							m_CurrentlySelectedEntityGUID = newEntity.TryGetGUID().value();
 
 							m_IsActiveSceneDirty = true;
@@ -1227,7 +1232,8 @@ namespace DYE::DYEditor
 						}
 						if (ImGui::Selectable("Duplicate"))
 						{
-							auto newEntity = Undo::DuplicateEntityRecursively(scene.World, entity, name + "(D)");
+							std::string newName = StringUtil::AddOrIncrementNumberSuffix(name);
+							auto newEntity = Undo::DuplicateEntityRecursively(scene.World, entity, newName);
 							*pCurrentSelectedEntityGUID = newEntity.TryGetGUID().value();
 
 							// Open the entity tree node because we want to let the user see the newly created child entity.

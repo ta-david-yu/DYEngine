@@ -37,7 +37,8 @@ set(SOURCE_FILES
         src/SubWindowConfiguration.cpp
         src/ExecuteLoadSceneCommandSystem.cpp
         src/AudioSystems.cpp src/WindowSystems.cpp
-        src/TransformSystems.cpp)
+        src/TransformSystems.cpp
+        src/StringUtil.cpp)
 set(HEADER_FILES
         include/SceneEditorLayer.h
         include/SceneRuntimeLayer.h
@@ -95,7 +96,8 @@ set(HEADER_FILES
         include/Systems/WindowSystems.h
         include/Components/Command/WindowCommandComponents.h
         include/Core/EntityTypes.h
-        include/Systems/TransformSystems.h)
+        include/Systems/TransformSystems.h
+        include/Util/StringUtil.h)
 
 message(STATUS "[${PROJECT_NAME}] Source Files: ${SOURCE_FILES}")
 message(STATUS "[${PROJECT_NAME}] Header Files: ${HEADER_FILES}")
