@@ -1559,7 +1559,7 @@ namespace DYE::DYEditor
 				std::size_t const numberOfSystems = systemDescriptors.size();
 				int const numberOfExecutingSystems = std::count_if
 				(
-					std::execution::par_unseq, systemDescriptors.begin(), systemDescriptors.end(),
+					std::execution::unseq, systemDescriptors.begin(), systemDescriptors.end(),
 					[](SystemDescriptor const &descriptor)
 					{
 						bool const isEnabled = descriptor.IsEnabled;
