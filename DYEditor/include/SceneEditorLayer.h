@@ -110,7 +110,7 @@ namespace DYE::DYEditor
 											bool *pIsSceneDirty, bool &openLoadSceneFilePathPopup,
 											bool &openSaveSceneFilePathPopup);
 		static bool drawSceneView(Camera &sceneViewCamera, Framebuffer &entityIDFramebuffer, Entity selectedEntity, SceneViewContext &context);
-		static bool drawSceneEntityHierarchyPanel(Scene &scene, DYE::GUID *pCurrentSelectedEntityGUID, std::unordered_set<DYE::GUID> &entityNodesToBeOpen);
+		static bool drawSceneEntityHierarchyPanel(Scene &scene, DYE::GUID *pCurrentSelectedEntityGUID, std::unordered_set<DYE::GUID> &entityNodesToBeOpenInHierarchy);
 		static bool drawSceneSystemPanel(Scene& scene);
 		template<typename Func> requires std::predicate<Func, std::string const&, SystemBase const*>
 		static bool drawSceneSystemList(Scene &scene, std::vector<SystemDescriptor> &systemDescriptors, Func addSystemFilterPredicate);

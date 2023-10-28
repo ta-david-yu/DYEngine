@@ -1067,7 +1067,7 @@ namespace DYE::DYEditor
 		return changed;
 	}
 
-	bool SceneEditorLayer::drawSceneEntityHierarchyPanel(Scene &scene, DYE::GUID *pCurrentSelectedEntityGUID, std::unordered_set<DYE::GUID> &entityNodesToBeOpen)
+	bool SceneEditorLayer::drawSceneEntityHierarchyPanel(Scene &scene, DYE::GUID *pCurrentSelectedEntityGUID, std::unordered_set<DYE::GUID> &entityNodesToBeOpenInHierarchy)
 	{
 		bool changed = false;
 
@@ -1147,7 +1147,7 @@ namespace DYE::DYEditor
 			 &levelStack,
 			 &setParent,
 			 &reorderAtTop,
-			 &entityNodesToBeOpen]
+			 &entityNodesToBeOpenInHierarchy]
 			 (DYEditor::Entity &entity, std::size_t indexInWorld)
 			{
 				auto tryGetNameResult = entity.TryGetName();
@@ -1223,10 +1223,10 @@ namespace DYE::DYEditor
 					// We use GUID as the id of the TreeNode.
 					ImGuiID const nodeId = ImGui::GetCurrentWindow()->GetID(guid.ToString().c_str());
 
-					if (entityNodesToBeOpen.contains(guid))
+					if (entityNodesToBeOpenInHierarchy.contains(guid))
 					{
 						ImGui::SetNextItemOpen(true, ImGuiCond_Once);
-						entityNodesToBeOpen.erase(guid);
+						entityNodesToBeOpenInHierarchy.erase(guid);
 					}
 
 					isNodeOpen = ImGui::TreeNodeEx(guid.ToString().c_str(), flags, name.c_str()) && !isLeafNode;
@@ -1252,8 +1252,17 @@ namespace DYE::DYEditor
 							Undo::EndGroupOperation();
 							Undo::SetLatestOperationDescription("Create Empty Entity Under Entity '%s'", name.c_str());
 
-							// Open the entity tree node because we want to let the user see the newly created child entity.
-							ImGui::TreeNodeSetOpen(nodeId, true);
+							// Insert all parents GUID into the to-be-open set,
+							// so their nodes get expanded in the hierarchy window in the next frame.
+							auto tryGetNewEntityParent = newEntity.TryGetComponent<ParentComponent>();
+							while (tryGetNewEntityParent.has_value())
+							{
+								DYE::GUID newEntityParentGUID = tryGetNewEntityParent.value().get().GetParentGUID();
+								entityNodesToBeOpenInHierarchy.insert(newEntityParentGUID);
+
+								newEntity = tryGetNewEntityParent.value().get().GetParent(scene.World);
+								tryGetNewEntityParent = newEntity.TryGetComponent<ParentComponent>();
+							}
 
 							changed = true;
 						}
@@ -1263,8 +1272,17 @@ namespace DYE::DYEditor
 							auto newEntity = Undo::DuplicateEntityRecursively(scene.World, entity, newName);
 							*pCurrentSelectedEntityGUID = newEntity.TryGetGUID().value();
 
-							// Open the entity tree node because we want to let the user see the newly created child entity.
-							ImGui::TreeNodeSetOpen(nodeId, true);
+							// Insert all parents GUID into the to-be-open set,
+							// so their nodes get expanded in the hierarchy window in the next frame.
+							auto tryGetNewEntityParent = newEntity.TryGetComponent<ParentComponent>();
+							while (tryGetNewEntityParent.has_value())
+							{
+								DYE::GUID newEntityParentGUID = tryGetNewEntityParent.value().get().GetParentGUID();
+								entityNodesToBeOpenInHierarchy.insert(newEntityParentGUID);
+
+								newEntity = tryGetNewEntityParent.value().get().GetParent(scene.World);
+								tryGetNewEntityParent = newEntity.TryGetComponent<ParentComponent>();
+							}
 						}
 						ImGui::EndPopup();
 					}
@@ -2388,8 +2406,7 @@ namespace DYE::DYEditor
 			m_CurrentlySelectedEntityGUID = tryGetGUID.value();
 
 			// Insert all parents GUID into the to-be-open set,
-			// so they get expanded in the hierarchy window in the next frame.
-			m_EntityNodesToBeOpenInHierarchy.insert(m_CurrentlySelectedEntityGUID);
+			// so their nodes get expanded in the hierarchy window in the next frame.
 			auto tryGetParent = selectedEntity.TryGetComponent<ParentComponent>();
 			while (tryGetParent.has_value())
 			{
