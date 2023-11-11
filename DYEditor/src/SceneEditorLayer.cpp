@@ -1887,7 +1887,7 @@ namespace DYE::DYEditor
 
 		if (!entity.IsValid())
 		{
-			ImGui::Text("Select a valid entity to inspect.");
+			ImGui::TextUnformatted("Select a valid entity to inspect.");
 			return false;
 		}
 
