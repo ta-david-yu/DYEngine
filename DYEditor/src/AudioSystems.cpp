@@ -32,7 +32,7 @@ namespace DYE::DYEditor
 				audioSource.Source.Stop();
 
 				auto wrappedEntity = world.WrapIdentifierIntoEntity(entity);
-				wrappedEntity.template RemoveComponent<StopAudioSourceComponent>();
+				wrappedEntity.RemoveComponent<StopAudioSourceComponent>();
 			}
 		}
 	}
