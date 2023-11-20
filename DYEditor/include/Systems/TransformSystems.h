@@ -11,7 +11,7 @@ namespace DYE::DYEditor
 		inline bool ExecuteInEditMode() const final { return true; }
 		ExecutionPhase GetPhase() const final { return ExecutionPhase::LateUpdate; }
 		void InitializeLoad(DYE::DYEditor::World& world, DYE::DYEditor::InitializeLoadParameters) final;
-		void Execute(DYE::DYEditor::World &childEntityIdentifier, DYE::DYEditor::ExecuteParameters params) final;
+		void Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params) final;
 		void DrawInspector(DYE::DYEditor::World &world) final;
 	};
 }

@@ -16,6 +16,7 @@
 #include <memory>
 #include <concepts>
 #include <utility>
+#include <unordered_set>
 
 #include <ImGuizmo.h>
 
@@ -73,6 +74,8 @@ namespace DYE::DYEditor
 		void SetApplication(Application* application) { m_pApplication = application; }
 		void SetRuntimeLayer(std::shared_ptr<SceneRuntimeLayer> runtimeLayer) { m_RuntimeLayer = std::move(runtimeLayer); }
 
+		void FocusSceneViewCameraToEntity(Entity entity);
+
 	private:
 		Application* m_pApplication = nullptr;
 		std::shared_ptr<SceneRuntimeLayer> m_RuntimeLayer;
@@ -81,6 +84,7 @@ namespace DYE::DYEditor
 
 		bool m_IsSceneHierarchyWindowFocused = false;
 		DYE::GUID m_CurrentlySelectedEntityGUID;
+		std::unordered_set<DYE::GUID> m_EntityNodesToBeOpenInHierarchy;
 
 		std::filesystem::path m_CurrentSceneFilePath;
 		bool m_OpenLoadSceneFilePopup = false;
@@ -106,7 +110,7 @@ namespace DYE::DYEditor
 											bool *pIsSceneDirty, bool &openLoadSceneFilePathPopup,
 											bool &openSaveSceneFilePathPopup);
 		static bool drawSceneView(Camera &sceneViewCamera, Framebuffer &entityIDFramebuffer, Entity selectedEntity, SceneViewContext &context);
-		static bool drawSceneEntityHierarchyPanel(Scene &scene, DYE::GUID *pCurrentSelectedEntityGUID);
+		static bool drawSceneEntityHierarchyPanel(Scene &scene, DYE::GUID *pCurrentSelectedEntityGUID, std::unordered_set<DYE::GUID> &entityNodesToBeOpenInHierarchy);
 		static bool drawSceneSystemPanel(Scene& scene);
 		template<typename Func> requires std::predicate<Func, std::string const&, SystemBase const*>
 		static bool drawSceneSystemList(Scene &scene, std::vector<SystemDescriptor> &systemDescriptors, Func addSystemFilterPredicate);

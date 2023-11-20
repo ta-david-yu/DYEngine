@@ -34,7 +34,7 @@ namespace DYE::DYEditor
 		auto syncGroup = world.GetRegistry().group<LocalToWorldComponent, LocalTransformComponent>({}, Exclude<ParentComponent>);
 		std::for_each
 		(
-			std::execution::par_unseq, syncGroup.begin(), syncGroup.end(),
+			std::execution::unseq, syncGroup.begin(), syncGroup.end(),
 			[&syncGroup](auto entityIdentifier)
 			{
 				LocalToWorldComponent &localToWorld = syncGroup.get<LocalToWorldComponent>(entityIdentifier);
@@ -48,7 +48,7 @@ namespace DYE::DYEditor
 		auto propagationView = world.GetRegistry().view<LocalToWorldComponent, ChildrenComponent>(Exclude<ParentComponent>);
 		std::for_each
 		(
-			std::execution::par_unseq, propagationView.begin(), propagationView.end(),
+			std::execution::unseq, propagationView.begin(), propagationView.end(),
 			[&propagationView, &world](auto entityIdentifier)
 			{
 				LocalToWorldComponent &rootParentLocalToWorld = propagationView.get<LocalToWorldComponent>(entityIdentifier);
@@ -57,7 +57,7 @@ namespace DYE::DYEditor
 				std::vector<EntityIdentifier> const& childrenEntityIdentifiers = childrenComponent.GetChildrenCache();
 				std::for_each
 				(
-					std::execution::par_unseq, childrenEntityIdentifiers.begin(), childrenEntityIdentifiers.end(),
+					std::execution::unseq, childrenEntityIdentifiers.begin(), childrenEntityIdentifiers.end(),
 					[&world, rootParentLocalToWorld](auto childEntityIdentifier)
 					{
 						computeLocalToWorldRecursively(world, rootParentLocalToWorld.Matrix, childEntityIdentifier);
@@ -97,7 +97,7 @@ namespace DYE::DYEditor
 		std::vector<EntityIdentifier> const& childrenEntityIdentifiers = tryGetChildrenComponent.value().get().GetChildrenCache();
 		std::for_each
 		(
-			std::execution::par_unseq, childrenEntityIdentifiers.begin(), childrenEntityIdentifiers.end(),
+			std::execution::unseq, childrenEntityIdentifiers.begin(), childrenEntityIdentifiers.end(),
 			[&world, localToWorld](auto childEntityIdentifier)
 			{
 				computeLocalToWorldRecursively(world, localToWorld, childEntityIdentifier);

@@ -26,6 +26,7 @@
 #include "Math/Math.h"
 #include "Audio/AudioManager.h"
 #include "SceneViewEntitySelection.h"
+#include "Util/StringUtil.h"
 
 #include "Core/Components.h"
 #include "Core/Systems.h"
@@ -36,6 +37,7 @@
 #include <iostream>
 #include <execution>
 #include <algorithm>
+#include <regex>
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -323,8 +325,11 @@ namespace DYE::DYEditor
 						if (tryGetSelectedEntity.has_value())
 						{
 							Entity selectedEntity = tryGetSelectedEntity.value();
+
 							std::string name = selectedEntity.TryGetName().value();
-							auto newEntity = Undo::DuplicateEntityRecursively(activeScene.World, selectedEntity, name + "(D)");
+							name = StringUtil::AddOrIncrementNumberSuffix(name);
+
+							auto newEntity = Undo::DuplicateEntityRecursively(activeScene.World, selectedEntity, name);
 							m_CurrentlySelectedEntityGUID = newEntity.TryGetGUID().value();
 
 							m_IsActiveSceneDirty = true;
@@ -367,6 +372,25 @@ namespace DYE::DYEditor
 						break;
 					}
 					m_SceneViewContext.GizmoType = ImGuizmo::OPERATION::SCALE;
+					break;
+				}
+
+				case KeyCode::F:
+				{
+					bool const isRelatedWindowFocused = m_IsSceneViewWindowFocused || m_IsSceneHierarchyWindowFocused;
+					if (!isRelatedWindowFocused)
+					{
+						break;
+					}
+
+					auto tryGetSelectedEntity = activeScene.World.TryGetEntityWithGUID(m_CurrentlySelectedEntityGUID);
+					if (!tryGetSelectedEntity.has_value())
+					{
+						break;
+					}
+
+					FocusSceneViewCameraToEntity(tryGetSelectedEntity.value());
+
 					break;
 				}
 
@@ -613,7 +637,7 @@ namespace DYE::DYEditor
 		m_IsSceneHierarchyWindowFocused = ImGui::IsWindowFocused();
 		if (isSceneHierarchyDrawn)
 		{
-			bool const isHierarchyChanged = drawSceneEntityHierarchyPanel(activeScene, &m_CurrentlySelectedEntityGUID);
+			bool const isHierarchyChanged = drawSceneEntityHierarchyPanel(activeScene, &m_CurrentlySelectedEntityGUID, m_EntityNodesToBeOpenInHierarchy);
 			m_IsActiveSceneDirty |= isHierarchyChanged;
 		}
 		ImGui::End();
@@ -1043,7 +1067,7 @@ namespace DYE::DYEditor
 		return changed;
 	}
 
-	bool SceneEditorLayer::drawSceneEntityHierarchyPanel(Scene &scene, DYE::GUID *pCurrentSelectedEntityGUID)
+	bool SceneEditorLayer::drawSceneEntityHierarchyPanel(Scene &scene, DYE::GUID *pCurrentSelectedEntityGUID, std::unordered_set<DYE::GUID> &entityNodesToBeOpenInHierarchy)
 	{
 		bool changed = false;
 
@@ -1122,7 +1146,8 @@ namespace DYE::DYEditor
 			 &pCurrentSelectedEntityGUID,
 			 &levelStack,
 			 &setParent,
-			 &reorderAtTop]
+			 &reorderAtTop,
+			 &entityNodesToBeOpenInHierarchy]
 			 (DYEditor::Entity &entity, std::size_t indexInWorld)
 			{
 				auto tryGetNameResult = entity.TryGetName();
@@ -1197,6 +1222,13 @@ namespace DYE::DYEditor
 				{
 					// We use GUID as the id of the TreeNode.
 					ImGuiID const nodeId = ImGui::GetCurrentWindow()->GetID(guid.ToString().c_str());
+
+					if (entityNodesToBeOpenInHierarchy.contains(guid))
+					{
+						ImGui::SetNextItemOpen(true, ImGuiCond_Once);
+						entityNodesToBeOpenInHierarchy.erase(guid);
+					}
+
 					isNodeOpen = ImGui::TreeNodeEx(guid.ToString().c_str(), flags, name.c_str()) && !isLeafNode;
 					if (ImGui::BeginPopupContextItem())
 					{
@@ -1220,18 +1252,37 @@ namespace DYE::DYEditor
 							Undo::EndGroupOperation();
 							Undo::SetLatestOperationDescription("Create Empty Entity Under Entity '%s'", name.c_str());
 
-							// Open the entity tree node because we want to let the user see the newly created child entity.
-							ImGui::TreeNodeSetOpen(nodeId, true);
+							// Insert all parents GUID into the to-be-open set,
+							// so their nodes get expanded in the hierarchy window in the next frame.
+							auto tryGetNewEntityParent = newEntity.TryGetComponent<ParentComponent>();
+							while (tryGetNewEntityParent.has_value())
+							{
+								DYE::GUID newEntityParentGUID = tryGetNewEntityParent.value().get().GetParentGUID();
+								entityNodesToBeOpenInHierarchy.insert(newEntityParentGUID);
+
+								newEntity = tryGetNewEntityParent.value().get().GetParent(scene.World);
+								tryGetNewEntityParent = newEntity.TryGetComponent<ParentComponent>();
+							}
 
 							changed = true;
 						}
 						if (ImGui::Selectable("Duplicate"))
 						{
-							auto newEntity = Undo::DuplicateEntityRecursively(scene.World, entity, name + "(D)");
+							std::string newName = StringUtil::AddOrIncrementNumberSuffix(name);
+							auto newEntity = Undo::DuplicateEntityRecursively(scene.World, entity, newName);
 							*pCurrentSelectedEntityGUID = newEntity.TryGetGUID().value();
 
-							// Open the entity tree node because we want to let the user see the newly created child entity.
-							ImGui::TreeNodeSetOpen(nodeId, true);
+							// Insert all parents GUID into the to-be-open set,
+							// so their nodes get expanded in the hierarchy window in the next frame.
+							auto tryGetNewEntityParent = newEntity.TryGetComponent<ParentComponent>();
+							while (tryGetNewEntityParent.has_value())
+							{
+								DYE::GUID newEntityParentGUID = tryGetNewEntityParent.value().get().GetParentGUID();
+								entityNodesToBeOpenInHierarchy.insert(newEntityParentGUID);
+
+								newEntity = tryGetNewEntityParent.value().get().GetParent(scene.World);
+								tryGetNewEntityParent = newEntity.TryGetComponent<ParentComponent>();
+							}
 						}
 						ImGui::EndPopup();
 					}
@@ -1559,7 +1610,7 @@ namespace DYE::DYEditor
 				std::size_t const numberOfSystems = systemDescriptors.size();
 				int const numberOfExecutingSystems = std::count_if
 				(
-					std::execution::par_unseq, systemDescriptors.begin(), systemDescriptors.end(),
+					std::execution::unseq, systemDescriptors.begin(), systemDescriptors.end(),
 					[](SystemDescriptor const &descriptor)
 					{
 						bool const isEnabled = descriptor.IsEnabled;
@@ -1836,7 +1887,7 @@ namespace DYE::DYEditor
 
 		if (!entity.IsValid())
 		{
-			ImGui::Text("Select a valid entity to inspect.");
+			ImGui::TextUnformatted("Select a valid entity to inspect.");
 			return false;
 		}
 
@@ -2353,6 +2404,18 @@ namespace DYE::DYEditor
 			}
 
 			m_CurrentlySelectedEntityGUID = tryGetGUID.value();
+
+			// Insert all parents GUID into the to-be-open set,
+			// so their nodes get expanded in the hierarchy window in the next frame.
+			auto tryGetParent = selectedEntity.TryGetComponent<ParentComponent>();
+			while (tryGetParent.has_value())
+			{
+				DYE::GUID parentGUID = tryGetParent.value().get().GetParentGUID();
+				m_EntityNodesToBeOpenInHierarchy.insert(parentGUID);
+
+				selectedEntity = tryGetParent.value().get().GetParent(activeScene.World);
+				tryGetParent = selectedEntity.TryGetComponent<ParentComponent>();
+			}
 		}
 	}
 
@@ -2435,6 +2498,22 @@ namespace DYE::DYEditor
 			scene.Clear();
 			SerializedObjectFactory::ApplySerializedSceneToEmptyScene(m_SerializedSceneCacheWhenEnterPlayMode, scene);
 		}
+	}
+
+
+	void SceneEditorLayer::FocusSceneViewCameraToEntity(Entity entity)
+	{
+		glm::vec3 entityPosition = glm::vec3 {0};
+		auto tryGetLocalToWorld = entity.TryGetComponent<LocalToWorldComponent>();
+		if (tryGetLocalToWorld.has_value())
+		{
+			entityPosition = tryGetLocalToWorld.value().get().GetPosition();
+		}
+
+		glm::vec3 cameraPosition = m_SceneViewCamera.GetPosition();
+		cameraPosition.x = entityPosition.x;
+		cameraPosition.y = entityPosition.y;
+		m_SceneViewCamera.SetPosition(cameraPosition);
 	}
 
 	void SceneEditorLayer::initializeNewSceneWithDefaultEntityAndSystems(Scene &newScene)

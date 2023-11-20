@@ -14,8 +14,7 @@ namespace DYE::DYEditor
 	class Entity;
 	class World
 	{
-		// We need this so Entity could access world.m_Registry for entt operation.
-		friend class Entity;
+		friend class Entity; // We need this so Entity could access world.m_Registry for entt operation.
 
 		friend class Undo;
 		friend class SerializedObjectFactory;
