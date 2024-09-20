@@ -371,6 +371,11 @@ namespace DYE::ImGuiUtil
 		ImGui::SetColumnWidth(0, Settings::ControlLabelWidth);
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+		{
+			// We added a tooltip in case the label name is too long to be shown in the column.
+			ImGui::SetTooltip(label.c_str());
+		}
 		ImGui::NextColumn();
 
 		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
