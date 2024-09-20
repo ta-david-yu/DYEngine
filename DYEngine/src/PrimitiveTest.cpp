@@ -4,6 +4,7 @@
 #include <glm/gtx/norm.hpp>
 
 #include <climits>
+#include <algorithm>
 
 namespace DYE::Math
 {
