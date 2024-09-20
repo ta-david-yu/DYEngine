@@ -3,6 +3,8 @@
 #include "Configuration/SubWindowConfiguration.h"
 #include "Util/Logger.h"
 #include "Util/Macro.h"
+#include "Graphics/WindowBase.h"
+#include "Graphics/WindowManager.h"
 #include "FileSystem/FileSystem.h"
 #include "ImGui/ImGuiUtil.h"
 
@@ -407,11 +409,14 @@ namespace DYE::DYEditor
 		// Main window section.
 		ImGui::Separator();
 
+		bool isMainWindowChanged = false;
+
 		auto mainWindowWidth = config.GetOrDefault<int>(RuntimeConfigKeys::MainWindowWidth, 1600);
 		if (ImGuiUtil::DrawIntControl("Main Window Width", mainWindowWidth, 1600))
 		{
 			config.Set(RuntimeConfigKeys::MainWindowWidth, mainWindowWidth);
 			changed = true;
+			isMainWindowChanged = true;
 		}
 
 		auto mainWindowHeight = config.GetOrDefault<int>(RuntimeConfigKeys::MainWindowHeight, 900);
@@ -419,6 +424,23 @@ namespace DYE::DYEditor
 		{
 			config.Set(RuntimeConfigKeys::MainWindowHeight, mainWindowHeight);
 			changed = true;
+			isMainWindowChanged = true;
+		}
+
+		constexpr int defaultFullScreenMode = static_cast<int>(FullScreenMode::Window);
+		int mainWindowFullScreenMode = config.GetOrDefault<int>(RuntimeConfigKeys::MainWindowFullScreenMode, defaultFullScreenMode);
+		if (ImGuiUtil::DrawDropdownControl("Main Window FullScreen Mode", mainWindowFullScreenMode, GetFullScreenModesInString()))
+		{
+			config.Set(RuntimeConfigKeys::MainWindowFullScreenMode, mainWindowFullScreenMode);
+			changed = true;
+			isMainWindowChanged = true;
+		}
+
+		if (ImGui::Button("Refresh Main Window"))
+		{
+			WindowBase* pMainWindow = WindowManager::GetMainWindow();
+			pMainWindow->SetSize(mainWindowWidth, mainWindowHeight);
+			pMainWindow->SetFullScreenMode(static_cast<FullScreenMode>(mainWindowFullScreenMode));
 		}
 
 		// Sub-windows section.

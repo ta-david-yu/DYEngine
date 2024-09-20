@@ -2,6 +2,7 @@
 
 #include "glm/glm.hpp"
 
+#include <vector>
 #include <string>
 #include <utility>
 #include <memory>
@@ -14,10 +15,16 @@ namespace DYE
 
 	enum class FullScreenMode
 	{
-		Window
-		, FullScreen						/// Fullscreen and force changing the resolution of the display.
-		, FullScreenWithDesktopResolution 	/// Fullscreen but doesn't force the resolution of the display to the application resolution
+		Window = 0
+		, FullScreen		/// Fullscreen and force changing the resolution of the display.
+		, FullScreenWindow 	/// Borderless fullscreen window
 	};
+
+	inline std::vector<std::string> GetFullScreenModesInString()
+	{
+		static const std::vector<std::string> modes = { "Window", "FullScreen", "FullScreenWindow" };
+		return modes;
+	}
 
     struct WindowProperties
     {

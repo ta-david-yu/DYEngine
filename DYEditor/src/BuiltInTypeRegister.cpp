@@ -676,7 +676,7 @@ namespace DYE::DYEditor
 				case FullScreenMode::FullScreen:
 					ImGuiUtil::DrawReadOnlyTextWithLabel("Mode", "FullScreen");
 					break;
-				case FullScreenMode::FullScreenWithDesktopResolution:
+				case FullScreenMode::FullScreenWindow:
 					ImGuiUtil::DrawReadOnlyTextWithLabel("Mode", "FullScreenWithDesktopResolution");
 					break;
 			}

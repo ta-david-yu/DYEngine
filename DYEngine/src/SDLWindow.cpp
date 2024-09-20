@@ -29,7 +29,7 @@ namespace DYE
 			case FullScreenMode::FullScreen:
 				fullScreenFlag = SDL_WINDOW_FULLSCREEN;
 				break;
-			case FullScreenMode::FullScreenWithDesktopResolution:
+			case FullScreenMode::FullScreenWindow:
 				fullScreenFlag = SDL_WINDOW_FULLSCREEN_DESKTOP;
 				break;
 		}
@@ -95,7 +95,7 @@ namespace DYE
 		}
 		else if (flags & SDL_WINDOW_FULLSCREEN_DESKTOP)
 		{
-			return FullScreenMode::FullScreenWithDesktopResolution;
+			return FullScreenMode::FullScreenWindow;
 		}
 
 		return FullScreenMode::Window;
@@ -117,7 +117,7 @@ namespace DYE
 			case FullScreenMode::FullScreen:
 				fullScreenFlag = SDL_WINDOW_FULLSCREEN;
 				break;
-			case FullScreenMode::FullScreenWithDesktopResolution:
+			case FullScreenMode::FullScreenWindow:
 				fullScreenFlag = SDL_WINDOW_FULLSCREEN_DESKTOP;
 				break;
 		}
@@ -164,6 +164,7 @@ namespace DYE
 
 	void SDLWindow::SetSize(std::uint32_t width, std::uint32_t height)
 	{
+		//SDL_SetWindowDisplayMode();
 		SDL_SetWindowSize(m_pNativeWindow, width, height);
 	}
 
