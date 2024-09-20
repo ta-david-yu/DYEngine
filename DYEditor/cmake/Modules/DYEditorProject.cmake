@@ -66,8 +66,8 @@ function(DYEditor_AddExecutable NAME SOURCE_ROOT_DIR INCLUDE_DIRS SOURCE_FILES H
     # 2. Remove -mconsole when linking SDL2 in DYEngine.
     add_executable(${DYE_PROJECT_NAME} ${DYE_PROJECT_SOURCE_FILES} ${DYE_PROJECT_HEADER_FILES})
 
-    target_link_libraries(${DYE_PROJECT_NAME} DYEngine)
-    target_link_libraries(${DYE_PROJECT_NAME} DYEditor)
+    target_link_libraries(${DYE_PROJECT_NAME} PRIVATE DYEngine)
+    target_link_libraries(${DYE_PROJECT_NAME} PRIVATE DYEditor)
 
     target_include_directories(${DYE_PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
 
