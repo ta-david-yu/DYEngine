@@ -4,8 +4,8 @@
 
 namespace DYE
 {
-	namespace FileSystem
-	{
-		bool FileExists(std::filesystem::path const& path);
-	};
+    namespace FileSystem
+    {
+        bool FileExists(std::filesystem::path const &path);
+    };
 }

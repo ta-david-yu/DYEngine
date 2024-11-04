@@ -13,58 +13,58 @@ namespace DYE
         return std::make_unique<SDLWindow>(windowProperties);
     }
 
-	WindowID WindowBase::GetMouseFocusedWindowID()
-	{
-		SDL_Window* pSDLWindow = SDL_GetMouseFocus();
-		return SDL_GetWindowID(pSDLWindow);
-	}
+    WindowID WindowBase::GetMouseFocusedWindowID()
+    {
+        SDL_Window *pSDLWindow = SDL_GetMouseFocus();
+        return SDL_GetWindowID(pSDLWindow);
+    }
 
-	std::shared_ptr<ContextBase> WindowBase::GetContext() const
-	{
-		if (m_Context == nullptr)
-		{
-			DYE_LOG_WARN("WindowBase::GetContext: m_Context has not been assigned therefore the return value is invalid."
-						  "You might have forget to call SetContext() for window %d.", GetWindowID());
-		}
+    std::shared_ptr<ContextBase> WindowBase::GetContext() const
+    {
+        if (m_Context == nullptr)
+        {
+            DYE_LOG_WARN("WindowBase::GetContext: m_Context has not been assigned therefore the return value is invalid."
+                         "You might have forget to call SetContext() for window %d.", GetWindowID());
+        }
 
-		return m_Context;
-	}
+        return m_Context;
+    }
 
-	void WindowBase::SetContext(std::shared_ptr<ContextBase> context)
-	{
-		m_Context = std::move(context);
-	}
+    void WindowBase::SetContext(std::shared_ptr<ContextBase> context)
+    {
+        m_Context = std::move(context);
+    }
 
-	void WindowBase::MakeCurrent()
-	{
-		if (m_Context == nullptr)
-		{
-			DYE_LOG_ERROR("WindowBase::MakeCurrent: Make current failed because m_Context is null. "
-						  "You might have forget to call SetContext() for window %d.", GetWindowID());
-			DYE_ASSERT(false && "WindowBase::MakeCurrent: Make current failed because m_Context is null. See log for further details.")
-		}
+    void WindowBase::MakeCurrent()
+    {
+        if (m_Context == nullptr)
+        {
+            DYE_LOG_ERROR("WindowBase::MakeCurrent: Make current failed because m_Context is null. "
+                          "You might have forget to call SetContext() for window %d.", GetWindowID());
+            DYE_ASSERT(false && "WindowBase::MakeCurrent: Make current failed because m_Context is null. See log for further details.")
+        }
 
-		m_Context->MakeCurrentForWindow(*this);
-	}
+        m_Context->MakeCurrentForWindow(*this);
+    }
 
-	glm::vec<2, std::int32_t> WindowBase::SetWindowSizeUsingWindowCenterAsAnchor(std::uint32_t width, std::uint32_t height)
-	{
-		int const previousWidth = GetWidth();
-		int const previousHeight = GetHeight();
-		glm::vec2 previousWindowPos = GetPosition();
+    glm::vec<2, std::int32_t> WindowBase::SetWindowSizeUsingWindowCenterAsAnchor(std::uint32_t width, std::uint32_t height)
+    {
+        int const previousWidth = GetWidth();
+        int const previousHeight = GetHeight();
+        glm::vec2 previousWindowPos = GetPosition();
 
-		SetSize(width, height);
-		previousWindowPos.x -= ((int) width - previousWidth) * 0.5f;
-		previousWindowPos.y -= ((int) height - previousHeight) * 0.5f;
+        SetSize(width, height);
+        previousWindowPos.x -= ((int) width - previousWidth) * 0.5f;
+        previousWindowPos.y -= ((int) height - previousHeight) * 0.5f;
 
-		previousWindowPos = glm::round(previousWindowPos);
-		SetPosition(previousWindowPos.x, previousWindowPos.y);
+        previousWindowPos = glm::round(previousWindowPos);
+        SetPosition(previousWindowPos.x, previousWindowPos.y);
 
-		return previousWindowPos;
-	}
+        return previousWindowPos;
+    }
 
-	void WindowBase::SetPosition(glm::vec<2, std::int32_t> position)
-	{
-		SetPosition(position.x, position.y);
-	}
+    void WindowBase::SetPosition(glm::vec<2, std::int32_t> position)
+    {
+        SetPosition(position.x, position.y);
+    }
 }

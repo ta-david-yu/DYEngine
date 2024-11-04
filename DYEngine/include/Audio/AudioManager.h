@@ -2,21 +2,21 @@
 
 namespace DYE
 {
-	class AudioSource;
+    class AudioSource;
 
-	class AudioManager
-	{
-		friend AudioSource;
-	public:
-		static void Init();
-		static void Close();
+    class AudioManager
+    {
+        friend AudioSource;
+    public:
+        static void Init();
+        static void Close();
 
-		static void UpdateRegisteredAudioStreams();
+        static void UpdateRegisteredAudioStreams();
 
-		static void DrawAudioManagerImGui(bool *pIsOpen = nullptr);
+        static void DrawAudioManagerImGui(bool *pIsOpen = nullptr);
 
-	private:
-		static void registerStreamingAudioSource(AudioSource *pSource);
-		static void unregisterStreamingAudioSource(AudioSource *pSource);
-	};
+    private:
+        static void registerStreamingAudioSource(AudioSource *pSource);
+        static void unregisterStreamingAudioSource(AudioSource *pSource);
+    };
 }

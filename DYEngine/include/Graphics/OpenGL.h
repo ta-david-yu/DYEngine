@@ -8,27 +8,27 @@
 namespace DYE
 {
     std::string glGetErrorMessage();
-    bool glCheckError(const char* functionName);
+    bool glCheckError(const char *functionName);
 }
 
 #ifdef DYE_DEBUG
 
 // glGetError to clear previous buffered error
-#define glCall(glFunction)						                                        \
-	do											                                        \
-	{                                                                                   \
-		glGetError();							                                        \
-		glFunction;								                                        \
-		if (glCheckError(#glFunction))			                                        \
-			DYE_LOG_WARN(glGetErrorMessage().c_str());    \
-	} while (false)
+#define glCall(glFunction)                                                                \
+    do                                                                                    \
+    {                                                                                   \
+        glGetError();                                                                    \
+        glFunction;                                                                        \
+        if (glCheckError(#glFunction))                                                    \
+            DYE_LOG_WARN(glGetErrorMessage().c_str());    \
+    } while (false)
 
-#define glCheckAfterCall(glFunction)			                                        \
-	do											                                        \
-	{                                                                                   \
-		if (glCheckError(#glFunction))			                                        \
-			DYE_LOG_WARN(glGetErrorMessage().c_str());	\
-	} while (false)
+#define glCheckAfterCall(glFunction)                                                    \
+    do                                                                                    \
+    {                                                                                   \
+        if (glCheckError(#glFunction))                                                    \
+            DYE_LOG_WARN(glGetErrorMessage().c_str());    \
+    } while (false)
 
 #else
 

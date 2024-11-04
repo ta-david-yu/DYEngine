@@ -9,17 +9,28 @@ namespace DYE
     {
         switch (type)
         {
-            case VertexAttributeType::Float:    return GL_FLOAT;
-            case VertexAttributeType::Float2:   return GL_FLOAT;
-            case VertexAttributeType::Float3:   return GL_FLOAT;
-            case VertexAttributeType::Float4:   return GL_FLOAT;
-            case VertexAttributeType::Mat3:     return GL_FLOAT;
-            case VertexAttributeType::Mat4:     return GL_FLOAT;
-            case VertexAttributeType::Int:      return GL_INT;
-            case VertexAttributeType::Int2:     return GL_INT;
-            case VertexAttributeType::Int3:     return GL_INT;
-            case VertexAttributeType::Int4:     return GL_INT;
-            case VertexAttributeType::Bool:     return GL_BOOL;
+            case VertexAttributeType::Float:
+                return GL_FLOAT;
+            case VertexAttributeType::Float2:
+                return GL_FLOAT;
+            case VertexAttributeType::Float3:
+                return GL_FLOAT;
+            case VertexAttributeType::Float4:
+                return GL_FLOAT;
+            case VertexAttributeType::Mat3:
+                return GL_FLOAT;
+            case VertexAttributeType::Mat4:
+                return GL_FLOAT;
+            case VertexAttributeType::Int:
+                return GL_INT;
+            case VertexAttributeType::Int2:
+                return GL_INT;
+            case VertexAttributeType::Int3:
+                return GL_INT;
+            case VertexAttributeType::Int4:
+                return GL_INT;
+            case VertexAttributeType::Bool:
+                return GL_BOOL;
 
             case VertexAttributeType::None:
                 break;
@@ -66,8 +77,8 @@ namespace DYE
         glCall(glBindVertexArray(m_ID));
         vertexBuffer->Bind();
 
-        const auto& layout = vertexBuffer->GetLayout();
-        for (const auto& element : layout)
+        const auto &layout = vertexBuffer->GetLayout();
+        for (const auto &element: layout)
         {
             switch (element.Type)
             {
@@ -83,42 +94,42 @@ namespace DYE
                                           ShaderDataTypeToOpenGLBaseType(element.Type),
                                           element.Normalized ? GL_TRUE : GL_FALSE,
                                           layout.GetStride(),
-                                          (const void*)element.Offset);
-					glVertexAttribDivisor(m_VertexBufferAttributeIndex, element.Divisor);
+                                          (const void *) element.Offset);
+                    glVertexAttribDivisor(m_VertexBufferAttributeIndex, element.Divisor);
                     m_VertexBufferAttributeIndex++;
                     break;
                 }
-                /// Cast to integer type (glVertexAttribIPointer)
+                    /// Cast to integer type (glVertexAttribIPointer)
                 case VertexAttributeType::Int:
                 case VertexAttributeType::Int2:
                 case VertexAttributeType::Int3:
                 case VertexAttributeType::Int4:
                 case VertexAttributeType::Bool:
                 {
-					glCall(glEnableVertexAttribArray(m_VertexBufferAttributeIndex));
+                    glCall(glEnableVertexAttribArray(m_VertexBufferAttributeIndex));
                     glVertexAttribIPointer(m_VertexBufferAttributeIndex,
                                            element.GetComponentCount(),
                                            ShaderDataTypeToOpenGLBaseType(element.Type),
                                            layout.GetStride(),
-                                           (const void*)element.Offset);
-					glVertexAttribDivisor(m_VertexBufferAttributeIndex, element.Divisor);
+                                           (const void *) element.Offset);
+                    glVertexAttribDivisor(m_VertexBufferAttributeIndex, element.Divisor);
                     m_VertexBufferAttributeIndex++;
                     break;
                 }
-                /// Cast to float type matrix,  (glVertexAttribPointer)
+                    /// Cast to float type matrix,  (glVertexAttribPointer)
                 case VertexAttributeType::Mat3:
                 case VertexAttributeType::Mat4:
                 {
                     uint8_t count = element.GetComponentCount();
                     for (uint8_t i = 0; i < count; i++)
                     {
-						glCall(glEnableVertexAttribArray(m_VertexBufferAttributeIndex));
+                        glCall(glEnableVertexAttribArray(m_VertexBufferAttributeIndex));
                         glVertexAttribPointer(m_VertexBufferAttributeIndex,
                                               count,
                                               ShaderDataTypeToOpenGLBaseType(element.Type),
                                               element.Normalized ? GL_TRUE : GL_FALSE,
                                               layout.GetStride(),
-                                              (const void*)(element.Offset + sizeof(float) * count * i));
+                                              (const void *) (element.Offset + sizeof(float) * count * i));
                         glVertexAttribDivisor(m_VertexBufferAttributeIndex, element.Divisor);
                         m_VertexBufferAttributeIndex++;
                     }

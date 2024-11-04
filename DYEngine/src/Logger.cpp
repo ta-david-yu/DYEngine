@@ -10,9 +10,9 @@
 namespace DYE
 {
     /// Declare it here so Print func can use it
-    void customPrint(LogType type, const char* file, int line, const char* msg, va_list args);
+    void customPrint(LogType type, const char *file, int line, const char *msg, va_list args);
 
-    void Print(LogType type, const char* file, int line, const char* msg, ...)
+    void Print(LogType type, const char *file, int line, const char *msg, ...)
     {
         va_list args;
         va_start(args, msg);
@@ -20,13 +20,13 @@ namespace DYE
         va_end(args);
     }
 
-    void customPrint(LogType type, const char* file, int line, const char* msg, va_list args)
+    void customPrint(LogType type, const char *file, int line, const char *msg, va_list args)
     {
         char formattedMsg[LOG_BUFFER_SIZE];
         char positionMsg[LOG_BUFFER_SIZE];
 
 #if defined(_MSC_VER)
-		int offset = vsprintf_s(formattedMsg, msg, args);
+        int offset = vsprintf_s(formattedMsg, msg, args);
 #else
         int offset = std::vsprintf(formattedMsg, msg, args);
 #endif

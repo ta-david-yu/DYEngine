@@ -8,7 +8,7 @@ namespace DYE
 {
     LayerStack::~LayerStack()
     {
-        for (const std::shared_ptr<LayerBase>& layer : m_Layers)
+        for (const std::shared_ptr<LayerBase> &layer: m_Layers)
         {
             layer->OnDetach();
         }
@@ -21,10 +21,10 @@ namespace DYE
         m_LayerInsertIndex++;
     }
 
-    void LayerStack::PopLayer(std::shared_ptr<LayerBase>& layer)
+    void LayerStack::PopLayer(std::shared_ptr<LayerBase> &layer)
     {
         auto layerEnd = m_Layers.begin() + m_LayerInsertIndex;
-        auto it  = std::find(m_Layers.begin(), layerEnd, layer);
+        auto it = std::find(m_Layers.begin(), layerEnd, layer);
 
         if (it != layerEnd)
         {
@@ -34,7 +34,7 @@ namespace DYE
         }
     }
 
-    void LayerStack::PushOverlay(const std::shared_ptr<LayerBase>& overlay)
+    void LayerStack::PushOverlay(const std::shared_ptr<LayerBase> &overlay)
     {
         overlay->OnAttach();
         m_Layers.emplace_back(overlay);

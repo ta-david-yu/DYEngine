@@ -15,7 +15,7 @@ namespace DYE
         WindowClose, WindowSizeChange, WindowManualResize, WindowMove,
         KeyDown, KeyUp,
         MouseButtonDown, MouseButtonUp, MouseMove, MouseScroll,
-		GamepadConnect, GamepadDisconnect
+        GamepadConnect, GamepadDisconnect
     };
 
     /// EventCategory, a higher level of categories. An event could be Input + Keyboard, or Input + Mouse event
@@ -23,16 +23,16 @@ namespace DYE
     {
         None = 0,
         /// Window related events, such as WindowClose, WindowSizeChange
-        Application =  	1 << 0,
-        Input =        	1 << 1,
-        Keyboard =		1 << 2,
-        Mouse =			1 << 3,
-		Gamepad =   	1 << 4
+        Application = 1 << 0,
+        Input = 1 << 1,
+        Keyboard = 1 << 2,
+        Mouse = 1 << 3,
+        Gamepad = 1 << 4
     };
 
-    inline EventCategory operator | (EventCategory lhs, EventCategory rhs)
+    inline EventCategory operator|(EventCategory lhs, EventCategory rhs)
     {
-        using T = std::underlying_type_t <EventCategory>;
+        using T = std::underlying_type_t<EventCategory>;
         return static_cast<EventCategory>(static_cast<T>(lhs) | static_cast<T>(rhs));
     }
 
@@ -45,8 +45,9 @@ namespace DYE
     /// Every derived final class should have this.
     /// \param type: EventType. For instance, EventType::KeyDown
 #define EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return EventType::type; }\
-								virtual EventType GetEventType() const override { return GetStaticType(); }\
-								virtual std::string GetName() const override { return #type; }\
+                                virtual EventType GetEventType() const override { return GetStaticType(); }\
+                                virtual std::string GetName() const override { return #type; }\
+
 
     /// Event data structure
     class Event : MessageData
@@ -64,7 +65,7 @@ namespace DYE
 
         bool IsInCategory(EventCategory category) const
         {
-            using T = std::underlying_type_t <EventCategory>;
+            using T = std::underlying_type_t<EventCategory>;
             return GetCategoryFlags() & static_cast<T>(category);
         }
 
@@ -75,6 +76,6 @@ namespace DYE
     class EventHandler : public MessageHandlerBase<Event>
     {
     public:
-        void Handle(Event& event) override = 0;
+        void Handle(Event &event) override = 0;
     };
 }

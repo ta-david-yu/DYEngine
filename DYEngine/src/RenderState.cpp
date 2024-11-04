@@ -3,94 +3,94 @@
 namespace DYE
 {
 
-	std::optional<CompareFunction> TryCastStringToCompareFunction(std::string const& input)
-	{
-		if (input == "Never")
-		{
-			return CompareFunction::Never;
-		}
+    std::optional<CompareFunction> TryCastStringToCompareFunction(std::string const &input)
+    {
+        if (input == "Never")
+        {
+            return CompareFunction::Never;
+        }
 
-		if (input == "Less")
-		{
-			return CompareFunction::Less;
-		}
+        if (input == "Less")
+        {
+            return CompareFunction::Less;
+        }
 
-		if (input == "Equal")
-		{
-			return CompareFunction::Equal;
-		}
+        if (input == "Equal")
+        {
+            return CompareFunction::Equal;
+        }
 
-		if (input == "LessEqual" || input == "LEqual")
-		{
-			return CompareFunction::LessEqual;
-		}
+        if (input == "LessEqual" || input == "LEqual")
+        {
+            return CompareFunction::LessEqual;
+        }
 
-		if (input == "Greater")
-		{
-			return CompareFunction::Greater;
-		}
+        if (input == "Greater")
+        {
+            return CompareFunction::Greater;
+        }
 
-		if (input == "NotEqual")
-		{
-			return CompareFunction::NotEqual;
-		}
+        if (input == "NotEqual")
+        {
+            return CompareFunction::NotEqual;
+        }
 
-		if (input == "GreaterEqual" || input == "GEqual")
-		{
-			return CompareFunction::GreaterEqual;
-		}
+        if (input == "GreaterEqual" || input == "GEqual")
+        {
+            return CompareFunction::GreaterEqual;
+        }
 
-		if (input == "Always")
-		{
-			return CompareFunction::Always;
-		}
+        if (input == "Always")
+        {
+            return CompareFunction::Always;
+        }
 
-		return {};
-	}
+        return {};
+    }
 
-	void RenderState::Apply()
-	{
-		applyDepthState();
-		applyBlendState();
-	}
+    void RenderState::Apply()
+    {
+        applyDepthState();
+        applyBlendState();
+    }
 
-	void RenderState::applyDepthState()
-	{
-		if (!DepthState.IsEnabled)
-		{
-			glCall(glDisable(GL_DEPTH_TEST));
-			return;
-		}
+    void RenderState::applyDepthState()
+    {
+        if (!DepthState.IsEnabled)
+        {
+            glCall(glDisable(GL_DEPTH_TEST));
+            return;
+        }
 
-		glCall(glEnable(GL_DEPTH_TEST));
+        glCall(glEnable(GL_DEPTH_TEST));
 
-		// Set ZWrite
-		if (DepthState.IsWriteEnabled)
-		{
-			glCall(glDepthMask(GL_TRUE));
-		}
-		else
-		{
-			glCall(glDepthMask(GL_FALSE));
-		}
+        // Set ZWrite
+        if (DepthState.IsWriteEnabled)
+        {
+            glCall(glDepthMask(GL_TRUE));
+        }
+        else
+        {
+            glCall(glDepthMask(GL_FALSE));
+        }
 
-		// Set ZTest
-		glCall(glDepthFunc(static_cast<GLenum>(DepthState.CompareFunction)));
-	}
+        // Set ZTest
+        glCall(glDepthFunc(static_cast<GLenum>(DepthState.CompareFunction)));
+    }
 
-	void RenderState::applyBlendState()
-	{
-		if (!BlendState.IsEnabled)
-		{
-			glCall(glDisable(GL_BLEND));
-			return;
-		}
+    void RenderState::applyBlendState()
+    {
+        if (!BlendState.IsEnabled)
+        {
+            glCall(glDisable(GL_BLEND));
+            return;
+        }
 
-		glCall(glEnable(GL_BLEND));
+        glCall(glEnable(GL_BLEND));
 
-		// Set Blend Func
-		glCall(glBlendFunc(
-			static_cast<GLenum>(BlendState.SourceFactor),
-			static_cast<GLenum>(BlendState.DestinationFactor)));
-	}
+        // Set Blend Func
+        glCall(glBlendFunc(
+            static_cast<GLenum>(BlendState.SourceFactor),
+            static_cast<GLenum>(BlendState.DestinationFactor)));
+    }
 }

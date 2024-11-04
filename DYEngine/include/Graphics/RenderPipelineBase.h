@@ -10,24 +10,26 @@
 
 namespace DYE
 {
-	class Material;
-	class VertexArray;
-	class RenderPipelineManager;
+    class Material;
 
-	class RenderPipelineBase
-	{
-		friend RenderPipelineManager;
-	public:
-		virtual ~RenderPipelineBase() = default;
+    class VertexArray;
 
-		// Submit a geometry and a material to be rendered.
-		// Whether the submission is rendered immediately, depending on the implementation details of derived RenderPipeline.
-		virtual void Submit(const std::shared_ptr<VertexArray> &vertexArray, const std::shared_ptr<Material> &material,
-							glm::mat4 objectToWorldMatrix, MaterialPropertyBlock materialPropertyBlock) = 0;
+    class RenderPipelineManager;
 
-	protected:
-		virtual void onPreRender() = 0;
-		virtual void renderCamera(const Camera &camera) = 0;
-		virtual void onPostRender() = 0;
-	};
+    class RenderPipelineBase
+    {
+        friend RenderPipelineManager;
+    public:
+        virtual ~RenderPipelineBase() = default;
+
+        // Submit a geometry and a material to be rendered.
+        // Whether the submission is rendered immediately, depending on the implementation details of derived RenderPipeline.
+        virtual void Submit(const std::shared_ptr<VertexArray> &vertexArray, const std::shared_ptr<Material> &material,
+                            glm::mat4 objectToWorldMatrix, MaterialPropertyBlock materialPropertyBlock) = 0;
+
+    protected:
+        virtual void onPreRender() = 0;
+        virtual void renderCamera(const Camera &camera) = 0;
+        virtual void onPostRender() = 0;
+    };
 }

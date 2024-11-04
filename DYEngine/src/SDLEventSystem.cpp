@@ -17,53 +17,53 @@ namespace DYE
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
-			// TODO: move this to some place in ImGuiLayer,
-			// 	so we don't have to know about imgui here.
+            // TODO: move this to some place in ImGuiLayer,
+            // 	so we don't have to know about imgui here.
             // Pass SDL_Event to ImGui
-			bool isPreprocessedByImGui = false;
+            bool isPreprocessedByImGui = false;
             if (m_PreProcessImGuiEvent)
             {
-				isPreprocessedByImGui = ImGui_ImplSDL2_ProcessEvent(&event);
+                isPreprocessedByImGui = ImGui_ImplSDL2_ProcessEvent(&event);
             }
 
             std::shared_ptr<Event> eventPtr;
-			SDL_JoystickID joystickInstanceID;
+            SDL_JoystickID joystickInstanceID;
             bool caught = false;
 
             switch (event.type)
             {
                 case SDL_QUIT:
-					eventPtr.reset(new ApplicationQuitEvent(event.quit.timestamp));
+                    eventPtr.reset(new ApplicationQuitEvent(event.quit.timestamp));
                     caught = true;
                     break;
                 case SDL_WINDOWEVENT:
-					if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
-					{
-						// We only broadcast window size changed event if it's not an imgui window.
-						bool const isOSWindow = WindowManager::HasWindowWithID(event.window.windowID);
-						if (!isOSWindow)
-						{
-							break;
-						}
+                    if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+                    {
+                        // We only broadcast window size changed event if it's not an imgui window.
+                        bool const isOSWindow = WindowManager::HasWindowWithID(event.window.windowID);
+                        if (!isOSWindow)
+                        {
+                            break;
+                        }
 
-						eventPtr.reset(new WindowSizeChangeEvent(event.window.windowID, event.window.data1, event.window.data2));
-						caught = true;
-					}
-					else if (event.window.event == SDL_WINDOWEVENT_RESIZED)
+                        eventPtr.reset(new WindowSizeChangeEvent(event.window.windowID, event.window.data1, event.window.data2));
+                        caught = true;
+                    }
+                    else if (event.window.event == SDL_WINDOWEVENT_RESIZED)
                     {
                         eventPtr.reset(new WindowManualResizeEvent(event.window.windowID, event.window.data1, event.window.data2));
                         caught = true;
                     }
-					else if (event.window.event == SDL_WINDOWEVENT_CLOSE)
-					{
-						eventPtr.reset(new WindowCloseEvent(event.window.windowID));
-						caught = true;
-					}
-					else if (event.window.event == SDL_WINDOWEVENT_MOVED)
-					{
-						eventPtr.reset(new WindowMoveEvent(event.window.windowID, event.window.data1, event.window.data2));
-						caught = true;
-					}
+                    else if (event.window.event == SDL_WINDOWEVENT_CLOSE)
+                    {
+                        eventPtr.reset(new WindowCloseEvent(event.window.windowID));
+                        caught = true;
+                    }
+                    else if (event.window.event == SDL_WINDOWEVENT_MOVED)
+                    {
+                        eventPtr.reset(new WindowMoveEvent(event.window.windowID, event.window.data1, event.window.data2));
+                        caught = true;
+                    }
 
                     /// MORE
                     break;
@@ -91,45 +91,45 @@ namespace DYE
                     eventPtr.reset(new MouseButtonUpEvent(static_cast<MouseButton>(event.button.button)));
                     caught = true;
                     break;
-				case SDL_MOUSEWHEEL:
-					// TODO: update SDL to >= 2.0.18 so we can use wheel.preciseX/Y instead of wheel.X/Y.
-					// 	see - https://wiki.libsdl.org/SDL2/SDL_MouseWheelEvent#remarks for further information.
-					if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
-					{
-						eventPtr.reset(new MouseScrolledEvent(-event.wheel.x, -event.wheel.y));
-					}
-					else
-					{
-						eventPtr.reset(new MouseScrolledEvent(event.wheel.x, event.wheel.y));
-					}
-					caught = true;
-					break;
-				case SDL_CONTROLLERDEVICEADDED:
-					// Note that cdevice.which is not the instance id in ControllerAddedEvent, but index (location in the system array).
-					// To keep the event data symmetrical, we want to use the instance id instead.
-					joystickInstanceID = SDL_JoystickGetDeviceInstanceID(event.cdevice.which);
-					eventPtr.reset(new GamepadConnectEvent(joystickInstanceID, event.cdevice.which));
-					caught = true;
-					break;
-				case SDL_CONTROLLERDEVICEREMOVED:
-					// This event would only be fired if the disconnected joystick is:
-					// 1. a game controller/gamepad
-					// 2. has been opened
-					joystickInstanceID = event.cdevice.which;
-					eventPtr.reset(new GamepadDisconnectEvent(joystickInstanceID));
-					caught = true;
-					break;
-				case SDL_CONTROLLERDEVICEREMAPPED:
-					break;
-				case SDL_JOYDEVICEADDED:
-					joystickInstanceID = SDL_JoystickGetDeviceInstanceID(event.jdevice.which);
-					DYE_LOG("Joystick Connect %d (index=%d), count - %d", joystickInstanceID, event.jdevice.which, SDL_NumJoysticks());
-					break;
-				case SDL_JOYDEVICEREMOVED:
-					DYE_LOG("Joystick Disconnect %d, count - %d", event.jdevice.which, SDL_NumJoysticks());
-					break;
+                case SDL_MOUSEWHEEL:
+                    // TODO: update SDL to >= 2.0.18 so we can use wheel.preciseX/Y instead of wheel.X/Y.
+                    // 	see - https://wiki.libsdl.org/SDL2/SDL_MouseWheelEvent#remarks for further information.
+                    if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
+                    {
+                        eventPtr.reset(new MouseScrolledEvent(-event.wheel.x, -event.wheel.y));
+                    }
+                    else
+                    {
+                        eventPtr.reset(new MouseScrolledEvent(event.wheel.x, event.wheel.y));
+                    }
+                    caught = true;
+                    break;
+                case SDL_CONTROLLERDEVICEADDED:
+                    // Note that cdevice.which is not the instance id in ControllerAddedEvent, but index (location in the system array).
+                    // To keep the event data symmetrical, we want to use the instance id instead.
+                    joystickInstanceID = SDL_JoystickGetDeviceInstanceID(event.cdevice.which);
+                    eventPtr.reset(new GamepadConnectEvent(joystickInstanceID, event.cdevice.which));
+                    caught = true;
+                    break;
+                case SDL_CONTROLLERDEVICEREMOVED:
+                    // This event would only be fired if the disconnected joystick is:
+                    // 1. a game controller/gamepad
+                    // 2. has been opened
+                    joystickInstanceID = event.cdevice.which;
+                    eventPtr.reset(new GamepadDisconnectEvent(joystickInstanceID));
+                    caught = true;
+                    break;
+                case SDL_CONTROLLERDEVICEREMAPPED:
+                    break;
+                case SDL_JOYDEVICEADDED:
+                    joystickInstanceID = SDL_JoystickGetDeviceInstanceID(event.jdevice.which);
+                    DYE_LOG("Joystick Connect %d (index=%d), count - %d", joystickInstanceID, event.jdevice.which, SDL_NumJoysticks());
+                    break;
+                case SDL_JOYDEVICEREMOVED:
+                    DYE_LOG("Joystick Disconnect %d, count - %d", event.jdevice.which, SDL_NumJoysticks());
+                    break;
 
-				default:
+                default:
                     // Error
                     caught = false;
                     break;

@@ -23,7 +23,7 @@ namespace DYE
         static_assert(std::is_base_of<MessageData, TMessageData>::value, "TMessageData must inherit from MessageData.");
     public:
         /// Handle the given message data
-        virtual void Handle(TMessageData& messageData) = 0;
+        virtual void Handle(TMessageData &messageData) = 0;
     };
 
     template<typename TMessageData>
@@ -32,7 +32,7 @@ namespace DYE
         static_assert(std::is_base_of<MessageData, TMessageData>::value, "TMessageData must inherit from MessageData.");
     public:
         /// Register message event handler, we pass in a raw pointer because the handler itself is responsible for registering & unregistering.
-        void Register(MessageHandlerBase<TMessageData>* handler)
+        void Register(MessageHandlerBase<TMessageData> *handler)
         {
 #ifdef DYE_DEBUG
             auto registeredHandlerItr = std::find(std::begin(m_MessageHandlers), std::end(m_MessageHandlers), handler);
@@ -46,7 +46,7 @@ namespace DYE
         }
 
         /// Unregister an message handler, we pass in a raw pointer because the handler itself is responsible for registering & unregistering.
-        void Unregister(MessageHandlerBase<TMessageData>* handler)
+        void Unregister(MessageHandlerBase<TMessageData> *handler)
         {
             auto registeredHandlerItr = std::find(std::begin(m_MessageHandlers), std::end(m_MessageHandlers), handler);
 
@@ -61,15 +61,15 @@ namespace DYE
         }
 
     protected:
-        void broadcast(TMessageData& messageData)
+        void broadcast(TMessageData &messageData)
         {
-            for (MessageHandlerBase<TMessageData>* pHandler : m_MessageHandlers)
+            for (MessageHandlerBase<TMessageData> *pHandler: m_MessageHandlers)
             {
                 pHandler->Handle(messageData);
             }
         }
 
     private:
-        std::vector<MessageHandlerBase<TMessageData>*> m_MessageHandlers {};
+        std::vector<MessageHandlerBase<TMessageData> *> m_MessageHandlers {};
     };
 }

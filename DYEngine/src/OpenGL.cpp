@@ -9,7 +9,7 @@ namespace DYE
         return g_glErrorMessage;
     }
 
-    bool glCheckError(const char* functionName)
+    bool glCheckError(const char *functionName)
     {
         GLenum error = glGetError();
         if (error != GL_NO_ERROR)

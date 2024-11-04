@@ -33,15 +33,15 @@ namespace DYE
 
         virtual void OnRender() {}
 
-		virtual void OnPostRender() {}
+        virtual void OnPostRender() {}
 
         virtual void OnImGui() {}
 
-		virtual void OnEndOfFrame() {}
+        virtual void OnEndOfFrame() {}
 
-        virtual void OnEvent(Event& event) {}
+        virtual void OnEvent(Event &event) {}
 
-        const std::string& GetName() const { return m_Name; }
+        const std::string &GetName() const { return m_Name; }
 
     protected:
         std::string m_Name;

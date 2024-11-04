@@ -12,11 +12,12 @@ namespace DYE
     class Time
     {
         friend class Application;
-    public:
-        static Time& GetInstance() { return s_Instance; }
 
-		/// Initialize internal timer instance.
-		static void InitSingleton(uint32_t fixedFps);
+    public:
+        static Time &GetInstance() { return s_Instance; }
+
+        /// Initialize internal timer instance.
+        static void InitSingleton(uint32_t fixedFps);
 
         Time(const Time &) = delete;
 
@@ -24,27 +25,27 @@ namespace DYE
         /// \return m_DeltaTicks / 1000.0
         double DeltaTime() const { return m_DeltaTicks / 1000.0; }
 
-		float DeltaTimeF() const { return m_DeltaTicks / 1000.0f; }
+        float DeltaTimeF() const { return m_DeltaTicks / 1000.0f; }
 
         /// A fixed delta time in second for Physics Simulation, const value
         /// \return 1 / m_Fps
         double FixedDeltaTime() const { return 1.0 / m_FixedFramePerSecond; }
 
-		float FixedDeltaTimeF() const { return 1.0f / m_FixedFramePerSecond; }
+        float FixedDeltaTimeF() const { return 1.0f / m_FixedFramePerSecond; }
 
         uint32_t FixedFramePerSecond() const { return m_FixedFramePerSecond; }
 
     private:
 
-		Time() = default;
+        Time() = default;
 
-		/// The created Time instance is assigned as the singleton instance
-		/// \param fixedFps The number of frames per second in FixedUpdate event, used to determine FixedDeltaTime()
-		explicit Time(uint32_t fixedFps) : m_FixedFramePerSecond(fixedFps), m_LastTicks(0), m_TicksSinceStart(0), m_DeltaTicks(0)
-		{
-		}
+        /// The created Time instance is assigned as the singleton instance
+        /// \param fixedFps The number of frames per second in FixedUpdate event, used to determine FixedDeltaTime()
+        explicit Time(uint32_t fixedFps) : m_FixedFramePerSecond(fixedFps), m_LastTicks(0), m_TicksSinceStart(0), m_DeltaTicks(0)
+        {
+        }
 
-	private:
+    private:
         static Time s_Instance;
 
         /// The number of frames per second, used to determine FixedDeltaTime()

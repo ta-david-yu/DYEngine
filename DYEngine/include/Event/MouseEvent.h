@@ -9,8 +9,7 @@ namespace DYE
     {
     public:
         MouseMovedEvent(const float x, const float y, const float deltaX, const float deltaY)
-            : m_MouseX(x), m_MouseY(y), m_MouseDeltaX(deltaX), m_MouseDeltaY(deltaY)
-        {}
+            : m_MouseX(x), m_MouseY(y), m_MouseDeltaX(deltaX), m_MouseDeltaY(deltaY) {}
 
         float GetX() const { return m_MouseX; }
         float GetY() const { return m_MouseY; }
@@ -25,40 +24,40 @@ namespace DYE
         float m_MouseDeltaX {0}, m_MouseDeltaY {0};
     };
 
-	class MouseScrolledEvent : public Event
-	{
-	public:
-		MouseScrolledEvent(float x, float y) : m_X(x), m_Y(y) {}
+    class MouseScrolledEvent : public Event
+    {
+    public:
+        MouseScrolledEvent(float x, float y) : m_X(x), m_Y(y) {}
 
-		float GetX() const { return m_X; }
-		float GetY() const { return m_Y; }
+        float GetX() const { return m_X; }
+        float GetY() const { return m_Y; }
 
-		EVENT_CLASS_TYPE(MouseScroll)
-		EVENT_CLASS_CATEGORY(EventCategory::Mouse | EventCategory::Input)
+        EVENT_CLASS_TYPE(MouseScroll)
+        EVENT_CLASS_CATEGORY(EventCategory::Mouse | EventCategory::Input)
 
-	private:
-		float m_X {0};
-		float m_Y {0};
-	};
+    private:
+        float m_X {0};
+        float m_Y {0};
+    };
 
     class MouseButtonEvent : public Event
     {
     public:
-		MouseButton GetMouseButton() const { return m_Button; }
+        MouseButton GetMouseButton() const { return m_Button; }
 
         EVENT_CLASS_CATEGORY(EventCategory::Mouse | EventCategory::Input)
     protected:
         explicit MouseButtonEvent(const MouseButton button)
-                : m_Button(button) {}
+            : m_Button(button) {}
 
-		MouseButton m_Button;
+        MouseButton m_Button;
     };
 
     class MouseButtonDownEvent : public MouseButtonEvent
     {
     public:
         explicit MouseButtonDownEvent(const MouseButton button)
-                : MouseButtonEvent(button) {}
+            : MouseButtonEvent(button) {}
 
         EVENT_CLASS_TYPE(MouseButtonDown)
     };
@@ -67,7 +66,7 @@ namespace DYE
     {
     public:
         explicit MouseButtonUpEvent(const MouseButton button)
-                : MouseButtonEvent(button) {}
+            : MouseButtonEvent(button) {}
 
         EVENT_CLASS_TYPE(MouseButtonUp)
     };

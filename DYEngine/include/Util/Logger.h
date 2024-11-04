@@ -20,7 +20,7 @@ namespace DYE
     /// \param line line of the filename
     /// \param msg formatting message
     /// \param ...
-    void Print(LogType type, const char* file, int line, const char* msg, ...);
+    void Print(LogType type, const char *file, int line, const char *msg, ...);
 }
 
 /// Log without line, file information

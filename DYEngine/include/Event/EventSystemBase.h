@@ -22,6 +22,6 @@ namespace DYE
         static std::unique_ptr<EventSystemBase> Create();
 
     protected:
-        std::vector<EventHandler*> m_EventHandlers {};
+        std::vector<EventHandler *> m_EventHandlers {};
     };
 }

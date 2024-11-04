@@ -20,11 +20,11 @@ namespace DYE
         virtual void Bind() const;
         virtual void Unbind() const;
 
-        virtual void AddVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer);
-        virtual void SetIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer);
+        virtual void AddVertexBuffer(const std::shared_ptr<VertexBuffer> &vertexBuffer);
+        virtual void SetIndexBuffer(const std::shared_ptr<IndexBuffer> &indexBuffer);
 
-        virtual const std::vector<std::shared_ptr<VertexBuffer>>& GetVertexBuffers() const { return m_VertexBuffers; }
-        virtual const std::shared_ptr<IndexBuffer>& GetIndexBuffer() const { return m_IndexBuffer; }
+        virtual const std::vector<std::shared_ptr<VertexBuffer>> &GetVertexBuffers() const { return m_VertexBuffers; }
+        virtual const std::shared_ptr<IndexBuffer> &GetIndexBuffer() const { return m_IndexBuffer; }
     private:
         VertexArrayID m_ID {0};
         /// The latest index of the vertex array attributes

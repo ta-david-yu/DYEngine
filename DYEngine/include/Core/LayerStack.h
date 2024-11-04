@@ -20,15 +20,15 @@ namespace DYE
 
         /// call layer->OnDetach, pop layer
         /// \param layer
-        void PopLayer(std::shared_ptr<LayerBase>& layer);
+        void PopLayer(std::shared_ptr<LayerBase> &layer);
 
         /// call overlay->OnAttach, push layer on the top of the stack (overlay)
         /// \param overlay
-        void PushOverlay(const std::shared_ptr<LayerBase>& overlay);
+        void PushOverlay(const std::shared_ptr<LayerBase> &overlay);
 
         /// call overlay->OnDetach, pop layer
         /// \param overlay
-        void PopOverlay(std::shared_ptr<LayerBase>& overlay);
+        void PopOverlay(std::shared_ptr<LayerBase> &overlay);
 
         std::vector<std::shared_ptr<LayerBase>>::iterator begin() { return m_Layers.begin(); }
         std::vector<std::shared_ptr<LayerBase>>::iterator end() { return m_Layers.end(); }

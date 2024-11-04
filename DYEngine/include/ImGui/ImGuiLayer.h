@@ -9,13 +9,13 @@ namespace DYE
     class ImGuiLayer : public LayerBase
     {
     public:
-        explicit ImGuiLayer(WindowBase* pWindow);
-		ImGuiLayer() = delete;
+        explicit ImGuiLayer(WindowBase *pWindow);
+        ImGuiLayer() = delete;
         ~ImGuiLayer() override = default;
 
         void OnAttach() override;
         void OnDetach() override;
-        void OnEvent(Event& event) override;
+        void OnEvent(Event &event) override;
 
         void BeginImGui();
         void EndImGui();
@@ -24,6 +24,6 @@ namespace DYE
 
     private:
         bool m_BlockEvents = true;
-        WindowBase* m_pWindow;
+        WindowBase *m_pWindow;
     };
 }
