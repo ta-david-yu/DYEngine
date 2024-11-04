@@ -2,7 +2,7 @@
 
 namespace DYE::DYEditor
 {
-	struct StartAudioSourceComponent
-	{
-	};
+    struct StartAudioSourceComponent
+    {
+    };
 }

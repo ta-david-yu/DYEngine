@@ -5,6 +5,6 @@
 
 namespace DYE::DYEditor
 {
-	using EntityIdentifier = entt::entity;
-	using EntityInstanceID = std::uint32_t;
+    using EntityIdentifier = entt::entity;
+    using EntityInstanceID = std::uint32_t;
 }

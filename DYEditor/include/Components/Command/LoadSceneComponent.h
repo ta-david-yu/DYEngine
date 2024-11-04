@@ -4,8 +4,8 @@
 
 namespace DYE::DYEditor
 {
-	struct LoadSceneComponent
-	{
-		std::filesystem::path SceneAssetPath = "";
-	};
+    struct LoadSceneComponent
+    {
+        std::filesystem::path SceneAssetPath = "";
+    };
 }

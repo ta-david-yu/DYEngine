@@ -8,28 +8,28 @@
 
 namespace DYE::DYEditor
 {
-	void ExecuteLoadSceneCommandSystem::Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params)
-	{
-		auto view = world.GetRegistry().view<LoadSceneComponent>();
+    void ExecuteLoadSceneCommandSystem::Execute(DYE::DYEditor::World &world, DYE::DYEditor::ExecuteParameters params)
+    {
+        auto view = world.GetRegistry().view<LoadSceneComponent>();
 
-		for (auto rawEntity : view)
-		{
-			auto loadSceneCommand = view.get<LoadSceneComponent>(rawEntity);
+        for (auto rawEntity: view)
+        {
+            auto loadSceneCommand = view.get<LoadSceneComponent>(rawEntity);
 
-			if (!FileSystem::FileExists(loadSceneCommand.SceneAssetPath))
-			{
-				DYE_LOG("A load scene command is ignored because the given path '%s' doesn't exist.", loadSceneCommand.SceneAssetPath.string().c_str());
-				continue;
-			}
+            if (!FileSystem::FileExists(loadSceneCommand.SceneAssetPath))
+            {
+                DYE_LOG("A load scene command is ignored because the given path '%s' doesn't exist.", loadSceneCommand.SceneAssetPath.string().c_str());
+                continue;
+            }
 
-			DYE_LOG("Load Scene Command Executed: '%s'", loadSceneCommand.SceneAssetPath.string().c_str());
-			RuntimeSceneManagement::LoadScene(loadSceneCommand.SceneAssetPath);
+            DYE_LOG("Load Scene Command Executed: '%s'", loadSceneCommand.SceneAssetPath.string().c_str());
+            RuntimeSceneManagement::LoadScene(loadSceneCommand.SceneAssetPath);
 
-			// For now, we just break because there could only be one scene-loading operation at a time.
-			break;
-		}
+            // For now, we just break because there could only be one scene-loading operation at a time.
+            break;
+        }
 
-		// Destroy all load scene command entities.
-		world.GetRegistry().destroy(view.begin(), view.end());
-	}
+        // Destroy all load scene command entities.
+        world.GetRegistry().destroy(view.begin(), view.end());
+    }
 }

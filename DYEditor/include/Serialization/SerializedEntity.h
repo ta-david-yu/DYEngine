@@ -6,36 +6,37 @@
 
 namespace DYE::DYEditor
 {
-	struct SerializedEntity
-	{
-		friend class SerializedObjectFactory;
-		friend class SerializedScene;
+    struct SerializedEntity
+    {
+        friend class SerializedObjectFactory;
 
-		SerializedEntity() = default;
+        friend class SerializedScene;
 
-		inline bool IsHandle() const { return m_IsHandle; }
-		std::vector<SerializedComponent> GetSerializedComponentHandles();
+        SerializedEntity() = default;
 
-		/// \return true if a component of the given type is removed.
-		bool TryRemoveComponentHandleOfType(const std::string &typeName);
+        inline bool IsHandle() const { return m_IsHandle; }
+        std::vector<SerializedComponent> GetSerializedComponentHandles();
 
-		/// \return a SerializedComponentHandle of the newly added component OR the existing component of the given type.
-		SerializedComponent AddOrGetComponentHandleOfType(const std::string &typeName);
+        /// \return true if a component of the given type is removed.
+        bool TryRemoveComponentHandleOfType(const std::string &typeName);
 
-		/// Push the given serialized component as a serialized component handle.
-		/// It doesn't check component duplication.
-		void PushSerializedComponent(const SerializedComponent &serializedComponent);
+        /// \return a SerializedComponentHandle of the newly added component OR the existing component of the given type.
+        SerializedComponent AddOrGetComponentHandleOfType(const std::string &typeName);
 
-	private:
-		explicit SerializedEntity(toml::table* pEntityTableHandle);
-		explicit SerializedEntity(toml::table&& entityTable);
+        /// Push the given serialized component as a serialized component handle.
+        /// It doesn't check component duplication.
+        void PushSerializedComponent(const SerializedComponent &serializedComponent);
 
-		// This will only be valid when IsHandle is false
-		toml::table m_EntityTable;
+    private:
+        explicit SerializedEntity(toml::table *pEntityTableHandle);
+        explicit SerializedEntity(toml::table &&entityTable);
 
-		// This will only be valid when IsHandle is true. In that case it points to the entity table owned by the belonging SerializedScene.
-		toml::table* m_pEntityTableHandle = nullptr;
+        // This will only be valid when IsHandle is false
+        toml::table m_EntityTable;
 
-		bool m_IsHandle = false;
-	};
+        // This will only be valid when IsHandle is true. In that case it points to the entity table owned by the belonging SerializedScene.
+        toml::table *m_pEntityTableHandle = nullptr;
+
+        bool m_IsHandle = false;
+    };
 }

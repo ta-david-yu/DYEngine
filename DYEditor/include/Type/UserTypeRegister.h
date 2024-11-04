@@ -2,9 +2,9 @@
 
 namespace DYE::DYEditor
 {
-	using RegisterUserTypeFunction = void ();
+    using RegisterUserTypeFunction = void();
 
-	bool AssignRegisterUserTypeFunctionPointer(RegisterUserTypeFunction* functionPointer);
+    bool AssignRegisterUserTypeFunctionPointer(RegisterUserTypeFunction *functionPointer);
 
-	void RegisterUserTypes();
+    void RegisterUserTypes();
 }

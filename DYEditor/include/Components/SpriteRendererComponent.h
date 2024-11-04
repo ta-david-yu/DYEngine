@@ -6,11 +6,11 @@
 
 namespace DYE::DYEditor
 {
-	struct SpriteRendererComponent
-	{
-		bool IsEnabled = true;
-		glm::vec4 Color = Color::White;
-		DYE::AssetPath TextureAssetPath;
-		std::shared_ptr<Texture2D> Texture = Texture2D::GetDefaultTexture();
-	};
+    struct SpriteRendererComponent
+    {
+        bool IsEnabled = true;
+        glm::vec4 Color = Color::White;
+        DYE::AssetPath TextureAssetPath;
+        std::shared_ptr<Texture2D> Texture = Texture2D::GetDefaultTexture();
+    };
 }

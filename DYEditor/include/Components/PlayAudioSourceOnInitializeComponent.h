@@ -2,8 +2,8 @@
 
 namespace DYE::DYEditor
 {
-	struct PlayAudioSourceOnInitializeComponent
-	{
+    struct PlayAudioSourceOnInitializeComponent
+    {
 
-	};
+    };
 }

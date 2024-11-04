@@ -6,26 +6,27 @@
 
 namespace DYE::DYEditor
 {
-	constexpr const char *SystemTypeNameKey = "Type";
-	constexpr const char *SystemGroupNameKey = "Group";
-	constexpr const char *IsSystemEnabledKey = "IsEnabled";
+    constexpr const char *SystemTypeNameKey = "Type";
+    constexpr const char *SystemGroupNameKey = "Group";
+    constexpr const char *IsSystemEnabledKey = "IsEnabled";
 
-	struct SerializedSystemHandle
-	{
-		friend class SerializedScene;
-		SerializedSystemHandle() = delete;
+    struct SerializedSystemHandle
+    {
+        friend class SerializedScene;
 
-		std::optional<std::string> TryGetTypeName() const;
-		void SetTypeName(std::string const& typeName);
+        SerializedSystemHandle() = delete;
 
-		std::optional<std::string> TryGetGroupName() const;
-		void SetGroupName(std::string const& groupName);
+        std::optional<std::string> TryGetTypeName() const;
+        void SetTypeName(std::string const &typeName);
 
-		bool GetIsEnabledOr(bool defaultValue) const;
-		void SetIsEnabled(bool value);
+        std::optional<std::string> TryGetGroupName() const;
+        void SetGroupName(std::string const &groupName);
 
-	private:
-		explicit SerializedSystemHandle(toml::table* pSystemTable);
-		toml::table* m_pSystemTable = nullptr;
-	};
+        bool GetIsEnabledOr(bool defaultValue) const;
+        void SetIsEnabled(bool value);
+
+    private:
+        explicit SerializedSystemHandle(toml::table *pSystemTable);
+        toml::table *m_pSystemTable = nullptr;
+    };
 }

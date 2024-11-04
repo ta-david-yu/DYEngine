@@ -11,62 +11,64 @@
 
 namespace DYE::DYEditor
 {
-	class Entity;
-	class Scene;
-	struct ComponentTypeDescriptor;
+    class Entity;
 
-	/// To store extra information/metadata about the entity in editor build.
-	struct EntityEditorOnlyMetadata
-	{
-		/// We use this to draw the components in custom order.
-		/// Beware that the list is not always up-to-date, if you want to get a list of components of an entity,
-		/// it's better to iterate through the type descriptors list using 'Has' function in the TypeRegister.
-		std::vector<std::string> SuccessfullyDeserializedComponentNames {};
-	};
+    class Scene;
 
-	struct EntityDeserializationResult
-	{
-		std::vector<std::string> UnrecognizedComponentTypeNames {};
-		std::vector<SerializedComponent> UnrecognizedSerializedComponents {};
-		bool Success = true;
-	};
+    struct ComponentTypeDescriptor;
 
-	class SerializedObjectFactory
-	{
-	public:
-		/// SceneFile -> SerializedScene
-		static std::optional<SerializedScene> TryLoadSerializedSceneFromFile(std::filesystem::path const& path);
+    /// To store extra information/metadata about the entity in editor build.
+    struct EntityEditorOnlyMetadata
+    {
+        /// We use this to draw the components in custom order.
+        /// Beware that the list is not always up-to-date, if you want to get a list of components of an entity,
+        /// it's better to iterate through the type descriptors list using 'Has' function in the TypeRegister.
+        std::vector<std::string> SuccessfullyDeserializedComponentNames {};
+    };
 
-		/// EntityFile -> SerializedEntity
-		static std::optional<SerializedEntity> TryLoadSerializedEntityFromFile(std::filesystem::path const& path);
+    struct EntityDeserializationResult
+    {
+        std::vector<std::string> UnrecognizedComponentTypeNames {};
+        std::vector<SerializedComponent> UnrecognizedSerializedComponents {};
+        bool Success = true;
+    };
 
-		/// SerializedScene -> Scene. \n
-		/// This function assumes the given Scene is empty and doesn't do any clean-up on the Scene.
-		static void ApplySerializedSceneToEmptyScene(SerializedScene& serializedScene, DYE::DYEditor::Scene& scene);
+    class SerializedObjectFactory
+    {
+    public:
+        /// SceneFile -> SerializedScene
+        static std::optional<SerializedScene> TryLoadSerializedSceneFromFile(std::filesystem::path const &path);
 
-		/// SerializedEntity -> Entity. \n
-		/// This function assumes the given Entity is empty and doesn't do any clean-up on the Entity.
-		static EntityDeserializationResult ApplySerializedEntityToEmptyEntity(SerializedEntity& serializedEntity, DYE::DYEditor::Entity& entity);
+        /// EntityFile -> SerializedEntity
+        static std::optional<SerializedEntity> TryLoadSerializedEntityFromFile(std::filesystem::path const &path);
 
-		/// Scene -> SerializedScene
-		static SerializedScene CreateSerializedScene(Scene& scene);
+        /// SerializedScene -> Scene. \n
+        /// This function assumes the given Scene is empty and doesn't do any clean-up on the Scene.
+        static void ApplySerializedSceneToEmptyScene(SerializedScene &serializedScene, DYE::DYEditor::Scene &scene);
 
-		/// Entity -> SerializedEntity
-		static SerializedEntity CreateSerializedEntity(DYE::DYEditor::Entity& entity);
+        /// SerializedEntity -> Entity. \n
+        /// This function assumes the given Entity is empty and doesn't do any clean-up on the Entity.
+        static EntityDeserializationResult ApplySerializedEntityToEmptyEntity(SerializedEntity &serializedEntity, DYE::DYEditor::Entity &entity);
 
-		/// SerializedScene -> SceneFile
-		static void SaveSerializedSceneToFile(SerializedScene& serializedScene, std::filesystem::path const& path);
+        /// Scene -> SerializedScene
+        static SerializedScene CreateSerializedScene(Scene &scene);
 
-		/// SerializedEntity -> EntityFile
-		static void SaveSerializedEntityToFile(SerializedEntity& serializedEntity, std::filesystem::path const& path);
+        /// Entity -> SerializedEntity
+        static SerializedEntity CreateSerializedEntity(DYE::DYEditor::Entity &entity);
 
-		/// Entity.Component -> SerializedComponent
-		static SerializedComponent CreateSerializedComponentOfType(DYE::DYEditor::Entity &entity,
-																   std::string const &componentTypeName,
-																   ComponentTypeDescriptor componentTypeDescriptor);
+        /// SerializedScene -> SceneFile
+        static void SaveSerializedSceneToFile(SerializedScene &serializedScene, std::filesystem::path const &path);
 
-		static SerializedScene CreateEmptySerializedScene();
-		static SerializedEntity CreateEmptySerializedEntity();
-		static SerializedComponent CreateEmptySerializedComponent();
-	};
+        /// SerializedEntity -> EntityFile
+        static void SaveSerializedEntityToFile(SerializedEntity &serializedEntity, std::filesystem::path const &path);
+
+        /// Entity.Component -> SerializedComponent
+        static SerializedComponent CreateSerializedComponentOfType(DYE::DYEditor::Entity &entity,
+                                                                   std::string const &componentTypeName,
+                                                                   ComponentTypeDescriptor componentTypeDescriptor);
+
+        static SerializedScene CreateEmptySerializedScene();
+        static SerializedEntity CreateEmptySerializedEntity();
+        static SerializedComponent CreateEmptySerializedComponent();
+    };
 }

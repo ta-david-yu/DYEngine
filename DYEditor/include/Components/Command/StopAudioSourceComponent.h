@@ -2,8 +2,8 @@
 
 namespace DYE::DYEditor
 {
-	struct StopAudioSourceComponent
-	{
+    struct StopAudioSourceComponent
+    {
 
-	};
+    };
 }

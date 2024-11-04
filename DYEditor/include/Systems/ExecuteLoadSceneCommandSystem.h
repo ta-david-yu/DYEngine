@@ -4,15 +4,15 @@
 
 namespace DYE::DYEditor
 {
-	struct ExecuteLoadSceneCommandSystem final : public SystemBase
-	{
-		static constexpr char const* TypeName = "Execute Load Scene Command System";
+    struct ExecuteLoadSceneCommandSystem final : public SystemBase
+    {
+        static constexpr char const *TypeName = "Execute Load Scene Command System";
 
-		ExecutionPhase GetPhase() const override
-		{
-			return ExecutionPhase::Cleanup;
-		}
+        ExecutionPhase GetPhase() const override
+        {
+            return ExecutionPhase::Cleanup;
+        }
 
-		void Execute(World &world, DYE::DYEditor::ExecuteParameters params) override;
-	};
+        void Execute(World &world, DYE::DYEditor::ExecuteParameters params) override;
+    };
 }

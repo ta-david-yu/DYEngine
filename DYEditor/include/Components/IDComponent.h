@@ -2,8 +2,8 @@
 
 namespace DYE::DYEditor
 {
-	struct IDComponent
-	{
-		GUID ID;
-	};
+    struct IDComponent
+    {
+        GUID ID;
+    };
 }

@@ -6,12 +6,12 @@
 
 namespace DYE::DYEditor
 {
-	struct AudioSource2DComponent
-	{
-		// FIXME: in the future, each clip asset would have a import settings.
-		AudioLoadType LoadType = AudioLoadType::DecompressOnLoad;
+    struct AudioSource2DComponent
+    {
+        // FIXME: in the future, each clip asset would have a import settings.
+        AudioLoadType LoadType = AudioLoadType::DecompressOnLoad;
 
-		DYE::AssetPath ClipAssetPath;
-		AudioSource Source;
-	};
+        DYE::AssetPath ClipAssetPath;
+        AudioSource Source;
+    };
 }

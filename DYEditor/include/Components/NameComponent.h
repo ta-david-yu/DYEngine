@@ -4,8 +4,8 @@
 
 namespace DYE::DYEditor
 {
-	struct NameComponent
-	{
-		std::string Name;
-	};
+    struct NameComponent
+    {
+        std::string Name;
+    };
 }

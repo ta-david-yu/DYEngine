@@ -7,14 +7,14 @@
 
 namespace DYE::DYEditor
 {
-	class DYEditorApplication final : public Application
-	{
-	public:
-		DYEditorApplication() = delete;
-		DYEditorApplication(const DYEditorApplication &) = delete;
+    class DYEditorApplication final : public Application
+    {
+    public:
+        DYEditorApplication() = delete;
+        DYEditorApplication(const DYEditorApplication &) = delete;
 
-		explicit DYEditorApplication(WindowProperties mainWindowProperties, int fixedFramePerSecond = 60);
+        explicit DYEditorApplication(WindowProperties mainWindowProperties, int fixedFramePerSecond = 60);
 
-		~DYEditorApplication() final = default;
-	};
+        ~DYEditorApplication() final = default;
+    };
 }

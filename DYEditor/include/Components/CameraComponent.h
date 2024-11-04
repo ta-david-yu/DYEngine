@@ -6,19 +6,19 @@
 
 namespace DYE::DYEditor
 {
-	struct CameraComponent
-	{
-		bool IsEnabled = true;
-		CameraProperties Properties;
+    struct CameraComponent
+    {
+        bool IsEnabled = true;
+        CameraProperties Properties;
 
-		[[nodiscard]]
-		Camera CreateCameraWithLocalToWorldComponent(LocalToWorldComponent const& localToWorld) const
-		{
-			Camera camera;
-			camera.ViewMatrix = glm::inverse(localToWorld.Matrix);
-			camera.Properties = Properties;
+        [[nodiscard]]
+        Camera CreateCameraWithLocalToWorldComponent(LocalToWorldComponent const &localToWorld) const
+        {
+            Camera camera;
+            camera.ViewMatrix = glm::inverse(localToWorld.Matrix);
+            camera.Properties = Properties;
 
-			return camera;
-		}
-	};
+            return camera;
+        }
+    };
 }

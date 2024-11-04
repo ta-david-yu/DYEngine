@@ -8,42 +8,42 @@
 
 namespace DYE::DYEditor
 {
-	void AudioSystem::Execute(World &world, DYE::DYEditor::ExecuteParameters params)
-	{
-		// Start audio source.
-		{
-			auto startView = world.GetRegistry().view<AudioSource2DComponent, StartAudioSourceComponent>();
-			for (auto entity: startView)
-			{
-				auto &audioSource = startView.get<AudioSource2DComponent>(entity);
-				audioSource.Source.Play();
+    void AudioSystem::Execute(World &world, DYE::DYEditor::ExecuteParameters params)
+    {
+        // Start audio source.
+        {
+            auto startView = world.GetRegistry().view<AudioSource2DComponent, StartAudioSourceComponent>();
+            for (auto entity: startView)
+            {
+                auto &audioSource = startView.get<AudioSource2DComponent>(entity);
+                audioSource.Source.Play();
 
-				auto wrappedEntity = world.WrapIdentifierIntoEntity(entity);
-				wrappedEntity.RemoveComponent<StartAudioSourceComponent>();
-			}
-		}
+                auto wrappedEntity = world.WrapIdentifierIntoEntity(entity);
+                wrappedEntity.RemoveComponent<StartAudioSourceComponent>();
+            }
+        }
 
-		// Stop audio source.
-		{
-			auto stopView = world.GetRegistry().view<AudioSource2DComponent, StopAudioSourceComponent>();
-			for (auto entity: stopView)
-			{
-				auto &audioSource = stopView.get<AudioSource2DComponent>(entity);
-				audioSource.Source.Stop();
+        // Stop audio source.
+        {
+            auto stopView = world.GetRegistry().view<AudioSource2DComponent, StopAudioSourceComponent>();
+            for (auto entity: stopView)
+            {
+                auto &audioSource = stopView.get<AudioSource2DComponent>(entity);
+                audioSource.Source.Stop();
 
-				auto wrappedEntity = world.WrapIdentifierIntoEntity(entity);
-				wrappedEntity.RemoveComponent<StopAudioSourceComponent>();
-			}
-		}
-	}
+                auto wrappedEntity = world.WrapIdentifierIntoEntity(entity);
+                wrappedEntity.RemoveComponent<StopAudioSourceComponent>();
+            }
+        }
+    }
 
-	void PlayAudioSourceOnInitializeSystem::Execute(World &world, DYE::DYEditor::ExecuteParameters params)
-	{
-		auto view = world.GetRegistry().view<AudioSource2DComponent, PlayAudioSourceOnInitializeComponent>();
-		for (auto entity: view)
-		{
-			auto wrappedEntity = world.WrapIdentifierIntoEntity(entity);
-			wrappedEntity.AddComponent<StartAudioSourceComponent>();
-		}
-	}
+    void PlayAudioSourceOnInitializeSystem::Execute(World &world, DYE::DYEditor::ExecuteParameters params)
+    {
+        auto view = world.GetRegistry().view<AudioSource2DComponent, PlayAudioSourceOnInitializeComponent>();
+        for (auto entity: view)
+        {
+            auto wrappedEntity = world.WrapIdentifierIntoEntity(entity);
+            wrappedEntity.AddComponent<StartAudioSourceComponent>();
+        }
+    }
 }

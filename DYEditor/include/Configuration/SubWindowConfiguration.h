@@ -2,6 +2,6 @@
 
 namespace DYE::DYEditor
 {
-	void SetupSubWindowsBasedOnRuntimeConfig();
-	void ClearSubWindowsBasedOnRuntimeConfig();
+    void SetupSubWindowsBasedOnRuntimeConfig();
+    void ClearSubWindowsBasedOnRuntimeConfig();
 }
