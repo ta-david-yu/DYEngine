@@ -24,15 +24,67 @@ Most of the following tools come with CLion as bundles
 Once you have all of the above installed, you can build and run the Sandbox configuration in CLion directly.
 
 ### Build with CMake and Visual Studio
+[How to CMake Good - 0c - Using Visual Studio](https://youtu.be/6aiV7Z9NRhk)
+
 1. Use the root CMakeList.txt to generate a visual studio solution in the build folder.
     ```shell
     - cmake -G "Visual Studio 17 2022" -B "build"
     ```
 2. Open the generated visual studio solution file.
-3. Set `Sandbox` (or `Sandbox_Editor`) as the Startup Project.
+3. Set `Sandbox_Editor` (or `Sandbox`) as the Startup Project.
 4. Build.
-5. Copy the correct SDL2 dll from DYEngine/extern/SDL2 folder into the executable folder depending on your platform. For instance if you are building for x64, then you copy the dll file in `DYEngine\extern\SDL2\MSVC\lib\x64`.
+5. Copy the correct SDL2 dll from DYEngine/extern/SDL2 folder into the executable folder based on your target architecture. For instance if you are building for x64, then you copy the dll file in `DYEngine\extern\SDL2\MSVC\lib\x64`.
 6. Run the executable and you will see the Sandbox app running properly.
+
+### Build with CMake, Ninja (as the generator), and Visual C++ (cl.exe as the compiler) OR Clang with MSVC-like command-line (clang-cl.exe as the compiler)
+[How to CMake Good - 0d - Visual C++ without Visual Studio](https://youtu.be/nGnKmEkNBkw)
+
+Similar to the Visual Studio, but you don't have to open the solution file in the Visual Studio.
+Everything can be done in the terminal.
+
+1. Start the Visual Studio Developer Command Prompt in the terminal by running the vcvarsall.bat that's included the Visual Studio build tools.
+    ```shell
+    # The path could be different depending on where you install Visual Studio
+    # Specify the target architecture as the first argument (x64 in our case).
+    - "C:\<path-to-visual-studio>\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
+    ```
+2. Use the root CMakeList.txt to generate a visual studio solution in the build folder using Ninja as the generator and cl.exe as the c/cpp compiler:
+    ```shell
+    - cmake -G Ninja -B "build" -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
+    ```
+    You can also use clang-cl as the compiler:
+    ```shell
+    - cmake -G Ninja -B "build" -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
+    ```
+3. Build the project with the following command:
+    ```shell
+    - cd build
+    - ninja Sandbox_Editor # or Sandbox
+    ```
+4. Run the executable and you will see the Sandbox app running properly.
+
+### Build with CMake and Visual C++ (cl.exe as the compiler)
+[How to CMake Good - 0d - Visual C++ without Visual Studio](https://youtu.be/nGnKmEkNBkw)
+
+Similar to the Visual Studio method, but you don't have to open the solution file in the Visual Studio.
+Everything can be done in the terminal.
+
+1. Start the Visual Studio Developer Command Prompt in the terminal by running the vcvarsall.bat that's included the Visual Studio build tools.
+    ```shell
+    # The path could be different depending on where you install Visual Studio
+    # Specify the target architecture as the first argument (x64 in our case).
+    - "C:\<path-to-visual-studio>\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
+    ```
+2. Use the root CMakeList.txt to generate a visual studio solution in the build folder with the following command:
+    ```shell
+    - cmake -G "Visual Studio 17 2022" -B "build"
+    ```
+3. Build the project with the following command:
+    ```shell
+    - cmake --build "build" --target Sandbox_Editor # or Sandbox
+    ```
+4. Copy the correct SDL2 dll from DYEngine/extern/SDL2 folder into the executable folder based on your target architecture. For instance if you are building for x64, then you copy the dll file in `DYEngine\extern\SDL2\MSVC\lib\x64`.
+5. Run the executable and you will see the Sandbox app running properly.
 
 ## Library Dependencies (included in the project)
 ### DYEngine
