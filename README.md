@@ -7,17 +7,32 @@ DYEngine is divided into 2 sub-project modules:
 * **DYEngine**: The core of the game engine. It includes everything you need to make a code-only game.
 * **DYEditor**: It provides the ECS object model using entt & an editor on top of that for editting scenes & entities. It comes with a code generation tool for generating type information of user-defined components & systems for editor type registry. The module is still in an very early stage.
 
-## Environment Setup
-### Not really a guide, just how I normally use this engine. Most of the following tools come with CLion as bundles
+## Getting Started
+
+Right now I am using CLion to configure & build the project. Therefore, building with CLion is the fastest and the most stable way to build the project.
+In order to support multiple compilers, I had to include two versions of SDL2: MinGW & MSVC versions, which I downloaded from [SDL2 repository](https://github.com/libsdl-org/SDL/releases).  
+I did some reorganizations to the SDL2 folders so whether you use MinGW or MSVC (both cl.exe and clang-cl.exe) to compile, the build system will still be able to find the correct version of library to link.
+
+### Build with CLion
+Most of the following tools come with CLion as bundles
 - **IDE**: CLion (CMake 3.17+)
 - **Tested Compilers**: 
   - GNU 11.2.0 (MinGW)
   - MSVC 19.34.31937.0
   - Clang 15.0.1 (MSVC compatible)
 
-Right now I am using CLion to configure & build the project.
-In order to support multiple compilers, I had to include two versions of SDL2: MinGW & MSVC versions, which I downloaded from [SDL2 repository](https://github.com/libsdl-org/SDL/releases).  
-I did some reorganizations to the SDL2 folders so whether you use MinGW or MSVC (both cl.exe and clang-cl.exe) to compile, the build system will still be able to find the correct version of library to link.
+Once you have all of the above installed, you can build and run the Sandbox configuration in CLion directly.
+
+### Build with CMake and Visual Studio
+1. Use the root CMakeList.txt to generate a visual studio solution in the build folder.
+    ```shell
+    - cmake -G "Visual Studio 17 2022" -B "build"
+    ```
+2. Open the generated visual studio solution file.
+3. Set `Sandbox` (or `Sandbox_Editor`) as the Startup Project.
+4. Build.
+5. Copy the correct SDL2 dll from DYEngine/extern/SDL2 folder into the executable folder depending on your platform. For instance if you are building for x64, then you copy the dll file in `DYEngine\extern\SDL2\MSVC\lib\x64`.
+6. Run the executable and you will see the Sandbox app running properly.
 
 ## Library Dependencies (included in the project)
 ### DYEngine
