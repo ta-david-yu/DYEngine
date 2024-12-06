@@ -12,7 +12,7 @@
 /// \param componentType the same as before, but will also be used as the id (key) to the component type descriptor.
 /// \param optionalDisplayName if specified, whenever the component type is to be referred to in an user interface, optionalDisplayName will be shown instead. This should be a string literal.
 ///
-#define DYE_COMPONENT(componentType, optionalDisplayName...)
+#define DYE_COMPONENT(componentType, optionalDisplayName, ...)
 
 /// The class/struct type which has been marked with DYE_COMPONENT and immediately followed by this macro will keep track of an additional component
 /// which should be used together on the same entity, in order for it to take effect.
