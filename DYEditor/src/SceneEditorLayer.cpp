@@ -160,10 +160,7 @@ namespace DYE::DYEditor
         {
             // Failed to load the default scene, therefore we create an untitled new scene.
             // Add a camera entity & camera system by default if the active scene is untitled and empty.
-            auto cameraEntity = RuntimeSceneManagement::GetActiveMainScene().World.CreateEntity("Camera");
-            cameraEntity.AddComponent<LocalTransformComponent>().Position = {0, 0, 10};
-            cameraEntity.AddComponent<CameraComponent>();
-            RuntimeSceneManagement::GetActiveMainScene().TryAddSystemByName(RegisterCameraSystem::TypeName);
+            initializeNewSceneWithDefaultEntityAndSystems(RuntimeSceneManagement::GetActiveMainScene());
         }
 
         // Register runtime state events.
@@ -2525,7 +2522,14 @@ namespace DYE::DYEditor
         auto cameraEntity = newScene.World.CreateEntity("Camera");
         cameraEntity.AddComponent<LocalTransformComponent>().Position = {0, 0, 10};
         cameraEntity.AddComponent<CameraComponent>();
+        cameraEntity.AddComponent<LocalToWorldComponent>();
 
+        auto squareEntity = newScene.World.CreateEntity("Square");
+        squareEntity.AddComponent<LocalTransformComponent>().Position = {0, 0, 0};
+        squareEntity.AddComponent<LocalToWorldComponent>();
+        squareEntity.AddComponent<SpriteRendererComponent>();
+
+        newScene.TryAddSystemByName(ComputeLocalToWorldSystem::TypeName);
         newScene.TryAddSystemByName(RegisterCameraSystem::TypeName);
         newScene.TryAddSystemByName(Render2DSpriteSystem::TypeName);
         newScene.TryAddSystemByName(AudioSystem::TypeName);
