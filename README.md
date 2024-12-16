@@ -21,10 +21,12 @@ Most of the following tools come with CLion as bundles
   - MSVC 19.34.31937.0
   - Clang 15.0.1 (MSVC compatible)
 
-Once you have all of the above installed, you can build and run the Sandbox configuration in CLion directly.
+Once you have all of the above installed, you can build and run the Sandbox editor configuration in CLion directly.
 
 ### Build with CMake and Visual Studio
 [How to CMake Good - 0c - Using Visual Studio](https://youtu.be/6aiV7Z9NRhk)
+
+Similar to the previous method, but instead of build
 
 1. Use the root CMakeList.txt to generate a visual studio solution in the build folder.
     ```shell
@@ -33,12 +35,29 @@ Once you have all of the above installed, you can build and run the Sandbox conf
 2. Open the generated visual studio solution file.
 3. Set `Sandbox_Editor` as the Startup Project.
 4. Build.
-5Run the executable and you will see the Sandbox app running properly.
+5. Run the executable and you will see the Sandbox editor app running properly.
+
+### Build with CMake and Visual C++ (using cl or clang-cl as the compiler)
+[How to CMake Good - 0d - Visual C++ without Visual Studio](https://youtu.be/nGnKmEkNBkw)
+
+Similar to the Visual Studio method, but you don't have to open the solution file in the Visual Studio.
+Everything can be done in the terminal.
+
+1. Use the root CMakeList.txt to generate a visual studio solution in the build folder with the following command:
+    ```shell
+    - cmake -G "Visual Studio 17 2022" -B "build"
+    ```
+   To use clang
+2. Build the project with the following command:
+    ```shell
+    - cmake --build "build" --target Sandbox_Editor
+    ```
+3. Run the executable and you will see the Sandbox editor app running properly.
 
 ### Build with CMake, Ninja (as the generator), and Visual C++ (cl.exe as the compiler) OR Clang with MSVC-like command-line (clang-cl.exe as the compiler)
 [How to CMake Good - 0d - Visual C++ without Visual Studio](https://youtu.be/nGnKmEkNBkw)
 
-Similar to the Visual Studio, but you don't have to open the solution file in the Visual Studio.
+Similar to the Visual Studio method, but you don't have to open the solution file in the Visual Studio.
 Everything can be done in the terminal.
 
 1. Start the Visual Studio Developer Command Prompt in the terminal by running the vcvarsall.bat that's included the Visual Studio build tools.
@@ -60,29 +79,7 @@ Everything can be done in the terminal.
     - cd build
     - ninja Sandbox_Editor
     ```
-4. Run the executable and you will see the Sandbox app running properly.
-
-### Build with CMake and Visual C++ (cl.exe as the compiler)
-[How to CMake Good - 0d - Visual C++ without Visual Studio](https://youtu.be/nGnKmEkNBkw)
-
-Similar to the Visual Studio method, but you don't have to open the solution file in the Visual Studio.
-Everything can be done in the terminal.
-
-1. Start the Visual Studio Developer Command Prompt in the terminal by running the vcvarsall.bat that's included the Visual Studio build tools.
-    ```shell
-    # The path could be different depending on where you install Visual Studio
-    # Specify the target architecture as the first argument (x64 in our case).
-    - "C:\<path-to-visual-studio>\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
-    ```
-2. Use the root CMakeList.txt to generate a visual studio solution in the build folder with the following command:
-    ```shell
-    - cmake -G "Visual Studio 17 2022" -B "build"
-    ```
-3. Build the project with the following command:
-    ```shell
-    - cmake --build "build" --target Sandbox_Editor
-    ```
-4. Run the executable and you will see the Sandbox app running properly.
+4. Run the executable and you will see the Sandbox editor app running properly.
 
 ## Library Dependencies (included in the project)
 ### DYEngine
