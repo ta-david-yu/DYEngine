@@ -216,4 +216,4 @@ set(DEFAULT_ASSETS
         assets/default/SpriteUnlit.shader)
 
 include(../cmake/Modules/CopyAssets.cmake)
-CopyTextAssets(${DEFAULT_ASSETS})
+CopyAssetsPostBuild(DYEngine ${DEFAULT_ASSETS})

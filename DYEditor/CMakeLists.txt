@@ -135,4 +135,4 @@ set(DEFAULT_ASSETS
         assets/default/EntityIDShader.shader)
 
 include(../cmake/Modules/CopyAssets.cmake)
-CopyTextAssets(${DEFAULT_ASSETS})
+CopyAssetsPostBuild(DYEditor ${DEFAULT_ASSETS})

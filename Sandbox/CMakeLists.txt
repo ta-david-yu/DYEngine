@@ -31,5 +31,4 @@ set(BINARY_ASSETS
         assets/Textures/Sprite_DYEIcon.png)
 
 include(../cmake/Modules/CopyAssets.cmake)
-CopyTextAssets(${TEXT_ASSETS})
-CopyBinaryAssets(${BINARY_ASSETS})
+CopyAssetsPostBuild(${PROJECT_NAME}_Editor ${TEXT_ASSETS} ${BINARY_ASSETS})
