@@ -31,10 +31,9 @@ Once you have all of the above installed, you can build and run the Sandbox conf
     - cmake -G "Visual Studio 17 2022" -B "build"
     ```
 2. Open the generated visual studio solution file.
-3. Set `Sandbox_Editor` (or `Sandbox`) as the Startup Project.
+3. Set `Sandbox_Editor` as the Startup Project.
 4. Build.
-5. Copy the correct SDL2 dll from DYEngine/extern/SDL2 folder into the executable folder based on your target architecture. For instance if you are building for x64, then you copy the dll file in `DYEngine\extern\SDL2\MSVC\lib\x64`.
-6. Run the executable and you will see the Sandbox app running properly.
+5Run the executable and you will see the Sandbox app running properly.
 
 ### Build with CMake, Ninja (as the generator), and Visual C++ (cl.exe as the compiler) OR Clang with MSVC-like command-line (clang-cl.exe as the compiler)
 [How to CMake Good - 0d - Visual C++ without Visual Studio](https://youtu.be/nGnKmEkNBkw)
@@ -59,7 +58,7 @@ Everything can be done in the terminal.
 3. Build the project with the following command:
     ```shell
     - cd build
-    - ninja Sandbox_Editor # or Sandbox
+    - ninja Sandbox_Editor
     ```
 4. Run the executable and you will see the Sandbox app running properly.
 
@@ -81,10 +80,9 @@ Everything can be done in the terminal.
     ```
 3. Build the project with the following command:
     ```shell
-    - cmake --build "build" --target Sandbox_Editor # or Sandbox
+    - cmake --build "build" --target Sandbox_Editor
     ```
-4. Copy the correct SDL2 dll from DYEngine/extern/SDL2 folder into the executable folder based on your target architecture. For instance if you are building for x64, then you copy the dll file in `DYEngine\extern\SDL2\MSVC\lib\x64`.
-5. Run the executable and you will see the Sandbox app running properly.
+4. Run the executable and you will see the Sandbox app running properly.
 
 ## Library Dependencies (included in the project)
 ### DYEngine
