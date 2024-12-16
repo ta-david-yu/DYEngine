@@ -12,12 +12,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Mo
 include(cmake/Modules/RedirectOutputTo.cmake)
 
 if (CMAKE_CONFIGURATION_TYPES)
+    # For multi-config generator, we don't know which config the user will be using during build system generation from cmake.
+    # Therefore, we want to use `RedirectMultiConfigGeneratorOutputTo()` to redirect outputs for all different configurations.
     message(STATUS "Multi-configuration generator detected: ${CMAKE_GENERATOR}")
-    message(STATUS "Configure all configs output directories")
-    foreach(CONFIG_TYPE ${CMAKE_CONFIGURATION_TYPES})
-        string(TOUPPER ${CONFIG_TYPE} CONFIG_TYPE_UPPER)
-        RedirectOutputTo("build/${CONFIG_TYPE}")
-    endforeach()
+    RedirectMultiConfigGeneratorOutputTo("build")
 else ()
     message(STATUS "Single-configuration generator detected: ${CMAKE_GENERATOR}")
     message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
