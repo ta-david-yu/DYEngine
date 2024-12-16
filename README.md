@@ -24,13 +24,14 @@ Most of the following tools come with CLion as bundles
 Once you have all of the above installed, you can build and run the Sandbox editor configuration in CLion directly.
 
 ### Build with CMake and Visual Studio
-[How to CMake Good - 0c - Using Visual Studio](https://youtu.be/6aiV7Z9NRhk)
-
-Similar to the previous method, but instead of build
 
 1. Use the root CMakeList.txt to generate a visual studio solution in the build folder.
     ```shell
     - cmake -G "Visual Studio 17 2022" -B "build"
+    ```
+   Optionally, you can set the toolset to Clang:
+   ```shell
+    - cmake -G "Visual Studio 17 2022" -B "build" -T ClangCL
     ```
 2. Open the generated visual studio solution file.
 3. Set `Sandbox_Editor` as the Startup Project.
@@ -38,7 +39,6 @@ Similar to the previous method, but instead of build
 5. Run the executable and you will see the Sandbox editor app running properly.
 
 ### Build with CMake and Visual C++ (using cl or clang-cl as the compiler)
-[How to CMake Good - 0d - Visual C++ without Visual Studio](https://youtu.be/nGnKmEkNBkw)
 
 Similar to the Visual Studio method, but you don't have to open the solution file in the Visual Studio.
 Everything can be done in the terminal.
@@ -47,7 +47,10 @@ Everything can be done in the terminal.
     ```shell
     - cmake -G "Visual Studio 17 2022" -B "build"
     ```
-   To use clang
+   Optionally, you can set the toolset to Clang:
+   ```shell
+    - cmake -G "Visual Studio 17 2022" -B "build" -T ClangCL
+    ```
 2. Build the project with the following command:
     ```shell
     - cmake --build "build" --target Sandbox_Editor
@@ -55,7 +58,6 @@ Everything can be done in the terminal.
 3. Run the executable and you will see the Sandbox editor app running properly.
 
 ### Build with CMake, Ninja (as the generator), and Visual C++ (cl.exe as the compiler) OR Clang with MSVC-like command-line (clang-cl.exe as the compiler)
-[How to CMake Good - 0d - Visual C++ without Visual Studio](https://youtu.be/nGnKmEkNBkw)
 
 Similar to the Visual Studio method, but you don't have to open the solution file in the Visual Studio.
 Everything can be done in the terminal.
@@ -121,4 +123,6 @@ It wouldn't have been possible to implement this project without the help of the
 Here are some resources that I use to make it happen! The list is non-exhaustive of course:  
 * **Hazel engine**: https://github.com/TheCherno/Hazel
 * **Halley engine**: https://github.com/amzeratul/halley
+* [How to CMake Good - 0c - Using Visual Studio](https://youtu.be/6aiV7Z9NRhk)
+* [How to CMake Good - 0d - Visual C++ without Visual Studio](https://youtu.be/nGnKmEkNBkw)
 * ...and a lot more to be added.
