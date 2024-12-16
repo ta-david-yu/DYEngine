@@ -14,7 +14,7 @@ endmacro(RedirectOutputTo dir)
 # For multi-config generator such as MSVC and XCode
 macro(RedirectMultiConfigGeneratorOutputTo dir)
     foreach (CONFIG_TYPE ${CMAKE_CONFIGURATION_TYPES})
-        message(STATUS "\t\t${CONFIG_TYPE} -> build/${CONFIG_TYPE}")
+        message(STATUS "\t${CONFIG_TYPE} -> build/${CONFIG_TYPE}")
         string(TOUPPER ${CONFIG_TYPE} CONFIG_TYPE)
         set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${CONFIG_TYPE} ${PROJECT_SOURCE_DIR}/${dir}/${CONFIG_TYPE})
         set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${CONFIG_TYPE} ${PROJECT_SOURCE_DIR}/${dir}/${CONFIG_TYPE})
